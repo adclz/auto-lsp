@@ -9,6 +9,9 @@ import { Wasm, ProcessOptions } from '@vscode/wasm-wasi/v1';
 import { createStdioOptions, createUriConverters, startServer } from '@vscode/wasm-wasi-lsp';
 
 let client: LanguageClient;
+interface InitializationOptions {
+	perFileParser: Record<string, string>;
+}
 
 export async function activate(context: ExtensionContext) {
 	const wasm: Wasm = await Wasm.load();
@@ -35,10 +38,17 @@ export async function activate(context: ExtensionContext) {
 		return server
 	};
 
+	const initializationOptions: InitializationOptions = {
+		perFileParser: {
+			"st": "iec-61131-2"
+		}
+	}
+
 	const clientOptions: LanguageClientOptions = {
 		documentSelector: [{ language: 'st' }],
 		outputChannel: channel,
 		uriConverters: createUriConverters(),
+		initializationOptions
 	};
 
 	client = new LanguageClient('lspClient', 'LSP Client', serverOptions, clientOptions);
@@ -48,7 +58,7 @@ export async function activate(context: ExtensionContext) {
 		client.error(`Start failed`, error, 'force');
 	}
 
-	type CountFileParams = { folder: string };
+	/*type CountFileParams = { folder: string };
 	const CountFilesRequest = new RequestType<CountFileParams, number, void>('wasm-language-server/countFiles');
 	context.subscriptions.push(commands.registerCommand('vscode-samples.wasm-language-server.countFiles', async () => {
 		// We assume we do have a folder.
@@ -57,7 +67,7 @@ export async function activate(context: ExtensionContext) {
 		// @vscode/wasm-wasi-lsp does for us.
 		const result = await client.sendRequest(CountFilesRequest, { folder: client.code2ProtocolConverter.asUri(folder) });
 		window.showInformationMessage(`The workspace contains ${result} files.`);
-	}));
+	}));/*/
 }
 
 export function deactivate() {

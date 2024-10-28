@@ -12,7 +12,7 @@ pub fn get_folding_ranges(
     let workspace = session.workspaces.get(uri).unwrap();
     let root_node = workspace.cst.root_node();
     let source = workspace.document.get_content(None);
-    let query = &session.queries.fold;
+    let query = &workspace.provider.queries.fold;
 
     let mut query_cursor = tree_sitter::QueryCursor::new();
     let mut captures = query_cursor.captures(query, root_node, source.as_bytes());

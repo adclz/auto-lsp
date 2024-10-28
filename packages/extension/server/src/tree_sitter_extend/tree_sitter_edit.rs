@@ -13,9 +13,9 @@ use crate::{
 
 pub fn edit_tree(event: &DidChangeTextDocumentParams, uri: &str, session: &mut Session) {
     let workspace = session.workspaces.get_mut(uri).unwrap();
+    let provider = workspace.provider;
     let doc = &workspace.document;
     let tree = &mut workspace.cst;
-    let parser = &mut session.parser;
 
     event.content_changes.iter().for_each(|edit| {
         let edit_range = edit.range.unwrap();
@@ -48,9 +48,14 @@ pub fn edit_tree(event: &DidChangeTextDocumentParams, uri: &str, session: &mut S
         });
     });
 
-    let new_tree = parser.parse(doc.get_content(None), Some(&tree)).unwrap();
+    let new_tree = provider
+        .parser
+        .write()
+        .unwrap()
+        .parse(doc.get_content(None), Some(&tree))
+        .unwrap();
     let ast = builder(
-        &session.queries.outline,
+        &provider.queries.outline,
         Symbol::query_binder,
         Symbol::builder_binder,
         new_tree.root_node(),
@@ -75,7 +80,7 @@ pub fn edit_tree(event: &DidChangeTextDocumentParams, uri: &str, session: &mut S
 
         if let Some(node) = ast_node {
             let ast = localized_builder(
-                &session.queries.outline,
+                &provider.queries.outline,
                 Symbol::query_binder,
                 workspace.cst.root_node(),
                 doc.get_content(None).as_bytes(),

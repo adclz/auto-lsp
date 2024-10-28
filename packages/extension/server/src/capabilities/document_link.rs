@@ -17,7 +17,7 @@ pub fn get_document_link(
     let workspace = session.workspaces.get(uri).unwrap();
     let root_node = workspace.cst.root_node();
     let source = workspace.document.get_content(None);
-    let query = &session.queries.comments;
+    let query = &workspace.provider.queries.comments;
     let re = Regex::new(r"\s+source:\/\/(\w+.\w+):(\d+)/g").unwrap();
 
     let mut query_cursor = tree_sitter::QueryCursor::new();

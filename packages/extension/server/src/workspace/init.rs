@@ -34,7 +34,16 @@ pub fn get_workspace_folders(
                                 .to_string()
                                 .replace(" ", "%20")
                         ),
-                        FullTextDocument::new(0.to_string(), 0, buffer.clone()),
+                        FullTextDocument::new(
+                            file.path()
+                                .extension()
+                                .unwrap()
+                                .to_str()
+                                .unwrap()
+                                .to_string(),
+                            0,
+                            buffer.clone(),
+                        ),
                     );
                 });
         });
@@ -51,7 +60,11 @@ pub fn add_files(params: &CreateFilesParams) -> HashMap<String, FullTextDocument
 
         roots.insert(
             file.uri.to_owned(),
-            FullTextDocument::new(0.to_string(), 0, buffer.clone()),
+            FullTextDocument::new(
+                file.uri.split(".").last().unwrap().to_string(),
+                0,
+                buffer.clone(),
+            ),
         );
     });
     roots

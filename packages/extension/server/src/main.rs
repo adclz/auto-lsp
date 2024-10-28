@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 use std::fs::File;
@@ -8,7 +9,7 @@ use std::{error::Error, str::FromStr};
 use capabilities::document_symbols::get_document_symbols;
 use capabilities::hover_info::get_hover_info;
 use capabilities::semantic_tokens::{SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
-use globals::Session;
+use globals::{Session, PARSERS};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::notification::{
     DidCreateFiles, DidDeleteFiles, DidOpenTextDocument, PublishDiagnostics,
@@ -104,24 +105,64 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
+#[derive(Debug, Deserialize)]
+struct InitializationOptions {
+    perFileParser: HashMap<String, String>,
+}
+
 fn main_loop(
     connection: Connection,
     params: serde_json::Value,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
-    let mut globals = Session::new();
+    let mut session = Session::default();
 
+    // Receive custom initialization options from LSP client
     let params: InitializeParams = serde_json::from_value(params).unwrap();
+    let options = InitializationOptions::deserialize(
+        params
+            .initialization_options
+            .expect("Missing initialization options from client"),
+    )
+    .unwrap();
 
+    // Check if the parser for each file extension is available
+    options
+        .perFileParser
+        .iter()
+        .for_each(|(extension, parser)| {
+            if let false = PARSERS.contains_key(parser.as_str()) {
+                panic!(
+                    "Error: Parser {} not found for file extension {}",
+                    parser, extension
+                );
+            }
+        });
+
+    session.extensions = options.perFileParser;
+
+    // Initialize the workspace with the files from the workspace folders
     for (uri, document) in get_workspace_folders(&params.workspace_folders) {
+        let extension = match session.extensions.get(document.language_id()) {
+            Some(extension) => extension,
+            None => {
+                eprintln!("No parser found for {}", document.language_id());
+                continue;
+            }
+        };
+        let provider = PARSERS
+            .get(extension)
+            .expect(&format!("{} not found", extension));
+
         let cst;
         let ast;
         let errors;
 
         let source_code = document.get_content(None).as_bytes();
 
-        cst = globals.parser.parse(source_code, None).unwrap().clone();
+        cst = provider.try_parse(&source_code, None).unwrap().clone();
+
         ast = builder(
-            &globals.queries.outline,
+            &provider.queries.outline,
             Symbol::query_binder,
             Symbol::builder_binder,
             cst.root_node(),
@@ -139,9 +180,10 @@ fn main_loop(
             send_notification::<PublishDiagnostics>(&connection, params).unwrap();
         }
 
-        globals.workspaces.insert(
+        session.workspaces.insert(
             uri.to_owned(),
             globals::Workspace {
+                provider,
                 document,
                 errors,
                 cst,
@@ -150,15 +192,25 @@ fn main_loop(
         );
     }
 
-    let globals = Arc::new(RwLock::new(globals));
+    // Encapsulate the session in a Arc RwLock for concurrent access
+    let session = Arc::new(RwLock::new(session));
 
+    // Main crossbeam loop
     for msg in &connection.receiver {
         match msg {
             Message::Notification(not) => {
                 match cast_notification::<DidOpenTextDocument>(not.clone()) {
                     Ok(params) => {
                         eprintln!("Opening document {}", params.text_document.uri.as_str());
-                        let mut lock = globals.write().unwrap();
+                        let mut lock = session.write().unwrap();
+
+                        let workspace = lock
+                            .workspaces
+                            .get(params.text_document.uri.as_str())
+                            .unwrap();
+
+                        let provider = workspace.provider;
+
                         let uri = params.text_document.uri.as_str();
                         let document = FullTextDocument::new(
                             params.text_document.language_id,
@@ -171,14 +223,16 @@ fn main_loop(
                         let ast;
                         let errors;
 
-                        cst = lock
+                        cst = provider
                             .parser
+                            .write()
+                            .unwrap()
                             .parse(document.get_content(None).as_bytes(), None)
                             .unwrap()
                             .clone();
 
                         ast = builder(
-                            &lock.queries.outline,
+                            &provider.queries.outline,
                             Symbol::query_binder,
                             Symbol::builder_binder,
                             cst.root_node(),
@@ -193,6 +247,7 @@ fn main_loop(
                         lock.workspaces.insert(
                             uri.to_owned(),
                             globals::Workspace {
+                                provider,
                                 document,
                                 errors,
                                 cst,
@@ -206,17 +261,14 @@ fn main_loop(
                 };
                 match cast_notification::<DidChangeTextDocument>(not.clone()) {
                     Ok(params) => {
-                        let mut lock = globals.write().unwrap();
+                        let mut lock = session.write().unwrap();
                         let uri = params.text_document.uri.as_str();
-                        {
-                            let workspace = lock.workspaces.get_mut(uri).unwrap();
-                            workspace
-                                .document
-                                .update(&params.content_changes[..], params.text_document.version);
-                            tree_sitter_extend::tree_sitter_edit::edit_tree(
-                                &params, uri, &mut lock,
-                            );
-                        }
+                        let workspace = lock.workspaces.get_mut(uri).unwrap();
+
+                        workspace
+                            .document
+                            .update(&params.content_changes[..], params.text_document.version);
+                        tree_sitter_extend::tree_sitter_edit::edit_tree(&params, uri, &mut lock);
 
                         let workspace = lock.workspaces.get(uri).unwrap();
 
@@ -237,18 +289,25 @@ fn main_loop(
                 };
                 match cast_notification::<DidCreateFiles>(not.clone()) {
                     Ok(params) => {
-                        let mut lock = globals.write().unwrap();
+                        let mut lock = session.write().unwrap();
+
                         let roots = workspace::init::add_files(&params);
-                        roots.into_iter().for_each(|(uri, document)| {
+                        /*roots.into_iter().for_each(|(uri, document)| {
+                            let extension = document.language_id();
+
                             let source_code = document.get_content(None).as_bytes();
                             let cst;
                             let ast;
                             let errors;
 
-                            cst = lock.parser.parse(source_code, None).unwrap().clone();
+                            cst = parser
+                                .parser
+                                .parse(document.get_content(None).as_bytes(), None)
+                                .unwrap()
+                                .clone();
 
                             ast = builder(
-                                &lock.queries.outline,
+                                &parser.queries.outline,
                                 Symbol::query_binder,
                                 Symbol::builder_binder,
                                 cst.root_node(),
@@ -263,13 +322,14 @@ fn main_loop(
                             lock.workspaces.insert(
                                 uri.to_owned(),
                                 globals::Workspace {
+                                    parser_provider: extension.to_string(),
                                     document,
                                     errors,
                                     cst,
                                     ast,
                                 },
                             );
-                        });
+                        });*/
                         continue;
                     }
                     Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
@@ -277,7 +337,7 @@ fn main_loop(
                 };
                 match cast_notification::<DidDeleteFiles>(not.clone()) {
                     Ok(params) => {
-                        let mut lock = globals.write().unwrap();
+                        let mut lock = session.write().unwrap();
                         params.files.iter().for_each(|file| {
                             lock.workspaces.remove(file.uri.as_str());
                         });
@@ -294,7 +354,7 @@ fn main_loop(
                 match cast_request::<DocumentDiagnosticRequest>(req.clone()) {
                     Ok((id, params)) => {
                         eprintln!("Diagnostic document {}", params.text_document.uri.as_str());
-                        let mut lock = globals.write().unwrap();
+                        let mut lock = session.write().unwrap();
 
                         let workspace = lock
                             .workspaces
@@ -331,7 +391,7 @@ fn main_loop(
                             .sender
                             .send(Message::Response(get_document_symbols(
                                 id,
-                                globals
+                                session
                                     .read()
                                     .unwrap()
                                     .workspaces
@@ -350,7 +410,7 @@ fn main_loop(
                             capabilities::folding_ranges::get_folding_ranges(
                                 id,
                                 &params,
-                                &globals.read().unwrap(),
+                                &session.read().unwrap(),
                             ),
                         ))?;
                         continue;
@@ -364,7 +424,7 @@ fn main_loop(
                             capabilities::semantic_tokens::get_semantic_tokens_full(
                                 id,
                                 params,
-                                &globals.read().unwrap(),
+                                &session.read().unwrap(),
                             ),
                         ))?;
                         continue;
@@ -378,7 +438,7 @@ fn main_loop(
                             capabilities::semantic_tokens::get_semantic_tokens_range(
                                 id,
                                 params,
-                                &globals.read().unwrap(),
+                                &session.read().unwrap(),
                             ),
                         ))?;
                         continue;
@@ -388,7 +448,7 @@ fn main_loop(
                 };
                 match cast_request::<HoverRequest>(req.clone()) {
                     Ok((id, params)) => {
-                        let session = globals.read().unwrap();
+                        let session = session.read().unwrap();
                         let uri = &params.text_document_position_params.text_document.uri;
                         let workspace = session.workspaces.get(uri.as_str()).unwrap();
                         connection.sender.send(Message::Response(
@@ -401,7 +461,7 @@ fn main_loop(
                 };
                 match cast_request::<WorkspaceSymbolRequest>(req.clone()) {
                     Ok((id, params)) => {
-                        let session = globals.read().unwrap();
+                        let session = session.read().unwrap();
                         let symbols = capabilities::workspace_symbols::get_workspace_symbols(
                             id, &params, &session,
                         );
@@ -413,7 +473,7 @@ fn main_loop(
                 };
                 match cast_request::<DocumentLinkRequest>(req.clone()) {
                     Ok((id, params)) => {
-                        let session = globals.read().unwrap();
+                        let session = session.read().unwrap();
                         let symbols =
                             capabilities::document_link::get_document_link(id, &params, &session);
                         connection.sender.send(Message::Response(symbols))?;
@@ -424,7 +484,7 @@ fn main_loop(
                 };
                 match cast_request::<SelectionRangeRequest>(req.clone()) {
                     Ok((id, params)) => {
-                        let session = globals.read().unwrap();
+                        let session = session.read().unwrap();
                         let symbols = capabilities::selection_ranges::get_selection_ranges(
                             id, &params, &session,
                         );

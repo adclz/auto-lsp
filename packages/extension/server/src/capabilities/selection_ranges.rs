@@ -12,7 +12,7 @@ pub fn get_selection_ranges(
     let workspace = session.workspaces.get(uri).unwrap();
     let root_node = workspace.cst.root_node();
     let source = workspace.document.get_content(None);
-    let query = &session.queries.fold;
+    let query = &workspace.provider.queries.fold;
 
     let mut query_cursor = workspace.cst.walk();
 
