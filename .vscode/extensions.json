@@ -1,0 +1,6 @@
+{
+	"recommendations": [
+		"jrieken.vscode-tree-sitter-query",
+		"connor4312.esbuild-problem-matchers"
+	]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "iec-61131",
+  "private": true,
+  "packageManager": "pnpm@8.14.0",
+  "scripts": {
+    "preinstall": "pnpm i --global node-gyp tree-sitter-cli typescript esbuild",
+    "watch:tsc": "cd packages/vscode-extension && pnpm run watch:tsc",
+    "watch:esbuild": "cd packages/vscode-extension && pnpm run watch"
+  },
+  "resolutions": {
+    "@types/node": "18.11.9"
+  },
+  "devDependencies": {
+    "@types/node": "18.11.9",
+    "typescript": "latest"
+  }
+}

@@ -1,0 +1,39 @@
+==================
+Simple type declaration
+==================
+
+TYPE
+    Color : INT := 24;
+END_TYPE
+
+---
+
+    (source_file
+      (EOL)
+      (data_type_decl
+        (EOL)
+        (type_decl
+          (simple_type_decl
+            (simple_type_name
+              (identifier))
+            (simple_spec_init
+              (simple_spec
+                (elem_type_name
+                  (numeric_type_name
+                    (int_type_name
+                      (sign_int_type_name)))))
+              (constant_expr
+                (expression
+                  (xor_expr
+                    (and_expr
+                      (compare_expr
+                        (equ_expr
+                          (add_expr
+                            (term
+                              (power_expr
+                                (unary_expr
+                                  (primary_expr
+                                    (enum_value
+                                      (identifier))))))))))))))))
+        (EOL))
+      (EOL))

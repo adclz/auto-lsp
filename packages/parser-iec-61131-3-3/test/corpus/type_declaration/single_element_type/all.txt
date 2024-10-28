@@ -1,0 +1,86 @@
+==================
+All types declaration
+==================
+
+TYPE
+    Current : INT( 0..45 );
+    Color : INT := 24;
+    ValveState : ( Open, Closed, Failed );
+END_TYPE
+
+---
+
+    (source_file
+      (EOL)
+      (data_type_decl
+        (EOL)
+        (type_decl
+          (subrange_type_decl
+            (subrange_type_name
+              (identifier))
+            (subrange_spec_init
+              (subrange_spec
+                (int_type_name
+                  (sign_int_type_name))
+                (subrange
+                  (constant_expr
+                    (expression
+                      (xor_expr
+                        (and_expr
+                          (compare_expr
+                            (equ_expr
+                              (add_expr
+                                (term
+                                  (power_expr
+                                    (unary_expr
+                                      (primary_expr
+                                        (constant
+                                          (bool_literal)))))))))))))
+                  (constant_expr
+                    (expression
+                      (xor_expr
+                        (and_expr
+                          (compare_expr
+                            (equ_expr
+                              (add_expr
+                                (term
+                                  (power_expr
+                                    (unary_expr
+                                      (primary_expr
+                                        (enum_value
+                                          (identifier))))))))))))))))))
+        (EOL)
+        (type_decl
+          (simple_type_decl
+            (simple_type_name
+              (identifier))
+            (simple_spec_init
+              (simple_spec
+                (elem_type_name
+                  (numeric_type_name
+                    (int_type_name
+                      (sign_int_type_name)))))
+              (constant_expr
+                (expression
+                  (xor_expr
+                    (and_expr
+                      (compare_expr
+                        (equ_expr
+                          (add_expr
+                            (term
+                              (power_expr
+                                (unary_expr
+                                  (primary_expr
+                                    (enum_value
+                                      (identifier))))))))))))))))
+        (EOL)
+        (type_decl
+          (enum_type_decl
+            (enum_type_name
+              (identifier))
+            (enum_spec_init
+              (identifier)
+              (identifier)
+              (identifier))))
+        (EOL))
+      (EOL))

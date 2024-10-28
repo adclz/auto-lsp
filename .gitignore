@@ -1,0 +1,9 @@
+.pnpm-store
+.idea
+v8-compile-cache-*
+pnpm-lock.yaml
+node_modules
+build
+out
+dist
+.vscode-test-web

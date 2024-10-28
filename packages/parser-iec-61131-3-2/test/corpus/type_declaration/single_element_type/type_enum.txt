@@ -1,0 +1,42 @@
+==================
+Enum declaration
+==================
+
+TYPE
+    PumpState : ( Stopped, Running, Invalid, Failed );
+    ValveState : ( Open, Closed, Failed );
+END_TYPE
+
+---
+  
+    (source_file
+      (library_element_declaration
+        (data_type_declaration
+          (type_declaration
+            (single_element_type_declaration
+              (enumerated_type_declaration
+                (enumerated_type_name
+                  (identifier))
+                (enumerated_spec_init
+                  (enumerated_specification
+                    (enumerated_value
+                      (identifier))
+                    (enumerated_value
+                      (identifier))
+                    (enumerated_value
+                      (identifier))
+                    (enumerated_value
+                      (identifier)))))))
+          (type_declaration
+            (single_element_type_declaration
+              (enumerated_type_declaration
+                (enumerated_type_name
+                  (identifier))
+                (enumerated_spec_init
+                  (enumerated_specification
+                    (enumerated_value
+                      (identifier))
+                    (enumerated_value
+                      (identifier))
+                    (enumerated_value
+                      (identifier))))))))))  

@@ -1,0 +1,13 @@
+{
+	"typescript.tsserver.experimental.enableProjectDiagnostics": true,
+	"editor.formatOnSave": true,
+	"[typescript]": {
+		"editor.defaultFormatter": "vscode.typescript-language-features"
+	},
+	"git.branchProtection": [
+		"main"
+	],
+	"rust-analyzer.linkedProjects": [
+		"packages/extension/server/Cargo.toml"
+	],
+}

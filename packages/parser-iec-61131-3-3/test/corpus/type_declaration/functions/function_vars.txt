@@ -1,0 +1,28 @@
+==================
+Function variables declaration
+==================
+
+FUNCTION AverageVal : REAL
+  VAR
+    Test : INT;
+  END_VAR
+
+  VAR_INPUT
+    Test: INT;
+  END_VAR
+
+  VAR_IN_OUT
+    Test: INT;
+  END_VAR
+
+  VAR_TEMP
+    Test: INT;
+  END_VAR
+
+  VAR_OUTPUT
+    Test: INT;
+  END_VAR
+
+END_FUNCTION 
+
+---

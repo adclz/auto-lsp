@@ -1,0 +1,9 @@
+pub mod document_link;
+pub mod document_symbols;
+pub mod documents;
+pub mod folding_ranges;
+pub mod hover_info;
+pub mod inlay_hint;
+pub mod selection_ranges;
+pub mod semantic_tokens;
+pub mod workspace_symbols;

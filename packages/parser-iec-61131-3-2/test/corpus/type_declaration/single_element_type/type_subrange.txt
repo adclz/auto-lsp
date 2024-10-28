@@ -1,0 +1,27 @@
+==================
+Subrange declaration
+==================
+
+TYPE
+    Current : INT( 0..45 );
+END_TYPE
+
+---
+
+    (source_file
+      (library_element_declaration
+        (data_type_declaration
+          (type_declaration
+            (single_element_type_declaration
+              (subrange_type_declaration
+                (subrange_type_name
+                  (identifier))
+                (subrange_spec_init
+                  (subrange_specification
+                    (integer_type_name
+                      (signed_integer_type_name))
+                    (subrange
+                      (signed_integer
+                        (integer))
+                      (signed_integer
+                        (integer)))))))))))

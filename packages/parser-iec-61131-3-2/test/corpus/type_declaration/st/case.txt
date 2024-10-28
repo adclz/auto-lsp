@@ -1,0 +1,175 @@
+==================
+ST: case
+==================
+
+FUNCTION_BLOCK AverageVal
+
+#ST
+
+CASE TW OF
+  1,5: DISPLAY := OVEN_TEMP;
+  2: DISPLAY := MOTOR_SPEED;
+  3: DISPLAY := GROSS - TARE;
+  ELSE DISPLAY := 50 ;
+  TW_ERROR := 10;
+END_CASE;
+
+END_FUNCTION_BLOCK 
+
+---
+
+    (source_file
+      (library_element_declaration
+        (function_block_declaration
+          (derived_function_block_name
+            (identifier))
+          (function_block_body
+            (statement_list
+              (statement
+                (selection_statement
+                  (case_statement
+                    (expression
+                      (xor_expression
+                        (and_expression
+                          (comparison
+                            (equ_expression
+                              (add_expression
+                                (term
+                                  (power_expression
+                                    (unary_expression
+                                      (primary_expression
+                                        (variable
+                                          (symbolic_variable
+                                            (variable_name
+                                              (identifier))))))))))))))
+                    (case_element
+                      (case_list
+                        (case_list_element
+                          (signed_integer
+                            (integer)))
+                        (case_list_element
+                          (signed_integer
+                            (integer))))
+                      (statement_list
+                        (statement
+                          (assignment_statement
+                            (variable
+                              (symbolic_variable
+                                (variable_name
+                                  (identifier))))
+                            (expression
+                              (xor_expression
+                                (and_expression
+                                  (comparison
+                                    (equ_expression
+                                      (add_expression
+                                        (term
+                                          (power_expression
+                                            (unary_expression
+                                              (primary_expression
+                                                (variable
+                                                  (symbolic_variable
+                                                    (variable_name
+                                                      (identifier))))))))))))))))))
+                    (case_element
+                      (case_list
+                        (case_list_element
+                          (signed_integer
+                            (integer))))
+                      (statement_list
+                        (statement
+                          (assignment_statement
+                            (variable
+                              (symbolic_variable
+                                (variable_name
+                                  (identifier))))
+                            (expression
+                              (xor_expression
+                                (and_expression
+                                  (comparison
+                                    (equ_expression
+                                      (add_expression
+                                        (term
+                                          (power_expression
+                                            (unary_expression
+                                              (primary_expression
+                                                (variable
+                                                  (symbolic_variable
+                                                    (variable_name
+                                                      (identifier))))))))))))))))))
+                    (case_element
+                      (case_list
+                        (case_list_element
+                          (signed_integer
+                            (integer))))
+                      (statement_list
+                        (statement
+                          (assignment_statement
+                            (variable
+                              (symbolic_variable
+                                (variable_name
+                                  (identifier))))
+                            (expression
+                              (xor_expression
+                                (and_expression
+                                  (comparison
+                                    (equ_expression
+                                      (add_expression
+                                        (term
+                                          (power_expression
+                                            (unary_expression
+                                              (primary_expression
+                                                (variable
+                                                  (symbolic_variable
+                                                    (variable_name
+                                                      (identifier))))))))
+                                        (add_operator)
+                                        (term
+                                          (power_expression
+                                            (unary_expression
+                                              (primary_expression
+                                                (variable
+                                                  (symbolic_variable
+                                                    (variable_name
+                                                      (identifier))))))))))))))))))
+                    (statement_list
+                      (statement
+                        (assignment_statement
+                          (variable
+                            (symbolic_variable
+                              (variable_name
+                                (identifier))))
+                          (expression
+                            (xor_expression
+                              (and_expression
+                                (comparison
+                                  (equ_expression
+                                    (add_expression
+                                      (term
+                                        (power_expression
+                                          (unary_expression
+                                            (primary_expression
+                                              (variable
+                                                (symbolic_variable
+                                                  (variable_name
+                                                    (identifier))))))))))))))))
+                      (statement
+                        (assignment_statement
+                          (variable
+                            (symbolic_variable
+                              (variable_name
+                                (identifier))))
+                          (expression
+                            (xor_expression
+                              (and_expression
+                                (comparison
+                                  (equ_expression
+                                    (add_expression
+                                      (term
+                                        (power_expression
+                                          (unary_expression
+                                            (primary_expression
+                                              (variable
+                                                (symbolic_variable
+                                                  (variable_name
+                                                    (identifier)))))))))))))))))))))))))

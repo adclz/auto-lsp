@@ -1,0 +1,11 @@
+[package]
+name = "auto-lsp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lsp-types = {workspace = true}
+tree-sitter = {workspace = true}
+lsp-textdocument = {workspace = true}
+downcast-rs = {workspace = true}
+streaming-iterator = {workspace = true}

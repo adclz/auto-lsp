@@ -1,0 +1,71 @@
+==================
+ST: if
+==================
+
+FUNCTION_BLOCK AverageVal
+
+#ST
+
+IF Test <> 25 THEN
+  Test := 30;
+END_IF;
+
+END_FUNCTION_BLOCK 
+
+---
+
+    (source_file
+      (library_element_declaration
+        (function_block_declaration
+          (derived_function_block_name
+            (identifier))
+          (function_block_body
+            (statement_list
+              (statement
+                (selection_statement
+                  (if_statement
+                    (expression
+                      (xor_expression
+                        (and_expression
+                          (comparison
+                            (equ_expression
+                              (add_expression
+                                (term
+                                  (power_expression
+                                    (unary_expression
+                                      (primary_expression
+                                        (variable
+                                          (symbolic_variable
+                                            (variable_name
+                                              (identifier))))))))))
+                            (equ_expression
+                              (add_expression
+                                (term
+                                  (power_expression
+                                    (unary_expression
+                                      (primary_expression
+                                        (variable
+                                          (symbolic_variable
+                                            (variable_name
+                                              (identifier))))))))))))))
+                    (statement_list
+                      (statement
+                        (assignment_statement
+                          (variable
+                            (symbolic_variable
+                              (variable_name
+                                (identifier))))
+                          (expression
+                            (xor_expression
+                              (and_expression
+                                (comparison
+                                  (equ_expression
+                                    (add_expression
+                                      (term
+                                        (power_expression
+                                          (unary_expression
+                                            (primary_expression
+                                              (variable
+                                                (symbolic_variable
+                                                  (variable_name
+                                                    (identifier)))))))))))))))))))))))))

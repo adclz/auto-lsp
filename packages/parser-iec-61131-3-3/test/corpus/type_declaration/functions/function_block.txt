@@ -1,0 +1,10 @@
+==================
+Function Block declaration
+==================
+
+FUNCTION_BLOCK AverageVal
+
+END_FUNCTION_BLOCK 
+
+---
+

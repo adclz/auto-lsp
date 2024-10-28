@@ -1,0 +1,35 @@
+==================
+Enum declaration
+==================
+
+TYPE
+    PumpState : ( Stopped, Running, Invalid, Failed );
+    ValveState : ( Open, Closed, Failed );
+END_TYPE
+
+---
+  
+    (source_file
+      (EOL)
+      (data_type_decl
+        (EOL)
+        (type_decl
+          (enum_type_decl
+            (enum_type_name
+              (identifier))
+            (enum_spec_init
+              (identifier)
+              (identifier)
+              (identifier)
+              (identifier))))
+        (EOL)
+        (type_decl
+          (enum_type_decl
+            (enum_type_name
+              (identifier))
+            (enum_spec_init
+              (identifier)
+              (identifier)
+              (identifier))))
+        (EOL))
+      (EOL))

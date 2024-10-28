@@ -1,0 +1,15 @@
+==================
+Function Block declaration
+==================
+
+FUNCTION_BLOCK AverageVal
+
+END_FUNCTION_BLOCK 
+
+---
+
+    (source_file
+      (library_element_declaration
+        (function_block_declaration
+          (derived_function_block_name
+            (identifier)))))

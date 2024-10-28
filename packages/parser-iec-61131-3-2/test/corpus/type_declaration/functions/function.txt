@@ -1,0 +1,18 @@
+==================
+Function declaration
+==================
+
+FUNCTION AverageVal : REAL
+
+END_FUNCTION 
+
+---
+
+    (source_file
+      (library_element_declaration
+        (function_declaration
+          (derived_function_name
+            (identifier))
+          (elementary_type_name
+            (numeric_type_name
+              (real_type_name))))))  

@@ -1,0 +1,98 @@
+==================
+Function variables declaration
+==================
+
+FUNCTION AverageVal : REAL
+    VAR
+      test : INT; 
+    END_VAR
+
+    VAR_INPUT RETAIN
+      test : INT;
+      fsdf: INT;
+    END_VAR
+
+    VAR_OUTPUT RETAIN
+      test : INT;
+    END_VAR
+
+    VAR_IN_OUT RETAIN
+      test : INT;
+    END_VAR
+
+END_FUNCTION 
+
+---
+
+    (source_file
+      (library_element_declaration
+        (function_declaration
+          (derived_function_name
+            (identifier))
+          (elementary_type_name
+            (numeric_type_name
+              (real_type_name)))
+          (function_var_decls
+            (var2_init_decl
+              (var1_init_decl
+                (var1_list
+                  (variable_name
+                    (identifier)))
+                (simple_spec_init
+                  (simple_specification
+                    (elementary_type_name
+                      (numeric_type_name
+                        (integer_type_name
+                          (signed_integer_type_name)))))))))
+         (io_var_declarations
+            (input_declarations
+              (input_declaration
+                (var_init_decl
+                  (var1_init_decl
+                    (var1_list
+                      (variable_name
+                        (identifier)))
+                    (simple_spec_init
+                      (simple_specification
+                        (elementary_type_name
+                          (numeric_type_name
+                            (integer_type_name
+                              (signed_integer_type_name)))))))))
+              (input_declaration
+                (var_init_decl
+                  (var1_init_decl
+                    (var1_list
+                      (variable_name
+                        (identifier)))
+                    (simple_spec_init
+                      (simple_specification
+                        (elementary_type_name
+                          (numeric_type_name
+                            (integer_type_name
+                              (signed_integer_type_name)))))))))))
+          (io_var_declarations
+            (output_declarations
+              (var_init_decl
+                (var1_init_decl
+                  (var1_list
+                    (variable_name
+                      (identifier)))
+                  (simple_spec_init
+                    (simple_specification
+                      (elementary_type_name
+                        (numeric_type_name
+                          (integer_type_name
+                            (signed_integer_type_name))))))))))
+          (io_var_declarations
+            (input_output_declarations
+              (var_declaration
+                (temp_var_decl
+                  (var1_declaration
+                    (var1_list
+                      (variable_name
+                        (identifier)))
+                    (simple_specification
+                      (elementary_type_name
+                        (numeric_type_name
+                          (integer_type_name
+                            (signed_integer_type_name)))))))))))))

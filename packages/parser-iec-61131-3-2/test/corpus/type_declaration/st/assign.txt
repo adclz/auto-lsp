@@ -1,0 +1,41 @@
+==================
+ST: assignment
+==================
+
+FUNCTION_BLOCK AverageVal
+
+#ST
+ 
+Test := 25;
+
+END_FUNCTION_BLOCK 
+
+---
+
+    (source_file
+      (library_element_declaration
+        (function_block_declaration
+          (derived_function_block_name
+            (identifier))
+          (function_block_body
+            (statement_list
+              (statement
+                (assignment_statement
+                  (variable
+                    (symbolic_variable
+                      (variable_name
+                        (identifier))))
+                  (expression
+                    (xor_expression
+                      (and_expression
+                        (comparison
+                          (equ_expression
+                            (add_expression
+                              (term
+                                (power_expression
+                                  (unary_expression
+                                    (primary_expression
+                                      (variable
+                                        (symbolic_variable
+                                          (variable_name
+                                            (identifier)))))))))))))))))))))

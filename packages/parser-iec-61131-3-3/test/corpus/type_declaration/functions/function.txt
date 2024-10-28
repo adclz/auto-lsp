@@ -1,0 +1,13 @@
+==================
+Function declaration
+==================
+
+FUNCTION AverageVal : REAL
+
+IF X <> 0 THEN
+  ;
+END_IF
+
+END_FUNCTION 
+
+---
