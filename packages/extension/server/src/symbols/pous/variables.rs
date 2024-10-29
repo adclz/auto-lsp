@@ -7,6 +7,7 @@ use std::{
 use auto_lsp_macros::{ast, ast_enum, ast_struct};
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::AstItemBuilder;
+use lsp_types::Diagnostic;
 
 use crate::symbols::common::name::*;
 use crate::symbols::types::types::*;
@@ -32,6 +33,7 @@ pub struct InputVariable {
     name: Name,
     of_type: Types
 }
+
 #[ast_struct(
     query_name = "variable.output",
     features(

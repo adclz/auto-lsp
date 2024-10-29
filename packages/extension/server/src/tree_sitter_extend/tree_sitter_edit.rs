@@ -63,9 +63,9 @@ pub fn edit_tree(event: &DidChangeTextDocumentParams, uri: &Url, session: &mut S
     );
 
     workspace.cst = new_tree;
-    workspace.ast = ast;
+    workspace.ast = ast.into_iter().filter_map(|f| f.ok()).collect();
 
-    event.content_changes.iter().for_each(|edit| {
+    /*event.content_changes.iter().for_each(|edit| {
         let edit_range = edit.range.unwrap();
 
         let range_offset = doc.offset_at(edit_range.start) as usize;
@@ -101,12 +101,12 @@ pub fn edit_tree(event: &DidChangeTextDocumentParams, uri: &Url, session: &mut S
             (new_end_byte - start_byte) as i32
         };
 
-        /*workspace
+        workspace
         .ast
         .iter_mut()
         .filter(|f| f.is_inside_offset(offset))
         .for_each(|ast| {
             ast.edit_range(shift);
-        });*/
-    });
+        });
+    });*/
 }

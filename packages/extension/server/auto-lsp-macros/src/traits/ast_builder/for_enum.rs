@@ -29,7 +29,7 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
-            fn add(&mut self, query: &tree_sitter::Query, node: Rc<RefCell<dyn AstItemBuilder>>) -> bool {
+            fn add(&mut self, query: &tree_sitter::Query, node: Rc<RefCell<dyn AstItemBuilder>>) -> Result<(), lsp_types::Diagnostic> {
                 self.unique_field.borrow_mut().add(query, node)
             }
 
@@ -63,7 +63,7 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
         }
 
         impl TryFrom<&#struct_name> for #name {
-            type Error = ();
+            type Error = lsp_types::Diagnostic;
 
             fn try_from(builder: &#struct_name) -> Result<Self, Self::Error> {
                 use std::sync::{Arc, RwLock};
@@ -77,7 +77,7 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
         }
 
         impl TryFrom<&#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
-            type Error = ();
+            type Error = lsp_types::Diagnostic;
 
             fn try_from(builder: &#struct_name) -> Result<Self, Self::Error> {
                 let item = #name::try_from(builder)?;

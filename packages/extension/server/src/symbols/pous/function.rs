@@ -3,6 +3,7 @@ use super::variables::*;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::AstItemBuilder;
 use auto_lsp_macros::{ast, ast_enum, ast_struct};
+use lsp_types::Diagnostic;
 use std::{
     fmt::Debug,
     sync::{Arc, RwLock},
@@ -27,6 +28,7 @@ use std::{
 )]
 pub struct Function {
     name: Name,
+    test: Option<Name>,
     inputs: Vec<InputVariable>,
     outputs: Vec<OutputVariable>,
 }

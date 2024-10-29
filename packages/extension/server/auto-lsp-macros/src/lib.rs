@@ -258,7 +258,7 @@ pub fn ast(_args: TokenStream, input: TokenStream) -> TokenStream {
                 None
             }
 
-            pub fn builder_binder(roots: Vec<std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>>) -> Vec<std::sync::Arc<std::sync::RwLock<dyn AstItem>>> {
+            pub fn builder_binder(roots: Vec<std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>>) -> Vec<Result<std::sync::Arc<std::sync::RwLock<dyn AstItem>>, lsp_types::Diagnostic>> {
                 roots
                 .into_iter()
                 .map(|builder| {
@@ -268,7 +268,7 @@ pub fn ast(_args: TokenStream, input: TokenStream) -> TokenStream {
                         if let Some(b) = builder.borrow().downcast_ref::<#variant_builder_names>() {
                             let item: #variant_types_names = b.clone().try_into().expect("Incomplete builder");
                             let item: Arc<RwLock<dyn AstItem>> = Arc::new(RwLock::new(item));
-                            item
+                            Ok(item)
                         }
                     )else *
                     else {

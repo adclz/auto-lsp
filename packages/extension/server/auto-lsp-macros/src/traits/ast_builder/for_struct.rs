@@ -37,33 +37,33 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
-            fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>) -> bool {
+            fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>) -> Result<(), lsp_types::Diagnostic> {
                 let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
                 #(
                     if let true = #field_types_names::QUERY_NAMES.contains(&query_name) {
                         match self.#field_names {
-                            Some(_) => return false,
+                            Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#struct_name)))),
                             None => self.#field_names = Some(node.clone())
                         }
-                        return true;
+                        return Ok(());
                     };
                 )*
                 #(
                     if let true = #field_option_types_names::QUERY_NAMES.contains(&query_name) {
                         if self.#field_option_names.is_some() {
-                            return false;
+                            return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#struct_name))));
                         }
                         self.#field_option_names = Some(node.clone());
-                        return true;
+                        return Ok(());
                     };
                 )*
                 #(
                     if let true = #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
                         self.#field_vec_names.push(node.clone());
-                        return true;
+                        return Ok(());
                     };
                 )*
-                false
+                Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#struct_name))))
             }
 
             fn get_range(&self) -> tree_sitter::Range {
@@ -92,29 +92,30 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
         }
 
         impl TryFrom<#struct_name> for #name {
-            type Error = ();
+            type Error = lsp_types::Diagnostic;
 
             fn try_from(builder: #struct_name) -> Result<Self, Self::Error> {
                 use std::sync::{Arc, RwLock};
+                let builder_range = builder.get_lsp_range();
 
                 #(let #field_names =
                     builder
                     .#field_names
-                    .expect("Field not found")
+                    .ok_or(auto_lsp::builder_error!(builder_range, format!("Missing field {:?} in {:?}", stringify!(#field_names), stringify!(#struct_name))))?
                     .borrow()
                     .downcast_ref::<#field_builder_names>()
-                    .expect(&format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names)))
+                    .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names))))?
                     .clone()
-                    .try_into().expect("Failed builder conversion");
+                    .try_into()?;
                 )*
                 #(let #field_option_names = match builder.#field_option_names {
                         Some(builder) => {
                             let item = builder
                                 .borrow()
                                 .downcast_ref::<#field_option_builder_names>()
-                                .unwrap()
+                                .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_option_builder_names))))?
                                 .clone()
-                                .try_into().expect("Failed builder conversion");
+                                .try_into()?;
                             Some(item)
                         },
                         None => None
@@ -127,12 +128,12 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                         let item = b
                             .borrow()
                             .downcast_ref::<#field_vec_builder_names>()
-                            .expect("Failed downcast conversion")
+                            .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_vec_builder_names))))?
                             .clone()
-                            .try_into().expect("Failed builder conversion");
-                        item
+                            .try_into()?;
+                        Ok(item)
                     })
-                    .collect();
+                    .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
                 )*
                 Ok(#name {
                     range: builder.range,
@@ -149,7 +150,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
         }
 
         impl TryFrom<#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
-            type Error = ();
+            type Error = lsp_types::Diagnostic;
 
             fn try_from(builder: #struct_name) -> Result<Self, Self::Error> {
                 let item = #name::try_from(builder)?;

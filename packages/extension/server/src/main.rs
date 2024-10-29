@@ -147,7 +147,11 @@ pub fn add_document(session: &mut Session, uri: &Url, language_id: &str, source_
         Symbol::builder_binder,
         cst.root_node(),
         source_code,
-    );
+    )
+    // TODO: Real error report
+    .into_iter()
+    .filter_map(|f| f.ok())
+    .collect();
     errors = capabilities::documents::diagnostics::analyze_document(&cst, source_code);
 
     session.workspaces.insert(
@@ -219,7 +223,10 @@ fn main_loop(
             Symbol::builder_binder,
             cst.root_node(),
             source_code,
-        );
+        ) // TODO: Real error report
+        .into_iter()
+        .filter_map(|f| f.ok())
+        .collect();
         errors = capabilities::documents::diagnostics::analyze_document(&cst, source_code);
 
         if errors.len() > 0 {
