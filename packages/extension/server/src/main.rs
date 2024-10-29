@@ -254,12 +254,19 @@ fn main_loop(
                 match cast_notification::<DidOpenTextDocument>(not.clone()) {
                     Ok(params) => {
                         eprintln!("Opening document {}", params.text_document.uri.as_str());
-                        add_document(
-                            &mut session.write().unwrap(),
-                            &params.text_document.uri,
-                            params.text_document.language_id.as_str(),
-                            &params.text_document.text,
-                        );
+                        if !session
+                            .read()
+                            .unwrap()
+                            .workspaces
+                            .contains_key(&params.text_document.uri)
+                        {
+                            add_document(
+                                &mut session.write().unwrap(),
+                                &params.text_document.uri,
+                                params.text_document.language_id.as_str(),
+                                &params.text_document.text,
+                            );
+                        }
                         continue;
                     }
                     Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
@@ -312,12 +319,52 @@ fn main_loop(
                                     let mut buffer = String::new();
                                     open_file.read_to_string(&mut buffer).unwrap();
                                     add_document(&mut session, uri, &language_id, &buffer);
+
+                                    let errors =
+                                        session.workspaces.get(uri).unwrap().errors.clone();
+                                    if errors.len() > 0 {
+                                        let params = PublishDiagnosticsParams {
+                                            uri: Url::from_file_path(uri.path()).unwrap(),
+                                            diagnostics: errors,
+                                            version: None,
+                                        };
+
+                                        send_notification::<PublishDiagnostics>(
+                                            &connection,
+                                            params,
+                                        )
+                                        .unwrap();
+                                    }
                                 }
                             }
                             FileChangeType::DELETED => {
                                 session.workspaces.remove(&file.uri);
                             }
-                            FileChangeType::CHANGED => (),
+                            FileChangeType::CHANGED => {
+                                let uri = &file.uri;
+
+                                let language_id =
+                                    file.uri.as_str().split(".").last().unwrap().to_string();
+                                eprintln!("file {:?}", file.uri.path());
+
+                                let mut open_file =
+                                    File::open(uri.to_file_path().unwrap()).unwrap();
+                                let mut buffer = String::new();
+                                open_file.read_to_string(&mut buffer).unwrap();
+                                add_document(&mut session, uri, &language_id, &buffer);
+
+                                let errors = session.workspaces.get(uri).unwrap().errors.clone();
+                                if errors.len() > 0 {
+                                    let params = PublishDiagnosticsParams {
+                                        uri: Url::from_file_path(uri.path()).unwrap(),
+                                        diagnostics: errors,
+                                        version: None,
+                                    };
+
+                                    send_notification::<PublishDiagnostics>(&connection, params)
+                                        .unwrap();
+                                }
+                            }
                             _ => (),
                         });
                         continue;
