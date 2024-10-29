@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::globals::{Session, Workspace};
 use lsp_server::{RequestId, Response};
 use lsp_types::{
-    request::DocumentLinkRequest, DocumentLink, DocumentLinkParams, Position, Range, Uri,
+    request::DocumentLinkRequest, DocumentLink, DocumentLinkParams, Position, Range, Url,
 };
 use regex::Regex;
 use streaming_iterator::StreamingIterator;
@@ -13,7 +13,7 @@ pub fn get_document_link(
     params: &DocumentLinkParams,
     session: &Session,
 ) -> Response {
-    let uri = params.text_document.uri.as_str();
+    let uri = &params.text_document.uri;
     let workspace = session.workspaces.get(uri).unwrap();
     let root_node = workspace.cst.root_node();
     let source = workspace.document.get_content(None);
@@ -44,7 +44,7 @@ pub fn get_document_link(
                         .document
                         .position_at((capture.node.start_byte() + link_end) as u32),
                 },
-                target: Some(Uri::from_str(&format!("workspace/{}#L{}", url[0], url[1])).unwrap()),
+                target: Some(Url::from_str(&format!("workspace/{}#L{}", url[0], url[1])).unwrap()),
                 tooltip: None,
                 data: None,
             });

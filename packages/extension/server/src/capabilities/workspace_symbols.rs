@@ -4,7 +4,7 @@ use crate::globals::{Session, Workspace};
 use auto_lsp::traits::ast_item::AstItem;
 use lsp_server::{RequestId, Response};
 use lsp_types::{
-    Location, OneOf, Uri, WorkspaceLocation, WorkspaceSymbol, WorkspaceSymbolParams,
+    Location, OneOf, Url, WorkspaceLocation, WorkspaceSymbol, WorkspaceSymbolParams,
     WorkspaceSymbolResponse,
 };
 
@@ -36,7 +36,7 @@ pub fn get_workspace_symbols(
                     tags: None,
                     container_name: None,
                     location: OneOf::Left(Location {
-                        uri: Uri::from_str(&uri).unwrap(),
+                        uri: uri.to_owned(),
                         range: p.range,
                     }),
                     data: None,

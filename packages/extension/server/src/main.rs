@@ -121,7 +121,7 @@ struct InitializationOptions {
     perFileParser: HashMap<String, String>,
 }
 
-pub fn add_document(session: &mut Session, uri: &str, language_id: &str, source_code: &str) {
+pub fn add_document(session: &mut Session, uri: &Url, language_id: &str, source_code: &str) {
     let document = FullTextDocument::new(language_id.to_owned(), 0, source_code.to_string());
     let extension = match session.extensions.get(language_id) {
         Some(extension) => extension,
@@ -224,7 +224,7 @@ fn main_loop(
 
         if errors.len() > 0 {
             let params = PublishDiagnosticsParams {
-                uri: Url::from_file_path(&uri).unwrap(),
+                uri: Url::from_file_path(uri.path()).unwrap(),
                 diagnostics: errors.clone(),
                 version: None,
             };
@@ -256,7 +256,7 @@ fn main_loop(
                         eprintln!("Opening document {}", params.text_document.uri.as_str());
                         add_document(
                             &mut session.write().unwrap(),
-                            params.text_document.uri.as_str(),
+                            &params.text_document.uri,
                             params.text_document.language_id.as_str(),
                             &params.text_document.text,
                         );
@@ -268,7 +268,7 @@ fn main_loop(
                 match cast_notification::<DidChangeTextDocument>(not.clone()) {
                     Ok(params) => {
                         let mut lock = session.write().unwrap();
-                        let uri = params.text_document.uri.as_str();
+                        let uri = &params.text_document.uri;
                         let workspace = lock.workspaces.get_mut(uri).unwrap();
 
                         workspace
@@ -299,21 +299,23 @@ fn main_loop(
 
                         params.changes.iter().for_each(|file| match file.typ {
                             FileChangeType::CREATED => {
-                                if session.workspaces.contains_key(file.uri.as_str()) {
+                                let uri = &file.uri;
+                                if session.workspaces.contains_key(uri) {
                                     return;
                                 } else {
-                                    let uri = file.uri.as_str();
                                     let language_id =
                                         file.uri.as_str().split(".").last().unwrap().to_string();
-                                    eprintln!("Opening document {}", file.uri.as_str());
-                                    let mut open_file = File::open(file.uri.as_str()).unwrap();
+                                    eprintln!("file {:?}", file.uri.path());
+
+                                    let mut open_file =
+                                        File::open(uri.to_file_path().unwrap()).unwrap();
                                     let mut buffer = String::new();
                                     open_file.read_to_string(&mut buffer).unwrap();
                                     add_document(&mut session, uri, &language_id, &buffer);
                                 }
                             }
                             FileChangeType::DELETED => {
-                                session.workspaces.remove(file.uri.as_str());
+                                session.workspaces.remove(&file.uri);
                             }
                             FileChangeType::CHANGED => (),
                             _ => (),
@@ -333,10 +335,7 @@ fn main_loop(
                         eprintln!("Diagnostic document {}", params.text_document.uri.as_str());
                         let mut lock = session.write().unwrap();
 
-                        let workspace = lock
-                            .workspaces
-                            .get_mut(params.text_document.uri.as_str())
-                            .unwrap();
+                        let workspace = lock.workspaces.get_mut(&params.text_document.uri).unwrap();
 
                         let diagnostics = workspace.errors.clone();
 
@@ -372,7 +371,7 @@ fn main_loop(
                                     .read()
                                     .unwrap()
                                     .workspaces
-                                    .get(params.text_document.uri.as_str())
+                                    .get(&params.text_document.uri)
                                     .unwrap(),
                             )))
                             .unwrap();
@@ -427,7 +426,7 @@ fn main_loop(
                     Ok((id, params)) => {
                         let session = session.read().unwrap();
                         let uri = &params.text_document_position_params.text_document.uri;
-                        let workspace = session.workspaces.get(uri.as_str()).unwrap();
+                        let workspace = session.workspaces.get(&uri).unwrap();
                         connection.sender.send(Message::Response(
                             capabilities::hover_info::get_hover_info(id, &params, workspace),
                         ))?;

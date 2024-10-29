@@ -8,7 +8,7 @@ pub fn get_selection_ranges(
     params: &SelectionRangeParams,
     session: &Session,
 ) -> Response {
-    let uri = params.text_document.uri.as_str();
+    let uri = &params.text_document.uri;
     let workspace = session.workspaces.get(uri).unwrap();
     let root_node = workspace.cst.root_node();
     let source = workspace.document.get_content(None);

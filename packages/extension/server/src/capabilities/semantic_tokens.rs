@@ -14,7 +14,7 @@ pub fn get_semantic_tokens_full(
     params: SemanticTokensParams,
     session: &Session,
 ) -> Response {
-    let uri = params.text_document.uri.as_str();
+    let uri = &params.text_document.uri;
     let workspace = session.workspaces.get(uri).unwrap();
 
     let mut builder = SemanticTokensBuilder::new(id.to_string());
@@ -39,7 +39,7 @@ pub fn get_semantic_tokens_range(
     params: SemanticTokensRangeParams,
     session: &Session,
 ) -> Response {
-    let uri = params.text_document.uri.as_str();
+    let uri = &params.text_document.uri;
     let workspace = session.workspaces.get(uri).unwrap();
 
     let mut builder = SemanticTokensBuilder::new(id.to_string());

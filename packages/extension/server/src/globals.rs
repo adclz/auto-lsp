@@ -47,7 +47,7 @@ pub struct Workspace<'a> {
 
 pub struct Session<'a> {
     pub extensions: HashMap<String, String>,
-    pub workspaces: HashMap<String, Workspace<'a>>,
+    pub workspaces: HashMap<Url, Workspace<'a>>,
 }
 
 impl<'a> Default for Session<'a> {

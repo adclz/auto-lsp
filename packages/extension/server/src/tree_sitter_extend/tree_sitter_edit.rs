@@ -3,7 +3,7 @@ use std::ops::Range;
 use auto_lsp::builders::ast_item::builder;
 use auto_lsp::traits::ast_item_builder::AstItemBuilder;
 use auto_lsp::{builders::ast_item::localized_builder, traits::ast_item::AstItem};
-use lsp_types::{DidChangeTextDocumentParams, Uri};
+use lsp_types::{DidChangeTextDocumentParams, Url};
 use tree_sitter::{InputEdit, Parser, Point, Tree};
 
 use crate::{
@@ -11,7 +11,7 @@ use crate::{
     symbols::symbols::Symbol,
 };
 
-pub fn edit_tree(event: &DidChangeTextDocumentParams, uri: &str, session: &mut Session) {
+pub fn edit_tree(event: &DidChangeTextDocumentParams, uri: &Url, session: &mut Session) {
     let workspace = session.workspaces.get_mut(uri).unwrap();
     let provider = workspace.provider;
     let doc = &workspace.document;

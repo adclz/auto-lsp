@@ -2,7 +2,7 @@ use std::io::Read;
 use std::{collections::HashMap, fs::File};
 
 use lsp_textdocument::FullTextDocument;
-use lsp_types::{CreateFilesParams, WorkspaceFolder};
+use lsp_types::{CreateFilesParams, Url, WorkspaceFolder};
 use walkdir::WalkDir;
 
 // URIs are broken in lsp_types 0.96.0
@@ -10,11 +10,11 @@ use walkdir::WalkDir;
 
 pub fn get_workspace_folders(
     workspace_folders: &Option<Vec<WorkspaceFolder>>,
-) -> HashMap<String, FullTextDocument> {
+) -> HashMap<Url, FullTextDocument> {
     let mut roots = HashMap::new();
     if let Some(folders) = workspace_folders {
         folders.into_iter().for_each(|folder| {
-            WalkDir::new(folder.uri.path().as_str())
+            WalkDir::new(folder.uri.path())
                 .into_iter()
                 .filter_map(Result::ok)
                 .filter(|entry| entry.file_type().is_file())
@@ -26,14 +26,7 @@ pub fn get_workspace_folders(
                     eprintln!("file {:?}", file.path());
 
                     roots.insert(
-                        format!(
-                            "file://{}",
-                            file.path()
-                                .to_str()
-                                .unwrap()
-                                .to_string()
-                                .replace(" ", "%20")
-                        ),
+                        Url::from_file_path(file.path()).unwrap(),
                         FullTextDocument::new(
                             file.path()
                                 .extension()
