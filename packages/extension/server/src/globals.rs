@@ -1,7 +1,7 @@
 use auto_lsp::traits::ast_item::AstItem;
 use lazy_static::lazy_static;
 use lsp_textdocument::FullTextDocument;
-use lsp_types::{Diagnostic, Uri};
+use lsp_types::{Diagnostic, Url};
 use phf::{phf_map, Map};
 use std::{
     collections::HashMap,

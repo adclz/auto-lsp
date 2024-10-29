@@ -46,6 +46,9 @@ export async function activate(context: ExtensionContext) {
 
 	const clientOptions: LanguageClientOptions = {
 		documentSelector: [{ language: 'st' }],
+		synchronize: {
+			fileEvents: workspace.createFileSystemWatcher('**/*.st')
+		},
 		outputChannel: channel,
 		uriConverters: createUriConverters(),
 		initializationOptions

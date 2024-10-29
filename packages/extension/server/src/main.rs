@@ -12,7 +12,8 @@ use capabilities::semantic_tokens::{SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
 use globals::{Session, PARSERS};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::notification::{
-    DidCreateFiles, DidDeleteFiles, DidOpenTextDocument, PublishDiagnostics,
+    DidChangeWorkspaceFolders, DidCreateFiles, DidDeleteFiles, DidOpenTextDocument,
+    PublishDiagnostics,
 };
 use lsp_types::request::{
     DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, HoverRequest,
@@ -20,8 +21,10 @@ use lsp_types::request::{
     WorkspaceSymbolRequest,
 };
 use lsp_types::{
-    DocumentLinkOptions, DocumentSymbol, SelectionRange, SelectionRangeProviderCapability,
-    SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    DocumentLinkOptions, DocumentSymbol, FileChangeType, FileOperationRegistrationOptions,
+    SelectionRange, SelectionRangeProviderCapability, SemanticTokensFullOptions,
+    SemanticTokensLegend, SemanticTokensOptions, WorkspaceFoldersServerCapabilities,
+    WorkspaceServerCapabilities,
 };
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
@@ -35,7 +38,7 @@ use lsp_types::{
     request::{DocumentDiagnosticRequest, GotoDefinition, Request},
     DiagnosticOptions, DiagnosticServerCapabilities, DocumentDiagnosticReport,
     FullDocumentDiagnosticReport, GotoDefinitionResponse, InitializeParams, Location, OneOf,
-    PublishDiagnosticsParams, RelatedFullDocumentDiagnosticReport, ServerCapabilities, Uri,
+    PublishDiagnosticsParams, RelatedFullDocumentDiagnosticReport, ServerCapabilities, Url,
 };
 use workspace::init::get_workspace_folders;
 
@@ -90,6 +93,13 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             work_done_progress_options: Default::default(),
         }),
         selection_range_provider: Some(SelectionRangeProviderCapability::Simple(true)),
+        workspace: Some(WorkspaceServerCapabilities {
+            workspace_folders: Some(WorkspaceFoldersServerCapabilities {
+                supported: Some(true),
+                change_notifications: Some(OneOf::Left(true)),
+            }),
+            ..Default::default()
+        }),
         definition_provider: Some(OneOf::Left(true)),
         ..Default::default()
     })
@@ -105,9 +115,51 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
+#[allow(non_snake_case, reason = "JSON")]
 #[derive(Debug, Deserialize)]
 struct InitializationOptions {
     perFileParser: HashMap<String, String>,
+}
+
+pub fn add_document(session: &mut Session, uri: &str, language_id: &str, source_code: &str) {
+    let document = FullTextDocument::new(language_id.to_owned(), 0, source_code.to_string());
+    let extension = match session.extensions.get(language_id) {
+        Some(extension) => extension,
+        None => {
+            eprintln!("No parser found for {}", language_id);
+            return;
+        }
+    };
+    let provider = PARSERS
+        .get(extension)
+        .expect(&format!("{} not found", extension));
+
+    let cst;
+    let ast;
+    let errors;
+
+    let source_code = source_code.as_bytes();
+
+    cst = provider.try_parse(&source_code, None).unwrap().clone();
+    ast = builder(
+        &provider.queries.outline,
+        Symbol::query_binder,
+        Symbol::builder_binder,
+        cst.root_node(),
+        source_code,
+    );
+    errors = capabilities::documents::diagnostics::analyze_document(&cst, source_code);
+
+    session.workspaces.insert(
+        uri.to_owned(),
+        globals::Workspace {
+            provider,
+            document,
+            errors,
+            cst,
+            ast,
+        },
+    );
 }
 
 fn main_loop(
@@ -172,7 +224,7 @@ fn main_loop(
 
         if errors.len() > 0 {
             let params = PublishDiagnosticsParams {
-                uri: Uri::from_str(&uri).unwrap(),
+                uri: Url::from_file_path(&uri).unwrap(),
                 diagnostics: errors.clone(),
                 version: None,
             };
@@ -202,57 +254,11 @@ fn main_loop(
                 match cast_notification::<DidOpenTextDocument>(not.clone()) {
                     Ok(params) => {
                         eprintln!("Opening document {}", params.text_document.uri.as_str());
-                        let mut lock = session.write().unwrap();
-
-                        let workspace = lock
-                            .workspaces
-                            .get(params.text_document.uri.as_str())
-                            .unwrap();
-
-                        let provider = workspace.provider;
-
-                        let uri = params.text_document.uri.as_str();
-                        let document = FullTextDocument::new(
-                            params.text_document.language_id,
-                            params.text_document.version,
-                            params.text_document.text,
-                        );
-                        let source_code = document.get_content(None).as_bytes();
-
-                        let cst;
-                        let ast;
-                        let errors;
-
-                        cst = provider
-                            .parser
-                            .write()
-                            .unwrap()
-                            .parse(document.get_content(None).as_bytes(), None)
-                            .unwrap()
-                            .clone();
-
-                        ast = builder(
-                            &provider.queries.outline,
-                            Symbol::query_binder,
-                            Symbol::builder_binder,
-                            cst.root_node(),
-                            document.get_content(None).as_bytes(),
-                        );
-
-                        errors = capabilities::documents::diagnostics::analyze_document(
-                            &cst,
-                            &source_code,
-                        );
-
-                        lock.workspaces.insert(
-                            uri.to_owned(),
-                            globals::Workspace {
-                                provider,
-                                document,
-                                errors,
-                                cst,
-                                ast,
-                            },
+                        add_document(
+                            &mut session.write().unwrap(),
+                            params.text_document.uri.as_str(),
+                            params.text_document.language_id.as_str(),
+                            &params.text_document.text,
                         );
                         continue;
                     }
@@ -287,59 +293,30 @@ fn main_loop(
                     Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
                     Err(ExtractError::MethodMismatch(req)) => req,
                 };
-                match cast_notification::<DidCreateFiles>(not.clone()) {
+                match cast_notification::<DidChangeWatchedFiles>(not.clone()) {
                     Ok(params) => {
-                        let mut lock = session.write().unwrap();
+                        let mut session = session.write().unwrap();
 
-                        let roots = workspace::init::add_files(&params);
-                        /*roots.into_iter().for_each(|(uri, document)| {
-                            let extension = document.language_id();
-
-                            let source_code = document.get_content(None).as_bytes();
-                            let cst;
-                            let ast;
-                            let errors;
-
-                            cst = parser
-                                .parser
-                                .parse(document.get_content(None).as_bytes(), None)
-                                .unwrap()
-                                .clone();
-
-                            ast = builder(
-                                &parser.queries.outline,
-                                Symbol::query_binder,
-                                Symbol::builder_binder,
-                                cst.root_node(),
-                                source_code,
-                            );
-
-                            errors = capabilities::documents::diagnostics::analyze_document(
-                                &cst,
-                                &source_code,
-                            );
-
-                            lock.workspaces.insert(
-                                uri.to_owned(),
-                                globals::Workspace {
-                                    parser_provider: extension.to_string(),
-                                    document,
-                                    errors,
-                                    cst,
-                                    ast,
-                                },
-                            );
-                        });*/
-                        continue;
-                    }
-                    Err(err @ ExtractError::JsonError { .. }) => panic!("{err:?}"),
-                    Err(ExtractError::MethodMismatch(req)) => req,
-                };
-                match cast_notification::<DidDeleteFiles>(not.clone()) {
-                    Ok(params) => {
-                        let mut lock = session.write().unwrap();
-                        params.files.iter().for_each(|file| {
-                            lock.workspaces.remove(file.uri.as_str());
+                        params.changes.iter().for_each(|file| match file.typ {
+                            FileChangeType::CREATED => {
+                                if session.workspaces.contains_key(file.uri.as_str()) {
+                                    return;
+                                } else {
+                                    let uri = file.uri.as_str();
+                                    let language_id =
+                                        file.uri.as_str().split(".").last().unwrap().to_string();
+                                    eprintln!("Opening document {}", file.uri.as_str());
+                                    let mut open_file = File::open(file.uri.as_str()).unwrap();
+                                    let mut buffer = String::new();
+                                    open_file.read_to_string(&mut buffer).unwrap();
+                                    add_document(&mut session, uri, &language_id, &buffer);
+                                }
+                            }
+                            FileChangeType::DELETED => {
+                                session.workspaces.remove(file.uri.as_str());
+                            }
+                            FileChangeType::CHANGED => (),
+                            _ => (),
                         });
                         continue;
                     }
