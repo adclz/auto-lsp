@@ -10,7 +10,6 @@ quote = "1.0"
 proc-macro2 = "1.0"
 paste = "1.0"
 auto-lsp = { path = "../auto-lsp" }
-thiserror = {workspace = true}
 constcat = {workspace = true}
 
 [lib]

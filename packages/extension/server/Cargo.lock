@@ -12,6 +12,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.91"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c042108f3ed77fd83760a5fd79b53be043192bb3b9dba91d8c574c0ada7850c8"
+
+[[package]]
 name = "auto-lsp"
 version = "0.1.0"
 dependencies = [
@@ -33,7 +39,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
- "thiserror",
 ]
 
 [[package]]
@@ -426,6 +431,7 @@ dependencies = [
 name = "server"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "auto-lsp",
  "auto-lsp-macros",
  "constcat",
@@ -440,7 +446,6 @@ dependencies = [
  "serde",
  "serde_json",
  "streaming-iterator",
- "thiserror",
  "tree-sitter",
  "tree-sitter-iec61131-3-2",
  "walkdir",
@@ -479,26 +484,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "thiserror"
-version = "1.0.65"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d11abd9594d9b38965ef50805c5e469ca9cc6f197f883f717e0269a3057b3d5"
-dependencies = [
- "thiserror-impl",
-]
-
-[[package]]
-name = "thiserror-impl"
-version = "1.0.65"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae71770322cbd277e69d762a16c444af02aa0575ac0d174f0b9562d3b37f8602"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
