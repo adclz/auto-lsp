@@ -1,5 +1,5 @@
 use lsp_types::{Diagnostic, Position, Range};
-use tree_sitter::{Node, TreeCursor};
+use tree_sitter::Node;
 
 pub fn get_tree_sitter_errors(node: &Node, utf8_str: &[u8]) -> Vec<Diagnostic> {
     let mut errors = Vec::new();

@@ -1,64 +1,47 @@
-use crate::globals::Session;
 use auto_lsp::builders::semantic_tokens::SemanticTokensBuilder;
 use auto_lsp::traits::ast_item::AstItem;
-use lsp_server::{RequestId, Response};
-use lsp_types::{
-    Position, Range, SemanticToken, SemanticTokenModifier, SemanticTokenType, SemanticTokens,
-    SemanticTokensLegend, SemanticTokensParams, SemanticTokensRangeParams,
-    SemanticTokensRangeResult, SemanticTokensResult,
-};
-use phf::{phf_ordered_map, OrderedMap};
 
-pub fn get_semantic_tokens_full(
-    id: RequestId,
-    params: SemanticTokensParams,
-    session: &Session,
-) -> Response {
-    let uri = &params.text_document.uri;
-    let workspace = session.workspaces.get(uri).unwrap();
+use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 
-    let mut builder = SemanticTokensBuilder::new(id.to_string());
+use crate::session::Session;
 
-    workspace
-        .ast
-        .iter()
-        .for_each(|p| p.build_semantic_tokens(&mut builder));
+impl<'a> Session<'a> {
+    pub fn get_semantic_tokens_full(
+        &mut self,
+        params: SemanticTokensParams,
+    ) -> anyhow::Result<SemanticTokensResult> {
+        let uri = &params.text_document.uri;
+        let workspace = self.workspaces.get(uri).unwrap();
 
-    let tokens = builder.build();
-    let result = Some(SemanticTokensResult::Tokens(tokens));
-    let result = serde_json::to_value(&result).unwrap();
-    Response {
-        id: id.clone(),
-        result: Some(result),
-        error: None,
+        let mut builder = SemanticTokensBuilder::new(0.to_string());
+
+        workspace
+            .ast
+            .iter()
+            .for_each(|p| p.build_semantic_tokens(&mut builder));
+
+        Ok(SemanticTokensResult::Tokens(builder.build()))
+    }
+
+    pub fn get_semantic_tokens_range(
+        &mut self,
+        params: SemanticTokensRangeParams,
+    ) -> anyhow::Result<SemanticTokensResult> {
+        let uri = &params.text_document.uri;
+        let workspace = self.workspaces.get(uri).unwrap();
+
+        let mut builder = SemanticTokensBuilder::new(0.to_string());
+
+        workspace
+            .ast
+            .iter()
+            .for_each(|p| p.build_semantic_tokens(&mut builder));
+
+        Ok(SemanticTokensResult::Tokens(builder.build()))
     }
 }
 
-pub fn get_semantic_tokens_range(
-    id: RequestId,
-    params: SemanticTokensRangeParams,
-    session: &Session,
-) -> Response {
-    let uri = &params.text_document.uri;
-    let workspace = session.workspaces.get(uri).unwrap();
-
-    let mut builder = SemanticTokensBuilder::new(id.to_string());
-
-    workspace
-        .ast
-        .iter()
-        .for_each(|p| p.build_semantic_tokens(&mut builder));
-
-    let tokens = builder.build();
-    let result = Some(SemanticTokensResult::Tokens(tokens));
-    let result = serde_json::to_value(&result).unwrap();
-    Response {
-        id: id.clone(),
-        result: Some(result),
-        error: None,
-    }
-}
-
+#[macro_export]
 macro_rules! define_semantic_token_types {
     (
         standard {
@@ -66,25 +49,19 @@ macro_rules! define_semantic_token_types {
         }
 
     ) => {
-        $(pub(crate) const $standard: SemanticTokenType = SemanticTokenType::$standard;)*
+        $(pub const $standard: lsp_types::SemanticTokenType = lsp_types::SemanticTokenType::$standard;)*
 
-        pub(crate) const SUPPORTED_TYPES: &[SemanticTokenType] = &[
-            $(SemanticTokenType::$standard,)*
+        pub const SUPPORTED_TYPES: &[lsp_types::SemanticTokenType] = &[
+            $(lsp_types::SemanticTokenType::$standard,)*
         ];
 
-        pub(crate) static TOKEN_TYPES: OrderedMap<&'static str, SemanticTokenType> = phf_ordered_map! {
-            $( $ts_name => SemanticTokenType::$standard,)*
+        pub static TOKEN_TYPES: phf::OrderedMap<&'static str, lsp_types::SemanticTokenType> = phf::phf_ordered_map! {
+            $( $ts_name => lsp_types::SemanticTokenType::$standard,)*
         };
     };
 }
 
-define_semantic_token_types![standard {
-    "function" => FUNCTION,
-    "variable" => VARIABLE,
-    "keyword" => KEYWORD,
-    "number" => NUMBER
-}];
-
+#[macro_export]
 macro_rules! define_semantic_token_modifiers {
     (
         standard {
@@ -93,22 +70,14 @@ macro_rules! define_semantic_token_modifiers {
 
     ) => {
 
-        $(pub(crate) const $standard: SemanticTokenModifier = SemanticTokenModifier::$standard;)*
+        $(pub const $standard: lsp_types::SemanticTokenModifier = lsp_types::SemanticTokenModifier::$standard;)*
 
-        pub(crate) const SUPPORTED_MODIFIERS: &[SemanticTokenModifier] = &[
-            $(SemanticTokenModifier::$standard,)*
+        pub const SUPPORTED_MODIFIERS: &[lsp_types::SemanticTokenModifier] = &[
+            $(lsp_types::SemanticTokenModifier::$standard,)*
         ];
 
-        pub(crate) static TOKEN_MODIFIERS: OrderedMap<&'static str, SemanticTokenModifier> = phf_ordered_map! {
-            $( $ts_name => SemanticTokenModifier::$standard,)*
+        pub static TOKEN_MODIFIERS: phf::OrderedMap<&'static str, lsp_types::SemanticTokenModifier> = phf::phf_ordered_map! {
+            $( $ts_name => lsp_types::SemanticTokenModifier::$standard,)*
         };
     };
 }
-
-define_semantic_token_modifiers![standard {
-    "declaration" => DECLARATION,
-    "static" => STATIC,
-    "readonly" => READONLY,
-    "deprecated" => DEPRECATED,
-    "defaultLibrary" => DEFAULT_LIBRARY
-}];

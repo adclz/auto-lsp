@@ -1,10 +1,8 @@
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::AstItemBuilder;
-use auto_lsp_macros::{ast, ast_enum, ast_struct};
+use auto_lsp_macros::ast_struct;
 use std::{
-    cell::RefCell,
     fmt::Debug,
-    rc::Rc,
     sync::{Arc, RwLock},
 };
 

@@ -5,7 +5,7 @@ use super::types::elementary_types::*;
 use crate::symbols::types::types::*;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::AstItemBuilder;
-use auto_lsp_macros::{ast, ast_enum, ast_struct};
+use auto_lsp_macros::ast;
 use elementary::*;
 use integers::*;
 use std::sync::{Arc, RwLock};

@@ -1,13 +1,10 @@
 use std::{
-    cell::RefCell,
     fmt::Debug,
-    rc::Rc,
     sync::{Arc, RwLock},
 };
-use auto_lsp_macros::{ast, ast_enum, ast_struct};
+use auto_lsp_macros::ast_struct;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::AstItemBuilder;
-use lsp_types::Diagnostic;
 
 use crate::symbols::common::name::*;
 use crate::symbols::types::types::*;
@@ -22,7 +19,7 @@ use crate::symbols::types::types::*;
             ),
         ),
         lsp_semantic_token(
-            token_types = crate::capabilities::semantic_tokens::TOKEN_TYPES,
+            token_types = crate::TOKEN_TYPES,
             token_type_index = "variable",
             range = self::name,
             modifiers_fn = io_variables_modifiers,        
@@ -44,7 +41,7 @@ pub struct InputVariable {
             ),
         ),
         lsp_semantic_token(
-            token_types = crate::capabilities::semantic_tokens::TOKEN_TYPES,
+            token_types = crate::TOKEN_TYPES,
             token_type_index = "variable",
             range = self::name,  
             modifiers_fn = io_variables_modifiers,      
@@ -57,7 +54,7 @@ pub struct OutputVariable {
 }
 
 fn io_variables_modifiers() -> Vec<u32> {
-    use crate::capabilities::semantic_tokens::TOKEN_MODIFIERS;
+    use crate::TOKEN_MODIFIERS;
     vec![
         TOKEN_MODIFIERS.get_index("readonly").unwrap() as u32
     ]

@@ -1,9 +1,12 @@
+pub mod diagnostics;
 pub mod document_link;
 pub mod document_symbols;
-pub mod documents;
+pub mod edit_text_document;
 pub mod folding_ranges;
 pub mod hover_info;
 pub mod inlay_hint;
+pub mod open_text_document;
 pub mod selection_ranges;
 pub mod semantic_tokens;
+pub mod watched_files;
 pub mod workspace_symbols;

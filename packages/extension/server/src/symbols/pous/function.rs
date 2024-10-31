@@ -2,8 +2,7 @@ use super::super::common::name::*;
 use super::variables::*;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::AstItemBuilder;
-use auto_lsp_macros::{ast, ast_enum, ast_struct};
-use lsp_types::Diagnostic;
+use auto_lsp_macros::ast_struct;
 use std::{
     fmt::Debug,
     sync::{Arc, RwLock},
@@ -20,7 +19,7 @@ use std::{
             ),
         ),
         lsp_semantic_token(
-            token_types = crate::capabilities::semantic_tokens::TOKEN_TYPES,
+            token_types = crate::TOKEN_TYPES,
             token_type_index = "function",
             range = self::name
         ),

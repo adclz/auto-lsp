@@ -1,55 +1,40 @@
-use std::str::FromStr;
-
-use crate::globals::{Session, Workspace};
 use auto_lsp::traits::ast_item::AstItem;
-use lsp_server::{RequestId, Response};
-use lsp_types::{
-    Location, OneOf, Url, WorkspaceLocation, WorkspaceSymbol, WorkspaceSymbolParams,
-    WorkspaceSymbolResponse,
-};
+use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
-pub fn get_workspace_symbols(
-    id: RequestId,
-    params: &WorkspaceSymbolParams,
-    session: &Session,
-) -> Response {
-    let query = &params.query;
-    if params.query.is_empty() {
-        return Response {
-            id,
-            result: Some(serde_json::to_value::<Option<WorkspaceSymbolResponse>>(None).unwrap()),
-            error: None,
-        };
-    }
+use crate::session::Session;
 
-    let mut symbols = vec![];
+impl<'a> Session<'a> {
+    pub fn get_workspace_symbols(
+        &mut self,
+        params: WorkspaceSymbolParams,
+    ) -> anyhow::Result<Option<WorkspaceSymbolResponse>> {
+        if params.query.is_empty() {
+            return Ok(None);
+        }
 
-    session.workspaces.iter().for_each(|(uri, v)| {
-        let ast = &v.ast;
+        let mut symbols = vec![];
 
-        symbols.extend(
-            ast.iter()
-                .filter_map(|p| p.get_document_symbols(&v.document))
-                .map(|p| WorkspaceSymbol {
-                    name: p.name,
-                    kind: p.kind,
-                    tags: None,
-                    container_name: None,
-                    location: OneOf::Left(Location {
-                        uri: uri.to_owned(),
-                        range: p.range,
-                    }),
-                    data: None,
-                })
-                .collect::<Vec<_>>(),
-        );
-    });
+        self.workspaces.iter().for_each(|(uri, v)| {
+            let ast = &v.ast;
 
-    let result = Some(WorkspaceSymbolResponse::Nested(symbols));
-    let result = serde_json::to_value(&result).unwrap();
-    Response {
-        id,
-        result: Some(result),
-        error: None,
+            symbols.extend(
+                ast.iter()
+                    .filter_map(|p| p.get_document_symbols(&v.document))
+                    .map(|p| WorkspaceSymbol {
+                        name: p.name,
+                        kind: p.kind,
+                        tags: None,
+                        container_name: None,
+                        location: OneOf::Left(Location {
+                            uri: uri.to_owned(),
+                            range: p.range,
+                        }),
+                        data: None,
+                    })
+                    .collect::<Vec<_>>(),
+            );
+        });
+
+        Ok(Some(WorkspaceSymbolResponse::Nested(symbols)))
     }
 }

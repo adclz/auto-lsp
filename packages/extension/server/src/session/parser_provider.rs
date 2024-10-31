@@ -1,22 +1,5 @@
-use auto_lsp::traits::ast_item::AstItem;
-use lazy_static::lazy_static;
-use lsp_textdocument::FullTextDocument;
-use lsp_types::{Diagnostic, Url};
-use phf::{phf_map, Map};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use std::sync::RwLock;
 use tree_sitter::{Language, Parser, Query, Tree};
-
-lazy_static! {
-    pub static ref PARSERS: HashMap<String, ParserProvider> = {
-        HashMap::from([(
-            "iec-61131-2".into(),
-            crate::create_parser!(tree_sitter_iec61131_3_2),
-        )])
-    };
-}
 
 pub struct Queries {
     pub comments: Query,
@@ -37,28 +20,6 @@ impl ParserProvider {
     }
 }
 
-pub struct Workspace<'a> {
-    pub provider: &'a ParserProvider,
-    pub document: FullTextDocument,
-    pub errors: Vec<Diagnostic>,
-    pub cst: Tree,
-    pub ast: Vec<Arc<RwLock<dyn AstItem>>>,
-}
-
-pub struct Session<'a> {
-    pub extensions: HashMap<String, String>,
-    pub workspaces: HashMap<Url, Workspace<'a>>,
-}
-
-impl<'a> Default for Session<'a> {
-    fn default() -> Self {
-        Self {
-            extensions: HashMap::new(),
-            workspaces: HashMap::new(),
-        }
-    }
-}
-
 #[macro_export]
 macro_rules! create_parser {
     ($parser: ident) => {{
@@ -69,10 +30,10 @@ macro_rules! create_parser {
             .set_language(&LANGUAGE.into())
             .expect(&format!("Error loading {} parser", stringify!($parser)));
         let lang = parser.language().unwrap();
-        crate::globals::ParserProvider {
+        crate::session::parser_provider::ParserProvider {
             parser: RwLock::new(parser),
             language: lang.clone(),
-            queries: crate::globals::Queries {
+            queries: crate::session::parser_provider::Queries {
                 comments: tree_sitter::Query::new(&lang, COMMENTS_QUERY).unwrap(),
                 fold: tree_sitter::Query::new(&lang, FOLD_QUERY).unwrap(),
                 highlights: tree_sitter::Query::new(&lang, HIGHLIGHTS_QUERY).unwrap(),
