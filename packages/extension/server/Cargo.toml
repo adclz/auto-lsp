@@ -24,6 +24,7 @@ constcat = "0.5.1"
 streaming-iterator = "0.1.9"
 regex = "1.11.1"
 anyhow = "1.0.91"
+crossbeam-channel = "0.5.13"
 
 [workspace]
 members = [
