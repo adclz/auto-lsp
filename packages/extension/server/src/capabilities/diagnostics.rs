@@ -1,4 +1,7 @@
-use lsp_types::{Diagnostic, DocumentDiagnosticParams};
+use lsp_types::{
+    DocumentDiagnosticParams, DocumentDiagnosticReport, DocumentDiagnosticReportResult,
+    FullDocumentDiagnosticReport, RelatedFullDocumentDiagnosticReport,
+};
 
 use crate::session::Session;
 
@@ -6,13 +9,21 @@ impl<'a> Session<'a> {
     pub fn get_diagnostics(
         &mut self,
         params: DocumentDiagnosticParams,
-    ) -> anyhow::Result<Vec<Diagnostic>> {
+    ) -> anyhow::Result<DocumentDiagnosticReportResult> {
         let uri = params.text_document.uri;
         let workspace = self
             .workspaces
             .get_mut(&uri)
             .ok_or(anyhow::format_err!("Workspace not found"))?;
 
-        Ok(workspace.errors.clone())
+        Ok(DocumentDiagnosticReportResult::Report(
+            DocumentDiagnosticReport::Full(RelatedFullDocumentDiagnosticReport {
+                related_documents: None,
+                full_document_diagnostic_report: FullDocumentDiagnosticReport {
+                    result_id: None,
+                    items: workspace.errors.clone(),
+                },
+            }),
+        ))
     }
 }
