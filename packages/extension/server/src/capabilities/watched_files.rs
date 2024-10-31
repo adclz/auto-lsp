@@ -35,11 +35,6 @@ impl<'a> Session<'a> {
                 // Note: this is a naive implementation
                 // Since the the client can't send the actual changes, we have to recreate the whole workspace the file
                 let uri = &file.uri;
-                if self.workspaces.contains_key(&uri) {
-                    // The file is already in the workspace
-                    // We can ignore this change
-                    return Ok(());
-                };
                 // TODO: define a helper fn to extract extension from uri
                 let language_id = file.uri.as_str().split(".").last().unwrap().to_string();
 
