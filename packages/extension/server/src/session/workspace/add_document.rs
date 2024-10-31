@@ -1,6 +1,6 @@
 use auto_lsp::builders::ast_item::builder;
 use lsp_textdocument::FullTextDocument;
-use lsp_types::Url;
+use lsp_types::{notification::PublishDiagnostics, PublishDiagnosticsParams, Url};
 
 use super::{tree_sitter_extend::tree_sitter_lexer::get_tree_sitter_errors, Workspace};
 use crate::{session::Session, symbols::symbols::Symbol, AVAILABLE_PARSERS};
@@ -53,6 +53,16 @@ impl<'a> Session<'a> {
             }
         })
         .collect();
+
+        if errors.len() > 0 {
+            let params = PublishDiagnosticsParams {
+                uri: uri.clone(),
+                diagnostics: errors.clone(),
+                version: None,
+            };
+
+            self.send_notification::<PublishDiagnostics>(params)?;
+        };
 
         self.workspaces.insert(
             uri.to_owned(),
