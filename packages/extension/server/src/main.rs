@@ -18,6 +18,7 @@ use session::dispatchers::{NotificationDispatcher, RequestDispatcher};
 use session::parser_provider::ParserProvider;
 use session::Session;
 
+use crossbeam_channel::select;
 use lazy_static::lazy_static;
 use lsp_server::{Connection, Message};
 use lsp_types::{
@@ -130,14 +131,14 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     let initialization_params = connection.initialize(server_capabilities)?;
 
-    let mut session = Session::new();
+    let mut session = Session::new(connection);
 
     // Initialize the session with the client's initialization options.
     // This will also add all documents, parse and send diagnostics.
     session.init(initialization_params)?;
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
-    session.main_loop(&connection)?;
+    session.main_loop()?;
 
     io_threads.join()?;
 
@@ -147,33 +148,36 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 }
 
 impl<'a> Session<'a> {
-    pub fn main_loop(&mut self, con: &'a Connection) -> anyhow::Result<()> {
-        for msg in &con.receiver {
-            match msg {
-                Message::Request(req) => {
-                    if con.handle_shutdown(&req)? {
-                        return Ok(());
-                    };
-                    RequestDispatcher::new(self, con, req)
-                        .on::<DocumentDiagnosticRequest, _>(Self::get_diagnostics)?
-                        .on::<DocumentLinkRequest, _>(Self::get_document_link)?
-                        .on::<DocumentSymbolRequest, _>(Self::get_document_symbols)?
-                        .on::<FoldingRangeRequest, _>(Self::get_folding_ranges)?
-                        .on::<HoverRequest, _>(Self::get_hover_info)?
-                        .on::<SemanticTokensFullRequest, _>(Self::get_semantic_tokens_full)?
-                        .on::<SemanticTokensRangeRequest, _>(Self::get_semantic_tokens_range)?
-                        .on::<SelectionRangeRequest, _>(Self::get_selection_ranges)?
-                        .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?;
+    pub fn main_loop(&mut self) -> anyhow::Result<()> {
+        loop {
+            select! {
+                recv(self.connection.receiver) -> msg => {
+                    match msg? {
+                        Message::Request(req) => {
+                            if self.connection.handle_shutdown(&req)? {
+                                return Ok(());
+                            };
+                            RequestDispatcher::new(self, req)
+                                .on::<DocumentDiagnosticRequest, _>(Self::get_diagnostics)?
+                                .on::<DocumentLinkRequest, _>(Self::get_document_link)?
+                                .on::<DocumentSymbolRequest, _>(Self::get_document_symbols)?
+                                .on::<FoldingRangeRequest, _>(Self::get_folding_ranges)?
+                                .on::<HoverRequest, _>(Self::get_hover_info)?
+                                .on::<SemanticTokensFullRequest, _>(Self::get_semantic_tokens_full)?
+                                .on::<SemanticTokensRangeRequest, _>(Self::get_semantic_tokens_range)?
+                                .on::<SelectionRangeRequest, _>(Self::get_selection_ranges)?
+                                .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?;
+                        }
+                        Message::Notification(not) => {
+                            NotificationDispatcher::new(self, not)
+                                .on::<DidOpenTextDocument>(Self::open_text_document)?
+                                .on::<DidChangeTextDocument>(Self::edit_text_document)?
+                                .on::<DidChangeWatchedFiles>(Self::changed_watched_files)?;
+                        }
+                        Message::Response(_) => {}
+                    }
                 }
-                Message::Notification(not) => {
-                    NotificationDispatcher::new(self, not)
-                        .on::<DidOpenTextDocument>(Self::open_text_document)?
-                        .on::<DidChangeTextDocument>(Self::edit_text_document)?
-                        .on::<DidChangeWatchedFiles>(Self::changed_watched_files)?;
-                }
-                Message::Response(_) => {}
             }
         }
-        Ok(())
     }
 }

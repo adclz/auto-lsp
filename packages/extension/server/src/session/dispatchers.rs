@@ -6,15 +6,13 @@ use super::Session;
  * Code taken from https://github.com/oxlip-lang/oal/blob/b6741ff99f7c9338551e2067c0de7acd492fad00/oal-client/src/lsp/dispatcher.rs
  */
 pub struct RequestDispatcher<'a, 'b> {
-    con: &'a Connection,
     session: &'a mut Session<'b>,
     req: Option<Request>,
 }
 
 impl<'a, 'b> RequestDispatcher<'a, 'b> {
-    pub fn new(session: &'a mut Session<'b>, con: &'a Connection, req: Request) -> Self {
+    pub fn new(session: &'a mut Session<'b>, req: Request) -> Self {
         RequestDispatcher {
-            con,
             session,
             req: Some(req),
         }
@@ -41,7 +39,10 @@ impl<'a, 'b> RequestDispatcher<'a, 'b> {
                     result: Some(serde_json::to_value(hook(self.session, params)?).unwrap()),
                     error: None,
                 };
-                self.con.sender.send(Message::Response(resp))?;
+                self.session
+                    .connection
+                    .sender
+                    .send(Message::Response(resp))?;
                 Ok(self)
             }
             Err(err @ ExtractError::JsonError { .. }) => Err(anyhow::Error::from(err)),
