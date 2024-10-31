@@ -7,6 +7,7 @@ use workspace::Workspace;
 pub mod dispatchers;
 pub mod init;
 pub mod parser_provider;
+pub mod senders;
 pub mod workspace;
 
 pub struct Session<'a> {
