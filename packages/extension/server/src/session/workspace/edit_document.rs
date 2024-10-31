@@ -14,7 +14,17 @@ impl<'a> Session<'a> {
             .get_mut(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let extension = workspace.document.language_id();
+        let language_id = workspace.document.language_id();
+        let extension = match self.extensions.get(language_id) {
+            Some(extension) => extension,
+            None => {
+                return Err(anyhow::format_err!(
+                    "Extension {} is not registered",
+                    language_id
+                ))
+            }
+        };
+
         let provider = AVAILABLE_PARSERS
             .get(extension)
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
