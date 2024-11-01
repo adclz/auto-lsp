@@ -15,7 +15,7 @@ use syn::{Error, Expr, Field, Fields, FieldsNamed, Lit, LitStr, Path};
 use traits::ast_item::for_enum::generate_enum_ast_item;
 use utilities::{
     extract_fields::match_enum_fields,
-    filter::{get_raw_type_name, is_option, is_vec},
+    filter::{get_raw_type_name, is_hashmap, is_option, is_vec},
 };
 
 mod features;
@@ -88,41 +88,48 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
 
     // Fields cannot be generated from the quote! macro, so we need to manually add them
     match &mut input.data {
-        syn::Data::Struct(ref mut struct_data) => match &mut struct_data.fields {
-            syn::Fields::Named(fields) => {
-                // Transform each field's type to Arc<RwLock<OriginalType>>
-                for field in fields.named.iter_mut() {
-                    let raw_type_name = format_ident!("{}", get_raw_type_name(&field.ty));
-                    let name = field.ident.clone();
+        syn::Data::Struct(ref mut struct_data) => {
+            match &mut struct_data.fields {
+                syn::Fields::Named(fields) => {
+                    // Transform each field's type to Arc<RwLock<OriginalType>>
+                    for field in fields.named.iter_mut() {
+                        let raw_type_name = format_ident!("{}", get_raw_type_name(&field.ty));
+                        let name = field.ident.clone();
 
-                    *field = if let true = is_vec(&field.ty) {
-                        syn::Field::parse_named
-                            .parse2(quote! { #name: Vec<Arc<RwLock<#raw_type_name>>> })
+                        *field =
+                            if let true = is_vec(&field.ty) {
+                                syn::Field::parse_named
+                                    .parse2(quote! { #name: Vec<Arc<RwLock<#raw_type_name>>> })
+                                    .unwrap()
+                            } else if let true = is_option(&field.ty) {
+                                syn::Field::parse_named
+                                    .parse2(quote! { #name: Option<Arc<RwLock<#raw_type_name>>> })
+                                    .unwrap()
+                            } else if let true = is_hashmap(&field.ty) {
+                                syn::Field::parse_named
+                            .parse2(quote! { #name: HashMap<String, Arc<RwLock<#raw_type_name>>> })
                             .unwrap()
-                    } else if let true = is_option(&field.ty) {
-                        syn::Field::parse_named
-                            .parse2(quote! { #name: Option<Arc<RwLock<#raw_type_name>>> })
-                            .unwrap()
-                    } else {
-                        syn::Field::parse_named
-                            .parse2(quote! { #name: Arc<RwLock<#raw_type_name>> })
-                            .unwrap()
-                    };
-                }
+                            } else {
+                                syn::Field::parse_named
+                                    .parse2(quote! { #name: Arc<RwLock<#raw_type_name>> })
+                                    .unwrap()
+                            };
+                    }
 
-                for field in code_gen_fields {
-                    fields
-                        .named
-                        .push(syn::Field::parse_named.parse2(field).unwrap());
+                    for field in code_gen_fields {
+                        fields
+                            .named
+                            .push(syn::Field::parse_named.parse2(field).unwrap());
+                    }
+                    fields.named.push(
+                        syn::Field::parse_named
+                            .parse2(quote! { parent: Option<Arc<RwLock<dyn AstItem>>> })
+                            .unwrap(),
+                    );
                 }
-                fields.named.push(
-                    syn::Field::parse_named
-                        .parse2(quote! { parent: Option<Arc<RwLock<dyn AstItem>>> })
-                        .unwrap(),
-                );
+                _ => (),
             }
-            _ => (),
-        },
+        }
         _ => panic!("This proc macro only works with struct"),
     };
 

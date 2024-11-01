@@ -7,21 +7,10 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
     let name = format_ident!("{}", name);
 
     let variant_names = &input.variant_names;
-    let variant_vec_names = &input.variant_vec_names;
-    let variant_option_names = &input.variant_option_names;
 
     let variant_types_names = &input.variant_types_names;
-    let variant_vec_types_names = &input.variant_vec_types_names;
-    let variant_option_types_names = &input.variant_option_types_names;
 
     let variant_builder_names = &input.variant_builder_names;
-    let variant_vec_builder_names = &input.variant_vec_builder_names;
-    let variant_option_builder_names = &input.variant_option_builder_names;
-
-    let commas = &input.commas;
-    let option_commas = &input.option_commas;
-
-    let len = input.len as usize;
 
     quote! {
         pub struct #struct_name {
@@ -29,8 +18,8 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
-            fn add(&mut self, query: &tree_sitter::Query, node: Rc<RefCell<dyn AstItemBuilder>>) -> Result<(), lsp_types::Diagnostic> {
-                self.unique_field.borrow_mut().add(query, node)
+            fn add(&mut self, query: &tree_sitter::Query, node: Rc<RefCell<dyn AstItemBuilder>>, source_code: &[u8]) -> Result<(), lsp_types::Diagnostic> {
+                self.unique_field.borrow_mut().add(query, node, source_code)
             }
 
             fn get_range(&self) -> tree_sitter::Range {

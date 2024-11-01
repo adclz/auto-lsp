@@ -76,7 +76,9 @@ pub fn localized_builder(
                 Some(parent) => {
                     if intersecting_ranges(&parent.borrow().get_range(), &node.borrow().get_range())
                     {
-                        if let Err(err) = parent.borrow_mut().add(&query, node.clone()) {
+                        if let Err(err) =
+                            parent.borrow_mut().add(&query, node.clone(), &source_code)
+                        {
                             errors.push(err);
                         };
                         stack.push(parent.clone());
@@ -146,7 +148,9 @@ pub fn builder(
                             query.capture_names()[parent.borrow().get_query_index()]
                         );
 
-                        if let Err(err) = parent.borrow_mut().add(&query, node.clone()) {
+                        if let Err(err) =
+                            parent.borrow_mut().add(&query, node.clone(), &source_code)
+                        {
                             errors.push(err);
                         };
                         stack.push(parent.clone());

@@ -10,17 +10,21 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
     let field_names = &input.field_names;
     let field_vec_names = &input.field_vec_names;
     let field_option_names = &input.field_option_names;
+    let field_hashmap_names = &input.field_hashmap_names;
 
     let field_types_names = &input.field_types_names;
     let field_vec_types_names = &input.field_vec_types_names;
     let field_option_types_names = &input.field_option_types_names;
+    let field_hashmap_types_names = &input.field_hashmap_types_names;
 
     let field_builder_names = &input.field_builder_names;
     let field_vec_builder_names = &input.field_vec_builder_names;
     let field_option_builder_names = &input.field_option_builder_names;
+    let field_hashmap_builder_names = &input.field_hashmap_builder_names;
 
-    let commas = &input.commas;
-    let option_commas = &input.option_commas;
+    let commas = &input.first_commas;
+    let option_commas = &input.after_option_commas;
+    let vec_commas = &input.after_vec_commas;
 
     quote! {
         #[derive(Clone, Debug)]
@@ -34,13 +38,15 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
             #(#field_option_names: Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>>),*
             #(#option_commas)*
             #(#field_vec_names: Vec<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> ),*
+            #(#vec_commas)*
+            #(#field_hashmap_names: HashMap<String, std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> ),*
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
-            fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>) -> Result<(), lsp_types::Diagnostic> {
+            fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, source_code: &[u8]) -> Result<(), lsp_types::Diagnostic> {
                 let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
                 #(
-                    if let true = #field_types_names::QUERY_NAMES.contains(&query_name) {
+                    if #field_types_names::QUERY_NAMES.contains(&query_name) {
                         match self.#field_names {
                             Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#struct_name)))),
                             None => self.#field_names = Some(node.clone())
@@ -49,7 +55,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                     };
                 )*
                 #(
-                    if let true = #field_option_types_names::QUERY_NAMES.contains(&query_name) {
+                    if #field_option_types_names::QUERY_NAMES.contains(&query_name) {
                         if self.#field_option_names.is_some() {
                             return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#struct_name))));
                         }
@@ -58,8 +64,18 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                     };
                 )*
                 #(
-                    if let true = #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
+                    if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
                         self.#field_vec_names.push(node.clone());
+                        return Ok(());
+                    };
+                )*
+                #(
+                    if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
+                        let key = node.borrow().get_text(source_code).to_string();
+                        if self.#field_hashmap_names.contains_key(&key) {
+                            return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", query_name, stringify!(#struct_name))));
+                        }
+                        self.#field_hashmap_names.insert(key, node.clone());
                         return Ok(());
                     };
                 )*
@@ -87,6 +103,8 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                     #(#field_option_names: None),*
                     #(#option_commas)*
                     #(#field_vec_names: vec!()),*
+                    #(#vec_commas)*
+                    #(#field_hashmap_names: HashMap::new()),*
                 }
             }
         }
@@ -135,6 +153,21 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                     })
                     .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
                 )*
+                #(
+                    let #field_hashmap_names = builder
+                        .#field_hashmap_names
+                        .into_iter()
+                        .map(|(key, b)| {
+                            let item = b
+                                .borrow()
+                                .downcast_ref::<#field_hashmap_builder_names>()
+                                .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_hashmap_builder_names))))?
+                                .clone()
+                                .try_into()?;
+                            Ok((key, item))
+                        })
+                        .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
+                )*
                 Ok(#name {
                     range: builder.range,
                     start_position: builder.start_position,
@@ -145,6 +178,8 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                     #(#field_option_names),*
                     #(#option_commas)*
                     #(#field_vec_names),*
+                    #(#vec_commas)*
+                    #(#field_hashmap_names),*
                 })
             }
         }

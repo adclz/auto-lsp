@@ -11,6 +11,7 @@ pub fn generate_struct_ast_item(query_name: &str, input: &StructFields) -> Featu
     let field_names = &input.field_names;
     let field_vec_names = &input.field_vec_names;
     let field_option_names = &input.field_option_names;
+    let field_hashmap_names = &input.field_hashmap_names;
 
     let field_types_names = &input.field_types_names;
     let field_vec_types_names = &input.field_vec_types_names;
@@ -20,8 +21,8 @@ pub fn generate_struct_ast_item(query_name: &str, input: &StructFields) -> Featu
     let field_vec_builder_names = &input.field_vec_builder_names;
     let field_option_builder_names = &input.field_option_builder_names;
 
-    let commas = &input.commas;
-    let option_commas = &input.option_commas;
+    let commas = &input.first_commas;
+    let option_commas = &input.after_option_commas;
 
     FeaturesCodeGen {
         fields: Some(vec![
@@ -60,6 +61,11 @@ pub fn generate_struct_ast_item(query_name: &str, input: &StructFields) -> Featu
                             field.write().unwrap().set_parent(parent.clone());
                         };
                     )*
+                    #(
+                        for field in self.#field_hashmap_names.values_mut() {
+                            field.write().unwrap().set_parent(parent.clone());
+                        };
+                    )*
                 }
 
                 fn find_at_offset(&self, offset: &usize) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>> {
@@ -94,6 +100,16 @@ pub fn generate_struct_ast_item(query_name: &str, input: &StructFields) -> Featu
                             match item.read().unwrap().find_at_offset(offset) {
                                 Some(a) => return Some(a),
                                 None => return Some(item.clone())
+                            }
+                        }
+                    )*
+                    #(
+                        for field in self.#field_hashmap_names.values() {
+                            if let true = field.read().unwrap().is_inside_offset(offset) {
+                                match field.read().unwrap().find_at_offset(offset) {
+                                    Some(a) => return Some(a),
+                                    None => return Some(field.clone())
+                                }
                             }
                         }
                     )*

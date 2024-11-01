@@ -10,6 +10,7 @@ pub trait AstItemBuilder: Downcast {
         &mut self,
         query: &Query,
         node: Rc<RefCell<dyn AstItemBuilder>>,
+        source_code: &[u8],
     ) -> Result<(), Diagnostic>;
 
     fn get_range(&self) -> tree_sitter::Range;
@@ -39,11 +40,16 @@ pub trait AstItemBuilder: Downcast {
             },
         }
     }
+
+    fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
+        let range = self.get_range();
+        std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
+    }
 }
 
 impl std::fmt::Debug for dyn AstItemBuilder {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "AstItemBuilder")
+        write!(f, "{:?}", self.get_range())
     }
 }
 
