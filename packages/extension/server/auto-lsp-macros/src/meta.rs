@@ -1,4 +1,7 @@
-use crate::{DocumentSymbolFeature, HoverFeature, SemanticTokenFeature, UniquenessFeature};
+use crate::{
+    features::borrowable::BorrowableFeature, DocumentSymbolFeature, HoverFeature,
+    SemanticTokenFeature,
+};
 use darling::FromMeta;
 use syn::Path;
 
@@ -10,7 +13,7 @@ pub struct SymbolArgs {
 
 #[derive(Debug, FromMeta)]
 pub struct Features {
-    pub uniqueness: Option<UniquenessFeature>,
+    pub borrowable: Option<BorrowableFeature>,
     // LSP
     pub lsp_document_symbols: Option<DocumentSymbolFeature>,
     pub lsp_hover: Option<HoverFeature>,

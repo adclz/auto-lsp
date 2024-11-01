@@ -22,21 +22,16 @@ mod features;
 mod meta;
 mod traits;
 mod utilities;
+use crate::features::borrowable::*;
 use crate::features::lsp_document_symbol::*;
 use crate::features::lsp_hover_info::*;
 use crate::features::lsp_semantic_token::*;
-use crate::features::uniqueness::*;
 use crate::meta::*;
 use crate::traits::ast_builder::{
     for_enum::generate_enum_builder_item, for_struct::generate_struct_builder_item,
 };
 use crate::traits::ast_item::for_struct::generate_struct_ast_item;
 use crate::utilities::extract_fields::match_fields;
-
-#[derive(Debug, FromMeta)]
-struct CompletionsFeature {
-    kind: Path,
-}
 
 struct FeaturesCodeGen {
     fields: Option<Vec<proc_macro2::TokenStream>>, // Fields
@@ -88,6 +83,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &mut code_gen_impl_ast_item,
             &fields_sort,
         );
+        generate_borrowable_feature(&features, &mut code_gen_impl, &mut code_gen_impl_ast_item);
     }
 
     // Fields cannot be generated from the quote! macro, so we need to manually add them

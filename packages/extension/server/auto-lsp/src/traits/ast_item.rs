@@ -3,7 +3,7 @@ use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::DocumentSymbol;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Weak};
 
 use super::ast_item_builder::AstItemBuilder;
 
@@ -51,6 +51,14 @@ pub trait AstItem: Downcast {
     }
 
     // Memory
+
+    fn borrow(&self) -> Weak<RwLock<dyn AstItem>> {
+        todo!()
+    }
+
+    fn is_borrowable(&self, _other: &dyn AstItem) -> bool {
+        false
+    }
 
     fn swap_at_offset(&mut self, offset: &usize, item: &Rc<RefCell<dyn AstItemBuilder>>);
 
