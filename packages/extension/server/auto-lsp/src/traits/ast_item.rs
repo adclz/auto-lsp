@@ -28,6 +28,13 @@ pub trait AstItem: Downcast {
     fn get_parent(&self) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>>;
     fn set_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>);
     fn inject_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>);
+    fn get_highest_parent(&self) -> std::sync::Arc<std::sync::RwLock<dyn AstItem>> {
+        let mut parent = self.get_parent();
+        while let Some(p) = parent {
+            parent = p.read().unwrap().get_parent();
+        }
+        parent.unwrap()
+    }
 
     fn find_at_offset(
         &self,
@@ -51,10 +58,6 @@ pub trait AstItem: Downcast {
     }
 
     // Memory
-
-    fn borrow(&self) -> Weak<RwLock<dyn AstItem>> {
-        todo!()
-    }
 
     fn is_borrowable(&self, _other: &dyn AstItem) -> bool {
         false
@@ -90,6 +93,10 @@ pub trait AstItem: Downcast {
     }
 
     fn build_semantic_tokens(&self, _builder: &mut SemanticTokensBuilder) {}
+
+    fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>) {}
+
+    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {}
 }
 
 impl_downcast!(AstItem);

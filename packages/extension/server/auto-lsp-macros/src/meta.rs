@@ -1,5 +1,8 @@
 use crate::{
-    features::{borrowable::BorrowableFeature, lsp_inlay_hint::InlayHintFeature},
+    features::{
+        borrowable::BorrowableFeature, lsp_code_lens::CodeLensFeature,
+        lsp_inlay_hint::InlayHintFeature,
+    },
     DocumentSymbolFeature, HoverFeature, SemanticTokenFeature,
 };
 use darling::FromMeta;
@@ -19,4 +22,5 @@ pub struct Features {
     pub lsp_hover: Option<HoverFeature>,
     pub lsp_semantic_token: Option<SemanticTokenFeature>,
     pub lsp_inlay_hint: Option<InlayHintFeature>,
+    pub lsp_code_lens: Option<CodeLensFeature>,
 }

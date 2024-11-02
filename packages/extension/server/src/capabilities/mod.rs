@@ -1,3 +1,4 @@
+pub mod code_lens;
 pub mod diagnostics;
 pub mod document_link;
 pub mod document_symbols;

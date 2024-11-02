@@ -5,12 +5,12 @@ use std::fs;
 
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
-    DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, HoverRequest,
+    CodeLensRequest, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, HoverRequest,
     InlayHintRequest, SelectionRangeRequest, SemanticTokensFullRequest, SemanticTokensRangeRequest,
     WorkspaceSymbolRequest,
 };
 use lsp_types::{
-    DocumentLinkOptions, InlayHintOptions, SelectionRangeProviderCapability,
+    CodeLensOptions, DocumentLinkOptions, InlayHintOptions, SelectionRangeProviderCapability,
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
 };
@@ -125,6 +125,9 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             ..Default::default()
         }),
         inlay_hint_provider: Some(OneOf::Left(true)),
+        code_lens_provider: Some(CodeLensOptions {
+            resolve_provider: Some(false),
+        }),
         definition_provider: Some(OneOf::Left(true)),
         ..Default::default()
     })
@@ -168,7 +171,8 @@ impl<'a> Session<'a> {
                                 .on::<SemanticTokensRangeRequest, _>(Self::get_semantic_tokens_range)?
                                 .on::<SelectionRangeRequest, _>(Self::get_selection_ranges)?
                                 .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?
-                                .on::<InlayHintRequest, _>(Self::get_inlay_hint)?;
+                                .on::<InlayHintRequest, _>(Self::get_inlay_hint)?
+                                .on::<CodeLensRequest, _>(Self::get_code_lens)?;
                         }
                         Message::Notification(not) => {
                             NotificationDispatcher::new(self, not)
