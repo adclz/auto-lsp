@@ -16,7 +16,7 @@ impl<'a> Session<'a> {
         let root_node = workspace.cst.root_node();
         let source = workspace.document.get_content(None);
         let query = &workspace.provider.queries.comments;
-        let re = Regex::new(r"\s+source:\/\/(\w+.\w+):(\d+)/g").unwrap();
+        let re = Regex::new(r"\s+source:(\w+\.\w+):(\d+)").unwrap();
 
         let mut query_cursor = tree_sitter::QueryCursor::new();
         let mut captures = query_cursor.captures(query, root_node, source.as_bytes());
@@ -43,7 +43,8 @@ impl<'a> Session<'a> {
                             .position_at((capture.node.start_byte() + link_end) as u32),
                     },
                     target: Some(
-                        Url::from_str(&format!("workspace/{}#L{}", url[0], url[1])).unwrap(),
+                        Url::from_str(&format!("file:///workspace/{}#L{}", url[1], url[2]))
+                            .unwrap(),
                     ),
                     tooltip: None,
                     data: None,
