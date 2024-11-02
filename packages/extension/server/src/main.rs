@@ -6,13 +6,13 @@ use std::fs;
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, HoverRequest,
-    SelectionRangeRequest, SemanticTokensFullRequest, SemanticTokensRangeRequest,
+    InlayHintRequest, SelectionRangeRequest, SemanticTokensFullRequest, SemanticTokensRangeRequest,
     WorkspaceSymbolRequest,
 };
 use lsp_types::{
-    DocumentLinkOptions, SelectionRangeProviderCapability, SemanticTokensFullOptions,
-    SemanticTokensLegend, SemanticTokensOptions, WorkspaceFoldersServerCapabilities,
-    WorkspaceServerCapabilities,
+    DocumentLinkOptions, InlayHintOptions, SelectionRangeProviderCapability,
+    SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
 };
 use session::dispatchers::{NotificationDispatcher, RequestDispatcher};
 use session::parser_provider::ParserProvider;
@@ -124,6 +124,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             }),
             ..Default::default()
         }),
+        inlay_hint_provider: Some(OneOf::Left(true)),
         definition_provider: Some(OneOf::Left(true)),
         ..Default::default()
     })
@@ -166,7 +167,8 @@ impl<'a> Session<'a> {
                                 .on::<SemanticTokensFullRequest, _>(Self::get_semantic_tokens_full)?
                                 .on::<SemanticTokensRangeRequest, _>(Self::get_semantic_tokens_range)?
                                 .on::<SelectionRangeRequest, _>(Self::get_selection_ranges)?
-                                .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?;
+                                .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?
+                                .on::<InlayHintRequest, _>(Self::get_inlay_hint)?;
                         }
                         Message::Notification(not) => {
                             NotificationDispatcher::new(self, not)

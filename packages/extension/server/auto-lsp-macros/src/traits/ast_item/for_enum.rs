@@ -109,6 +109,14 @@ pub fn generate_enum_ast_item(input: &EnumFields) -> FeaturesCodeGen {
                         }
                     }
 
+                    fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>) {
+                        match self {
+                            #(
+                                Self::#variant_names(variant) => variant.build_inlay_hint(acc),
+                            )*
+                        }
+                    }
+
                     fn swap_at_offset(&mut self, offset: &usize, item: &std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>) {
                         match self {
                             #(

@@ -6,6 +6,7 @@ use darling::{
     ast::{Data, NestedMeta},
     FromAttributes, FromDeriveInput, FromField, FromMeta,
 };
+use features::lsp_inlay_hint::generate_inlay_hint_feature;
 use proc_macro::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{meta::ParseNestedMeta, parse::Parser, ItemEnum, Macro, Type, TypeMacro, TypePath};
@@ -78,6 +79,12 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         );
         generate_hover_info_feature(&features, &mut code_gen_impl, &mut code_gen_impl_ast_item);
         generate_semantic_token_feature(
+            &features,
+            &mut code_gen_impl,
+            &mut code_gen_impl_ast_item,
+            &fields_sort,
+        );
+        generate_inlay_hint_feature(
             &features,
             &mut code_gen_impl,
             &mut code_gen_impl_ast_item,
