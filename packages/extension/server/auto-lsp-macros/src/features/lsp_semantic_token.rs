@@ -39,6 +39,7 @@ fn codegen(features: &SemanticTokenFeature, input: &StructFields) -> FeaturesCod
     let field_names = &input.field_names;
     let field_vec_names = &input.field_vec_names;
     let field_option_names = &input.field_option_names;
+    let field_hashmap_names = &input.field_hashmap_names;
 
     let modifiers = match &features.modifiers_fn {
         None => quote! { 0 },
@@ -83,6 +84,11 @@ fn codegen(features: &SemanticTokenFeature, input: &StructFields) -> FeaturesCod
                 )*
                 #(
                     for field in self.#field_vec_names.iter() {
+                        field.read().unwrap().build_semantic_tokens(builder);
+                    };
+                )*
+                #(
+                    for field in self.#field_hashmap_names.values() {
                         field.read().unwrap().build_semantic_tokens(builder);
                     };
                 )*

@@ -127,7 +127,11 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
             .push(syn::token::Comma::default());
     }
 
-    if ret_fields.field_vec_names.len() > 0 && ret_fields.field_hashmap_names.len() > 0 {
+    if ret_fields.field_hashmap_names.len() > 0
+        && (ret_fields.field_names.len() > 0
+            || ret_fields.field_vec_names.len() > 0
+            || ret_fields.field_option_names.len() > 0)
+    {
         ret_fields
             .after_vec_commas
             .push(syn::token::Comma::default());
