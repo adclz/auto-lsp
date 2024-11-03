@@ -8,13 +8,13 @@ pub struct Queries {
     pub outline: Query,
 }
 
-pub struct ParserProvider {
+pub struct CstParser {
     pub parser: RwLock<Parser>,
     pub language: Language,
     pub queries: Queries,
 }
 
-impl ParserProvider {
+impl CstParser {
     pub fn try_parse(&self, text: &[u8], old_tree: Option<&Tree>) -> Option<Tree> {
         self.parser.write().unwrap().parse(text, old_tree)
     }
@@ -30,10 +30,10 @@ macro_rules! create_parser {
             .set_language(&LANGUAGE.into())
             .expect(&format!("Error loading {} parser", stringify!($parser)));
         let lang = parser.language().unwrap();
-        crate::session::parser_provider::ParserProvider {
+        crate::session::cst_parser::CstParser {
             parser: RwLock::new(parser),
             language: lang.clone(),
-            queries: crate::session::parser_provider::Queries {
+            queries: crate::session::cst_parser::Queries {
                 comments: tree_sitter::Query::new(&lang, COMMENTS_QUERY).unwrap(),
                 fold: tree_sitter::Query::new(&lang, FOLD_QUERY).unwrap(),
                 highlights: tree_sitter::Query::new(&lang, HIGHLIGHTS_QUERY).unwrap(),

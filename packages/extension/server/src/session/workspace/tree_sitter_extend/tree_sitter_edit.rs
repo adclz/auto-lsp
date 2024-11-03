@@ -6,7 +6,7 @@ pub fn edit_tree(
     workspace: &mut Workspace,
     event: &DidChangeTextDocumentParams,
 ) -> anyhow::Result<Tree> {
-    let provider = workspace.provider;
+    let provider = workspace.cst_parser;
     let doc = &workspace.document;
     let tree = &mut workspace.cst;
 

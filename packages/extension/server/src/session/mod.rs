@@ -4,9 +4,9 @@ use lsp_server::Connection;
 use lsp_types::Url;
 use workspace::Workspace;
 
+pub mod cst_parser;
 pub mod dispatchers;
 pub mod init;
-pub mod parser_provider;
 pub mod senders;
 pub mod workspace;
 

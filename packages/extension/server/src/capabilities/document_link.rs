@@ -15,7 +15,7 @@ impl<'a> Session<'a> {
         let workspace = self.workspaces.get(uri).unwrap();
         let root_node = workspace.cst.root_node();
         let source = workspace.document.get_content(None);
-        let query = &workspace.provider.queries.comments;
+        let query = &workspace.cst_parser.queries.comments;
         let re = Regex::new(r"\s+source:(\w+\.\w+):(\d+)").unwrap();
 
         let mut query_cursor = tree_sitter::QueryCursor::new();

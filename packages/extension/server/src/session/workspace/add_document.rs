@@ -3,7 +3,7 @@ use lsp_textdocument::FullTextDocument;
 use lsp_types::{notification::PublishDiagnostics, PublishDiagnosticsParams, Url};
 
 use super::{tree_sitter_extend::tree_sitter_lexer::get_tree_sitter_errors, Workspace};
-use crate::{session::Session, symbols::symbols::Symbol, AVAILABLE_PARSERS};
+use crate::{session::Session, AST_BUILDERS, CST_PARSERS};
 
 impl<'a> Session<'a> {
     /// Add a new document to session workspaces
@@ -24,9 +24,14 @@ impl<'a> Session<'a> {
             }
         };
 
-        let provider = AVAILABLE_PARSERS
+        let cst_parser = CST_PARSERS
             .get(extension)
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
+
+        let ast_builder = AST_BUILDERS.get(extension).ok_or(anyhow::format_err!(
+            "No AST builder available for {}",
+            extension
+        ))?;
 
         let cst;
         let ast;
@@ -34,13 +39,12 @@ impl<'a> Session<'a> {
 
         let source_code = source_code.as_bytes();
 
-        cst = provider.try_parse(&source_code, None).unwrap().clone();
+        cst = cst_parser.try_parse(&source_code, None).unwrap().clone();
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
         ast = builder(
-            &provider.queries.outline,
-            Symbol::query_binder,
-            Symbol::builder_binder,
+            &cst_parser.queries.outline,
+            ast_builder,
             cst.root_node(),
             source_code,
         )
@@ -67,7 +71,8 @@ impl<'a> Session<'a> {
         self.workspaces.insert(
             uri.to_owned(),
             Workspace {
-                provider,
+                ast_builder,
+                cst_parser,
                 document,
                 errors,
                 cst,

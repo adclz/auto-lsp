@@ -1,8 +1,10 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
+use auto_lsp::traits::ast_builder::AstBuilder;
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     CodeLensRequest, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, HoverRequest,
@@ -14,8 +16,8 @@ use lsp_types::{
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
 };
+use session::cst_parser::CstParser;
 use session::dispatchers::{NotificationDispatcher, RequestDispatcher};
-use session::parser_provider::ParserProvider;
 use session::Session;
 
 use crossbeam_channel::select;
@@ -26,6 +28,7 @@ use lsp_types::{
     request::DocumentDiagnosticRequest,
     DiagnosticOptions, DiagnosticServerCapabilities, OneOf, ServerCapabilities,
 };
+use symbols::symbols::Symbol;
 
 mod capabilities;
 mod session;
@@ -33,18 +36,27 @@ mod symbols;
 
 //******** <Configuration> *********
 
-///// Parsers
+///// Parsers and Builders
 
-// AVAILABLE_PARSERS store all tree_sitter parsers in a HashMap.
+// CST_PARSERS store all tree_sitter parsers in a HashMap.
 // A Parser can be added using the create_parser! macro and the name of the corresponding crate.
 // The client is responsible for setting file extensions and which parser to use for each extension.
 lazy_static! {
-    pub static ref AVAILABLE_PARSERS: HashMap<String, ParserProvider> = {
+    pub static ref CST_PARSERS: HashMap<String, CstParser> = {
         HashMap::from([(
             "iec-61131-2".into(),
             crate::create_parser!(tree_sitter_iec61131_3_2),
         )])
     };
+}
+
+// AST_BUILDERS store all AST builders in a HashMap.
+// An AST builder can be added using the create_builder! macro and the name of the corresponding crate.
+// When the CST is built, the LSP will try to build the AST using the corresponding builder.
+// Since all symbols implement the AstItem trait, a node from a specific ast can hold a reference to another symbol located in a different ast.
+lazy_static! {
+    pub static ref AST_BUILDERS: HashMap<String, AstBuilder> =
+        HashMap::from([("iec-61131-2".into(), auto_lsp::create_builder!(Symbol))]);
 }
 
 ///// Semantics

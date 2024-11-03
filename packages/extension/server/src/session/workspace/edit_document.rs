@@ -4,7 +4,7 @@ use lsp_types::DidChangeTextDocumentParams;
 use super::tree_sitter_extend::{
     tree_sitter_edit::edit_tree, tree_sitter_lexer::get_tree_sitter_errors,
 };
-use crate::{session::Session, symbols::symbols::Symbol, AVAILABLE_PARSERS};
+use crate::{session::Session, symbols::symbols::Symbol, AST_BUILDERS, CST_PARSERS};
 
 impl<'a> Session<'a> {
     pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
@@ -25,9 +25,14 @@ impl<'a> Session<'a> {
             }
         };
 
-        let provider = AVAILABLE_PARSERS
+        let cst_parser = CST_PARSERS
             .get(extension)
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
+
+        let ast_builder = AST_BUILDERS.get(extension).ok_or(anyhow::format_err!(
+            "No AST builder available for {}",
+            extension
+        ))?;
 
         workspace
             .document
@@ -44,9 +49,8 @@ impl<'a> Session<'a> {
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
         ast = builder(
-            &provider.queries.outline,
-            Symbol::query_binder,
-            Symbol::builder_binder,
+            &cst_parser.queries.outline,
+            ast_builder,
             cst.root_node(),
             source_code,
         )

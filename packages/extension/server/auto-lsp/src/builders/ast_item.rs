@@ -1,3 +1,4 @@
+use crate::traits::ast_builder::AstBuilder;
 use crate::traits::ast_item::AstItem;
 use crate::traits::ast_item_builder::AstItemBuilder;
 use lsp_types::Diagnostic;
@@ -35,7 +36,7 @@ fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range)
 
 pub fn localized_builder(
     query: &tree_sitter::Query,
-    binder_fn: BinderFn,
+    ast_builder: &AstBuilder,
     root_node: tree_sitter::Node,
     source_code: &[u8],
     range: std::ops::Range<usize>,
@@ -53,7 +54,7 @@ pub fn localized_builder(
         let capture = m.captures[*capture_index];
         let capture_index = capture.index as usize;
 
-        let node = match binder_fn(&capture, &query) {
+        let node = match (ast_builder.query_to_builder)(&capture, &query) {
             Some(builder) => builder,
             None => {
                 panic!(
@@ -95,8 +96,7 @@ pub fn localized_builder(
 
 pub fn builder(
     query: &tree_sitter::Query,
-    query_binder_fn: BinderFn,
-    item_binder_fn: ItemBinderFn,
+    ast_builder: &AstBuilder,
     root_node: tree_sitter::Node,
     source_code: &[u8],
 ) -> Vec<Result<Arc<RwLock<dyn AstItem>>, Diagnostic>> {
@@ -117,7 +117,7 @@ pub fn builder(
             "Create builder for query: {:?}",
             query.capture_names()[capture_index],
         );
-        let node = match query_binder_fn(&capture, &query) {
+        let node = match (ast_builder.query_to_builder)(&capture, &query) {
             Some(builder) => builder,
             None => {
                 panic!(
@@ -163,7 +163,7 @@ pub fn builder(
         }
     }
 
-    let mut result = item_binder_fn(roots);
+    let mut result = (ast_builder.builder_to_item)(roots);
     result.extend(errors.into_iter().map(Err));
     result
 }

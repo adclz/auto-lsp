@@ -4,7 +4,7 @@ use lsp_types::{InitializeParams, Url, WorkspaceFolder};
 use serde::Deserialize;
 use walkdir::WalkDir;
 
-use crate::AVAILABLE_PARSERS;
+use crate::CST_PARSERS;
 
 use super::Session;
 
@@ -33,7 +33,7 @@ impl<'a> Session<'a> {
         // Check if extensions provided by clients are valid
 
         for (file_extension, parser) in &options.perFileParser {
-            if let false = AVAILABLE_PARSERS.contains_key(parser.as_str()) {
+            if let false = CST_PARSERS.contains_key(parser.as_str()) {
                 return Err(anyhow::format_err!(
                     "Error: Parser {} not found for file extension {}",
                     parser,
