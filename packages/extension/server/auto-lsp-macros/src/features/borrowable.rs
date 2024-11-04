@@ -35,7 +35,7 @@ fn codegen_borrowable_feature(feature: &BorrowableFeature) -> FeaturesCodeGen {
                 impl_ast_item: quote! {
                     fn is_borrowable(&self, other: &dyn AstItem) -> bool {
                         #(
-                            if other.downcast_ref::<#white_list>().is_some() {
+                            if other.is::<#white_list>() {
                                 return true;
                             };
                         )*
@@ -54,7 +54,7 @@ fn codegen_borrowable_feature(feature: &BorrowableFeature) -> FeaturesCodeGen {
                 impl_ast_item: quote! {
                     fn is_borrowable(&self, other: &dyn AstItem) -> bool {
                         #(
-                            if other.downcast_ref::<#black_list>().is_some() {
+                            if other.is::<#black_list>() {
                                 return false;
                             };
                         )*
