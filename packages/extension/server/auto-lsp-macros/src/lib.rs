@@ -2,20 +2,18 @@
 
 extern crate proc_macro;
 
-use darling::{
-    ast::{Data, NestedMeta},
-    FromAttributes, FromDeriveInput, FromField, FromMeta,
-};
+use darling::{ast::NestedMeta, FromMeta};
 use features::{
-    lsp_code_lens::generate_code_lens_feature,
+    borrowable::generate_borrowable_feature, lsp_code_lens::generate_code_lens_feature,
     lsp_completion_item::generate_completion_item_feature,
-    lsp_inlay_hint::generate_inlay_hint_feature,
+    lsp_document_symbol::generate_document_symbol_feature,
+    lsp_hover_info::generate_hover_info_feature, lsp_inlay_hint::generate_inlay_hint_feature,
+    lsp_semantic_token::generate_semantic_token_feature,
 };
-use proc_macro::{Ident, TokenStream};
+use proc_macro::TokenStream;
 use quote::{format_ident, quote};
-use syn::{meta::ParseNestedMeta, parse::Parser, ItemEnum, Macro, Type, TypeMacro, TypePath};
-use syn::{parse_macro_input, token::Group, DeriveInput};
-use syn::{Error, Expr, Field, Fields, FieldsNamed, Lit, LitStr, Path};
+use syn::parse::Parser;
+use syn::{parse_macro_input, DeriveInput};
 
 use traits::ast_item::for_enum::generate_enum_ast_item;
 use utilities::{
@@ -27,10 +25,7 @@ mod features;
 mod meta;
 mod traits;
 mod utilities;
-use crate::features::borrowable::*;
-use crate::features::lsp_document_symbol::*;
-use crate::features::lsp_hover_info::*;
-use crate::features::lsp_semantic_token::*;
+
 use crate::meta::*;
 use crate::traits::ast_builder::{
     for_enum::generate_enum_builder_item, for_struct::generate_struct_builder_item,
@@ -38,10 +33,11 @@ use crate::traits::ast_builder::{
 use crate::traits::ast_item::for_struct::generate_struct_ast_item;
 use crate::utilities::extract_fields::match_fields;
 
-struct FeaturesCodeGen {
-    fields: Option<Vec<proc_macro2::TokenStream>>, // Fields
-    impl_base: Option<proc_macro2::TokenStream>,   // Impl <>
-    impl_ast_item: Option<proc_macro2::TokenStream>, // Impl AstItem for <>
+#[derive(Default)]
+struct CodeGen {
+    fields: Vec<proc_macro2::TokenStream>,        // Fields
+    impl_base: Vec<proc_macro2::TokenStream>,     // Impl <>
+    impl_ast_item: Vec<proc_macro2::TokenStream>, // Impl AstItem for <>
 }
 
 #[proc_macro_attribute]
@@ -59,53 +55,24 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     let input_name = input.ident.clone();
 
-    let fields_sort = match_fields(&input.data);
+    let input_data = match_fields(&input.data);
 
-    let mut code_gen_fields: Vec<proc_macro2::TokenStream> = vec![];
-    let mut code_gen_impl: Vec<proc_macro2::TokenStream> = vec![];
-    let mut code_gen_impl_ast_item: Vec<proc_macro2::TokenStream> = vec![];
+    let mut code_gen = CodeGen::default();
 
     // Add AstItem trait implementation
-    let code_gen = generate_struct_ast_item(_args.query_name.as_str(), &fields_sort);
+    generate_struct_ast_item(_args.query_name.as_str(), &mut code_gen, &input_data);
 
     // Add builder item
-    let builder_item = generate_struct_builder_item(input_name.to_string().as_str(), &fields_sort);
-
-    code_gen_fields.append(&mut code_gen.fields.unwrap());
-    code_gen_impl.push(code_gen.impl_base.unwrap());
-    code_gen_impl_ast_item.push(code_gen.impl_ast_item.unwrap());
+    let builder_item = generate_struct_builder_item(input_name.to_string().as_str(), &input_data);
 
     if let Some(features) = _args.features {
-        generate_document_symbol_feature(
-            &features,
-            &mut code_gen_impl,
-            &mut code_gen_impl_ast_item,
-        );
-        generate_hover_info_feature(&features, &mut code_gen_impl, &mut code_gen_impl_ast_item);
-        generate_semantic_token_feature(
-            &features,
-            &mut code_gen_impl,
-            &mut code_gen_impl_ast_item,
-            &fields_sort,
-        );
-        generate_inlay_hint_feature(
-            &features,
-            &mut code_gen_impl,
-            &mut code_gen_impl_ast_item,
-            &fields_sort,
-        );
-        generate_code_lens_feature(
-            &features,
-            &mut code_gen_impl,
-            &mut code_gen_impl_ast_item,
-            &fields_sort,
-        );
-        generate_completion_item_feature(
-            &features,
-            &mut code_gen_impl,
-            &mut code_gen_impl_ast_item,
-        );
-        generate_borrowable_feature(&features, &mut code_gen_impl, &mut code_gen_impl_ast_item);
+        generate_document_symbol_feature(&features, &mut code_gen);
+        generate_hover_info_feature(&features, &mut code_gen);
+        generate_semantic_token_feature(&features, &mut code_gen, &input_data);
+        generate_inlay_hint_feature(&features, &mut code_gen, &input_data);
+        generate_code_lens_feature(&features, &mut code_gen, &input_data);
+        generate_completion_item_feature(&features, &mut code_gen);
+        generate_borrowable_feature(&features, &mut code_gen);
     }
 
     // Fields cannot be generated from the quote! macro, so we need to manually add them
@@ -138,10 +105,10 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
                             };
                     }
 
-                    for field in code_gen_fields {
+                    for field in &code_gen.fields {
                         fields
                             .named
-                            .push(syn::Field::parse_named.parse2(field).unwrap());
+                            .push(syn::Field::parse_named.parse2(field.clone()).unwrap());
                     }
                     fields.named.push(
                         syn::Field::parse_named
@@ -154,6 +121,10 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         }
         _ => panic!("This proc macro only works with struct"),
     };
+
+    let code_gen_fields = code_gen.fields;
+    let code_gen_impl = code_gen.impl_base;
+    let code_gen_impl_ast_item = code_gen.impl_ast_item;
 
     TokenStream::from(quote! {
         #[derive(Clone)]
@@ -187,21 +158,19 @@ pub fn ast_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     let enum_name = enum_item.ident.clone();
 
-    let fields_sort = match_enum_fields(&enum_item);
+    let input_data = match_enum_fields(&enum_item);
 
-    let mut code_gen_fields: Vec<proc_macro2::TokenStream> = vec![];
-    let mut code_gen_impl: Vec<proc_macro2::TokenStream> = vec![];
-    let mut code_gen_impl_ast_item: Vec<proc_macro2::TokenStream> = vec![];
+    let mut code_gen = CodeGen::default();
 
     // Add AstItem trait implementation
-    let code_gen = generate_enum_ast_item(&fields_sort);
-
-    code_gen_fields.append(&mut code_gen.fields.unwrap());
-    code_gen_impl.push(code_gen.impl_base.unwrap());
-    code_gen_impl_ast_item.push(code_gen.impl_ast_item.unwrap());
+    generate_enum_ast_item(&input_data, &mut code_gen);
 
     // Add builder item
-    let builder_item = generate_enum_builder_item(enum_name.to_string().as_str(), &fields_sort);
+    let builder_item = generate_enum_builder_item(enum_name.to_string().as_str(), &input_data);
+
+    let code_gen_fields = code_gen.fields;
+    let code_gen_impl = code_gen.impl_base;
+    let code_gen_impl_ast_item = code_gen.impl_ast_item;
 
     TokenStream::from(quote! {
         #[derive(Clone)]

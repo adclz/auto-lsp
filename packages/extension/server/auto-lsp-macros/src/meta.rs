@@ -1,12 +1,10 @@
-use crate::{
-    features::{
-        borrowable::BorrowableFeature, lsp_code_lens::CodeLensFeature,
-        lsp_completion_item::CompletionItemFeature, lsp_inlay_hint::InlayHintFeature,
-    },
-    DocumentSymbolFeature, HoverFeature, SemanticTokenFeature,
+use crate::features::{
+    borrowable::BorrowableFeature, lsp_code_lens::CodeLensFeature,
+    lsp_completion_item::CompletionItemFeature, lsp_document_symbol::DocumentSymbolFeature,
+    lsp_hover_info::HoverFeature, lsp_inlay_hint::InlayHintFeature,
+    lsp_semantic_token::SemanticTokenFeature,
 };
 use darling::FromMeta;
-use syn::Path;
 
 #[derive(Debug, FromMeta)]
 pub struct SymbolArgs {

@@ -8,7 +8,7 @@ use syn::{Path, TypeTuple};
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    Features, FeaturesCodeGen,
+    CodeGen, Features,
 };
 
 #[derive(Debug, FromMeta)]
@@ -21,17 +21,19 @@ pub struct SemanticTokenFeature {
 
 pub fn generate_semantic_token_feature(
     features: &Features,
-    code_gen_impl: &mut Vec<proc_macro2::TokenStream>,
-    code_gen_impl_ast_item: &mut Vec<proc_macro2::TokenStream>,
+    code_gen: &mut CodeGen,
     input: &StructFields,
 ) {
     if let Some(semantic) = &features.lsp_semantic_token {
-        let code_gen = codegen(&semantic, input);
-        code_gen_impl_ast_item.push(code_gen.impl_ast_item.unwrap())
+        codegen_semantic_token(&semantic, code_gen, input);
     }
 }
 
-fn codegen(features: &SemanticTokenFeature, input: &StructFields) -> FeaturesCodeGen {
+fn codegen_semantic_token(
+    features: &SemanticTokenFeature,
+    code_gen: &mut CodeGen,
+    input: &StructFields,
+) {
     let token_types = &features.token_types;
     let token_index = &features.token_type_index;
     let range = path_to_dot_tokens(&features.range, Some(quote! { read().unwrap() }));
@@ -51,10 +53,8 @@ fn codegen(features: &SemanticTokenFeature, input: &StructFields) -> FeaturesCod
         }
     };
 
-    FeaturesCodeGen {
-        fields: None,
-        impl_base: None,
-        impl_ast_item: quote! {
+    code_gen.impl_ast_item.push(
+        quote! {
             fn build_semantic_tokens(&self, builder: &mut auto_lsp::builders::semantic_tokens::SemanticTokensBuilder) {
                 let range = #range.get_range();
                 match #token_types.get_index(#token_index) {
@@ -94,6 +94,5 @@ fn codegen(features: &SemanticTokenFeature, input: &StructFields) -> FeaturesCod
                 )*
             }
         }
-        .into(),
-    }
+    );
 }
