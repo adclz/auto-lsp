@@ -1,4 +1,5 @@
 pub mod code_lens;
+pub mod completion_items;
 pub mod diagnostics;
 pub mod document_link;
 pub mod document_symbols;

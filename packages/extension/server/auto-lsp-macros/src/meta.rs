@@ -1,7 +1,7 @@
 use crate::{
     features::{
         borrowable::BorrowableFeature, lsp_code_lens::CodeLensFeature,
-        lsp_inlay_hint::InlayHintFeature,
+        lsp_completion_item::CompletionItemFeature, lsp_inlay_hint::InlayHintFeature,
     },
     DocumentSymbolFeature, HoverFeature, SemanticTokenFeature,
 };
@@ -23,4 +23,5 @@ pub struct Features {
     pub lsp_semantic_token: Option<SemanticTokenFeature>,
     pub lsp_inlay_hint: Option<InlayHintFeature>,
     pub lsp_code_lens: Option<CodeLensFeature>,
+    pub lsp_completion_item: Option<CompletionItemFeature>,
 }

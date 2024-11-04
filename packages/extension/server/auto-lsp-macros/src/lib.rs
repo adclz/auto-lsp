@@ -7,7 +7,9 @@ use darling::{
     FromAttributes, FromDeriveInput, FromField, FromMeta,
 };
 use features::{
-    lsp_code_lens::generate_code_lens_feature, lsp_inlay_hint::generate_inlay_hint_feature,
+    lsp_code_lens::generate_code_lens_feature,
+    lsp_completion_item::generate_completion_item_feature,
+    lsp_inlay_hint::generate_inlay_hint_feature,
 };
 use proc_macro::{Ident, TokenStream};
 use quote::{format_ident, quote};
@@ -97,6 +99,11 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &mut code_gen_impl,
             &mut code_gen_impl_ast_item,
             &fields_sort,
+        );
+        generate_completion_item_feature(
+            &features,
+            &mut code_gen_impl,
+            &mut code_gen_impl_ast_item,
         );
         generate_borrowable_feature(&features, &mut code_gen_impl, &mut code_gen_impl_ast_item);
     }

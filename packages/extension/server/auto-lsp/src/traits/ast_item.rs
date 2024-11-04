@@ -1,6 +1,6 @@
 use crate::builders::semantic_tokens::SemanticTokensBuilder;
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_types::DocumentSymbol;
+use lsp_types::{CompletionItem, DocumentSymbol};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::{Arc, RwLock, Weak};
@@ -97,6 +97,8 @@ pub trait AstItem: Downcast {
     fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>) {}
 
     fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {}
+
+    fn build_completion_items(&self, acc: &mut Vec<CompletionItem>) {}
 }
 
 impl_downcast!(AstItem);
