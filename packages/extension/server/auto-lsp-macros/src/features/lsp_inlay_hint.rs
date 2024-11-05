@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use darling::FromMeta;
 use quote::quote;
-use syn::{Path, TypeTuple};
+use syn::Path;
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},

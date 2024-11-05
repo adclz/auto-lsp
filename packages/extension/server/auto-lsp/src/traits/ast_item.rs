@@ -3,7 +3,7 @@ use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{CompletionItem, DocumentSymbol};
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, RwLock, Weak};
+use std::sync::{Arc, RwLock};
 
 use super::ast_item_builder::AstItemBuilder;
 
@@ -94,11 +94,11 @@ pub trait AstItem: Downcast {
 
     fn build_semantic_tokens(&self, _builder: &mut SemanticTokensBuilder) {}
 
-    fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>) {}
+    fn build_inlay_hint(&self, _acc: &mut Vec<lsp_types::InlayHint>) {}
 
-    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {}
+    fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {}
 
-    fn build_completion_items(&self, acc: &mut Vec<CompletionItem>) {}
+    fn build_completion_items(&self, _acc: &mut Vec<CompletionItem>) {}
 }
 
 impl_downcast!(AstItem);

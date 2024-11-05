@@ -16,7 +16,6 @@ use syn::parse::Parser;
 use syn::{parse_macro_input, DeriveInput};
 
 use traits::ast_item::for_enum::generate_enum_ast_item;
-use utilities::format_tokens::path_to_dot_tokens;
 use utilities::{
     extract_fields::match_enum_fields,
     filter::{get_raw_type_name, is_hashmap, is_option, is_vec},
@@ -341,48 +340,6 @@ pub fn derive_helper_attr(item: TokenStream) -> TokenStream {
         impl auto_lsp::traits::key::Key for #builder {
             fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
                 self.#key_field_ident.as_ref().expect(&format!("Key {} is not present on {}", stringify!(#key_field_ident), stringify!(#builder))).borrow().get_text(source_code)
-            }
-        }
-    };
-
-    TokenStream::from(expanded)
-}
-
-#[proc_macro_attribute]
-pub fn key(args: TokenStream, input: TokenStream) -> TokenStream {
-    // Parse the `key` argument as a path
-    let key_path = syn::parse_macro_input!(args as syn::Path);
-    let key_path = path_to_dot_tokens(&key_path, None);
-
-    // Parse the struct input
-    let input = parse_macro_input!(input as DeriveInput);
-
-    // Extract the first field of the struct
-    let field = match input.data {
-        syn::Data::Struct(ref data) => {
-            if let Some(field) = data.fields.iter().next() {
-                field
-            } else {
-                return syn::Error::new_spanned(input, "Expected a field")
-                    .to_compile_error()
-                    .into();
-            }
-        }
-        _ => {
-            return syn::Error::new_spanned(input, "Expected a struct")
-                .to_compile_error()
-                .into()
-        }
-    };
-
-    // Get the type name for the first field
-    let raw_type_name = format_ident!("{}", get_raw_type_name(&field.ty));
-
-    // Generate the implementation using the `key` path
-    let expanded = quote! {
-        impl auto_lsp::traits::key::Key for #raw_type_name {
-            fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
-                #key_path.get_text(source_code)
             }
         }
     };
