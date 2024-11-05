@@ -9,7 +9,7 @@ use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     CodeLensRequest, Completion, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest,
     HoverRequest, InlayHintRequest, SelectionRangeRequest, SemanticTokensFullRequest,
-    SemanticTokensRangeRequest, WorkspaceSymbolRequest,
+    SemanticTokensRangeRequest, WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
 };
 use lsp_types::{
     CodeLensOptions, DocumentLinkOptions, InlayHintOptions, SelectionRangeProviderCapability,
@@ -104,9 +104,11 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         text_document_sync: Some(lsp_types::TextDocumentSyncCapability::Kind(
             lsp_types::TextDocumentSyncKind::INCREMENTAL,
         )),
-        diagnostic_provider: Some(DiagnosticServerCapabilities::Options(
-            DiagnosticOptions::default(),
-        )),
+        diagnostic_provider: Some(DiagnosticServerCapabilities::Options(DiagnosticOptions {
+            inter_file_dependencies: true,
+            workspace_diagnostics: true,
+            ..Default::default()
+        })),
         document_symbol_provider: Some(OneOf::Left(true)),
         folding_range_provider: Some(lsp_types::FoldingRangeProviderCapability::Simple(true)),
         semantic_tokens_provider: Some(
@@ -188,6 +190,7 @@ impl<'a> Session<'a> {
                                 .on::<SemanticTokensRangeRequest, _>(Self::get_semantic_tokens_range)?
                                 .on::<SelectionRangeRequest, _>(Self::get_selection_ranges)?
                                 .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?
+                                .on::<WorkspaceDiagnosticRequest, _>(Self::get_workspace_diagnostics)?
                                 .on::<InlayHintRequest, _>(Self::get_inlay_hint)?
                                 .on::<CodeLensRequest, _>(Self::get_code_lens)?
                                 .on::<Completion, _>(Self::get_completion_items)?;

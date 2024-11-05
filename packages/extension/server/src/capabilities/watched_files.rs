@@ -31,18 +31,7 @@ impl<'a> Session<'a> {
                 open_file.read_to_string(&mut buffer).unwrap();
                 self.add_document(uri, &language_id, &buffer)
             }
-            FileChangeType::CHANGED => {
-                // Note: this is a naive implementation
-                // Since the the client can't send the actual changes, we have to recreate the whole workspace the file
-                let uri = &file.uri;
-                // TODO: define a helper fn to extract extension from uri
-                let language_id = file.uri.as_str().split(".").last().unwrap().to_string();
-
-                let mut open_file = File::open(uri.to_file_path().unwrap()).unwrap();
-                let mut buffer = String::new();
-                open_file.read_to_string(&mut buffer).unwrap();
-                self.add_document(uri, &language_id, &buffer)
-            }
+            FileChangeType::CHANGED => Ok(()),
             FileChangeType::DELETED => {
                 let uri = &file.uri;
                 self.delete_document(uri)

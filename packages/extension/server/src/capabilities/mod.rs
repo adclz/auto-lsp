@@ -1,6 +1,6 @@
 pub mod code_lens;
 pub mod completion_items;
-pub mod diagnostics;
+pub mod document_diagnostics;
 pub mod document_link;
 pub mod document_symbols;
 pub mod edit_text_document;
@@ -11,4 +11,5 @@ pub mod open_text_document;
 pub mod selection_ranges;
 pub mod semantic_tokens;
 pub mod watched_files;
+pub mod workspace_diagnostics;
 pub mod workspace_symbols;

@@ -16,6 +16,8 @@ impl<'a> Session<'a> {
             .get_mut(&uri)
             .ok_or(anyhow::format_err!("Workspace not found"))?;
 
+        eprintln!("ERRORS LEN: {}", workspace.errors.len());
+
         Ok(DocumentDiagnosticReportResult::Report(
             DocumentDiagnosticReport::Full(RelatedFullDocumentDiagnosticReport {
                 related_documents: None,
