@@ -30,6 +30,18 @@ pub type ItemBinderFn = fn(
     roots: Vec<Rc<RefCell<dyn AstItemBuilder>>>,
 ) -> Vec<Result<Arc<RwLock<dyn AstItem>>, Diagnostic>>;
 
+struct Deferred {
+    parent: Rc<RefCell<dyn AstItemBuilder>>,
+    child: Rc<RefCell<dyn AstItemBuilder>>,
+    binder: Box<
+        dyn Fn(
+            Rc<RefCell<dyn AstItemBuilder>>,
+            Rc<RefCell<dyn AstItemBuilder>>,
+            &[u8],
+        ) -> Result<(), Diagnostic>,
+    >,
+}
+
 fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range) -> bool {
     range1.start_byte <= range2.start_byte && range1.end_byte >= range2.end_byte
 }
@@ -107,6 +119,7 @@ pub fn builder(
 
     let mut roots = vec![];
     let mut stack: Vec<Rc<RefCell<dyn AstItemBuilder>>> = vec![];
+    let mut deferred: Vec<Deferred> = vec![];
 
     //eprintln!("count captures: {:?}", captures.len());
     while let Some((m, capture_index)) = captures.next() {
@@ -148,10 +161,21 @@ pub fn builder(
                             query.capture_names()[parent.borrow().get_query_index()]
                         );
 
-                        if let Err(err) =
-                            parent.borrow_mut().add(&query, node.clone(), &source_code)
-                        {
-                            errors.push(err);
+                        match parent.borrow_mut().add(&query, node.clone(), &source_code) {
+                            Ok(def) => {
+                                if let Some(def) = def {
+                                    eprintln!("Is deferred!");
+                                    deferred.push(Deferred {
+                                        parent: parent.clone(),
+                                        child: node.clone(),
+                                        binder: def,
+                                    });
+                                }
+                            }
+                            Err(err) => {
+                                eprintln!("Error: {:?}", err);
+                                errors.push(err);
+                            }
                         };
                         stack.push(parent.clone());
                         stack.push(node.clone());
@@ -162,6 +186,12 @@ pub fn builder(
             parent = stack.pop();
         }
     }
+
+    deferred.into_iter().for_each(|def| {
+        if let Err(err) = (def.binder)(def.parent, def.child, source_code) {
+            errors.push(err);
+        }
+    });
 
     let mut result = (ast_builder.builder_to_item)(roots);
     result.extend(errors.into_iter().map(Err));

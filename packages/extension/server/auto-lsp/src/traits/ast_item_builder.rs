@@ -11,7 +11,18 @@ pub trait AstItemBuilder: Downcast {
         query: &Query,
         node: Rc<RefCell<dyn AstItemBuilder>>,
         source_code: &[u8],
-    ) -> Result<(), Diagnostic>;
+    ) -> Result<
+        Option<
+            Box<
+                dyn Fn(
+                    Rc<RefCell<dyn AstItemBuilder>>,
+                    Rc<RefCell<dyn AstItemBuilder>>,
+                    &[u8],
+                ) -> Result<(), Diagnostic>,
+            >,
+        >,
+        Diagnostic,
+    >;
 
     fn get_range(&self) -> tree_sitter::Range;
 

@@ -18,7 +18,15 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
-            fn add(&mut self, query: &tree_sitter::Query, node: Rc<RefCell<dyn AstItemBuilder>>, source_code: &[u8]) -> Result<(), lsp_types::Diagnostic> {
+            fn add(&mut self, query: &tree_sitter::Query, node: Rc<RefCell<dyn AstItemBuilder>>, source_code: &[u8]) ->
+            Result<
+                Option<
+                    Box<dyn Fn(std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, &[u8])
+                    -> Result<(), lsp_types::Diagnostic>
+                    >,
+                >,
+                lsp_types::Diagnostic,
+            > {
                 self.unique_field.borrow_mut().add(query, node, source_code)
             }
 

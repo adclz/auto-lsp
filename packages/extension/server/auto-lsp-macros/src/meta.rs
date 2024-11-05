@@ -1,3 +1,5 @@
+use syn::Path;
+
 use crate::features::{
     borrowable::BorrowableFeature, lsp_code_lens::CodeLensFeature,
     lsp_completion_item::CompletionItemFeature, lsp_document_symbol::DocumentSymbolFeature,

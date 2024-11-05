@@ -16,6 +16,7 @@ use syn::parse::Parser;
 use syn::{parse_macro_input, DeriveInput};
 
 use traits::ast_item::for_enum::generate_enum_ast_item;
+use utilities::format_tokens::path_to_dot_tokens;
 use utilities::{
     extract_fields::match_enum_fields,
     filter::{get_raw_type_name, is_hashmap, is_option, is_vec},
@@ -82,27 +83,39 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
                 syn::Fields::Named(fields) => {
                     // Transform each field's type to Arc<RwLock<OriginalType>>
                     for field in fields.named.iter_mut() {
+                        let attributes = field.attrs.clone();
                         let raw_type_name = format_ident!("{}", get_raw_type_name(&field.ty));
                         let name = field.ident.clone();
 
-                        *field =
-                            if let true = is_vec(&field.ty) {
-                                syn::Field::parse_named
-                                    .parse2(quote! { #name: Vec<Arc<RwLock<#raw_type_name>>> })
-                                    .unwrap()
-                            } else if let true = is_option(&field.ty) {
-                                syn::Field::parse_named
-                                    .parse2(quote! { #name: Option<Arc<RwLock<#raw_type_name>>> })
-                                    .unwrap()
-                            } else if let true = is_hashmap(&field.ty) {
-                                syn::Field::parse_named
-                            .parse2(quote! { #name: HashMap<String, Arc<RwLock<#raw_type_name>>> })
-                            .unwrap()
-                            } else {
-                                syn::Field::parse_named
-                                    .parse2(quote! { #name: Arc<RwLock<#raw_type_name>> })
-                                    .unwrap()
-                            };
+                        *field = if let true = is_vec(&field.ty) {
+                            syn::Field::parse_named
+                                .parse2(quote! {
+                                   #(#attributes)*
+                                   #name: Vec<Arc<RwLock<#raw_type_name>>>
+                                })
+                                .unwrap()
+                        } else if let true = is_option(&field.ty) {
+                            syn::Field::parse_named
+                                .parse2(quote! {
+                                   #(#attributes)*
+                                   #name: Option<Arc<RwLock<#raw_type_name>>>
+                                })
+                                .unwrap()
+                        } else if let true = is_hashmap(&field.ty) {
+                            syn::Field::parse_named
+                                .parse2(quote! {
+                                   #(#attributes)*
+                                   #name: HashMap<String, Arc<RwLock<#raw_type_name>>>
+                                })
+                                .unwrap()
+                        } else {
+                            syn::Field::parse_named
+                                .parse2(quote! {
+                                   #(#attributes)*
+                                   #name: Arc<RwLock<#raw_type_name>>
+                                })
+                                .unwrap()
+                        };
                     }
 
                     for field in &code_gen.fields {
@@ -274,5 +287,105 @@ pub fn ast(_args: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     // Return the generated tokens
+    TokenStream::from(expanded)
+}
+
+#[proc_macro_derive(KeySet, attributes(key))]
+pub fn derive_helper_attr(item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as DeriveInput);
+
+    let struct_name = &input.ident;
+
+    // Ensure the input is a struct
+    let data_struct = match input.data {
+        syn::Data::Struct(ref data) => data,
+        _ => {
+            return syn::Error::new_spanned(input, "Expected a struct")
+                .to_compile_error()
+                .into()
+        }
+    };
+
+    // Find the field with the 'key' attribute
+    let key_field = data_struct
+        .fields
+        .iter()
+        .find(|field| field.attrs.iter().any(|attr| attr.path().is_ident("key")));
+
+    let key_field = match key_field {
+        Some(field) => field,
+        None => {
+            return syn::Error::new_spanned(&input.ident, "Expected a field with #[key] attribute")
+                .to_compile_error()
+                .into()
+        }
+    };
+
+    // Get the field name
+    let key_field_ident = match &key_field.ident {
+        Some(ident) => ident,
+        None => {
+            return syn::Error::new_spanned(
+                &key_field,
+                "Expected a named field with #[key] attribute",
+            )
+            .to_compile_error()
+            .into()
+        }
+    };
+
+    let builder = format_ident!("{}Builder", struct_name);
+
+    // Generate the implementation
+    let expanded = quote! {
+        impl auto_lsp::traits::key::Key for #builder {
+            fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
+                self.#key_field_ident.as_ref().expect(&format!("Key {} is not present on {}", stringify!(#key_field_ident), stringify!(#builder))).borrow().get_text(source_code)
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+#[proc_macro_attribute]
+pub fn key(args: TokenStream, input: TokenStream) -> TokenStream {
+    // Parse the `key` argument as a path
+    let key_path = syn::parse_macro_input!(args as syn::Path);
+    let key_path = path_to_dot_tokens(&key_path, None);
+
+    // Parse the struct input
+    let input = parse_macro_input!(input as DeriveInput);
+
+    // Extract the first field of the struct
+    let field = match input.data {
+        syn::Data::Struct(ref data) => {
+            if let Some(field) = data.fields.iter().next() {
+                field
+            } else {
+                return syn::Error::new_spanned(input, "Expected a field")
+                    .to_compile_error()
+                    .into();
+            }
+        }
+        _ => {
+            return syn::Error::new_spanned(input, "Expected a struct")
+                .to_compile_error()
+                .into()
+        }
+    };
+
+    // Get the type name for the first field
+    let raw_type_name = format_ident!("{}", get_raw_type_name(&field.ty));
+
+    // Generate the implementation using the `key` path
+    let expanded = quote! {
+        impl auto_lsp::traits::key::Key for #raw_type_name {
+            fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
+                #key_path.get_text(source_code)
+            }
+        }
+    };
+
     TokenStream::from(expanded)
 }

@@ -43,7 +43,15 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
-            fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, source_code: &[u8]) -> Result<(), lsp_types::Diagnostic> {
+            fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, source_code: &[u8]) ->
+            Result<
+                Option<
+                    Box<dyn Fn(std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, &[u8])
+                    -> Result<(), lsp_types::Diagnostic>
+                    >,
+                >,
+            lsp_types::Diagnostic,
+            > {
                 let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
                 #(
                     if #field_types_names::QUERY_NAMES.contains(&query_name) {
@@ -51,7 +59,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                             Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#struct_name)))),
                             None => self.#field_names = Some(node.clone())
                         }
-                        return Ok(());
+                        return Ok(None)
                     };
                 )*
                 #(
@@ -60,23 +68,43 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                             return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#struct_name))));
                         }
                         self.#field_option_names = Some(node.clone());
-                        return Ok(());
+                        return Ok(None);
                     };
                 )*
                 #(
                     if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
                         self.#field_vec_names.push(node.clone());
-                        return Ok(());
+                        return Ok(None);
                     };
                 )*
                 #(
                     if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
-                        let key = node.borrow().get_text(source_code).to_string();
-                        if self.#field_hashmap_names.contains_key(&key) {
-                            return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", query_name, stringify!(#struct_name))));
-                        }
-                        self.#field_hashmap_names.insert(key, node.clone());
-                        return Ok(());
+                        return Ok(Some(Box::new(|
+                                parent: Rc<RefCell<dyn AstItemBuilder>>,
+                                node: Rc<RefCell<dyn AstItemBuilder>>,
+                                source_code: &[u8]
+                            | {
+                                let field = node.borrow();
+                                let field = field.downcast_ref::<#field_hashmap_builder_names>().expect("Not a builder!");
+                                let key = field.get_key(source_code);
+
+                                let mut parent = parent.borrow_mut();
+                                let parent = parent.downcast_mut::<#struct_name>().expect("Not the builder!");
+
+                                if parent.#field_hashmap_names.contains_key(key) {
+                                    return Err(auto_lsp::builder_error!(
+                                        field.get_lsp_range(),
+                                        format!(
+                                            "Field {:?} is already declared in {:?}",
+                                            key,
+                                            stringify!(#struct_name)
+                                        )
+                                    ));
+                                };
+                                eprintln!("Inserting key {:?} of type {:?} in {}", key, stringify!(#field_hashmap_builder_names), stringify!(#struct_name));
+                                parent.#field_hashmap_names.insert(key.into(), node.clone());
+                                Ok(())
+                        })));
                     };
                 )*
                 Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#struct_name))))
@@ -161,7 +189,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                             let item = b
                                 .borrow()
                                 .downcast_ref::<#field_hashmap_builder_names>()
-                                .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_hashmap_builder_names))))?
+                                .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?} at key {}", stringify!(#field_hashmap_builder_names), key)))?
                                 .clone()
                                 .try_into()?;
                             Ok((key, item))
