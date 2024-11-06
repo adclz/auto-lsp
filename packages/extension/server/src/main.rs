@@ -143,7 +143,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             resolve_provider: Some(false),
         }),
         completion_provider: Some(lsp_types::CompletionOptions {
-            trigger_characters: Some(vec![".".to_string()]),
+            trigger_characters: None,
             resolve_provider: Some(false),
             ..Default::default()
         }),

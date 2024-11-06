@@ -121,10 +121,10 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
                 }
             }
 
-            fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>) {
+            fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
                 match self {
                     #(
-                        Self::#variant_names(variant) => variant.build_completion_items(acc),
+                        Self::#variant_names(variant) => variant.build_completion_items(acc, doc),
                     )*
                 }
             }

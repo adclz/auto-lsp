@@ -98,7 +98,12 @@ pub trait AstItem: Downcast {
 
     fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {}
 
-    fn build_completion_items(&self, _acc: &mut Vec<CompletionItem>) {}
+    fn build_completion_items(
+        &self,
+        _acc: &mut Vec<CompletionItem>,
+        _doc: &lsp_textdocument::FullTextDocument,
+    ) {
+    }
 }
 
 impl_downcast!(AstItem);
@@ -141,5 +146,21 @@ impl AstItem for Arc<RwLock<dyn AstItem>> {
 
     fn build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder) {
         self.read().unwrap().build_semantic_tokens(builder)
+    }
+
+    fn build_inlay_hint(&self, _acc: &mut Vec<lsp_types::InlayHint>) {
+        self.read().unwrap().build_inlay_hint(_acc)
+    }
+
+    fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {
+        self.read().unwrap().build_code_lens(_acc)
+    }
+
+    fn build_completion_items(
+        &self,
+        _acc: &mut Vec<CompletionItem>,
+        _doc: &lsp_textdocument::FullTextDocument,
+    ) {
+        self.read().unwrap().build_completion_items(_acc, _doc)
     }
 }

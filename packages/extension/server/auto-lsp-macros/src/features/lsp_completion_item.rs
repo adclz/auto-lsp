@@ -13,9 +13,8 @@ pub enum CompletionItemFeature {
 
 #[derive(Debug, FromMeta)]
 pub struct CompletionItem {
-    label: String,
+    label: Path,
     kind: Path,
-    detail: String,
 }
 
 pub fn generate_completion_item_feature(features: &Features, code_gen: &mut CodeGen) {
@@ -29,26 +28,27 @@ pub fn codegen_completion_item(completion: &CompletionItemFeature, code_gen: &mu
         CompletionItemFeature::CompletionFn(completion_fn) => {
             let completion_fn = path_to_dot_tokens(completion_fn, None);
             code_gen.impl_ast_item.push(quote! {
-                fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>) {
-                    #completion_fn(acc)
+                fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
+                    #completion_fn(acc, doc)
                 }
             });
         }
         CompletionItemFeature::Item(item) => {
             let kind = &item.kind;
-            let label = &item.label;
-            let detail = &item.detail;
+            let label = path_to_dot_tokens(&item.label, None);
 
             code_gen.impl_base.push(quote! {
                 const LSP_COMPLETION_ITEM_KIND: &'static lsp_types::CompletionItemKind = &#kind;
             });
 
             code_gen.impl_ast_item.push(quote! {
-                fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>) {
+                fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
+                    let read = #label.read().unwrap();
+
                     acc.push(lsp_types::CompletionItem {
-                        label: #label.into(),
+                        label: read.get_text(doc.get_content(None).as_bytes()).to_string(),
                         kind: Some(*Self::LSP_COMPLETION_ITEM_KIND),
-                        detail: Some(#detail.into()),
+                        detail: None,
                         ..Default::default()
                     });
                 }
