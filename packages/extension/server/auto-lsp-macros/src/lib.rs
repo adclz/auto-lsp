@@ -272,7 +272,7 @@ pub fn ast(_args: TokenStream, input: TokenStream) -> TokenStream {
                         // note: this part could be improved by moving the inner value from Rc
                         // but: https://stackoverflow.com/questions/41618100/rctrait-to-optiont
                         if let Some(b) = builder.borrow().downcast_ref::<#variant_builder_names>() {
-                            let item: #variant_types_names = b.clone().try_into().expect("Incomplete builder");
+                            let item: #variant_types_names = b.clone().try_into()?;
                             let item: Arc<RwLock<dyn AstItem>> = Arc::new(RwLock::new(item));
                             Ok(item)
                         }

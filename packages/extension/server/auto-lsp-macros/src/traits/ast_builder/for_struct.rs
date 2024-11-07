@@ -43,6 +43,55 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
+            fn query_binder(&self, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
+                let query_name = query.capture_names()[capture.index as usize];
+                #(
+                    if let true = #field_types_names::QUERY_NAMES.contains(&query_name)  {
+                            return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_builder_names::new(
+                                &query,
+                                capture.index as usize,
+                                capture.node.range(),
+                                capture.node.start_position(),
+                                capture.node.end_position(),
+                            ))))
+                    };
+                )*
+                #(
+                    if let true = #field_option_types_names::QUERY_NAMES.contains(&query_name)  {
+                            return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_option_builder_names::new(
+                                &query,
+                                capture.index as usize,
+                                capture.node.range(),
+                                capture.node.start_position(),
+                                capture.node.end_position(),
+                            ))))
+                    };
+                )*
+                #(
+                    if let true = #field_vec_types_names::QUERY_NAMES.contains(&query_name)  {
+                            return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_vec_builder_names::new(
+                                &query,
+                                capture.index as usize,
+                                capture.node.range(),
+                                capture.node.start_position(),
+                                capture.node.end_position(),
+                            ))))
+                    };
+                )*
+                #(
+                    if let true = #field_hashmap_types_names::QUERY_NAMES.contains(&query_name)  {
+                            return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_hashmap_builder_names::new(
+                                &query,
+                                capture.index as usize,
+                                capture.node.range(),
+                                capture.node.start_position(),
+                                capture.node.end_position(),
+                            ))))
+                    };
+                )*
+                None
+            }
+
             fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, source_code: &[u8]) ->
             Result<
                 Option<

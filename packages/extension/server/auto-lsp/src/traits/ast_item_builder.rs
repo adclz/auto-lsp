@@ -6,6 +6,12 @@ use std::rc::Rc;
 use tree_sitter::Query;
 
 pub trait AstItemBuilder: Downcast {
+    fn query_binder(
+        &self,
+        capture: &tree_sitter::QueryCapture,
+        query: &tree_sitter::Query,
+    ) -> Option<Rc<RefCell<dyn AstItemBuilder>>>;
+
     fn add(
         &mut self,
         query: &Query,

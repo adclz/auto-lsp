@@ -106,6 +106,21 @@ pub fn localized_builder(
     Ok(root)
 }
 
+fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Range {
+    let start = range.start_point;
+    let end = range.end_point;
+    lsp_types::Range {
+        start: lsp_types::Position {
+            line: start.row as u32,
+            character: start.column as u32,
+        },
+        end: lsp_types::Position {
+            line: end.row as u32,
+            character: end.column as u32,
+        },
+    }
+}
+
 pub fn builder(
     query: &tree_sitter::Query,
     ast_builder: &AstBuilder,
@@ -121,7 +136,6 @@ pub fn builder(
     let mut stack: Vec<Rc<RefCell<dyn AstItemBuilder>>> = vec![];
     let mut deferred: Vec<Deferred> = vec![];
 
-    //eprintln!("count captures: {:?}", captures.len());
     while let Some((m, capture_index)) = captures.next() {
         let capture = m.captures[*capture_index];
         let capture_index = capture.index as usize;
@@ -130,20 +144,26 @@ pub fn builder(
             "Create builder for query: {:?}",
             query.capture_names()[capture_index],
         );
-        let node = match (ast_builder.query_to_builder)(&capture, &query) {
-            Some(builder) => builder,
-            None => {
-                panic!(
-                    "Warning: Failed to create builder for query: {:?}",
-                    query.capture_names()[capture_index as usize]
-                );
-            }
-        };
+
         let mut parent = stack.pop();
 
         loop {
-            match parent {
+            match &parent {
                 None => {
+                    let node = match (ast_builder.query_to_builder)(&capture, &query) {
+                        Some(builder) => builder,
+                        None => {
+                            errors.push(builder_error!(
+                                tree_sitter_range_to_lsp_range(&capture.node.range()),
+                                format!(
+                                    "Failed to create builder for query: {:?}, is the symbol declared in root ?",
+                                    query.capture_names()[capture_index as usize]
+                                )
+                            ));
+                            break;
+                        }
+                    };
+
                     eprintln!(
                         "Add parent {:?} to roots",
                         query.capture_names()[node.borrow().get_query_index()]
@@ -152,9 +172,23 @@ pub fn builder(
                     stack.push(node.clone());
                     break;
                 }
-                Some(parent) => {
-                    if intersecting_ranges(&parent.borrow().get_range(), &node.borrow().get_range())
-                    {
+                Some(ref parent) => {
+                    if intersecting_ranges(&parent.borrow().get_range(), &capture.node.range()) {
+                        let node = match parent.borrow().query_binder(&capture, query) {
+                            Some(builder) => builder,
+                            None => {
+                                errors.push(builder_error!(
+                                    tree_sitter_range_to_lsp_range(&capture.node.range()),
+                                    format!(
+                                        "Failed to create builder for query: {:?} using {:?}",
+                                        query.capture_names()[capture_index as usize],
+                                        query.capture_names()[parent.borrow().get_query_index()]
+                                    )
+                                ));
+                                break;
+                            }
+                        };
+
                         eprintln!(
                             "Add {:?} to parent {:?}",
                             query.capture_names()[node.borrow().get_query_index()],
@@ -172,15 +206,12 @@ pub fn builder(
                                     });
                                 }
                             }
-                            Err(err) => {
-                                eprintln!("Error: {:?}", err);
-                                errors.push(err);
-                            }
+                            Err(err) => errors.push(err),
                         };
                         stack.push(parent.clone());
                         stack.push(node.clone());
                         break;
-                    };
+                    }
                 }
             }
             parent = stack.pop();

@@ -18,6 +18,10 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
+            fn query_binder(&self, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
+                self.unique_field.borrow().query_binder(capture, query)
+            }
+
             fn add(&mut self, query: &tree_sitter::Query, node: Rc<RefCell<dyn AstItemBuilder>>, source_code: &[u8]) ->
             Result<
                 Option<
@@ -66,7 +70,7 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
                 use std::sync::{Arc, RwLock};
                 #(
                     if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
-                        return Ok(Self::#variant_names(variant.clone().try_into().expect("Failed builder conversion")));
+                        return Ok(Self::#variant_names(variant.clone().try_into()?));
                     };
                 )*
                 panic!("")
