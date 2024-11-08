@@ -3,7 +3,7 @@ use streaming_iterator::StreamingIterator;
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_folding_ranges(
         &mut self,
         params: FoldingRangeParams,

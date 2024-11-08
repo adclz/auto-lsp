@@ -3,7 +3,7 @@ use lsp_types::notification::Notification;
 
 use super::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn send_notification<N: Notification>(&self, params: N::Params) -> anyhow::Result<()> {
         let params = serde_json::to_value(&params).unwrap();
         let n = lsp_server::Notification {

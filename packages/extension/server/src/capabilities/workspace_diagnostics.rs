@@ -5,7 +5,7 @@ use lsp_types::{
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_workspace_diagnostics(
         &mut self,
         _params: WorkspaceDiagnosticParams,

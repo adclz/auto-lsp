@@ -2,7 +2,7 @@ use lsp_types::{Range, SelectionRange, SelectionRangeParams};
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_selection_ranges(
         &mut self,
         params: SelectionRangeParams,

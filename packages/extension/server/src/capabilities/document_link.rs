@@ -6,7 +6,7 @@ use streaming_iterator::StreamingIterator;
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_document_link(
         &mut self,
         params: DocumentLinkParams,

@@ -20,7 +20,7 @@ pub fn get_extension(url: &Url) -> Option<String> {
     extension.to_str().map(|s| s.to_string())
 }
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn init(&mut self, params: serde_json::Value) -> anyhow::Result<()> {
         let params: InitializeParams = serde_json::from_value(params).unwrap();
         let options = InitializationOptions::deserialize(

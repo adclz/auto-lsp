@@ -4,7 +4,7 @@ use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     /// Handle the watched files change notification.
     /// The differences between this and the document requests is that the watched files are not modified by the client.
     ///

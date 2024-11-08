@@ -4,7 +4,7 @@ use auto_lsp::traits::ast_item::AstItem;
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_hover_info(&mut self, params: HoverParams) -> anyhow::Result<Option<Hover>> {
         let uri = &params.text_document_position_params.text_document.uri;
         let workspace = self.workspaces.get(uri).unwrap();

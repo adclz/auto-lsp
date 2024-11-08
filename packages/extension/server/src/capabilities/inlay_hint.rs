@@ -4,7 +4,7 @@ use auto_lsp::traits::ast_item::AstItem;
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_inlay_hint(
         &mut self,
         params: InlayHintParams,

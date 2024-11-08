@@ -4,7 +4,7 @@ use lsp_types::DidChangeTextDocumentParams;
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn edit_text_document(
         &mut self,
         params: DidChangeTextDocumentParams,

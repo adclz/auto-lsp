@@ -5,7 +5,7 @@ use lsp_types::Url;
 use super::{tree_sitter_extend::tree_sitter_lexer::get_tree_sitter_errors, Workspace};
 use crate::{session::Session, AST_BUILDERS, CST_PARSERS};
 
-impl<'a> Session<'a> {
+impl Session {
     /// Add a new document to session workspaces
     pub fn add_document(
         &mut self,

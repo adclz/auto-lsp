@@ -2,7 +2,7 @@ use lsp_types::{CodeLens, CodeLensParams};
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_code_lens(
         &mut self,
         params: CodeLensParams,

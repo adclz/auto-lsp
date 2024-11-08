@@ -5,13 +5,13 @@ use super::Session;
 /**
  * Code taken from https://github.com/oxlip-lang/oal/blob/b6741ff99f7c9338551e2067c0de7acd492fad00/oal-client/src/lsp/dispatcher.rs
  */
-pub struct RequestDispatcher<'a, 'b> {
-    session: &'a mut Session<'b>,
+pub struct RequestDispatcher<'a> {
+    session: &'a mut Session,
     req: Option<Request>,
 }
 
-impl<'a, 'b> RequestDispatcher<'a, 'b> {
-    pub fn new(session: &'a mut Session<'b>, req: Request) -> Self {
+impl<'a, 'b> RequestDispatcher<'a> {
+    pub fn new(session: &'a mut Session, req: Request) -> Self {
         RequestDispatcher {
             session,
             req: Some(req),
@@ -20,7 +20,7 @@ impl<'a, 'b> RequestDispatcher<'a, 'b> {
 
     pub fn on<R, T>(
         &'a mut self,
-        hook: impl Fn(&mut Session<'b>, R::Params) -> anyhow::Result<T>,
+        hook: impl Fn(&mut Session, R::Params) -> anyhow::Result<T>,
     ) -> anyhow::Result<&'a mut Self>
     where
         R: lsp_types::request::Request,
@@ -54,13 +54,13 @@ impl<'a, 'b> RequestDispatcher<'a, 'b> {
     }
 }
 
-pub struct NotificationDispatcher<'a, 'b> {
-    session: &'a mut Session<'b>,
+pub struct NotificationDispatcher<'a> {
+    session: &'a mut Session,
     not: Option<Notification>,
 }
 
-impl<'a, 'b> NotificationDispatcher<'a, 'b> {
-    pub fn new(session: &'a mut Session<'b>, not: Notification) -> Self {
+impl<'a, 'b> NotificationDispatcher<'a> {
+    pub fn new(session: &'a mut Session, not: Notification) -> Self {
         NotificationDispatcher {
             session,
             not: Some(not),
@@ -69,7 +69,7 @@ impl<'a, 'b> NotificationDispatcher<'a, 'b> {
 
     pub fn on<N>(
         &'a mut self,
-        hook: impl Fn(&mut Session<'b>, N::Params) -> anyhow::Result<()>,
+        hook: impl Fn(&mut Session, N::Params) -> anyhow::Result<()>,
     ) -> anyhow::Result<&'a mut Self>
     where
         N: lsp_types::notification::Notification,

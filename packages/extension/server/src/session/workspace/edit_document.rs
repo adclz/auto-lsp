@@ -6,7 +6,7 @@ use super::tree_sitter_extend::{
 };
 use crate::{session::Session, symbols::symbols::Symbol, AST_BUILDERS, CST_PARSERS};
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
         let uri = &params.text_document.uri;
         let workspace = self

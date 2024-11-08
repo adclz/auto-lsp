@@ -5,7 +5,7 @@ use tree_sitter::{Query, QueryCursor};
 
 use crate::{session::Session, symbols::common::name::Name};
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_completion_items(
         &mut self,
         params: CompletionParams,

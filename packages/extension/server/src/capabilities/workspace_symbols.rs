@@ -3,7 +3,7 @@ use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, Workspa
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_workspace_symbols(
         &mut self,
         params: WorkspaceSymbolParams,

@@ -3,7 +3,7 @@ use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
 use crate::session::Session;
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn get_document_symbols(
         &mut self,
         params: DocumentSymbolParams,

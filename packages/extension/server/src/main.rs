@@ -170,7 +170,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-impl<'a> Session<'a> {
+impl Session {
     pub fn main_loop(&mut self) -> anyhow::Result<()> {
         loop {
             select! {
