@@ -3,6 +3,7 @@
 extern crate proc_macro;
 
 use darling::{ast::NestedMeta, FromMeta};
+use features::scope::generate_scope_feature;
 use features::{
     borrowable::generate_borrowable_feature, lsp_code_lens::generate_code_lens_feature,
     lsp_completion_item::generate_completion_item_feature,
@@ -89,6 +90,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         generate_code_lens_feature(&features, &mut code_gen, &input_data);
         generate_completion_item_feature(&features, &mut code_gen);
         generate_borrowable_feature(&features, &mut code_gen);
+        generate_scope_feature(&features, &mut code_gen);
     }
 
     // Fields cannot be generated from the quote! macro, so we need to manually add them

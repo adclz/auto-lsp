@@ -136,6 +136,22 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
                     )*
                 }
             }
+
+            fn is_scope(&self) -> bool {
+                match self {
+                    #(
+                        Self::#variant_names(variant) => variant.is_scope(),
+                    )*
+                }
+            }
+
+            fn get_scope_range(&self) -> [usize; 2] {
+                match self {
+                    #(
+                        Self::#variant_names(variant) => variant.get_scope_range(),
+                    )*
+                }
+            }
         }
     );
 }

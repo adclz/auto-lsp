@@ -36,6 +36,14 @@ pub trait AstItem: Downcast + Send + Sync {
         parent.unwrap()
     }
 
+    fn is_scope(&self) -> bool {
+        false
+    }
+
+    fn get_scope_range(&self) -> [usize; 2] {
+        [0, 0]
+    }
+
     fn find_at_offset(
         &self,
         offset: &usize,
@@ -162,5 +170,13 @@ impl AstItem for Arc<RwLock<dyn AstItem>> {
         _doc: &lsp_textdocument::FullTextDocument,
     ) {
         self.read().unwrap().build_completion_items(_acc, _doc)
+    }
+
+    fn is_scope(&self) -> bool {
+        self.read().unwrap().is_scope()
+    }
+
+    fn get_scope_range(&self) -> [usize; 2] {
+        self.read().unwrap().get_scope_range()
     }
 }

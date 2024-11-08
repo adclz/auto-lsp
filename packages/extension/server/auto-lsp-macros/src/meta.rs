@@ -4,7 +4,7 @@ use crate::features::{
     borrowable::BorrowableFeature, lsp_code_lens::CodeLensFeature,
     lsp_completion_item::CompletionItemFeature, lsp_document_symbol::DocumentSymbolFeature,
     lsp_hover_info::HoverFeature, lsp_inlay_hint::InlayHintFeature,
-    lsp_semantic_token::SemanticTokenFeature,
+    lsp_semantic_token::SemanticTokenFeature, scope::ScopeFeature,
 };
 use darling::FromMeta;
 
@@ -18,6 +18,7 @@ pub struct AstStructParams {
 #[derive(Debug, FromMeta)]
 pub struct AstStructFeatures {
     pub borrowable: Option<BorrowableFeature>,
+    pub scope: Option<ScopeFeature>,
     // LSP
     pub lsp_document_symbols: Option<DocumentSymbolFeature>,
     pub lsp_hover: Option<HoverFeature>,
