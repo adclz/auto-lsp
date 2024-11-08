@@ -7,7 +7,7 @@ use std::sync::{Arc, RwLock};
 
 use super::ast_item_builder::AstItemBuilder;
 
-pub trait AstItem: Downcast {
+pub trait AstItem: Downcast + Send + Sync {
     fn get_range(&self) -> tree_sitter::Range;
     fn edit_range(&mut self, shift: i32) {
         let mut range = self.get_range();
