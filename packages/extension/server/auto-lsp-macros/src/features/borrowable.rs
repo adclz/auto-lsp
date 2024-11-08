@@ -4,7 +4,7 @@ use darling::{util::PathList, FromMeta};
 use quote::quote;
 use syn::Path;
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, Features};
+use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, AstStructFeatures};
 
 #[derive(Debug, FromMeta)]
 pub enum BorrowableFeature {
@@ -13,7 +13,7 @@ pub enum BorrowableFeature {
     BorrowableFn(Path),
 }
 
-pub fn generate_borrowable_feature(features: &Features, code_gen: &mut CodeGen) {
+pub fn generate_borrowable_feature(features: &AstStructFeatures, code_gen: &mut CodeGen) {
     if let Some(borrowable) = &features.borrowable {
         codegen_borrowable_feature(&borrowable, code_gen);
     }

@@ -6,7 +6,7 @@ use syn::Path;
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    CodeGen, Features,
+    CodeGen, AstStructFeatures,
 };
 
 #[derive(Debug, FromMeta)]
@@ -18,7 +18,7 @@ pub struct SemanticTokenFeature {
 }
 
 pub fn generate_semantic_token_feature(
-    features: &Features,
+    features: &AstStructFeatures,
     code_gen: &mut CodeGen,
     input: &StructFields,
 ) {

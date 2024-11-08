@@ -6,7 +6,7 @@ use syn::{Path, TypeTuple};
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    CodeGen, Features,
+    AstStructFeatures, CodeGen,
 };
 
 #[derive(Debug, FromMeta)]
@@ -15,7 +15,7 @@ pub struct CodeLensFeature {
 }
 
 pub fn generate_code_lens_feature(
-    features: &Features,
+    features: &AstStructFeatures,
     code_gen: &mut CodeGen,
     input: &StructFields,
 ) {

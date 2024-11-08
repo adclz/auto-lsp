@@ -135,3 +135,40 @@ pub fn generate_struct_ast_item(query_name: &str, code_gen: &mut CodeGen, input:
         }
     );
 }
+
+pub fn generate_reference_ast_item(query_name: &str, code_gen: &mut CodeGen, input: &StructFields) {
+    code_gen.fields.push(quote! { pub range: tree_sitter::Range });
+    code_gen.fields.push(quote! { pub start_position: tree_sitter::Point });
+    code_gen.fields.push(quote! { pub end_position: tree_sitter::Point });
+
+    code_gen.impl_base.push(quote! {
+        pub const QUERY_NAMES: &[&str] = &[#query_name];
+    });
+
+    code_gen.impl_ast_item.push(
+        quote! {
+            fn get_range(&self) -> tree_sitter::Range {
+                self.range
+            }
+
+            fn get_parent(&self) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>> {
+                self.parent.as_ref().map(|p| p.clone())
+            }
+
+            fn set_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>) {
+                self.parent = Some(parent);
+            }
+
+            fn inject_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>) {
+
+            }
+
+            fn find_at_offset(&self, offset: &usize) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>> {
+                None
+            }
+
+            fn swap_at_offset(&mut self, offset: &usize, item: &std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>) {
+            }
+        }
+    );
+}

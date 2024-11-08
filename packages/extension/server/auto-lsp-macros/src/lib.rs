@@ -15,7 +15,9 @@ use quote::{format_ident, quote};
 use syn::parse::Parser;
 use syn::{parse_macro_input, DeriveInput};
 
+use traits::ast_builder::for_struct::generate_reference_builder_item;
 use traits::ast_item::for_enum::generate_enum_ast_item;
+use traits::ast_item::for_struct::generate_reference_ast_item;
 use utilities::{
     extract_fields::match_enum_fields,
     filter::{get_raw_type_name, is_hashmap, is_option, is_vec},
@@ -47,25 +49,39 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         Err(e) => return e.into_compile_error().into(),
     };
 
-    let _args = match SymbolArgs::from_list(&attr_args) {
+    let args = match AstStructParams::from_list(&attr_args) {
         Ok(v) => v,
         Err(e) => return e.write_errors().into(),
     };
 
     let mut input = parse_macro_input!(input as DeriveInput);
     let input_name = input.ident.clone();
-
     let input_data = match_fields(&input.data);
 
     let mut code_gen = CodeGen::default();
 
-    // Add AstItem trait implementation
-    generate_struct_ast_item(_args.query_name.as_str(), &mut code_gen, &input_data);
+    let builder_item;
+    match args.reference_seq {
+        Some(a) => {
+            // Add reference implementation
+            generate_reference_ast_item(args.query_name.as_str(), &mut code_gen, &input_data);
 
-    // Add builder item
-    let builder_item = generate_struct_builder_item(input_name.to_string().as_str(), &input_data);
+            // Add builder item
+            builder_item =
+                generate_reference_builder_item(input_name.to_string().as_str(), &input_data);
+        }
+        None => {
+            // Add AstItem trait implementation
+            generate_struct_ast_item(args.query_name.as_str(), &mut code_gen, &input_data);
 
-    if let Some(features) = _args.features {
+            // Add builder item
+            builder_item =
+                generate_struct_builder_item(input_name.to_string().as_str(), &input_data);
+        }
+    }
+
+    // Add features
+    if let Some(features) = args.features {
         generate_document_symbol_feature(&features, &mut code_gen);
         generate_hover_info_feature(&features, &mut code_gen);
         generate_semantic_token_feature(&features, &mut code_gen, &input_data);

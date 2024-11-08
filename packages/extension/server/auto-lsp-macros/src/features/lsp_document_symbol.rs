@@ -1,6 +1,6 @@
 extern crate proc_macro;
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, Features};
+use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, AstStructFeatures};
 use darling::{util::PathList, FromMeta};
 use quote::quote;
 use syn::Path;
@@ -18,7 +18,7 @@ pub struct Childrens {
     pub map: Option<PathList>,
 }
 
-pub fn generate_document_symbol_feature(features: &Features, code_gen: &mut CodeGen) {
+pub fn generate_document_symbol_feature(features: &AstStructFeatures, code_gen: &mut CodeGen) {
     if let Some(document_symbol) = &features.lsp_document_symbols {
         codegen_document_symbol(&document_symbol, code_gen);
     }

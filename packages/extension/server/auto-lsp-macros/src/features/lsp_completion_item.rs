@@ -1,6 +1,6 @@
 extern crate proc_macro;
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, Features};
+use crate::{utilities::format_tokens::path_to_dot_tokens, AstStructFeatures, CodeGen};
 use darling::FromMeta;
 use quote::quote;
 use syn::Path;
@@ -17,7 +17,7 @@ pub struct CompletionItem {
     kind: Path,
 }
 
-pub fn generate_completion_item_feature(features: &Features, code_gen: &mut CodeGen) {
+pub fn generate_completion_item_feature(features: &AstStructFeatures, code_gen: &mut CodeGen) {
     if let Some(completion_item) = &features.lsp_completion_item {
         codegen_completion_item(&completion_item, code_gen);
     }

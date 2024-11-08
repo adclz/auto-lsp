@@ -6,7 +6,7 @@ use syn::Path;
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    CodeGen, Features,
+    CodeGen, AstStructFeatures,
 };
 
 #[derive(Debug, FromMeta)]
@@ -15,7 +15,7 @@ pub struct InlayHintFeature {
 }
 
 pub fn generate_inlay_hint_feature(
-    features: &Features,
+    features: &AstStructFeatures,
     code_gen: &mut CodeGen,
     input: &StructFields,
 ) {

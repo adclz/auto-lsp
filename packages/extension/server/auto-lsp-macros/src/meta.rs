@@ -9,13 +9,14 @@ use crate::features::{
 use darling::FromMeta;
 
 #[derive(Debug, FromMeta)]
-pub struct SymbolArgs {
+pub struct AstStructParams {
     pub query_name: String,
-    pub features: Option<Features>,
+    pub reference_seq: Option<bool>,
+    pub features: Option<AstStructFeatures>,
 }
 
 #[derive(Debug, FromMeta)]
-pub struct Features {
+pub struct AstStructFeatures {
     pub borrowable: Option<BorrowableFeature>,
     // LSP
     pub lsp_document_symbols: Option<DocumentSymbolFeature>,

@@ -4,14 +4,14 @@ use darling::FromMeta;
 use quote::quote;
 use syn::Path;
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, Features};
+use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, AstStructFeatures};
 
 #[derive(Debug, FromMeta)]
 pub struct HoverFeature {
     call: Path,
 }
 
-pub fn generate_hover_info_feature(features: &Features, code_gen: &mut CodeGen) {
+pub fn generate_hover_info_feature(features: &AstStructFeatures, code_gen: &mut CodeGen) {
     if let Some(hover) = &features.lsp_hover {
         codegen_hover_info(hover, code_gen);
     }
