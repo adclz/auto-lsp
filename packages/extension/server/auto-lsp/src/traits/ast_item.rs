@@ -67,10 +67,6 @@ pub trait AstItem: Downcast + Send + Sync {
 
     // Memory
 
-    fn is_borrowable(&self, _other: &dyn AstItem) -> bool {
-        false
-    }
-
     fn swap_at_offset(&mut self, offset: &usize, item: &Rc<RefCell<dyn AstItemBuilder>>);
 
     // LSP

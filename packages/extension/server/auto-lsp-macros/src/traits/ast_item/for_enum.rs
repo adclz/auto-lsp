@@ -70,14 +70,6 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
                 }
             }
 
-            fn is_borrowable(&self, other: &dyn AstItem) -> bool {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.is_borrowable(other),
-                    )*
-                }
-            }
-
 
             // LSP
             fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
