@@ -1,6 +1,6 @@
 use crate::traits::ast_builder::AstBuilder;
 use crate::traits::ast_item::AstItem;
-use crate::traits::ast_item_builder::AstItemBuilder;
+use crate::traits::ast_item_builder::{AstItemBuilder, DeferredAstItemBuilder};
 use lsp_types::Diagnostic;
 use std::rc::Rc;
 use std::sync::RwLock;
@@ -134,7 +134,8 @@ pub fn builder(
 
     let mut roots = vec![];
     let mut stack: Vec<Rc<RefCell<dyn AstItemBuilder>>> = vec![];
-    let mut deferred: Vec<Deferred> = vec![];
+    let mut deferred_maps: Vec<Deferred> = vec![];
+    let mut deferred_references: Vec<Deferred> = vec![];
 
     while let Some((m, capture_index)) = captures.next() {
         let capture = m.captures[*capture_index];
@@ -196,16 +197,23 @@ pub fn builder(
                         );
 
                         match parent.borrow_mut().add(&query, node.clone(), &source_code) {
-                            Ok(def) => {
-                                if let Some(def) = def {
-                                    eprintln!("Is deferred!");
-                                    deferred.push(Deferred {
+                            Ok(def) => match def {
+                                DeferredAstItemBuilder::HashMap(def) => {
+                                    deferred_maps.push(Deferred {
                                         parent: parent.clone(),
                                         child: node.clone(),
                                         binder: def,
                                     });
                                 }
-                            }
+                                DeferredAstItemBuilder::Reference(def) => {
+                                    deferred_references.push(Deferred {
+                                        parent: parent.clone(),
+                                        child: node.clone(),
+                                        binder: def,
+                                    });
+                                }
+                                _ => {}
+                            },
                             Err(err) => errors.push(err),
                         };
                         stack.push(parent.clone());
@@ -218,7 +226,7 @@ pub fn builder(
         }
     }
 
-    deferred.into_iter().for_each(|def| {
+    deferred_maps.into_iter().for_each(|def| {
         if let Err(err) = (def.binder)(def.parent, def.child, source_code) {
             errors.push(err);
         }

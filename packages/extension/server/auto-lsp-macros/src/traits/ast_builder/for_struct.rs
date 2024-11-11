@@ -93,14 +93,8 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
             }
 
             fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, source_code: &[u8]) ->
-            Result<
-                Option<
-                    Box<dyn Fn(std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, &[u8])
-                    -> Result<(), lsp_types::Diagnostic>
-                    >,
-                >,
-            lsp_types::Diagnostic,
-            > {
+                Result<auto_lsp::traits::ast_item_builder::DeferredAstItemBuilder, lsp_types::Diagnostic> {
+                use auto_lsp::traits::ast_item_builder::DeferredAstItemBuilder;
                 let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
                 #(
                     if #field_types_names::QUERY_NAMES.contains(&query_name) {
@@ -108,7 +102,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                             Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#struct_name)))),
                             None => self.#field_names = Some(node.clone())
                         }
-                        return Ok(None)
+                        return Ok(DeferredAstItemBuilder::None)
                     };
                 )*
                 #(
@@ -117,18 +111,18 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                             return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#struct_name))));
                         }
                         self.#field_option_names = Some(node.clone());
-                        return Ok(None);
+                        return Ok(DeferredAstItemBuilder::None);
                     };
                 )*
                 #(
                     if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
                         self.#field_vec_names.push(node.clone());
-                        return Ok(None);
+                        return Ok(DeferredAstItemBuilder::None);
                     };
                 )*
                 #(
                     if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
-                        return Ok(Some(Box::new(|
+                        return Ok(DeferredAstItemBuilder::HashMap(Box::new(|
                                 parent: Rc<RefCell<dyn AstItemBuilder>>,
                                 node: Rc<RefCell<dyn AstItemBuilder>>,
                                 source_code: &[u8]
@@ -318,15 +312,8 @@ pub fn generate_reference_builder_item(
             }
 
             fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, source_code: &[u8]) ->
-            Result<
-                Option<
-                    Box<dyn Fn(std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, &[u8])
-                    -> Result<(), lsp_types::Diagnostic>
-                    >,
-                >,
-            lsp_types::Diagnostic,
-            > {
-                Ok(None)
+            Result<auto_lsp::traits::ast_item_builder::DeferredAstItemBuilder, lsp_types::Diagnostic> {
+                Ok(auto_lsp::traits::ast_item_builder::DeferredAstItemBuilder::None)
             }
 
             fn get_range(&self) -> tree_sitter::Range {

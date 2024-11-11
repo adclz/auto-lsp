@@ -5,6 +5,20 @@ use std::fmt::Formatter;
 use std::rc::Rc;
 use tree_sitter::Query;
 
+pub enum DeferredAstItemBuilder {
+    None,
+    HashMap(DeferredClosure),
+    Reference(DeferredClosure),
+}
+
+pub type DeferredClosure = Box<
+    dyn Fn(
+        Rc<RefCell<dyn AstItemBuilder>>,
+        Rc<RefCell<dyn AstItemBuilder>>,
+        &[u8],
+    ) -> Result<(), Diagnostic>,
+>;
+
 pub trait AstItemBuilder: Downcast {
     fn query_binder(
         &self,
@@ -17,18 +31,7 @@ pub trait AstItemBuilder: Downcast {
         query: &Query,
         node: Rc<RefCell<dyn AstItemBuilder>>,
         source_code: &[u8],
-    ) -> Result<
-        Option<
-            Box<
-                dyn Fn(
-                    Rc<RefCell<dyn AstItemBuilder>>,
-                    Rc<RefCell<dyn AstItemBuilder>>,
-                    &[u8],
-                ) -> Result<(), Diagnostic>,
-            >,
-        >,
-        Diagnostic,
-    >;
+    ) -> Result<DeferredAstItemBuilder, Diagnostic>;
 
     fn get_range(&self) -> tree_sitter::Range;
 
