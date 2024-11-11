@@ -1,7 +1,6 @@
 use quote::{format_ident, quote};
 
 use crate::utilities::extract_fields::EnumFields;
-
 pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2::TokenStream {
     let struct_name = format_ident!("{}Builder", name);
     let name = format_ident!("{}", name);
@@ -56,25 +55,25 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
             }
         }
 
-        impl TryFrom<&#struct_name> for #name {
+        impl auto_lsp::traits::convert::TryFromCtx<&#struct_name> for #name {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from(builder: &#struct_name) -> Result<Self, Self::Error> {
+            fn try_from_ctx(builder: &#struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
                 use std::sync::{Arc, RwLock};
                 #(
                     if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
-                        return Ok(Self::#variant_names(variant.clone().try_into()?));
+                        return Ok(Self::#variant_names(variant.clone().try_into_ctx(ctx)?));
                     };
                 )*
                 panic!("")
             }
         }
 
-        impl TryFrom<&#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+        impl auto_lsp::traits::convert::TryFromCtx<&#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from(builder: &#struct_name) -> Result<Self, Self::Error> {
-                let item = #name::try_from(builder)?;
+            fn try_from_ctx(builder: &#struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
+                let item = #name::try_from_ctx(builder, ctx)?;
                 let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                 result.write().unwrap().inject_parent(result.clone());
                 Ok(result)

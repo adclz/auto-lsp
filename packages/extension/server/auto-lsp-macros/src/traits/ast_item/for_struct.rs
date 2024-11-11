@@ -125,7 +125,8 @@ pub fn generate_struct_ast_item(query_name: &str, code_gen: &mut CodeGen, input:
                                 if let Some(field) = item.borrow().downcast_ref::<#field_builder_names>() {
                                     drop(#field_names);
                                     // todo: add drop handler when arc goes out of scope
-                                    self.#field_names = Arc::new(RwLock::new(field.clone().try_into().unwrap()));
+                                    //self.#field_names = Arc::new(RwLock::new(field.clone().try_into().unwrap()));
+                                    todo!()
                                 }
                             }
                         }

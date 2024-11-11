@@ -180,10 +180,10 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
             }
         }
 
-        impl TryFrom<#struct_name> for #name {
+        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for #name {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from(builder: #struct_name) -> Result<Self, Self::Error> {
+            fn try_from_ctx(builder: #struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
                 use std::sync::{Arc, RwLock};
                 let builder_range = builder.get_lsp_range();
 
@@ -195,7 +195,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                     .downcast_ref::<#field_builder_names>()
                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names))))?
                     .clone()
-                    .try_into()?;
+                    .try_into_ctx(ctx)?;
                 )*
                 #(let #field_option_names = match builder.#field_option_names {
                         Some(builder) => {
@@ -204,7 +204,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                                 .downcast_ref::<#field_option_builder_names>()
                                 .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_option_builder_names))))?
                                 .clone()
-                                .try_into()?;
+                                .try_into_ctx(ctx)?;
                             Some(item)
                         },
                         None => None
@@ -219,7 +219,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                             .downcast_ref::<#field_vec_builder_names>()
                             .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_vec_builder_names))))?
                             .clone()
-                            .try_into()?;
+                            .try_into_ctx(ctx)?;
                         Ok(item)
                     })
                     .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
@@ -234,7 +234,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                                 .downcast_ref::<#field_hashmap_builder_names>()
                                 .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?} at key {}", stringify!(#field_hashmap_builder_names), key)))?
                                 .clone()
-                                .try_into()?;
+                                .try_into_ctx(ctx)?;
                             Ok((key, item))
                         })
                         .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
@@ -255,11 +255,11 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
             }
         }
 
-        impl TryFrom<#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from(builder: #struct_name) -> Result<Self, Self::Error> {
-                let item = #name::try_from(builder)?;
+            fn try_from_ctx(builder: #struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
+                let item = #name::try_from_ctx(builder, ctx)?;
                 let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                 result.write().unwrap().inject_parent(result.clone());
                 Ok(result)
@@ -339,10 +339,10 @@ pub fn generate_reference_builder_item(
             }
         }
 
-        impl TryFrom<#struct_name> for #name {
+        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for #name {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from(builder: #struct_name) -> Result<Self, Self::Error> {
+            fn try_from_ctx(builder: #struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
                 use std::sync::{Arc, RwLock};
                 let builder_range = builder.get_lsp_range();
 
@@ -354,7 +354,7 @@ pub fn generate_reference_builder_item(
                     .downcast_ref::<#field_builder_names>()
                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names))))?
                     .clone()
-                    .try_into()?;
+                    .try_into_ctx(ctx)?;
                 )*
                 #(let #field_vec_names = builder
                     .#field_vec_names
@@ -365,7 +365,7 @@ pub fn generate_reference_builder_item(
                             .downcast_ref::<#field_vec_builder_names>()
                             .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_vec_builder_names))))?
                             .clone()
-                            .try_into()?;
+                            .try_into_ctx(ctx)?;
                         Ok(item)
                     })
                     .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
@@ -382,11 +382,11 @@ pub fn generate_reference_builder_item(
             }
         }
 
-        impl TryFrom<#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from(builder: #struct_name) -> Result<Self, Self::Error> {
-                let item = #name::try_from(builder)?;
+            fn try_from_ctx(builder: #struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
+                let item = #name::try_from_ctx(builder, ctx)?;
                 let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                 result.write().unwrap().inject_parent(result.clone());
                 Ok(result)
