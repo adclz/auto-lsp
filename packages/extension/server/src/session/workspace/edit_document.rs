@@ -1,4 +1,4 @@
-use auto_lsp::builders::ast_item::builder;
+use auto_lsp::traits::workspace;
 use lsp_types::DidChangeTextDocumentParams;
 
 use super::tree_sitter_extend::{
@@ -44,25 +44,36 @@ impl Session {
 
         cst = edit_tree(workspace, &params)?;
 
+        let workspace = self
+            .workspaces
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
         let source_code = workspace.document.get_content(None).as_bytes();
 
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
-        ast = builder(
-            &cst_parser.queries.outline,
-            ast_builder,
-            cst.root_node(),
-            source_code,
-        )
-        .into_iter()
-        .filter_map(|f| match f {
-            Ok(ast) => Some(ast),
-            Err(e) => {
-                errors.push(e);
-                None
-            }
-        })
-        .collect();
+        ast = self
+            .builder(
+                &cst_parser.queries.outline,
+                ast_builder,
+                cst.root_node(),
+                source_code,
+            )
+            .into_iter()
+            .filter_map(|f| match f {
+                Ok(ast) => Some(ast),
+                Err(e) => {
+                    errors.push(e);
+                    None
+                }
+            })
+            .collect();
+
+        let workspace = self
+            .workspaces
+            .get_mut(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         workspace.cst = cst;
         workspace.ast = ast;
