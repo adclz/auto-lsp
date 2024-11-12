@@ -1,4 +1,4 @@
-use crate::builders::ast_item::{BinderFn, ItemBinderFn};
+use crate::types::binder_closures::{BinderFn, ItemBinderFn};
 
 pub struct AstBuilder {
     pub query_to_builder: BinderFn,

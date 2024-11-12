@@ -1,5 +1,9 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{RwLock, Weak},
+};
 
+use auto_lsp::traits::{ast_item::AstItem, workspace::WorkspaceContext};
 use lsp_server::Connection;
 use lsp_types::Url;
 use workspace::Workspace;
@@ -23,5 +27,11 @@ impl Session {
             extensions: HashMap::new(),
             workspaces: HashMap::new(),
         }
+    }
+}
+
+impl WorkspaceContext for Session {
+    fn find(&self, position: &tree_sitter::Range, url: &Url) -> Option<Weak<RwLock<dyn AstItem>>> {
+        todo!()
     }
 }

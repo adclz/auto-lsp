@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use auto_lsp::traits::{ast_builder::AstBuilder, ast_item::AstItem};
+use auto_lsp::{macros::ast_builder::AstBuilder, traits::ast_item::AstItem};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Diagnostic;
 use tree_sitter::Tree;

@@ -1,5 +1,5 @@
 use auto_lsp::builder_error;
-use auto_lsp::traits::ast_builder::AstBuilder;
+use auto_lsp::macros::ast_builder::AstBuilder;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::{AstItemBuilder, DeferredAstItemBuilder};
 use lsp_types::Diagnostic;
