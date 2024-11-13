@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use auto_lsp::traits::workspace;
 use lsp_types::DidChangeTextDocumentParams;
 
@@ -53,12 +55,15 @@ impl Session {
 
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
+        let arc_uri = Arc::new(uri.clone());
+
         ast = self
             .builder(
                 &cst_parser.queries.outline,
                 ast_builder,
                 cst.root_node(),
                 source_code,
+                arc_uri,
             )
             .into_iter()
             .filter_map(|f| match f {

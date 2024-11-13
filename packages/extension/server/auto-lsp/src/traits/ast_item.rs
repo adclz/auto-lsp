@@ -1,6 +1,6 @@
 use crate::builders::semantic_tokens::SemanticTokensBuilder;
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_types::{CompletionItem, DocumentSymbol};
+use lsp_types::{CompletionItem, DocumentSymbol, Url};
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::{Arc, RwLock, Weak};
@@ -8,6 +8,7 @@ use std::sync::{Arc, RwLock, Weak};
 use super::ast_item_builder::AstItemBuilder;
 
 pub trait AstItem: Downcast + Send + Sync {
+    fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> tree_sitter::Range;
     fn edit_range(&mut self, shift: i32) {
         let mut range = self.get_range();
@@ -110,6 +111,10 @@ pub trait AstItem: Downcast + Send + Sync {
 impl_downcast!(AstItem);
 
 impl AstItem for Arc<RwLock<dyn AstItem>> {
+    fn get_url(&self) -> Arc<Url> {
+        self.read().unwrap().get_url()
+    }
+
     fn get_range(&self) -> tree_sitter::Range {
         self.read().unwrap().get_range()
     }

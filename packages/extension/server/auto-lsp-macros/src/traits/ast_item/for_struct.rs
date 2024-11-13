@@ -29,6 +29,10 @@ pub fn generate_struct_ast_item(query_name: &str, code_gen: &mut CodeGen, input:
 
     code_gen.impl_ast_item.push(
         quote! {
+            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
+                self.url.clone()
+            }
+
             fn get_range(&self) -> tree_sitter::Range {
                 self.range
             }

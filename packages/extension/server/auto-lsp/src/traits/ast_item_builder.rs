@@ -1,8 +1,9 @@
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_types::Diagnostic;
+use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
 use std::fmt::Formatter;
 use std::rc::Rc;
+use std::sync::Arc;
 use tree_sitter::Query;
 
 pub enum DeferredAstItemBuilder {
@@ -21,6 +22,7 @@ pub type DeferredClosure = Box<
 
 pub trait AstItemBuilder: Downcast {
     fn new(
+        url: Arc<lsp_types::Url>,
         _query: &tree_sitter::Query,
         query_index: usize,
         range: tree_sitter::Range,
@@ -32,6 +34,7 @@ pub trait AstItemBuilder: Downcast {
 
     fn query_binder(
         &self,
+        url: Arc<Url>,
         capture: &tree_sitter::QueryCapture,
         query: &tree_sitter::Query,
     ) -> Option<Rc<RefCell<dyn AstItemBuilder>>>;
@@ -42,6 +45,8 @@ pub trait AstItemBuilder: Downcast {
         node: Rc<RefCell<dyn AstItemBuilder>>,
         source_code: &[u8],
     ) -> Result<DeferredAstItemBuilder, Diagnostic>;
+
+    fn get_url(&self) -> Arc<Url>;
 
     fn get_range(&self) -> tree_sitter::Range;
 

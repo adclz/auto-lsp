@@ -2,7 +2,7 @@ use auto_lsp::builder_error;
 use auto_lsp::macros::ast_builder::AstBuilder;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::{AstItemBuilder, DeferredAstItemBuilder};
-use lsp_types::Diagnostic;
+use lsp_types::{Diagnostic, Url};
 use std::rc::Rc;
 use std::sync::RwLock;
 use std::{cell::RefCell, sync::Arc};
@@ -24,66 +24,6 @@ struct Deferred {
 
 fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range) -> bool {
     range1.start_byte <= range2.start_byte && range1.end_byte >= range2.end_byte
-}
-
-pub fn localized_builder(
-    query: &tree_sitter::Query,
-    ast_builder: &AstBuilder,
-    root_node: tree_sitter::Node,
-    source_code: &[u8],
-    range: std::ops::Range<usize>,
-) -> Result<Option<Rc<RefCell<dyn AstItemBuilder>>>, Vec<Diagnostic>> {
-    let mut errors = vec![];
-    let mut cursor = tree_sitter::QueryCursor::new();
-    cursor.set_byte_range(range);
-
-    let mut captures = cursor.captures(&query, root_node, source_code);
-
-    let mut root = None;
-    let mut stack: Vec<Rc<RefCell<dyn AstItemBuilder>>> = vec![];
-
-    while let Some((m, capture_index)) = captures.next() {
-        let capture = m.captures[*capture_index];
-        let capture_index = capture.index as usize;
-
-        let node = match (ast_builder.query_to_builder)(&capture, &query) {
-            Some(builder) => builder,
-            None => {
-                panic!(
-                    "Warning: Failed to create builder for query: {:?}",
-                    query.capture_names()[capture_index as usize]
-                );
-            }
-        };
-        let mut parent = stack.pop();
-        loop {
-            match parent {
-                None => {
-                    if root.is_some() {
-                        return Ok(root);
-                    } else {
-                        root = Some(node.clone());
-                        stack.push(node.clone());
-                    }
-                }
-                Some(parent) => {
-                    if intersecting_ranges(&parent.borrow().get_range(), &node.borrow().get_range())
-                    {
-                        if let Err(err) =
-                            parent.borrow_mut().add(&query, node.clone(), &source_code)
-                        {
-                            errors.push(err);
-                        };
-                        stack.push(parent.clone());
-                        stack.push(node.clone());
-                        break;
-                    };
-                }
-            }
-            parent = stack.pop();
-        }
-    }
-    Ok(root)
 }
 
 fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Range {
@@ -108,6 +48,7 @@ impl Session {
         ast_builder: &AstBuilder,
         root_node: tree_sitter::Node,
         source_code: &[u8],
+        url: Arc<Url>,
     ) -> Vec<Result<Arc<RwLock<dyn AstItem>>, Diagnostic>> {
         let mut errors = vec![];
 
@@ -133,7 +74,11 @@ impl Session {
             loop {
                 match &parent {
                     None => {
-                        let node = match (ast_builder.query_to_builder)(&capture, &query) {
+                        let node = match (ast_builder.query_to_builder)(
+                            url.clone(),
+                            &capture,
+                            &query,
+                        ) {
                             Some(builder) => builder,
                             None => {
                                 errors.push(builder_error!(
@@ -158,21 +103,22 @@ impl Session {
                     Some(ref parent) => {
                         if intersecting_ranges(&parent.borrow().get_range(), &capture.node.range())
                         {
-                            let node = match parent.borrow().query_binder(&capture, query) {
-                                Some(builder) => builder,
-                                None => {
-                                    errors.push(builder_error!(
-                                        tree_sitter_range_to_lsp_range(&capture.node.range()),
-                                        format!(
+                            let node =
+                                match parent.borrow().query_binder(url.clone(), &capture, query) {
+                                    Some(builder) => builder,
+                                    None => {
+                                        errors.push(builder_error!(
+                                            tree_sitter_range_to_lsp_range(&capture.node.range()),
+                                            format!(
                                             "Failed to create builder for query: {:?} using {:?}",
                                             query.capture_names()[capture_index as usize],
                                             query.capture_names()
                                                 [parent.borrow().get_query_index()]
                                         )
-                                    ));
-                                    break;
-                                }
-                            };
+                                        ));
+                                        break;
+                                    }
+                                };
 
                             eprintln!(
                                 "Add {:?} to parent {:?}",

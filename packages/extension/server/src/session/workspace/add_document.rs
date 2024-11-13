@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Url;
 
@@ -41,12 +43,15 @@ impl Session {
         cst = cst_parser.try_parse(&source_code, None).unwrap().clone();
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
+        let arc_uri = Arc::new(uri.clone());
+
         ast = self
             .builder(
                 &cst_parser.queries.outline,
                 ast_builder,
                 cst.root_node(),
                 source_code,
+                arc_uri,
             )
             .into_iter()
             .filter_map(|f| match f {

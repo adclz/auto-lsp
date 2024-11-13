@@ -14,6 +14,14 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
 
     code_gen.impl_ast_item.push(
         quote! {
+            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
+                match self {
+                    #(
+                        Self::#variant_names(variant) => variant.get_url(),
+                    )*
+                }
+            }
+            
             fn get_range(&self) -> tree_sitter::Range {
                 match self {
                     #(

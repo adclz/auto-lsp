@@ -193,11 +193,12 @@ pub fn ast(_args: TokenStream, input: TokenStream) -> TokenStream {
         #enum_item
 
         impl #enum_name {
-            pub fn query_binder(capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
+            pub fn query_binder(url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
                     if let true = #variant_names::QUERY_NAMES.contains(&query_name)  {
                             return Some(std::rc::Rc::new(std::cell::RefCell::new(#variant_builder_names::new(
+                                url,
                                 &query,
                                 capture.index as usize,
                                 capture.node.range(),

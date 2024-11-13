@@ -71,6 +71,12 @@ pub fn generate_fields(input: &mut DeriveInput, code_gen: &mut CodeGen, weak: bo
                             .parse2(quote! { parent: Option<Weak<RwLock<dyn AstItem>>> })
                             .unwrap(),
                     );
+
+                    fields.named.push(
+                        syn::Field::parse_named
+                            .parse2(quote! { url: Arc<lsp_types::Url> })
+                            .unwrap(),
+                    );
                 }
                 _ => (),
             }
@@ -105,6 +111,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
     quote! {
         #[derive(Clone, Debug)]
         pub struct #struct_name {
+            url: std::sync::Arc<lsp_types::Url>,
             query_index: usize,
             range: tree_sitter::Range,
             start_position: tree_sitter::Point,
@@ -119,8 +126,9 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
-            fn new(_query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
+            fn new(url: Arc<lsp_types::Url>, _query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
                 Self {
+                    url,
                     query_index,
                     range,
                     start_position,
@@ -135,11 +143,12 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                 }
             }
 
-            fn query_binder(&self, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
+            fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
                     if let true = #field_types_names::QUERY_NAMES.contains(&query_name)  {
                             return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_builder_names::new(
+                                url,
                                 &query,
                                 capture.index as usize,
                                 capture.node.range(),
@@ -151,6 +160,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                 #(
                     if let true = #field_option_types_names::QUERY_NAMES.contains(&query_name)  {
                             return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_option_builder_names::new(
+                                url,
                                 &query,
                                 capture.index as usize,
                                 capture.node.range(),
@@ -162,6 +172,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                 #(
                     if let true = #field_vec_types_names::QUERY_NAMES.contains(&query_name)  {
                             return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_vec_builder_names::new(
+                                url,
                                 &query,
                                 capture.index as usize,
                                 capture.node.range(),
@@ -173,6 +184,7 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                 #(
                     if let true = #field_hashmap_types_names::QUERY_NAMES.contains(&query_name)  {
                             return Some(std::rc::Rc::new(std::cell::RefCell::new(#field_hashmap_builder_names::new(
+                                url,
                                 &query,
                                 capture.index as usize,
                                 capture.node.range(),
@@ -245,6 +257,10 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                 Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#struct_name))))
             }
 
+            fn get_url(&self) -> Arc<lsp_types::Url> {
+                self.url.clone()
+            }
+
             fn get_range(&self) -> tree_sitter::Range {
                 self.range
             }
@@ -274,7 +290,8 @@ pub fn generate_try_from_ctx(name: &str, input: &StructFields) -> proc_macro2::T
     let option_commas = &input.after_option_commas;
     let vec_commas = &input.after_vec_commas;
 
-    quote! {        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for #name {
+    quote! {
+        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for #name {
             type Error = lsp_types::Diagnostic;
 
             fn try_from_ctx(builder: #struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
@@ -334,6 +351,7 @@ pub fn generate_try_from_ctx(name: &str, input: &StructFields) -> proc_macro2::T
                         .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
                 )*
                 Ok(#name {
+                    url: builder.url,
                     range: builder.range,
                     start_position: builder.start_position,
                     end_position: builder.end_position,
