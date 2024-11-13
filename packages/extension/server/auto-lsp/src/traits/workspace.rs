@@ -5,5 +5,5 @@ use lsp_types::Url;
 use super::ast_item::AstItem;
 
 pub trait WorkspaceContext {
-    fn find(&self, node: &dyn AstItem, url: &Url) -> Vec<Weak<RwLock<dyn AstItem>>>;
+    fn find(&self, node: &dyn AstItem, url: &Url) -> Option<Weak<RwLock<dyn AstItem>>>;
 }
