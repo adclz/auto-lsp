@@ -119,6 +119,22 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
         }
 
         impl auto_lsp::traits::ast_item_builder::AstItemBuilder for #struct_name {
+            fn new(_query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
+                Self {
+                    query_index,
+                    range,
+                    start_position,
+                    end_position,
+                    #(#field_names: None),*
+                    #(#commas)*
+                    #(#field_option_names: None),*
+                    #(#option_commas)*
+                    #(#field_vec_names: vec!()),*
+                    #(#vec_commas)*
+                    #(#field_hashmap_names: HashMap::new()),*
+                }
+            }
+
             fn query_binder(&self, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
@@ -235,24 +251,6 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
 
             fn get_query_index(&self) -> usize {
                 self.query_index
-            }
-        }
-
-        impl #struct_name {
-            pub fn new(_query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
-                Self {
-                    query_index,
-                    range,
-                    start_position,
-                    end_position,
-                    #(#field_names: None),*
-                    #(#commas)*
-                    #(#field_option_names: None),*
-                    #(#option_commas)*
-                    #(#field_vec_names: vec!()),*
-                    #(#vec_commas)*
-                    #(#field_hashmap_names: HashMap::new()),*
-                }
             }
         }
 

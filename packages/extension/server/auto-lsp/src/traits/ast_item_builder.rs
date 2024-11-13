@@ -20,6 +20,16 @@ pub type DeferredClosure = Box<
 >;
 
 pub trait AstItemBuilder: Downcast {
+    fn new(
+        _query: &tree_sitter::Query,
+        query_index: usize,
+        range: tree_sitter::Range,
+        start_position: tree_sitter::Point,
+        end_position: tree_sitter::Point,
+    ) -> Self
+    where
+        Self: Sized;
+
     fn query_binder(
         &self,
         capture: &tree_sitter::QueryCapture,
