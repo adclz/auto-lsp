@@ -16,7 +16,7 @@ use quote::{format_ident, quote};
 use syn::parse::Parser;
 use syn::{parse_macro_input, DeriveInput};
 
-use traits::ast_builder::for_struct::generate_fields;
+use traits::ast_builder::for_struct::{generate_fields, generate_try_from_ctx};
 use traits::ast_item::for_enum::generate_enum_ast_item;
 use traits::ast_item::for_struct::generate_reference_ast_item;
 use utilities::{
@@ -66,6 +66,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
 
     // Add builder item
     let builder_item = generate_struct_builder_item(input_name.to_string().as_str(), &input_data);
+    let try_from_ctx = generate_try_from_ctx(input_name.to_string().as_str(), &input_data);
 
     // Add features
     if let Some(features) = args.features {
@@ -97,6 +98,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         #builder_item
+        #try_from_ctx
     })
 }
 

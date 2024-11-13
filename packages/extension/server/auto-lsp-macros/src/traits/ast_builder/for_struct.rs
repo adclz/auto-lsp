@@ -253,8 +253,28 @@ pub fn generate_struct_builder_item(name: &str, input: &StructFields) -> proc_ma
                 self.query_index
             }
         }
+    }
+}
 
-        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for #name {
+pub fn generate_try_from_ctx(name: &str, input: &StructFields) -> proc_macro2::TokenStream {
+    let struct_name = format_ident!("{}Builder", name);
+    let name = format_ident!("{}", name);
+
+    let field_names = &input.field_names;
+    let field_vec_names = &input.field_vec_names;
+    let field_option_names = &input.field_option_names;
+    let field_hashmap_names = &input.field_hashmap_names;
+
+    let field_builder_names = &input.field_builder_names;
+    let field_vec_builder_names = &input.field_vec_builder_names;
+    let field_option_builder_names = &input.field_option_builder_names;
+    let field_hashmap_builder_names = &input.field_hashmap_builder_names;
+
+    let commas = &input.first_commas;
+    let option_commas = &input.after_option_commas;
+    let vec_commas = &input.after_vec_commas;
+
+    quote! {        impl auto_lsp::traits::convert::TryFromCtx<#struct_name> for #name {
             type Error = lsp_types::Diagnostic;
 
             fn try_from_ctx(builder: #struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
