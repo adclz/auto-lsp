@@ -11,7 +11,6 @@ use darling::FromMeta;
 #[derive(Debug, FromMeta)]
 pub struct AstStructParams {
     pub query_name: String,
-    pub reference_seq: Option<bool>,
     pub features: Option<AstStructFeatures>,
 }
 

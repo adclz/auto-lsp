@@ -16,7 +16,7 @@ use quote::{format_ident, quote};
 use syn::parse::Parser;
 use syn::{parse_macro_input, DeriveInput};
 
-use traits::ast_builder::for_struct::generate_reference_builder_item;
+use traits::ast_builder::for_struct::generate_fields;
 use traits::ast_item::for_enum::generate_enum_ast_item;
 use traits::ast_item::for_struct::generate_reference_ast_item;
 use utilities::{
@@ -61,25 +61,11 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let mut code_gen = CodeGen::default();
 
-    let builder_item;
-    match args.reference_seq {
-        Some(a) => {
-            // Add reference implementation
-            generate_reference_ast_item(args.query_name.as_str(), &mut code_gen, &input_data);
+    // Add AstItem trait implementation
+    generate_struct_ast_item(args.query_name.as_str(), &mut code_gen, &input_data);
 
-            // Add builder item
-            builder_item =
-                generate_reference_builder_item(input_name.to_string().as_str(), &input_data);
-        }
-        None => {
-            // Add AstItem trait implementation
-            generate_struct_ast_item(args.query_name.as_str(), &mut code_gen, &input_data);
-
-            // Add builder item
-            builder_item =
-                generate_struct_builder_item(input_name.to_string().as_str(), &input_data);
-        }
-    }
+    // Add builder item
+    let builder_item = generate_struct_builder_item(input_name.to_string().as_str(), &input_data);
 
     // Add features
     if let Some(features) = args.features {
@@ -93,65 +79,8 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     // Fields cannot be generated from the quote! macro, so we need to manually add them
-    match &mut input.data {
-        syn::Data::Struct(ref mut struct_data) => {
-            match &mut struct_data.fields {
-                syn::Fields::Named(fields) => {
-                    // Transform each field's type to Arc<RwLock<OriginalType>>
-                    for field in fields.named.iter_mut() {
-                        let attributes = field.attrs.clone();
-                        let raw_type_name = format_ident!("{}", get_raw_type_name(&field.ty));
-                        let name = field.ident.clone();
+    generate_fields(&mut input, &mut code_gen, false);
 
-                        *field = if let true = is_vec(&field.ty) {
-                            syn::Field::parse_named
-                                .parse2(quote! {
-                                   #(#attributes)*
-                                   #name: Vec<Arc<RwLock<#raw_type_name>>>
-                                })
-                                .unwrap()
-                        } else if let true = is_option(&field.ty) {
-                            syn::Field::parse_named
-                                .parse2(quote! {
-                                   #(#attributes)*
-                                   #name: Option<Arc<RwLock<#raw_type_name>>>
-                                })
-                                .unwrap()
-                        } else if let true = is_hashmap(&field.ty) {
-                            syn::Field::parse_named
-                                .parse2(quote! {
-                                   #(#attributes)*
-                                   #name: HashMap<String, Arc<RwLock<#raw_type_name>>>
-                                })
-                                .unwrap()
-                        } else {
-                            syn::Field::parse_named
-                                .parse2(quote! {
-                                   #(#attributes)*
-                                   #name: Arc<RwLock<#raw_type_name>>
-                                })
-                                .unwrap()
-                        };
-                    }
-
-                    for field in &code_gen.fields {
-                        fields
-                            .named
-                            .push(syn::Field::parse_named.parse2(field.clone()).unwrap());
-                    }
-                    fields.named.push(
-                        syn::Field::parse_named
-                            .parse2(quote! { parent: Option<Arc<RwLock<dyn AstItem>>> })
-                            .unwrap(),
-                    );
-                }
-                _ => (),
-            }
-        }
-        _ => panic!("This proc macro only works with struct"),
-    };
-
-    let code_gen_fields = code_gen.fields;
     let code_gen_impl = code_gen.impl_base;
     let code_gen_impl_ast_item = code_gen.impl_ast_item;
 
@@ -196,8 +125,6 @@ pub fn ast_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     // Add builder item
     let builder_item = generate_enum_builder_item(enum_name.to_string().as_str(), &input_data);
-
-    let code_gen_fields = code_gen.fields;
     let code_gen_impl = code_gen.impl_base;
     let code_gen_impl_ast_item = code_gen.impl_ast_item;
 
