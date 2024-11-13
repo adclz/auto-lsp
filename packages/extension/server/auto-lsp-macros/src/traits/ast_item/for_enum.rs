@@ -22,7 +22,7 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
                 }
             }
 
-            fn get_parent(&self) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>> {
+            fn get_parent(&self) -> Option<std::sync::Weak<std::sync::RwLock<dyn AstItem>>> {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.get_parent(),
@@ -30,7 +30,7 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
                 }
             }
 
-            fn set_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>) {
+            fn set_parent(&mut self, parent: std::sync::Weak<std::sync::RwLock<dyn AstItem>>) {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.set_parent(parent),
@@ -38,7 +38,7 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
                 }
             }
 
-            fn inject_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>) {
+            fn inject_parent(&mut self, parent: std::sync::Weak<std::sync::RwLock<dyn AstItem>>) {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.inject_parent(parent),

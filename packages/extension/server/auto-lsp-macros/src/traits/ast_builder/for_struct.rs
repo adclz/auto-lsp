@@ -68,7 +68,7 @@ pub fn generate_fields(input: &mut DeriveInput, code_gen: &mut CodeGen, weak: bo
 
                     fields.named.push(
                         syn::Field::parse_named
-                            .parse2(quote! { parent: Option<#pointer<RwLock<dyn AstItem>>> })
+                            .parse2(quote! { parent: Option<Weak<RwLock<dyn AstItem>>> })
                             .unwrap(),
                     );
                 }
@@ -355,7 +355,7 @@ pub fn generate_try_from_ctx(name: &str, input: &StructFields) -> proc_macro2::T
             fn try_from_ctx(builder: #struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
                 let item = #name::try_from_ctx(builder, ctx)?;
                 let result = std::sync::Arc::new(std::sync::RwLock::new(item));
-                result.write().unwrap().inject_parent(result.clone());
+                result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
                 Ok(result)
             }
         }

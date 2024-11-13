@@ -73,7 +73,7 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
             fn try_from_ctx(builder: &#struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
                 let item = #name::try_from_ctx(builder, ctx)?;
                 let result = std::sync::Arc::new(std::sync::RwLock::new(item));
-                result.write().unwrap().inject_parent(result.clone());
+                result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
                 Ok(result)
             }
         }

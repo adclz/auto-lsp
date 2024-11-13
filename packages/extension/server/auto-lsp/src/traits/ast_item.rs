@@ -3,7 +3,7 @@ use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{CompletionItem, DocumentSymbol};
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Weak};
 
 use super::ast_item_builder::AstItemBuilder;
 
@@ -25,13 +25,13 @@ pub trait AstItem: Downcast + Send + Sync {
         std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
     }
 
-    fn get_parent(&self) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>>;
-    fn set_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>);
-    fn inject_parent(&mut self, parent: std::sync::Arc<std::sync::RwLock<dyn AstItem>>);
-    fn get_highest_parent(&self) -> std::sync::Arc<std::sync::RwLock<dyn AstItem>> {
+    fn get_parent(&self) -> Option<Weak<RwLock<dyn AstItem>>>;
+    fn set_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>);
+    fn inject_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>);
+    fn get_highest_parent(&self) -> Weak<RwLock<dyn AstItem>> {
         let mut parent = self.get_parent();
         while let Some(p) = parent {
-            parent = p.read().unwrap().get_parent();
+            parent = p.upgrade().unwrap().get_parent();
         }
         parent.unwrap()
     }
@@ -44,10 +44,7 @@ pub trait AstItem: Downcast + Send + Sync {
         [0, 0]
     }
 
-    fn find_at_offset(
-        &self,
-        offset: &usize,
-    ) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>>;
+    fn find_at_offset(&self, offset: &usize) -> Option<Arc<RwLock<dyn AstItem>>>;
 
     // Accessibility
 
@@ -117,15 +114,15 @@ impl AstItem for Arc<RwLock<dyn AstItem>> {
         self.read().unwrap().get_range()
     }
 
-    fn get_parent(&self) -> Option<Arc<RwLock<dyn AstItem>>> {
+    fn get_parent(&self) -> Option<Weak<RwLock<dyn AstItem>>> {
         self.read().unwrap().get_parent()
     }
 
-    fn set_parent(&mut self, parent: Arc<RwLock<dyn AstItem>>) {
+    fn set_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>) {
         self.write().unwrap().set_parent(parent)
     }
 
-    fn inject_parent(&mut self, parent: Arc<RwLock<dyn AstItem>>) {
+    fn inject_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>) {
         self.write().unwrap().inject_parent(parent)
     }
 

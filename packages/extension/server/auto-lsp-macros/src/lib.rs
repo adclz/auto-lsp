@@ -18,7 +18,6 @@ use syn::{parse_macro_input, DeriveInput};
 
 use traits::ast_builder::for_struct::{generate_fields, generate_try_from_ctx};
 use traits::ast_item::for_enum::generate_enum_ast_item;
-use traits::ast_item::for_struct::generate_reference_ast_item;
 use utilities::{
     extract_fields::match_enum_fields,
     filter::{get_raw_type_name, is_hashmap, is_option, is_vec},
