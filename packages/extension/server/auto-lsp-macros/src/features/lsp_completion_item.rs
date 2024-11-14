@@ -1,9 +1,14 @@
 extern crate proc_macro;
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, AstStructFeatures, CodeGen};
+use crate::{
+    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
+    AstStructFeatures, CodeGen, ToCodeGen,
+};
 use darling::FromMeta;
 use quote::quote;
 use syn::Path;
+
+use super::lsp_document_symbol::Feature;
 
 #[derive(Debug, FromMeta)]
 pub enum CompletionItemFeature {
@@ -53,6 +58,40 @@ pub fn codegen_completion_item(completion: &CompletionItemFeature, code_gen: &mu
                     });
                 }
             })
+        }
+    }
+}
+
+pub struct CompletionItemsBuilder<'a> {
+    pub params: Option<&'a Feature<CompletionItemFeature>>,
+    pub fields: &'a StructFields,
+}
+
+impl<'a> CompletionItemsBuilder<'a> {
+    pub fn new(
+        params: Option<&'a Feature<CompletionItemFeature>>,
+        fields: &'a StructFields,
+    ) -> Self {
+        Self { params, fields }
+    }
+}
+
+impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
+    fn to_code_gen(&self, codegen: &mut CodeGen) {
+        match self.params {
+            None => codegen.impl_base.push(quote! {
+                fn build_completion_items(
+                    &self,
+                    _acc: &mut Vec<CompletionItem>,
+                    _doc: &lsp_textdocument::FullTextDocument,
+                ) {}
+            }),
+            Some(params) => match params {
+                Feature::User => (),
+                Feature::CodeGen(strategy) => {
+                    codegen_completion_item(strategy, codegen);
+                }
+            },
         }
     }
 }

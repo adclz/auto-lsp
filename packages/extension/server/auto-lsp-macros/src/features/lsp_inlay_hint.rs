@@ -6,8 +6,10 @@ use syn::Path;
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    CodeGen, AstStructFeatures,
+    AstStructFeatures, CodeGen, ToCodeGen,
 };
+
+use super::lsp_document_symbol::Feature;
 
 #[derive(Debug, FromMeta)]
 pub struct InlayHintFeature {
@@ -55,4 +57,31 @@ fn codegen_hover_info(path: &InlayHintFeature, code_gen: &mut CodeGen, input: &S
             )*
         }
     });
+}
+
+pub struct InlayHintsBuilder<'a> {
+    pub params: Option<&'a Feature<InlayHintFeature>>,
+    pub fields: &'a StructFields,
+}
+
+impl<'a> InlayHintsBuilder<'a> {
+    pub fn new(params: Option<&'a Feature<InlayHintFeature>>, fields: &'a StructFields) -> Self {
+        Self { params, fields }
+    }
+}
+
+impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
+    fn to_code_gen(&self, codegen: &mut CodeGen) {
+        match self.params {
+            None => codegen.impl_base.push(quote! {
+                fn build_inlay_hint(&self, _acc: &mut Vec<lsp_types::InlayHint>) {}
+            }),
+            Some(params) => match params {
+                Feature::User => (),
+                Feature::CodeGen(inlay) => {
+                    todo!()
+                }
+            },
+        }
+    }
 }

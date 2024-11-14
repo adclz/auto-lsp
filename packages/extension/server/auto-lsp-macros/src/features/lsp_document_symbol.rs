@@ -1,9 +1,21 @@
 extern crate proc_macro;
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen, AstStructFeatures};
+use crate::{
+    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
+    AstStructFeatures, CodeGen, ToCodeGen,
+};
 use darling::{util::PathList, FromMeta};
 use quote::quote;
 use syn::Path;
+
+#[derive(Debug, FromMeta)]
+pub enum Feature<T>
+where
+    T: Sized + FromMeta,
+{
+    User,
+    CodeGen(T),
+}
 
 #[derive(Debug, FromMeta)]
 pub struct DocumentSymbolFeature {
@@ -115,4 +127,36 @@ pub fn codegen_document_symbol(strategy: &DocumentSymbolFeature, code_gen: &mut 
         }
         .into()
     );
+}
+
+pub struct DocumentSymbolBuilder<'a> {
+    pub params: Option<&'a Feature<DocumentSymbolFeature>>,
+    pub fields: &'a StructFields,
+}
+
+impl<'a> DocumentSymbolBuilder<'a> {
+    pub fn new(
+        params: Option<&'a Feature<DocumentSymbolFeature>>,
+        fields: &'a StructFields,
+    ) -> Self {
+        Self { params, fields }
+    }
+}
+
+impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
+    fn to_code_gen(&self, codegen: &mut CodeGen) {
+        match self.params {
+            None => codegen.impl_base.push(quote! {
+                fn get_document_symbols(&self, _doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
+                    None
+                }
+            }),
+            Some(params) => match params {
+                Feature::User => (),
+                Feature::CodeGen(strategy) => {
+                    codegen_document_symbol(strategy, codegen);
+                }
+            },
+        }
+    }
 }

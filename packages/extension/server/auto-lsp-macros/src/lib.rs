@@ -23,10 +23,13 @@ use utilities::{
     filter::{get_raw_type_name, is_hashmap, is_option, is_vec},
 };
 
+mod builder;
 mod features;
 mod meta;
 mod traits;
 mod utilities;
+
+use builder::*;
 
 use crate::meta::*;
 use crate::traits::ast_builder::{
