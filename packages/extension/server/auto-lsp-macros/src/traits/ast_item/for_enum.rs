@@ -8,11 +8,11 @@ pub fn generate_enum_ast_item(input: &EnumFields, code_gen: &mut CodeGen) {
     let variant_names = &input.variant_names;
     let variant_types = &input.variant_types_names;
 
-    code_gen.impl_base.push(quote! {
+    code_gen.input.impl_base.push(quote! {
         pub const QUERY_NAMES: &[&str] = constcat::concat_slices!([&str]: #( &#variant_types::QUERY_NAMES ),*);
     });
 
-    code_gen.impl_ast_item.push(
+    code_gen.input.impl_ast_item.push(
         quote! {
             fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
                 match self {

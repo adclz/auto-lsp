@@ -2,15 +2,46 @@ use super::{
     super::utilities::filter::{get_raw_type_name, is_option, is_vec},
     filter::is_hashmap,
 };
+use proc_macro2::{Ident, TokenStream};
 use quote::format_ident;
-use syn::token::Enum;
+use syn::Attribute;
+
+pub struct FieldInfo {
+    pub ident: Ident,
+    pub attr: Vec<Attribute>,
+}
+
+pub trait FieldInfoExtract {
+    fn get_field_names(&self) -> Vec<Ident>;
+    fn apply_to_fields<F>(&self, f: F) -> Vec<TokenStream>
+    where
+        F: Fn(&Ident) -> TokenStream;
+}
+
+impl FieldInfoExtract for Vec<FieldInfo> {
+    fn get_field_names(&self) -> Vec<Ident> {
+        self.iter().map(|field| field.ident.clone()).collect()
+    }
+
+    fn apply_to_fields<F>(&self, f: F) -> Vec<TokenStream>
+    where
+        F: Fn(&Ident) -> TokenStream,
+    {
+        self.iter()
+            .map(|field| {
+                let ident = &field.ident;
+                f(ident)
+            })
+            .collect()
+    }
+}
 
 pub struct StructFields {
     // [Name]: Type
-    pub field_names: Vec<proc_macro2::Ident>,
-    pub field_vec_names: Vec<proc_macro2::Ident>,
-    pub field_option_names: Vec<proc_macro2::Ident>,
-    pub field_hashmap_names: Vec<proc_macro2::Ident>,
+    pub field_names: Vec<FieldInfo>,
+    pub field_vec_names: Vec<FieldInfo>,
+    pub field_option_names: Vec<FieldInfo>,
+    pub field_hashmap_names: Vec<FieldInfo>,
 
     // Field: [Type] -> Ident
     pub field_types_names: Vec<proc_macro2::Ident>,
@@ -23,11 +54,17 @@ pub struct StructFields {
     pub field_vec_builder_names: Vec<proc_macro2::Ident>,
     pub field_option_builder_names: Vec<proc_macro2::Ident>,
     pub field_hashmap_builder_names: Vec<proc_macro2::Ident>,
+}
 
-    // Optionnal comma separator between fields because rust is strict with macro interpolations
-    pub first_commas: Vec<syn::token::Comma>,
-    pub after_option_commas: Vec<syn::token::Comma>,
-    pub after_vec_commas: Vec<syn::token::Comma>,
+impl StructFields {
+    pub fn get_field_names(&self) -> Vec<Ident> {
+        let mut ret = vec![];
+        ret.extend(self.field_names.get_field_names());
+        ret.extend(self.field_vec_names.get_field_names());
+        ret.extend(self.field_option_names.get_field_names());
+        ret.extend(self.field_hashmap_names.get_field_names());
+        ret
+    }
 }
 
 pub struct EnumFields {
@@ -57,10 +94,6 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
         field_vec_builder_names: vec![],
         field_option_builder_names: vec![],
         field_hashmap_builder_names: vec![],
-
-        after_option_commas: vec![],
-        first_commas: vec![],
-        after_vec_commas: vec![],
     };
 
     match data {
@@ -68,9 +101,10 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
             syn::Fields::Named(fields) => {
                 fields.named.iter().for_each(|field| {
                     if let true = is_vec(&field.ty) {
-                        ret_fields
-                            .field_vec_names
-                            .push(field.ident.as_ref().unwrap().clone());
+                        ret_fields.field_vec_names.push(FieldInfo {
+                            ident: field.ident.as_ref().unwrap().clone(),
+                            attr: field.attrs.clone(),
+                        });
                         ret_fields
                             .field_vec_types_names
                             .push(format_ident!("{}", get_raw_type_name(&field.ty)));
@@ -78,9 +112,10 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
                             .field_vec_builder_names
                             .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
                     } else if let true = is_option(&field.ty) {
-                        ret_fields
-                            .field_option_names
-                            .push(field.ident.as_ref().unwrap().clone());
+                        ret_fields.field_option_names.push(FieldInfo {
+                            ident: field.ident.as_ref().unwrap().clone(),
+                            attr: field.attrs.clone(),
+                        });
                         ret_fields
                             .field_option_types_names
                             .push(format_ident!("{}", get_raw_type_name(&field.ty)));
@@ -88,9 +123,10 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
                             .field_option_builder_names
                             .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
                     } else if let true = is_hashmap(&field.ty) {
-                        ret_fields
-                            .field_hashmap_names
-                            .push(field.ident.as_ref().unwrap().clone());
+                        ret_fields.field_hashmap_names.push(FieldInfo {
+                            ident: field.ident.as_ref().unwrap().clone(),
+                            attr: field.attrs.clone(),
+                        });
                         ret_fields
                             .field_hashmap_types_names
                             .push(format_ident!("{}", get_raw_type_name(&field.ty)));
@@ -98,9 +134,10 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
                             .field_hashmap_builder_names
                             .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
                     } else {
-                        ret_fields
-                            .field_names
-                            .push(field.ident.as_ref().unwrap().clone());
+                        ret_fields.field_names.push(FieldInfo {
+                            ident: field.ident.as_ref().unwrap().clone(),
+                            attr: field.attrs.clone(),
+                        });
                         ret_fields
                             .field_types_names
                             .push(format_ident!("{}", get_raw_type_name(&field.ty)));
@@ -114,28 +151,6 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
         },
         _ => panic!("This proc macro only works with struct"),
     };
-
-    if ret_fields.field_names.len() > 0
-        && (ret_fields.field_vec_names.len() > 0 || ret_fields.field_option_names.len() > 0)
-    {
-        ret_fields.first_commas.push(syn::token::Comma::default());
-    }
-
-    if ret_fields.field_option_names.len() > 0 && ret_fields.field_vec_names.len() > 0 {
-        ret_fields
-            .after_option_commas
-            .push(syn::token::Comma::default());
-    }
-
-    if ret_fields.field_hashmap_names.len() > 0
-        && (ret_fields.field_names.len() > 0
-            || ret_fields.field_vec_names.len() > 0
-            || ret_fields.field_option_names.len() > 0)
-    {
-        ret_fields
-            .after_vec_commas
-            .push(syn::token::Comma::default());
-    }
     ret_fields
 }
 
@@ -152,8 +167,6 @@ pub fn match_enum_fields(data: &syn::ItemEnum) -> EnumFields {
         match &variant.fields {
             syn::Fields::Unnamed(fields) => {
                 let first_field = fields.unnamed.first().unwrap();
-                //panic!("{:?}", variant_name);
-
                 ret_fields.variant_names.push(variant_name.clone());
                 ret_fields
                     .variant_types_names

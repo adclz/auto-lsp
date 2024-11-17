@@ -1,6 +1,25 @@
 use quote::{format_ident, quote};
 
-use crate::utilities::extract_fields::EnumFields;
+pub struct AstEnumBuilder<'a> {
+    pub input_name: &'a str,
+    pub input: &'a EnumFields,
+}
+
+impl<'a> AstEnumBuilder<'a> {
+    pub fn new(input_name: &'a str, input: &'a EnumFields) -> Self {
+        Self { input_name, input }
+    }
+}
+
+impl<'a> ToCodeGen for AstEnumBuilder<'a> {
+    fn to_code_gen(&self, codegen: &mut CodeGen) {
+        generate_enum_builder_item(self.input_name, self.input);
+    }
+}
+
+impl<'a> AstEnumBuilder<'a> {}
+
+use crate::{utilities::extract_fields::EnumFields, CodeGen, ToCodeGen};
 pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2::TokenStream {
     let struct_name = format_ident!("{}Builder", name);
     let name = format_ident!("{}", name);

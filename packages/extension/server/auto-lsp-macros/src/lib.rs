@@ -3,46 +3,38 @@
 extern crate proc_macro;
 
 use darling::{ast::NestedMeta, FromMeta};
-use features::scope::generate_scope_feature;
-use features::{
-    lsp_code_lens::generate_code_lens_feature,
-    lsp_completion_item::generate_completion_item_feature,
-    lsp_document_symbol::generate_document_symbol_feature,
-    lsp_hover_info::generate_hover_info_feature, lsp_inlay_hint::generate_inlay_hint_feature,
-    lsp_semantic_token::generate_semantic_token_feature,
-};
 use proc_macro::TokenStream;
-use quote::{format_ident, quote};
-use syn::parse::Parser;
+use quote::{format_ident, quote, ToTokens};
 use syn::{parse_macro_input, DeriveInput};
 
-use traits::ast_builder::for_struct::{generate_fields, generate_try_from_ctx};
 use traits::ast_item::for_enum::generate_enum_ast_item;
-use utilities::{
-    extract_fields::match_enum_fields,
-    filter::{get_raw_type_name, is_hashmap, is_option, is_vec},
-};
+use utilities::extract_fields::match_enum_fields;
 
 mod builder;
 mod features;
 mod meta;
+mod paths;
 mod traits;
 mod utilities;
 
 use builder::*;
+use paths::*;
 
 use crate::meta::*;
-use crate::traits::ast_builder::{
-    for_enum::generate_enum_builder_item, for_struct::generate_struct_builder_item,
-};
-use crate::traits::ast_item::for_struct::generate_struct_ast_item;
+use crate::traits::ast_builder::for_enum::generate_enum_builder_item;
 use crate::utilities::extract_fields::match_fields;
 
 #[derive(Default)]
-struct CodeGen {
+struct InputCodeGen {
     fields: Vec<proc_macro2::TokenStream>,        // Fields
     impl_base: Vec<proc_macro2::TokenStream>,     // Impl <>
     impl_ast_item: Vec<proc_macro2::TokenStream>, // Impl AstItem for <>
+}
+
+#[derive(Default)]
+struct CodeGen {
+    input: InputCodeGen,
+    new_structs: Vec<proc_macro2::TokenStream>,
 }
 
 #[proc_macro_attribute]
@@ -52,16 +44,28 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         Err(e) => return e.into_compile_error().into(),
     };
 
-    let args = match AstStructParams::from_list(&attr_args) {
+    let args = match AstStruct::from_list(&attr_args) {
         Ok(v) => v,
         Err(e) => return e.write_errors().into(),
     };
 
-    let mut input = parse_macro_input!(input as DeriveInput);
-    let input_name = input.ident.clone();
-    let input_data = match_fields(&input.data);
+    let input = parse_macro_input!(input as DeriveInput);
+    let fields = match_fields(&input.data);
+    let paths = Paths::default();
+    let query_name = args.query_name;
+    let mut tokens = proc_macro2::TokenStream::new();
 
-    let mut code_gen = CodeGen::default();
+    match args.kind {
+        AstStructKind::Accessor => todo!(),
+        AstStructKind::Symbol(symbol_features) => {
+            StructSymbolBuilder::new(&input, &symbol_features, &query_name, &fields, &paths)
+                .to_tokens(&mut tokens);
+        }
+    }
+
+    tokens.into()
+
+    /*let mut code_gen = CodeGen::default();
 
     // Add AstItem trait implementation
     generate_struct_ast_item(args.query_name.as_str(), &mut code_gen, &input_data);
@@ -101,13 +105,14 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
 
         #builder_item
         #try_from_ctx
-    })
+    })*/
 }
 
 #[proc_macro_attribute]
 pub fn ast_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
+    todo!()
     // Parse the input tokens into a syntax tree
-    let input = parse_macro_input!(input as syn::Item);
+    /*let input = parse_macro_input!(input as syn::Item);
 
     let enum_item = match &input {
         syn::Item::Enum(item_enum) => item_enum,
@@ -145,7 +150,7 @@ pub fn ast_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         #builder_item
-    })
+    })*/
 }
 
 #[proc_macro_attribute]

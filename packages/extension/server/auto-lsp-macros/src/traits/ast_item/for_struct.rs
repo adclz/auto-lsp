@@ -1,7 +1,7 @@
+use crate::utilities::extract_fields::StructFields;
 use crate::CodeGen;
-use crate:: utilities::extract_fields::StructFields;
 use quote::quote;
-
+/*
 pub fn generate_struct_ast_item(query_name: &str, code_gen: &mut CodeGen, input: &StructFields){
     let field_names = &input.field_names;
     let field_vec_names = &input.field_vec_names;
@@ -71,7 +71,7 @@ pub fn generate_struct_ast_item(query_name: &str, code_gen: &mut CodeGen, input:
                 if (!self.is_inside_offset(offset)) {
                     return None;
                 }
-                
+
                 #(if let true = self.#field_names.read().unwrap().is_inside_offset(offset) {
                     match self.#field_names.read().unwrap().find_at_offset(offset) {
                         Some(a) => return Some(a),
@@ -119,7 +119,7 @@ pub fn generate_struct_ast_item(query_name: &str, code_gen: &mut CodeGen, input:
                 if !self.is_inside_offset(offset) {
                     return;
                 }
-                
+
                 #(
                     let #field_names = self.#field_names.read().unwrap();
                     if #field_names.is_inside_offset(offset) {
@@ -139,4 +139,4 @@ pub fn generate_struct_ast_item(query_name: &str, code_gen: &mut CodeGen, input:
             }
         }
     );
-}
+}*/

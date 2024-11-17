@@ -3,7 +3,7 @@ use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind, Pos
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCursor};
 
-use crate::{session::Session, symbols::common::name::Name};
+use crate::session::Session;
 
 impl Session {
     pub fn get_completion_items(
