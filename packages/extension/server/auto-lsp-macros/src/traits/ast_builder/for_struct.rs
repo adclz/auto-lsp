@@ -452,10 +452,10 @@ impl<'a> AstItemBuilder<'a> {
         let field_hashmap_builder_names = &self.fields.field_hashmap_builder_names;
 
         quote! {
-            impl auto_lsp::traits::convert::TryFromCtx<#input_builder_name> for #name {
+            impl TryFrom<#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from_ctx(builder: #input_builder_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
+                fn try_from(builder: #input_builder_name) -> Result<Self, Self::Error> {
                     use std::sync::{Arc, RwLock};
                     let builder_range = builder.get_lsp_range();
 
@@ -467,7 +467,7 @@ impl<'a> AstItemBuilder<'a> {
                         .downcast_ref::<#field_builder_names>()
                         .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names))))?
                         .clone()
-                        .try_into_ctx(ctx)?;
+                        .try_into()?;
                     )*
                     #(let #field_option_names = match builder.#field_option_names {
                             Some(builder) => {
@@ -476,7 +476,7 @@ impl<'a> AstItemBuilder<'a> {
                                     .downcast_ref::<#field_option_builder_names>()
                                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_option_builder_names))))?
                                     .clone()
-                                    .try_into_ctx(ctx)?;
+                                    .try_into()?;
                                 Some(item)
                             },
                             None => None
@@ -491,7 +491,7 @@ impl<'a> AstItemBuilder<'a> {
                                 .downcast_ref::<#field_vec_builder_names>()
                                 .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_vec_builder_names))))?
                                 .clone()
-                                .try_into_ctx(ctx)?;
+                                .try_into()?;
                             Ok(item)
                         })
                         .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
@@ -506,7 +506,7 @@ impl<'a> AstItemBuilder<'a> {
                                     .downcast_ref::<#field_hashmap_builder_names>()
                                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?} at key {}", stringify!(#field_hashmap_builder_names), key)))?
                                     .clone()
-                                    .try_into_ctx(ctx)?;
+                                    .try_into()?;
                                 Ok((key, item))
                             })
                             .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
@@ -522,11 +522,11 @@ impl<'a> AstItemBuilder<'a> {
                 }
             }
 
-            impl auto_lsp::traits::convert::TryFromCtx<#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+            impl TryFrom<#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from_ctx(builder: #input_builder_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
-                    let item = #name::try_from_ctx(builder, ctx)?;
+                fn try_from(builder: #input_builder_name) -> Result<Self, Self::Error> {
+                    let item = #name::try_from(builder)?;
                     let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                     result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
                     Ok(result)

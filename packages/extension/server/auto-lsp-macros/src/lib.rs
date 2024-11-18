@@ -219,7 +219,7 @@ pub fn ast(_args: TokenStream, input: TokenStream) -> TokenStream {
                 None
             }
 
-            pub fn builder_binder(roots: Vec<std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>>, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Vec<Result<std::sync::Arc<std::sync::RwLock<dyn AstItem>>, lsp_types::Diagnostic>> {
+            pub fn builder_binder(roots: Vec<std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>>) -> Vec<Result<std::sync::Arc<std::sync::RwLock<dyn AstItem>>, lsp_types::Diagnostic>> {
                 roots
                 .into_iter()
                 .map(|builder| {
@@ -227,7 +227,7 @@ pub fn ast(_args: TokenStream, input: TokenStream) -> TokenStream {
                         // note: this part could be improved by moving the inner value from Rc
                         // but: https://stackoverflow.com/questions/41618100/rctrait-to-optiont
                         if let Some(b) = builder.borrow().downcast_ref::<#variant_builder_names>() {
-                            let item: #variant_types_names = b.clone().try_into_ctx(ctx)?;
+                            let item: #variant_types_names = b.clone().try_into()?;
                             let item: Arc<RwLock<dyn AstItem>> = Arc::new(RwLock::new(item));
                             Ok(item)
                         }

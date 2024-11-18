@@ -77,25 +77,25 @@ pub fn generate_enum_builder_item(name: &str, input: &EnumFields) -> proc_macro2
             }
         }
 
-        impl auto_lsp::traits::convert::TryFromCtx<&#struct_name> for #name {
+        impl TryFrom<&#struct_name> for #name {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from_ctx(builder: &#struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
+            fn try_from(builder: &#struct_name) -> Result<Self, Self::Error> {
                 use std::sync::{Arc, RwLock};
                 #(
                     if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
-                        return Ok(Self::#variant_names(variant.clone().try_into_ctx(ctx)?));
+                        return Ok(Self::#variant_names(variant.clone().try_into()?));
                     };
                 )*
                 panic!("")
             }
         }
 
-        impl auto_lsp::traits::convert::TryFromCtx<&#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+        impl TryFrom<&#struct_name> for std::sync::Arc<std::sync::RwLock<#name>> {
             type Error = lsp_types::Diagnostic;
 
-            fn try_from_ctx(builder: &#struct_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
-                let item = #name::try_from_ctx(builder, ctx)?;
+            fn try_from(builder: &#struct_name) -> Result<Self, Self::Error> {
+                let item = #name::try_from(builder)?;
                 let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                 result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
                 Ok(result)

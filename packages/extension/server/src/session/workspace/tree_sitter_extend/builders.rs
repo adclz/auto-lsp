@@ -154,7 +154,7 @@ impl Session {
             }
         });
 
-        let mut result = (ast_builder.builder_to_item)(roots, self);
+        let mut result = (ast_builder.builder_to_item)(roots);
         result.extend(errors.into_iter().map(Err));
         result
     }

@@ -17,5 +17,4 @@ pub type BinderFn = fn(
 
 pub type ItemBinderFn = fn(
     roots: Vec<Rc<RefCell<dyn AstItemBuilder>>>,
-    workspace: &dyn crate::traits::workspace::WorkspaceContext,
 ) -> Vec<Result<Arc<RwLock<dyn AstItem>>, Diagnostic>>;
