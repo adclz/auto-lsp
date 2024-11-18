@@ -92,73 +92,86 @@ impl<'a> ToCodeGen for AstItemBuilder<'a> {
 
 impl<'a> AstItemBuilder<'a> {
     fn generate_struct_fields(&self) -> Vec<TokenStream> {
-        vec![
+        let mut fields = vec![
             quote! { pub url: Arc<lsp_types::Url> },
             quote! { pub parent: Option<Weak<RwLock<dyn AstItem>>> },
             quote! { pub range: tree_sitter::Range },
             quote! { pub start_position: tree_sitter::Point },
             quote! { pub end_position: tree_sitter::Point },
-            /*self.fields
-                .field_names
-                .iter()
-                .enumerate()
-                .map(|(i, field)| {
-                    let attributes = &field.attr;
-                    let name = &field.ident;
-                    let _type = &self.fields.field_types_names[i];
+        ];
+        if !self.fields.field_names.is_empty() {
+            fields.extend(
+                self.fields
+                    .field_names
+                    .iter()
+                    .enumerate()
+                    .map(|(i, field)| {
+                        let attributes = &field.attr;
+                        let name = &field.ident;
+                        let _type = &self.fields.field_types_names[i];
 
-                    quote! {
-                       #(#attributes)*
-                       pub #name: Arc<RwLock<#_type>>
-                    }
-                })
-                .collect(),
-            self.fields
-                .field_option_names
-                .iter()
-                .enumerate()
-                .map(|(i, field)| {
-                    let attributes = &field.attr;
-                    let name = &field.ident;
-                    let _type = &self.fields.field_option_types_names[i];
+                        quote! {
+                           #(#attributes)*
+                           pub #name: Arc<RwLock<#_type>>
+                        }
+                    }),
+            )
+        };
+        if !self.fields.field_option_names.is_empty() {
+            fields.extend(
+                self.fields
+                    .field_option_names
+                    .iter()
+                    .enumerate()
+                    .map(|(i, field)| {
+                        let attributes = &field.attr;
+                        let name = &field.ident;
+                        let _type = &self.fields.field_option_types_names[i];
 
-                    quote! {
-                       #(#attributes)*
-                       pub #name: Option<Arc<RwLock<#_type>>>
-                    }
-                })
-                .collect(),
-            self.fields
-                .field_vec_names
-                .iter()
-                .enumerate()
-                .map(|(i, field)| {
-                    let attributes = &field.attr;
-                    let name = &field.ident;
-                    let _type = &self.fields.field_vec_types_names[i];
+                        quote! {
+                           #(#attributes)*
+                           pub #name: Option<Arc<RwLock<#_type>>>
+                        }
+                    }),
+            )
+        };
+        if !self.fields.field_vec_names.is_empty() {
+            fields.extend(
+                self.fields
+                    .field_vec_names
+                    .iter()
+                    .enumerate()
+                    .map(|(i, field)| {
+                        let attributes = &field.attr;
+                        let name = &field.ident;
+                        let _type = &self.fields.field_vec_types_names[i];
 
-                    quote! {
-                       #(#attributes)*
-                       pub #name: Vec<Arc<RwLock<#_type>>>
-                    }
-                })
-                .collect(),
-            self.fields
-                .field_hashmap_names
-                .iter()
-                .enumerate()
-                .map(|(i, field)| {
-                    let attributes = &field.attr;
-                    let name = &field.ident;
-                    let _type = &self.fields.field_hashmap_types_names[i];
+                        quote! {
+                           #(#attributes)*
+                           pub #name: Vec<Arc<RwLock<#_type>>>
+                        }
+                    }),
+            )
+        };
+        if !self.fields.field_hashmap_names.is_empty() {
+            fields.extend(
+                self.fields
+                    .field_hashmap_names
+                    .iter()
+                    .enumerate()
+                    .map(|(i, field)| {
+                        let attributes = &field.attr;
+                        let name = &field.ident;
+                        let _type = &self.fields.field_hashmap_types_names[i];
 
-                    quote! {
-                       #(#attributes)*
-                       pub #name: HashMap<String, Arc<RwLock<#_type>>>
-                    }
-                })
-                .collect(),*/
-        ]
+                        quote! {
+                           #(#attributes)*
+                           pub #name: HashMap<String, Arc<RwLock<#_type>>>
+                        }
+                    }),
+            )
+        };
+        fields
     }
 
     fn generate_ast_item_methods(&self) -> TokenStream {
@@ -313,13 +326,11 @@ impl<'a> AstItemBuilder<'a> {
     }
 
     fn generate_query_binder(&self) -> TokenStream {
-        let fields_names = [
-            self.fields.field_names.get_field_names(),
-            self.fields.field_option_names.get_field_names(),
-            self.fields.field_vec_names.get_field_names(),
-            self.fields.field_hashmap_names.get_field_names(),
-        ]
-        .concat();
+        let mut fields_types = vec![];
+        fields_types.extend(self.fields.field_types_names.iter());
+        fields_types.extend(self.fields.field_option_types_names.iter());
+        fields_types.extend(self.fields.field_vec_types_names.iter());
+        fields_types.extend(self.fields.field_hashmap_types_names.iter());
 
         let mut fields_builder = vec![];
         fields_builder.extend(self.fields.field_builder_names.iter());
@@ -331,7 +342,7 @@ impl<'a> AstItemBuilder<'a> {
             fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
-                    if #fields_names.contains(&query_name)  {
+                    if #fields_types::QUERY_NAMES.contains(&query_name)  {
                             return Some(std::rc::Rc::new(std::cell::RefCell::new(#fields_builder::new(
                                 url,
                                 &query,
@@ -508,6 +519,17 @@ impl<'a> AstItemBuilder<'a> {
                         parent: None,
                         #(#fields),*
                     })
+                }
+            }
+
+            impl auto_lsp::traits::convert::TryFromCtx<#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+                type Error = lsp_types::Diagnostic;
+
+                fn try_from_ctx(builder: #input_builder_name, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<Self, Self::Error> {
+                    let item = #name::try_from_ctx(builder, ctx)?;
+                    let result = std::sync::Arc::new(std::sync::RwLock::new(item));
+                    result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
+                    Ok(result)
                 }
             }
         }

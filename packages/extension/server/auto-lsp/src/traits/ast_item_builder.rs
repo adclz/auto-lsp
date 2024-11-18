@@ -9,7 +9,6 @@ use tree_sitter::Query;
 pub enum DeferredAstItemBuilder {
     None,
     HashMap(DeferredClosure),
-    Reference(DeferredClosure),
 }
 
 pub type DeferredClosure = Box<

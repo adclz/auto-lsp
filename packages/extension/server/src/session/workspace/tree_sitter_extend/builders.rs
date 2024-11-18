@@ -58,7 +58,6 @@ impl Session {
         let mut roots = vec![];
         let mut stack: Vec<Rc<RefCell<dyn AstItemBuilder>>> = vec![];
         let mut deferred_maps: Vec<Deferred> = vec![];
-        let mut deferred_references: Vec<Deferred> = vec![];
 
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
@@ -130,13 +129,6 @@ impl Session {
                                 Ok(def) => match def {
                                     DeferredAstItemBuilder::HashMap(def) => {
                                         deferred_maps.push(Deferred {
-                                            parent: parent.clone(),
-                                            child: node.clone(),
-                                            binder: def,
-                                        });
-                                    }
-                                    DeferredAstItemBuilder::Reference(def) => {
-                                        deferred_references.push(Deferred {
                                             parent: parent.clone(),
                                             child: node.clone(),
                                             binder: def,
