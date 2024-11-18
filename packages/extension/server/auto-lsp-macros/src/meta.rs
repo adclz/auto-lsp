@@ -1,15 +1,21 @@
 use syn::Path;
 
 use crate::features::{
-    lsp_code_lens::CodeLensFeature,
-    lsp_completion_item::CompletionItemFeature,
-    lsp_document_symbol::{DocumentSymbolFeature, Feature},
-    lsp_hover_info::HoverFeature,
-    lsp_inlay_hint::InlayHintFeature,
-    lsp_semantic_token::SemanticTokenFeature,
+    lsp_code_lens::CodeLensFeature, lsp_completion_item::CompletionItemFeature,
+    lsp_document_symbol::DocumentSymbolFeature, lsp_hover_info::HoverFeature,
+    lsp_inlay_hint::InlayHintFeature, lsp_semantic_token::SemanticTokenFeature,
     scope::ScopeFeature,
 };
 use darling::FromMeta;
+
+#[derive(Debug, FromMeta)]
+pub enum Feature<T>
+where
+    T: Sized + FromMeta,
+{
+    User,
+    CodeGen(T),
+}
 
 #[derive(Debug, FromMeta)]
 pub struct AstStruct {

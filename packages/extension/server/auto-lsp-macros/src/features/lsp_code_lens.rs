@@ -2,17 +2,17 @@ extern crate proc_macro;
 
 use darling::FromMeta;
 use quote::quote;
-use syn::{Path, TypeTuple};
+use syn::{Ident, Path};
 
 use crate::{
     utilities::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    CodeGen, ToCodeGen,
+    CodeGen, Paths, ToCodeGen,
 };
 
-use super::lsp_document_symbol::Feature;
+use crate::Feature;
 
 #[derive(Debug, FromMeta)]
 pub struct CodeLensFeature {
@@ -20,21 +20,38 @@ pub struct CodeLensFeature {
 }
 
 pub struct CodeLensBuilder<'a> {
+    pub input_name: &'a Ident,
+    pub paths: &'a Paths,
     pub params: Option<&'a Feature<CodeLensFeature>>,
     pub fields: &'a StructFields,
 }
 
 impl<'a> CodeLensBuilder<'a> {
-    pub fn new(params: Option<&'a Feature<CodeLensFeature>>, fields: &'a StructFields) -> Self {
-        Self { params, fields }
+    pub fn new(
+        input_name: &'a Ident,
+        paths: &'a Paths,
+        params: Option<&'a Feature<CodeLensFeature>>,
+        fields: &'a StructFields,
+    ) -> Self {
+        Self {
+            paths,
+            input_name,
+            params,
+            fields,
+        }
     }
 }
 
 impl<'a> ToCodeGen for CodeLensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
+        let input_name = &self.input_name;
+        let code_lens_path = &self.paths.code_lens_trait_path;
+
         match self.params {
-            None => codegen.input.impl_base.push(quote! {
-                fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {}
+            None => codegen.input.other_impl.push(quote! {
+                impl #code_lens_path for #input_name {
+                    fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {}
+                }
             }),
             Some(params) => match params {
                 Feature::User => (),
@@ -46,27 +63,29 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
                     let field_option_names = &self.fields.field_option_names.get_field_names();
                     let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
 
-                    codegen.input.impl_ast_item.push(quote! {
-                        fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
-                            #call(acc);
-                            #(
-                                self.#field_names.read().unwrap().build_code_lens(acc);
-                            )*
-                            #(
-                                if let Some(field) = self.#field_option_names.as_ref() {
-                                    field.read().unwrap().build_code_lens(acc);
-                                };
-                            )*
-                            #(
-                                for field in self.#field_vec_names.iter() {
-                                    field.read().unwrap().build_code_lens(acc);
-                                };
-                            )*
-                            #(
-                                for field in self.#field_hashmap_names.values() {
-                                    field.read().unwrap().build_code_lens(acc);
-                                };
-                            )*
+                    codegen.input.other_impl.push(quote! {
+                        impl #code_lens_path for #input_name {
+                            fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
+                                #call(acc);
+                                #(
+                                    self.#field_names.read().unwrap().build_code_lens(acc);
+                                )*
+                                #(
+                                    if let Some(field) = self.#field_option_names.as_ref() {
+                                        field.read().unwrap().build_code_lens(acc);
+                                    };
+                                )*
+                                #(
+                                    for field in self.#field_vec_names.iter() {
+                                        field.read().unwrap().build_code_lens(acc);
+                                    };
+                                )*
+                                #(
+                                    for field in self.#field_hashmap_names.values() {
+                                        field.read().unwrap().build_code_lens(acc);
+                                    };
+                                )*
+                            }
                         }
                     });
                 }

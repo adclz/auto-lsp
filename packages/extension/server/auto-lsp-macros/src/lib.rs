@@ -29,6 +29,7 @@ struct InputCodeGen {
     fields: Vec<proc_macro2::TokenStream>,        // Fields
     impl_base: Vec<proc_macro2::TokenStream>,     // Impl <>
     impl_ast_item: Vec<proc_macro2::TokenStream>, // Impl AstItem for <>
+    other_impl: Vec<proc_macro2::TokenStream>,    // Other impl
 }
 
 #[derive(Default)]

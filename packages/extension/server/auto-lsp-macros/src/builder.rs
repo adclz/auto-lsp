@@ -51,18 +51,39 @@ impl<'a> StructSymbolBuilder<'a> {
             params,
             struct_fields: fields,
             paths,
-            lsp_code_lens: CodeLensBuilder::new(params.lsp_code_lens.as_ref(), fields),
+            lsp_code_lens: CodeLensBuilder::new(
+                &input.ident,
+                &paths,
+                params.lsp_code_lens.as_ref(),
+                fields,
+            ),
             lsp_completion_items: CompletionItemsBuilder::new(
+                &input.ident,
+                &paths,
                 params.lsp_completion_items.as_ref(),
                 fields,
             ),
             lsp_document_symbols: DocumentSymbolBuilder::new(
+                &input.ident,
+                &paths,
                 params.lsp_document_symbols.as_ref(),
                 fields,
             ),
-            lsp_hover_info: HoverInfoBuilder::new(params.lsp_hover_info.as_ref(), fields),
-            lsp_inlay_hints: InlayHintsBuilder::new(params.lsp_inlay_hints.as_ref(), fields),
+            lsp_hover_info: HoverInfoBuilder::new(
+                &input.ident,
+                &paths,
+                params.lsp_hover_info.as_ref(),
+                fields,
+            ),
+            lsp_inlay_hints: InlayHintsBuilder::new(
+                &input.ident,
+                &paths,
+                params.lsp_inlay_hints.as_ref(),
+                fields,
+            ),
             lsp_semantic_tokens: SemanticTokensBuilder::new(
+                &input.ident,
+                &paths,
                 params.lsp_semantic_tokens.as_ref(),
                 fields,
             ),
@@ -101,6 +122,7 @@ impl<'a> ToTokens for StructSymbolBuilder<'a> {
         let input_ast_item_methods = code_gen.input.impl_ast_item;
 
         let others_tokens = code_gen.new_structs;
+        let others_impl = code_gen.input.other_impl;
 
         tokens.extend(quote! {
             #[derive(Clone)]
@@ -117,6 +139,7 @@ impl<'a> ToTokens for StructSymbolBuilder<'a> {
             }
 
             #(#others_tokens)*
+            #(#others_impl)*
         });
     }
 }

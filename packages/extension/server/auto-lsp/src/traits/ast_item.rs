@@ -110,6 +110,37 @@ pub trait AstItem: Downcast + Send + Sync {
 
 impl_downcast!(AstItem);
 
+pub trait DocumentSymbols {
+    fn get_document_symbols(
+        &self,
+        doc: &lsp_textdocument::FullTextDocument,
+    ) -> Option<DocumentSymbol>;
+}
+
+pub trait HoverInfo {
+    fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover>;
+}
+
+pub trait SemanticTokens {
+    fn build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder);
+}
+
+pub trait InlayHints {
+    fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>);
+}
+
+pub trait CodeLens {
+    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>);
+}
+
+pub trait CompletionItems {
+    fn build_completion_items(
+        &self,
+        acc: &mut Vec<CompletionItem>,
+        doc: &lsp_textdocument::FullTextDocument,
+    );
+}
+
 impl AstItem for Arc<RwLock<dyn AstItem>> {
     fn get_url(&self) -> Arc<Url> {
         self.read().unwrap().get_url()

@@ -1,18 +1,19 @@
 extern crate proc_macro;
 
+use auto_lsp::builders::semantic_tokens;
 use darling::FromMeta;
 use quote::quote;
-use syn::Path;
+use syn::{Ident, Path};
 
 use crate::{
     utilities::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    CodeGen, ToCodeGen,
+    CodeGen, Paths, ToCodeGen,
 };
 
-use super::lsp_document_symbol::Feature;
+use crate::Feature;
 
 #[derive(Debug, FromMeta)]
 pub struct SemanticTokenFeature {
@@ -23,24 +24,39 @@ pub struct SemanticTokenFeature {
 }
 
 pub struct SemanticTokensBuilder<'a> {
+    pub input_name: &'a Ident,
+    pub paths: &'a Paths,
     pub params: Option<&'a Feature<SemanticTokenFeature>>,
     pub fields: &'a StructFields,
 }
 
 impl<'a> SemanticTokensBuilder<'a> {
     pub fn new(
+        input_name: &'a Ident,
+        paths: &'a Paths,
         params: Option<&'a Feature<SemanticTokenFeature>>,
         fields: &'a StructFields,
     ) -> Self {
-        Self { params, fields }
+        Self {
+            paths,
+            input_name,
+            params,
+            fields,
+        }
     }
 }
 
 impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
+        let input_name = &self.input_name;
+        let semantic_tokens_path = &self.paths.semantic_tokens_trait_path;
+        let semantic_tokens_builder_path = &self.paths.semantic_tokens_builder_path;
+
         match self.params {
-            None => codegen.input.impl_base.push(quote! {
-                fn build_semantic_tokens(&self, _builder: &mut auto_lsp::builders::semantic_tokens::SemanticTokensBuilder) {}
+            None => codegen.input.other_impl.push(quote! {
+                impl #semantic_tokens_path for #input_name {
+                    fn build_semantic_tokens(&self, _builder: &mut #semantic_tokens_builder_path) {}
+                }
             }),
             Some(params) => match params {
                 Feature::User => (),
@@ -65,45 +81,47 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
                         }
                     };
 
-                    codegen.input.impl_ast_item.push(
+                    codegen.input.other_impl.push(
                         quote! {
-                            fn build_semantic_tokens(&self, builder: &mut auto_lsp::builders::semantic_tokens::SemanticTokensBuilder) {
-                                let range = #range.get_range();
-                                match #token_types.get_index(#token_index) {
-                                    Some(index) => builder.push(
-                                        lsp_types::Range::new(
-                                            lsp_types::Position::new(
-                                                range.start_point.row as u32,
-                                                range.start_point.column as u32,
+                            impl #semantic_tokens_path for #input_name {
+                                fn build_semantic_tokens(&self, builder: &mut #semantic_tokens_builder_path) {
+                                    let range = #range.get_range();
+                                    match #token_types.get_index(#token_index) {
+                                        Some(index) => builder.push(
+                                            lsp_types::Range::new(
+                                                lsp_types::Position::new(
+                                                    range.start_point.row as u32,
+                                                    range.start_point.column as u32,
+                                                ),
+                                                lsp_types::Position::new(range.end_point.row as u32, range.end_point.column as u32),
                                             ),
-                                            lsp_types::Position::new(range.end_point.row as u32, range.end_point.column as u32),
+                                            index as u32,
+                                            #modifiers,
                                         ),
-                                        index as u32,
-                                        #modifiers,
-                                    ),
-                                    None => {
-                                        eprintln!("Warning: Token type not found {:?}", #token_index);
-                                        return
-                                    },
+                                        None => {
+                                            eprintln!("Warning: Token type not found {:?}", #token_index);
+                                            return
+                                        },
+                                    }
+                                    #(
+                                        self.#field_names.read().unwrap().build_semantic_tokens(builder);
+                                    )*
+                                    #(
+                                        if let Some(field) = self.#field_option_names.as_ref() {
+                                            field.read().unwrap().build_semantic_tokens(builder);
+                                        };
+                                    )*
+                                    #(
+                                        for field in self.#field_vec_names.iter() {
+                                            field.read().unwrap().build_semantic_tokens(builder);
+                                        };
+                                    )*
+                                    #(
+                                        for field in self.#field_hashmap_names.values() {
+                                            field.read().unwrap().build_semantic_tokens(builder);
+                                        };
+                                    )*
                                 }
-                                #(
-                                    self.#field_names.read().unwrap().build_semantic_tokens(builder);
-                                )*
-                                #(
-                                    if let Some(field) = self.#field_option_names.as_ref() {
-                                        field.read().unwrap().build_semantic_tokens(builder);
-                                    };
-                                )*
-                                #(
-                                    for field in self.#field_vec_names.iter() {
-                                        field.read().unwrap().build_semantic_tokens(builder);
-                                    };
-                                )*
-                                #(
-                                    for field in self.#field_hashmap_names.values() {
-                                        field.read().unwrap().build_semantic_tokens(builder);
-                                    };
-                                )*
                             }
                         }
                     );

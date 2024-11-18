@@ -1,20 +1,13 @@
 extern crate proc_macro;
 
 use crate::{
-    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens}, CodeGen, ToCodeGen,
+    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens}, CodeGen, Paths, ToCodeGen
 };
 use darling::{util::PathList, FromMeta};
 use quote::quote;
-use syn::Path;
+use syn::{Ident, Path};
 
-#[derive(Debug, FromMeta)]
-pub enum Feature<T>
-where
-    T: Sized + FromMeta,
-{
-    User,
-    CodeGen(T),
-}
+use crate::Feature;
 
 #[derive(Debug, FromMeta)]
 pub struct DocumentSymbolFeature {
@@ -30,25 +23,39 @@ pub struct Childrens {
 }
 
 pub struct DocumentSymbolBuilder<'a> {
+    pub input_name: &'a Ident,
+    pub paths: &'a Paths,
     pub params: Option<&'a Feature<DocumentSymbolFeature>>,
     pub fields: &'a StructFields,
 }
 
 impl<'a> DocumentSymbolBuilder<'a> {
     pub fn new(
+        input_name: &'a Ident,
+        paths: &'a Paths,
         params: Option<&'a Feature<DocumentSymbolFeature>>,
         fields: &'a StructFields,
     ) -> Self {
-        Self { params, fields }
+        Self {
+            paths,
+            input_name,
+            params,
+            fields
+         }
     }
 }
 
 impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
+        let input_name = &self.input_name;
+        let document_symbols_path = &self.paths.document_symbols_trait_path;
+
         match self.params {
-            None => codegen.input.impl_base.push(quote! {
-                fn get_document_symbols(&self, _doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
-                    None
+            None => codegen.input.other_impl.push(quote! {
+                impl #document_symbols_path for #input_name {
+                    fn get_document_symbols(&self, _doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
+                        None
+                    }
                 }
             }),
             Some(params) => match params {
@@ -124,22 +131,24 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
                         .into(),
                     );
                 
-                    codegen.input.impl_ast_item.push(
+                    codegen.input.other_impl.push(
                         quote! {
-                            #[allow(deprecated)]
-                            fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
-                                let read = #name.read().unwrap();
+                            impl #document_symbols_path for #input_name {
+                                #[allow(deprecated)]
+                                fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
+                                    let read = #name.read().unwrap();
                 
-                                Some(lsp_types::DocumentSymbol {
-                                    name: read.get_text(doc.get_content(None).as_bytes()).to_string(),
-                                    detail: None,
-                                    kind: *Self::LSP_SYMBOL_KIND,
-                                    tags: None,
-                                    deprecated: None,
-                                    range: self.get_lsp_range(doc),
-                                    selection_range: read.get_lsp_range(doc),
-                                    children: #children
-                                })
+                                    Some(lsp_types::DocumentSymbol {
+                                        name: read.get_text(doc.get_content(None).as_bytes()).to_string(),
+                                        detail: None,
+                                        kind: *Self::LSP_SYMBOL_KIND,
+                                        tags: None,
+                                        deprecated: None,
+                                        range: self.get_lsp_range(doc),
+                                        selection_range: read.get_lsp_range(doc),
+                                        children: #children
+                                    })
+                                }
                             }
                         }
                         .into()
