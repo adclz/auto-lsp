@@ -7,7 +7,17 @@ use std::sync::{Arc, RwLock, Weak};
 
 use super::ast_item_builder::AstItemBuilder;
 
-pub trait AstItem: Downcast + Send + Sync {
+pub trait AstItem:
+    Downcast
+    + Send
+    + Sync
+    + DocumentSymbols
+    + HoverInfo
+    + SemanticTokens
+    + InlayHints
+    + CodeLens
+    + CompletionItems
+{
     fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> tree_sitter::Range;
     fn edit_range(&mut self, shift: i32) {
@@ -82,30 +92,6 @@ pub trait AstItem: Downcast + Send + Sync {
         let end = self.get_end_position(doc);
         lsp_types::Range { start, end }
     }
-
-    fn get_document_symbols(
-        &self,
-        _doc: &lsp_textdocument::FullTextDocument,
-    ) -> Option<DocumentSymbol> {
-        None
-    }
-
-    fn get_hover(&self, _doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
-        None
-    }
-
-    fn build_semantic_tokens(&self, _builder: &mut SemanticTokensBuilder) {}
-
-    fn build_inlay_hint(&self, _acc: &mut Vec<lsp_types::InlayHint>) {}
-
-    fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {}
-
-    fn build_completion_items(
-        &self,
-        _acc: &mut Vec<CompletionItem>,
-        _doc: &lsp_textdocument::FullTextDocument,
-    ) {
-    }
 }
 
 impl_downcast!(AstItem);
@@ -170,42 +156,54 @@ impl AstItem for Arc<RwLock<dyn AstItem>> {
         self.write().unwrap().swap_at_offset(offset, item)
     }
 
-    fn get_document_symbols(
-        &self,
-        _doc: &lsp_textdocument::FullTextDocument,
-    ) -> Option<DocumentSymbol> {
-        self.read().unwrap().get_document_symbols(_doc)
-    }
-
-    fn get_hover(&self, _doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
-        self.read().unwrap().get_hover(_doc)
-    }
-
-    fn build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder) {
-        self.read().unwrap().build_semantic_tokens(builder)
-    }
-
-    fn build_inlay_hint(&self, _acc: &mut Vec<lsp_types::InlayHint>) {
-        self.read().unwrap().build_inlay_hint(_acc)
-    }
-
-    fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {
-        self.read().unwrap().build_code_lens(_acc)
-    }
-
-    fn build_completion_items(
-        &self,
-        _acc: &mut Vec<CompletionItem>,
-        _doc: &lsp_textdocument::FullTextDocument,
-    ) {
-        self.read().unwrap().build_completion_items(_acc, _doc)
-    }
-
     fn is_scope(&self) -> bool {
         self.read().unwrap().is_scope()
     }
 
     fn get_scope_range(&self) -> [usize; 2] {
         self.read().unwrap().get_scope_range()
+    }
+}
+
+impl DocumentSymbols for Arc<RwLock<dyn AstItem>> {
+    fn get_document_symbols(
+        &self,
+        doc: &lsp_textdocument::FullTextDocument,
+    ) -> Option<DocumentSymbol> {
+        self.read().unwrap().get_document_symbols(doc)
+    }
+}
+
+impl HoverInfo for Arc<RwLock<dyn AstItem>> {
+    fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
+        self.read().unwrap().get_hover(doc)
+    }
+}
+
+impl SemanticTokens for Arc<RwLock<dyn AstItem>> {
+    fn build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder) {
+        self.read().unwrap().build_semantic_tokens(builder)
+    }
+}
+
+impl InlayHints for Arc<RwLock<dyn AstItem>> {
+    fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>) {
+        self.read().unwrap().build_inlay_hint(acc)
+    }
+}
+
+impl CodeLens for Arc<RwLock<dyn AstItem>> {
+    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
+        self.read().unwrap().build_code_lens(acc)
+    }
+}
+
+impl CompletionItems for Arc<RwLock<dyn AstItem>> {
+    fn build_completion_items(
+        &self,
+        acc: &mut Vec<CompletionItem>,
+        doc: &lsp_textdocument::FullTextDocument,
+    ) {
+        self.read().unwrap().build_completion_items(acc, doc)
     }
 }

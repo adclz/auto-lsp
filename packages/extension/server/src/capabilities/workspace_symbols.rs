@@ -1,4 +1,4 @@
-use auto_lsp::traits::ast_item::AstItem;
+use auto_lsp::traits::ast_item::DocumentSymbols;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
 use crate::session::Session;
