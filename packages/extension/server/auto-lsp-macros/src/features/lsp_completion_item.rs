@@ -46,7 +46,7 @@ impl<'a> CompletionItemsBuilder<'a> {
 impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
         let input_name = &self.input_name;
-        let completion_items_path = &self.paths.completion_items_trait_path;
+        let completion_items_path = &self.paths.completion_items_trait;
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

@@ -45,7 +45,7 @@ impl<'a> CodeLensBuilder<'a> {
 impl<'a> ToCodeGen for CodeLensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
         let input_name = &self.input_name;
-        let code_lens_path = &self.paths.code_lens_trait_path;
+        let code_lens_path = &self.paths.code_lens_trait;
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

@@ -48,7 +48,7 @@ impl<'a> ToCodeGen for AstItemBuilder<'a> {
 
         // Builder
         let input_builder_name = &self.input_builder_name;
-        let ast_item_builder = &self.paths.ast_item_builder_trait_path;
+        let ast_item_builder = &self.paths.ast_item_builder_trait;
 
         let builder_fields = self.generate_builder_fields();
         let new = self.generate_builder_new();
@@ -175,6 +175,10 @@ impl<'a> AstItemBuilder<'a> {
     }
 
     fn generate_ast_item_methods(&self) -> TokenStream {
+        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let ast_item_trait_object_arc_path = &self.paths.ast_item_trait_object_arc;
+        let ast_item_trait_object_weak_path = &self.paths.ast_item_trait_object_weak;
+
         let field_names = &self.fields.field_names.get_field_names();
         let field_option_names = &self.fields.field_option_names.get_field_names();
         let field_vec_names = &self.fields.field_vec_names.get_field_names();
@@ -189,15 +193,15 @@ impl<'a> AstItemBuilder<'a> {
                 self.range
             }
 
-            fn get_parent(&self) -> Option<Weak<RwLock<dyn AstItem>>> {
+            fn get_parent(&self) -> Option<#ast_item_trait_object_weak_path> {
                 self.parent.as_ref().map(|p| p.clone())
             }
 
-            fn set_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>) {
+            fn set_parent(&mut self, parent: #ast_item_trait_object_weak_path) {
                 self.parent = Some(parent);
             }
 
-            fn inject_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>) {
+            fn inject_parent(&mut self, parent: #ast_item_trait_object_weak_path) {
                 #(
                     self.#field_names.write().unwrap().set_parent(parent.clone());
                 )*
@@ -218,7 +222,7 @@ impl<'a> AstItemBuilder<'a> {
                 )*
             }
 
-            fn find_at_offset(&self, offset: &usize) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>> {
+            fn find_at_offset(&self, offset: &usize) -> Option<#ast_item_trait_object_arc_path> {
                 // It's pointless to keep searching if the parent item is not inside the offset
                 if (!self.is_inside_offset(offset)) {
                     return None;
@@ -266,7 +270,7 @@ impl<'a> AstItemBuilder<'a> {
                 None
             }
 
-            fn swap_at_offset(&mut self, offset: &usize, item: &std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>) {
+            fn swap_at_offset(&mut self, offset: &usize, item: &#ast_item_builder_trait_object) {
                 todo!()
             }
         }
@@ -275,20 +279,20 @@ impl<'a> AstItemBuilder<'a> {
 
 impl<'a> AstItemBuilder<'a> {
     fn generate_builder_fields(&self) -> Vec<TokenStream> {
-        let ast_item_builder = &self.paths.ast_item_builder_trait_path;
+        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
 
         [
             self.fields.field_names.apply_to_fields(|field| {
-                quote! { #field: Option<std::rc::Rc<std::cell::RefCell<dyn #ast_item_builder>>> }
+                quote! { #field: Option<#ast_item_builder_trait_object> }
             }),
             self.fields.field_option_names.apply_to_fields(|field| {
-                quote! { #field: Option<std::rc::Rc<std::cell::RefCell<dyn #ast_item_builder>>> }
+                quote! { #field: Option<#ast_item_builder_trait_object> }
             }),
             self.fields.field_vec_names.apply_to_fields(|field| {
-                quote! { #field: Vec<std::rc::Rc<std::cell::RefCell<dyn #ast_item_builder>>> }
+                quote! { #field: Vec<#ast_item_builder_trait_object> }
             }),
             self.fields.field_hashmap_names.apply_to_fields(|field| {
-                quote! { #field: HashMap<String, std::rc::Rc<std::cell::RefCell<dyn #ast_item_builder>>> }
+                quote! { #field: HashMap<String, #ast_item_builder_trait_object> }
             }),
         ]
         .concat()
@@ -306,7 +310,7 @@ impl<'a> AstItemBuilder<'a> {
                 quote_spanned! { field.span() => #field: vec![] }
             }),
             self.fields.field_hashmap_names.apply_to_fields(|field| {
-                quote_spanned! { field.span() => #field: HashMap::new() }
+                quote_spanned! { field.span() => #field: std::collections::HashMap::new() }
             }),
         ]
         .concat();
@@ -326,6 +330,8 @@ impl<'a> AstItemBuilder<'a> {
     }
 
     fn generate_query_binder(&self) -> TokenStream {
+        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+
         let mut fields_types = vec![];
         fields_types.extend(self.fields.field_types_names.iter());
         fields_types.extend(self.fields.field_option_types_names.iter());
@@ -339,7 +345,7 @@ impl<'a> AstItemBuilder<'a> {
         fields_builder.extend(self.fields.field_hashmap_builder_names.iter());
 
         quote! {
-            fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>>> {
+            fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
                     if #fields_types::QUERY_NAMES.contains(&query_name)  {
@@ -359,6 +365,9 @@ impl<'a> AstItemBuilder<'a> {
     }
 
     fn generate_add(&self) -> TokenStream {
+        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let deferred_ast_item_builder = &self.paths.deferred_ast_item_builder;
+
         let input_builder_name = &self.input_builder_name;
         let field_names = &self.fields.field_names.get_field_names();
         let field_option_names = &self.fields.field_option_names.get_field_names();
@@ -373,17 +382,17 @@ impl<'a> AstItemBuilder<'a> {
         let field_hashmap_builder_names = &self.fields.field_hashmap_builder_names;
 
         quote! {
-            fn add(&mut self, query: &tree_sitter::Query, node: std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>, source_code: &[u8]) ->
-            Result<auto_lsp::traits::ast_item_builder::DeferredAstItemBuilder, lsp_types::Diagnostic> {
-            use auto_lsp::traits::ast_item_builder::DeferredAstItemBuilder;
-            let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
+            fn add(&mut self, query: &tree_sitter::Query, node: #ast_item_builder_trait_object, source_code: &[u8]) ->
+                Result<#deferred_ast_item_builder, lsp_types::Diagnostic> {
+
+                let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
             #(
                 if #field_types_names::QUERY_NAMES.contains(&query_name) {
                     match self.#field_names {
                         Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#input_builder_name)))),
                         None => self.#field_names = Some(node.clone())
                     }
-                    return Ok(DeferredAstItemBuilder::None)
+                    return Ok(#deferred_ast_item_builder::None)
                 };
             )*
             #(
@@ -392,20 +401,20 @@ impl<'a> AstItemBuilder<'a> {
                         return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#input_builder_name))));
                     }
                     self.#field_option_names = Some(node.clone());
-                    return Ok(DeferredAstItemBuilder::None);
+                    return Ok(#deferred_ast_item_builder::None);
                 };
             )*
             #(
                 if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
                     self.#field_vec_names.push(node.clone());
-                    return Ok(DeferredAstItemBuilder::None);
+                    return Ok(#deferred_ast_item_builder::None);
                 };
             )*
             #(
                 if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
-                    return Ok(DeferredAstItemBuilder::HashMap(Box::new(|
-                            parent: Rc<RefCell<dyn AstItemBuilder>>,
-                            node: Rc<RefCell<dyn AstItemBuilder>>,
+                    return Ok(#deferred_ast_item_builder::HashMap(Box::new(|
+                            parent: #ast_item_builder_trait_object,
+                            node: #ast_item_builder_trait_object,
                             source_code: &[u8]
                         | {
                             let field = node.borrow();
@@ -456,7 +465,6 @@ impl<'a> AstItemBuilder<'a> {
                 type Error = lsp_types::Diagnostic;
 
                 fn try_from(builder: #input_builder_name) -> Result<Self, Self::Error> {
-                    use std::sync::{Arc, RwLock};
                     let builder_range = builder.get_lsp_range();
 
                     #(let #field_names =

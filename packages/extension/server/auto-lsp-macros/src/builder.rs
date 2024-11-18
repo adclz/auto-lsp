@@ -102,7 +102,7 @@ impl<'a> ToTokens for StructSymbolBuilder<'a> {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let mut code_gen = CodeGen::default();
 
-        let ast_item_trait = &self.paths.ast_item_trait_path;
+        let ast_item_trait = &self.paths.ast_item_trait;
 
         // Generate ast item
         self.ast_item.to_code_gen(&mut code_gen);

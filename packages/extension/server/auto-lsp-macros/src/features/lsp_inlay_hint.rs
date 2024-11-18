@@ -37,7 +37,7 @@ impl<'a> InlayHintsBuilder<'a> {
 impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
         let input_name = &self.input_name;
-        let inlay_hint_path = &self.paths.inlay_hints_trait_path;
+        let inlay_hint_path = &self.paths.inlay_hints_trait;
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

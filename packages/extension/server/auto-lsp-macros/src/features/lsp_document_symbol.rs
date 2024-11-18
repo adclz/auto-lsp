@@ -48,7 +48,7 @@ impl<'a> DocumentSymbolBuilder<'a> {
 impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
         let input_name = &self.input_name;
-        let document_symbols_path = &self.paths.document_symbols_trait_path;
+        let document_symbols_path = &self.paths.document_symbols_trait;
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

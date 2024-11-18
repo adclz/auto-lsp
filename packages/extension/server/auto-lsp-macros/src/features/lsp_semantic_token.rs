@@ -49,8 +49,8 @@ impl<'a> SemanticTokensBuilder<'a> {
 impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut CodeGen) {
         let input_name = &self.input_name;
-        let semantic_tokens_path = &self.paths.semantic_tokens_trait_path;
-        let semantic_tokens_builder_path = &self.paths.semantic_tokens_builder_path;
+        let semantic_tokens_path = &self.paths.semantic_tokens_trait;
+        let semantic_tokens_builder_path = &self.paths.semantic_tokens_builder;
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {
