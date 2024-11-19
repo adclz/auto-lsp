@@ -62,19 +62,27 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     let mut tokens = proc_macro2::TokenStream::new();
 
     match args.kind {
-        AstStructKind::Accessor => todo!(),
-        AstStructKind::Symbol(symbol_features) => {
-            StructBuilder::new(
-                &symbol_features,
-                &input_name,
-                &input_builder_name,
-                &query_name,
-                &fields,
-                &*PATHS,
-            )
-            .to_tokens(&mut tokens);
-        }
-    }
+        AstStructKind::Accessor => StructBuilder::new(
+            None,
+            &input_name,
+            &input_builder_name,
+            &query_name,
+            &fields,
+            &*PATHS,
+            true,
+        )
+        .to_tokens(&mut tokens),
+        AstStructKind::Symbol(symbol_features) => StructBuilder::new(
+            Some(&symbol_features),
+            &input_name,
+            &input_builder_name,
+            &query_name,
+            &fields,
+            &*PATHS,
+            false,
+        )
+        .to_tokens(&mut tokens),
+    };
 
     tokens.into()
 }

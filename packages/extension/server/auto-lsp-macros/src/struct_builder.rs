@@ -11,28 +11,31 @@ pub struct StructBuilder<'a> {
     pub query_name: &'a str,
     pub input_buider_name: &'a Ident,
     pub fields: &'a StructFields,
+    pub is_accessor: bool,
     // Paths
     pub paths: &'a Paths,
     // Features
-    pub features: Option<Features<'a>>,
+    pub features: Features<'a>,
 }
 
 impl<'a> StructBuilder<'a> {
     pub fn new(
-        params: &'a SymbolFeatures,
+        params: Option<&'a SymbolFeatures>,
         input_name: &'a Ident,
         input_buider_name: &'a Ident,
         query_name: &'a str,
         fields: &'a StructFields,
         paths: &'a Paths,
+        is_accessor: bool,
     ) -> Self {
         Self {
             input_name,
             query_name,
             input_buider_name,
             fields,
+            is_accessor,
             paths,
-            features: Some(Features::new(params, input_name, paths, fields)),
+            features: Features::new(params, input_name, paths, fields),
         }
     }
 }
@@ -44,10 +47,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
         // Generate features
         let mut code_gen = FeaturesCodeGen::default();
-
-        if let Some(features) = &self.features {
-            features.to_code_gen(&mut code_gen);
-        }
+        self.features.to_code_gen(&mut code_gen);
 
         let input_fields = code_gen.input.fields;
         let features_impl = code_gen.input.impl_base;
@@ -134,6 +134,11 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
             quote! { pub start_position: tree_sitter::Point },
             quote! { pub end_position: tree_sitter::Point },
         ];
+
+        if self.is_accessor {
+            fields.push(quote! { pub accessor: Option<Weak<RwLock<dyn AstItem>>> });
+        }
+
         if !self.fields.field_names.is_empty() {
             fields.extend(
                 self.fields
@@ -495,6 +500,12 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let field_option_builder_names = &self.fields.field_option_builder_names;
         let field_hashmap_builder_names = &self.fields.field_hashmap_builder_names;
 
+        let init_accessor = if self.is_accessor {
+            quote! { accessor: None, }
+        } else {
+            quote! {}
+        };
+
         quote! {
             impl TryFrom<#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
@@ -555,6 +566,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                             .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
                     )*
                     Ok(#name {
+                        #init_accessor
                         url: builder.url,
                         range: builder.range,
                         start_position: builder.start_position,

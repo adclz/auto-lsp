@@ -37,7 +37,7 @@ pub struct Features<'a> {
 
 impl<'a> Features<'a> {
     pub fn new(
-        params: &'a SymbolFeatures,
+        params: Option<&'a SymbolFeatures>,
         input_name: &'a Ident,
         paths: &'a Paths,
         fields: &'a StructFields,
@@ -46,37 +46,37 @@ impl<'a> Features<'a> {
             lsp_code_lens: CodeLensBuilder::new(
                 input_name,
                 paths,
-                params.lsp_code_lens.as_ref(),
+                params.and_then(|a| a.lsp_code_lens.as_ref()),
                 fields,
             ),
             lsp_completion_items: CompletionItemsBuilder::new(
                 input_name,
                 paths,
-                params.lsp_completion_items.as_ref(),
+                params.and_then(|a| a.lsp_completion_items.as_ref()),
                 fields,
             ),
             lsp_document_symbols: DocumentSymbolBuilder::new(
                 input_name,
                 paths,
-                params.lsp_document_symbols.as_ref(),
+                params.and_then(|a| a.lsp_document_symbols.as_ref()),
                 fields,
             ),
             lsp_hover_info: HoverInfoBuilder::new(
                 input_name,
                 paths,
-                params.lsp_hover_info.as_ref(),
+                params.and_then(|a| a.lsp_hover_info.as_ref()),
                 fields,
             ),
             lsp_inlay_hints: InlayHintsBuilder::new(
                 input_name,
                 paths,
-                params.lsp_inlay_hints.as_ref(),
+                params.and_then(|a| a.lsp_inlay_hints.as_ref()),
                 fields,
             ),
             lsp_semantic_tokens: SemanticTokensBuilder::new(
                 input_name,
                 paths,
-                params.lsp_semantic_tokens.as_ref(),
+                params.and_then(|a| a.lsp_semantic_tokens.as_ref()),
                 fields,
             ),
         }
