@@ -4,7 +4,7 @@ use darling::{util::PathList, FromMeta};
 use quote::quote;
 use syn::Path;
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, CodeGen};
+use crate::{utilities::format_tokens::path_to_dot_tokens, FeaturesCodeGen};
 
 #[derive(Debug, FromMeta)]
 pub enum ScopeFeature {
@@ -18,7 +18,7 @@ pub struct ScopeRange {
     end: Path,
 }
 
-fn codegen_scope_feature(feature: &ScopeFeature, code_gen: &mut CodeGen) {
+fn codegen_scope_feature(feature: &ScopeFeature, code_gen: &mut FeaturesCodeGen) {
     match feature {
         ScopeFeature::Range(range) => {
             let start = path_to_dot_tokens(&range.start, None);

@@ -10,7 +10,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    CodeGen, Paths, ToCodeGen,
+    FeaturesCodeGen, Paths, ToCodeGen,
 };
 
 use crate::Feature;
@@ -47,7 +47,7 @@ impl<'a> SemanticTokensBuilder<'a> {
 }
 
 impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let semantic_tokens_path = &self.paths.semantic_tokens_trait;
         let semantic_tokens_builder_path = &self.paths.semantic_tokens_builder;

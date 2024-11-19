@@ -4,7 +4,7 @@ use darling::FromMeta;
 use quote::quote;
 use syn::{Ident, Path};
 
-use crate::{utilities::extract_fields::StructFields, CodeGen, ToCodeGen};
+use crate::{utilities::extract_fields::StructFields, FeaturesCodeGen, ToCodeGen};
 
 use crate::{Feature, Paths};
 
@@ -35,7 +35,7 @@ impl<'a> InlayHintsBuilder<'a> {
 }
 
 impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let inlay_hint_path = &self.paths.inlay_hints_trait;
 

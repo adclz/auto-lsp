@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use crate::{
-    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens}, CodeGen, Paths, ToCodeGen
+    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens}, FeaturesCodeGen, Paths, ToCodeGen
 };
 use darling::{util::PathList, FromMeta};
 use quote::quote;
@@ -46,7 +46,7 @@ impl<'a> DocumentSymbolBuilder<'a> {
 }
 
 impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let document_symbols_path = &self.paths.document_symbols_trait;
 

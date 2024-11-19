@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use crate::{
-    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens}, CodeGen, Paths, ToCodeGen
+    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens}, FeaturesCodeGen, Paths, ToCodeGen
 };
 use darling::FromMeta;
 use quote::quote;
@@ -44,7 +44,7 @@ impl<'a> CompletionItemsBuilder<'a> {
 }
 
 impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let completion_items_path = &self.paths.completion_items_trait;
 

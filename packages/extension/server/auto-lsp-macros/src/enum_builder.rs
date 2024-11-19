@@ -1,22 +1,22 @@
 use crate::utilities::extract_fields::EnumFields;
-use crate::{CodeGen, Paths, ToCodeGen};
+use crate::{BuildAstItem, BuildAstItemBuilder, Paths};
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::Ident;
 
-pub struct AstEnumBuilder<'a> {
+pub struct EnumBuilder<'a> {
     pub paths: &'a Paths,
     pub fields: &'a EnumFields,
     pub input_name: &'a Ident,
-    pub input_builder_name: Ident,
+    pub input_builder_name: &'a Ident,
 }
 
-impl<'a> AstEnumBuilder<'a> {
+impl<'a> EnumBuilder<'a> {
     pub fn new(
-        paths: &'a Paths,
         input_name: &'a Ident,
-        input_builder_name: Ident,
+        input_builder_name: &'a Ident,
         fields: &'a EnumFields,
+        paths: &'a Paths,
     ) -> Self {
         Self {
             paths,
@@ -26,38 +26,79 @@ impl<'a> AstEnumBuilder<'a> {
         }
     }
 }
-impl<'a> ToCodeGen for AstEnumBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
-        let variant_types = &self.fields.variant_types_names;
 
-        codegen.input.impl_base.push(quote! {
-            pub const QUERY_NAMES: &[&str] = constcat::concat_slices!([&str]: #( &#variant_types::QUERY_NAMES ),*);
+impl<'a> ToTokens for EnumBuilder<'a> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let name = self.input_name;
+        let input_builder_name = &self.input_builder_name;
+
+        let builder_fields = self.generate_builder_fields();
+        let builder_new = self.generate_builder_new();
+        let query_binder = self.generate_query_binder();
+        let add = self.generate_add();
+        let try_from = self.generate_try_from();
+
+        let fields = self.generate_fields();
+        let ast_item_methods = self.generate_ast_item_methods();
+
+        let code_lens = self.generate_code_lens();
+        let completion_items = self.generate_completion_items();
+        let document_symbol = self.generate_document_symbol();
+        let hover_info = self.generate_hover_info();
+        let inlay_hint = self.generate_inlay_hint();
+        let semantic_tokens = self.generate_semantic_tokens();
+
+        let ast_item_trait = &self.paths.ast_item_trait;
+        let ast_item_builder = &self.paths.ast_item_builder_trait;
+
+        tokens.extend(quote! {
+            pub enum #name {
+                #(
+                    #fields
+                )*
+            }
+
+            impl #ast_item_trait for #name {
+                #ast_item_methods
+            }
+
+            pub struct #input_builder_name {
+                #(
+                    #builder_fields
+                )*
+            }
+
+            impl #ast_item_builder for #input_builder_name {
+                #builder_new
+                #query_binder
+                #add
+
+                fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
+                    self.unique_field.borrow().get_url()
+                }
+
+                fn get_range(&self) -> tree_sitter::Range {
+                    self.unique_field.borrow().get_range()
+                }
+
+                fn get_query_index(&self) -> usize {
+                    self.unique_field.borrow().get_query_index()
+                }
+            }
+
+            #try_from
+
+            #code_lens
+            #completion_items
+            #document_symbol
+            #hover_info
+            #inlay_hint
+            #semantic_tokens
         });
-
-        codegen
-            .input
-            .impl_ast_item
-            .push(self.generate_enum_methods());
-
-        codegen.input.other_impl.push(self.generate_code_lens());
-        codegen
-            .input
-            .other_impl
-            .push(self.generate_completion_items());
-        codegen
-            .input
-            .other_impl
-            .push(self.generate_document_symbol());
-        codegen.input.other_impl.push(self.generate_hover_info());
-        codegen.input.other_impl.push(self.generate_inlay_hint());
-        codegen
-            .input
-            .other_impl
-            .push(self.generate_semantic_tokens());
     }
 }
 
-impl<'a> AstEnumBuilder<'a> {
+impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
     fn generate_builder_fields(&self) -> Vec<TokenStream> {
         let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
         vec![quote! { pub unique_field: #ast_item_builder_trait_object }]
@@ -147,8 +188,19 @@ impl<'a> AstEnumBuilder<'a> {
     }
 }
 
-impl<'a> AstEnumBuilder<'a> {
-    fn generate_enum_methods(&self) -> TokenStream {
+impl<'a> BuildAstItem for EnumBuilder<'a> {
+    fn generate_fields(&self) -> Vec<TokenStream> {
+        let variant_names = &self.fields.variant_names;
+        let variant_types_names = &self.fields.variant_types_names;
+
+        vec![quote! {
+            #(
+                #variant_names(#variant_types_names)
+            ),*
+        }]
+    }
+
+    fn generate_ast_item_methods(&self) -> TokenStream {
         let variant_names = &self.fields.variant_names;
 
         quote! {
@@ -243,7 +295,9 @@ impl<'a> AstEnumBuilder<'a> {
             }
         }
     }
+}
 
+impl<'a> EnumBuilder<'a> {
     fn generate_code_lens(&self) -> TokenStream {
         let variant_names = &self.fields.variant_names;
         let input_name = &self.input_name;

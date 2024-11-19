@@ -4,7 +4,7 @@ use darling::FromMeta;
 use quote::quote;
 use syn::Ident;
 
-use crate::{utilities::extract_fields::StructFields, CodeGen, Paths, ToCodeGen};
+use crate::{utilities::extract_fields::StructFields, FeaturesCodeGen, Paths, ToCodeGen};
 
 use crate::Feature;
 
@@ -35,7 +35,7 @@ impl<'a> HoverInfoBuilder<'a> {
 }
 
 impl<'a> ToCodeGen for HoverInfoBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let hover_info_path = &self.paths.hover_info_trait;
 

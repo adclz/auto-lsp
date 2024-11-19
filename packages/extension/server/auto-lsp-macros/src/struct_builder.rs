@@ -1,53 +1,153 @@
 use crate::{
+    features::{
+        lsp_code_lens::CodeLensBuilder, lsp_completion_item::CompletionItemsBuilder,
+        lsp_document_symbol::DocumentSymbolBuilder, lsp_hover_info::HoverInfoBuilder,
+        lsp_inlay_hint::InlayHintsBuilder, lsp_semantic_token::SemanticTokensBuilder,
+    },
     utilities::extract_fields::{FieldInfoExtract, StructFields},
-    CodeGen, Paths, ToCodeGen,
+    BuildAstItem, BuildAstItemBuilder, Paths, SymbolFeatures,
 };
 use proc_macro2::{Ident, TokenStream};
-use quote::{quote, quote_spanned};
-pub struct AstItemBuilder<'a> {
-    pub paths: &'a Paths,
-    pub fields: &'a StructFields,
-    pub query_name: &'a str,
-    pub input_name: &'a Ident,
-    pub input_builder_name: Ident,
+use quote::{quote, quote_spanned, ToTokens};
+
+pub trait ToCodeGen {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen);
 }
 
-impl<'a> AstItemBuilder<'a> {
-    pub fn new(
-        paths: &'a Paths,
-        query_name: &'a str,
+#[derive(Default)]
+pub struct InputCodeGen {
+    pub fields: Vec<proc_macro2::TokenStream>,        // Fields
+    pub impl_base: Vec<proc_macro2::TokenStream>,     // Impl <>
+    pub impl_ast_item: Vec<proc_macro2::TokenStream>, // Impl AstItem for <>
+    pub other_impl: Vec<proc_macro2::TokenStream>,    // Other impl
+}
+
+#[derive(Default)]
+pub struct FeaturesCodeGen {
+    pub input: InputCodeGen,
+}
+
+pub struct StructBuilder<'a> {
+    // Input data
+    pub input_name: &'a Ident,
+    pub query_name: &'a str,
+    pub input_buider_name: &'a Ident,
+    pub fields: &'a StructFields,
+    // Paths
+    pub paths: &'a Paths,
+    // Features
+    pub lsp_code_lens: CodeLensBuilder<'a>,
+    pub lsp_completion_items: CompletionItemsBuilder<'a>,
+    pub lsp_document_symbols: DocumentSymbolBuilder<'a>,
+    pub lsp_hover_info: HoverInfoBuilder<'a>,
+    pub lsp_inlay_hints: InlayHintsBuilder<'a>,
+    pub lsp_semantic_tokens: SemanticTokensBuilder<'a>,
+}
+
+impl<'a> StructBuilder<'a> {
+    pub fn new_symbol(
+        params: &'a SymbolFeatures,
         input_name: &'a Ident,
-        input_builder_name: Ident,
+        input_buider_name: &'a Ident,
+        query_name: &'a str,
         fields: &'a StructFields,
+        paths: &'a Paths,
     ) -> Self {
         Self {
-            paths,
-            query_name,
-            fields,
             input_name,
-            input_builder_name,
+            query_name,
+            input_buider_name,
+            fields,
+            paths,
+            lsp_code_lens: CodeLensBuilder::new(
+                input_name,
+                paths,
+                params.lsp_code_lens.as_ref(),
+                fields,
+            ),
+            lsp_completion_items: CompletionItemsBuilder::new(
+                input_name,
+                paths,
+                params.lsp_completion_items.as_ref(),
+                fields,
+            ),
+            lsp_document_symbols: DocumentSymbolBuilder::new(
+                input_name,
+                paths,
+                params.lsp_document_symbols.as_ref(),
+                fields,
+            ),
+            lsp_hover_info: HoverInfoBuilder::new(
+                input_name,
+                paths,
+                params.lsp_hover_info.as_ref(),
+                fields,
+            ),
+            lsp_inlay_hints: InlayHintsBuilder::new(
+                input_name,
+                paths,
+                params.lsp_inlay_hints.as_ref(),
+                fields,
+            ),
+            lsp_semantic_tokens: SemanticTokensBuilder::new(
+                input_name,
+                paths,
+                params.lsp_semantic_tokens.as_ref(),
+                fields,
+            ),
         }
     }
 }
 
-impl<'a> ToCodeGen for AstItemBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
-        // Symbol
-        codegen.input.fields.extend(self.generate_struct_fields());
-
+impl<'a> ToTokens for StructBuilder<'a> {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let input_name = &self.input_name;
         let query_name = self.query_name;
 
-        codegen.input.impl_base.push(quote! {
-            pub const QUERY_NAMES: &[&str] = &[#query_name];
+        // Generate features
+        let mut code_gen = FeaturesCodeGen::default();
+
+        self.lsp_code_lens.to_code_gen(&mut code_gen);
+        self.lsp_completion_items.to_code_gen(&mut code_gen);
+        self.lsp_document_symbols.to_code_gen(&mut code_gen);
+        self.lsp_hover_info.to_code_gen(&mut code_gen);
+        self.lsp_inlay_hints.to_code_gen(&mut code_gen);
+        self.lsp_semantic_tokens.to_code_gen(&mut code_gen);
+
+        let input_fields = code_gen.input.fields;
+        let features_impl = code_gen.input.impl_base;
+        let features_impl_ast = code_gen.input.impl_ast_item;
+        let features_others_impl = code_gen.input.other_impl;
+
+        // generate ast item
+        let ast_item_trait = &self.paths.ast_item_trait;
+
+        let fields = self.generate_fields();
+        let methods = self.generate_ast_item_methods();
+
+        tokens.extend(quote! {
+            #[derive(Clone)]
+            pub struct #input_name {
+                #(#fields,)*
+                #(#input_fields),*
+            }
+
+            impl #input_name {
+                pub const QUERY_NAMES: &[&str] = &[#query_name];
+                #(#features_impl)*
+            }
+
+            impl #ast_item_trait for #input_name {
+                #methods
+                #(#features_impl_ast)*
+            }
+
+            #(#features_others_impl)*
         });
 
-        codegen
-            .input
-            .impl_ast_item
-            .push(self.generate_ast_item_methods());
+        // Generate builder
 
-        // Builder
-        let input_builder_name = &self.input_builder_name;
+        let input_builder_name = &self.input_buider_name;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
 
         let builder_fields = self.generate_builder_fields();
@@ -56,7 +156,7 @@ impl<'a> ToCodeGen for AstItemBuilder<'a> {
         let add = self.generate_add();
         let try_from = self.generate_try_from();
 
-        codegen.new_structs.push(quote! {
+        tokens.extend(quote! {
             #[derive(Clone, Debug)]
             pub struct #input_builder_name {
                 url: std::sync::Arc<lsp_types::Url>,
@@ -90,8 +190,8 @@ impl<'a> ToCodeGen for AstItemBuilder<'a> {
     }
 }
 
-impl<'a> AstItemBuilder<'a> {
-    fn generate_struct_fields(&self) -> Vec<TokenStream> {
+impl<'a> BuildAstItem for StructBuilder<'a> {
+    fn generate_fields(&self) -> Vec<TokenStream> {
         let mut fields = vec![
             quote! { pub url: Arc<lsp_types::Url> },
             quote! { pub parent: Option<Weak<RwLock<dyn AstItem>>> },
@@ -277,7 +377,7 @@ impl<'a> AstItemBuilder<'a> {
     }
 }
 
-impl<'a> AstItemBuilder<'a> {
+impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     fn generate_builder_fields(&self) -> Vec<TokenStream> {
         let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
 
@@ -368,7 +468,7 @@ impl<'a> AstItemBuilder<'a> {
         let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
         let deferred_ast_item_builder = &self.paths.deferred_ast_item_builder;
 
-        let input_builder_name = &self.input_builder_name;
+        let input_builder_name = &self.input_buider_name;
         let field_names = &self.fields.field_names.get_field_names();
         let field_option_names = &self.fields.field_option_names.get_field_names();
         let field_vec_names = &self.fields.field_vec_names.get_field_names();
@@ -449,7 +549,7 @@ impl<'a> AstItemBuilder<'a> {
         let fields = self.fields.get_field_names();
 
         let name = self.input_name;
-        let input_builder_name = &self.input_builder_name;
+        let input_builder_name = &self.input_buider_name;
         let field_names = &self.fields.field_names.get_field_names();
         let field_option_names = &self.fields.field_option_names.get_field_names();
         let field_vec_names = &self.fields.field_vec_names.get_field_names();

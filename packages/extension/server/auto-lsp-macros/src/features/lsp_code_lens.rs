@@ -9,7 +9,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    CodeGen, Paths, ToCodeGen,
+    FeaturesCodeGen, Paths, ToCodeGen,
 };
 
 use crate::Feature;
@@ -43,7 +43,7 @@ impl<'a> CodeLensBuilder<'a> {
 }
 
 impl<'a> ToCodeGen for CodeLensBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut CodeGen) {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let code_lens_path = &self.paths.code_lens_trait;
 

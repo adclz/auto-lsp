@@ -78,7 +78,7 @@ pub struct EnumFields {
     pub variant_builder_names: Vec<proc_macro2::Ident>,
 }
 
-pub fn match_fields(data: &syn::Data) -> StructFields {
+pub fn match_struct_fields(data: &syn::Data) -> StructFields {
     let mut ret_fields = StructFields {
         field_names: vec![],
         field_vec_names: vec![],
@@ -154,7 +154,7 @@ pub fn match_fields(data: &syn::Data) -> StructFields {
     ret_fields
 }
 
-pub fn match_enum_fields(data: &syn::ItemEnum) -> EnumFields {
+pub fn match_enum_fields(data: &syn::Data) -> EnumFields {
     let mut ret_fields = EnumFields {
         variant_names: vec![],
 
@@ -162,22 +162,27 @@ pub fn match_enum_fields(data: &syn::ItemEnum) -> EnumFields {
 
         variant_builder_names: vec![],
     };
-    for variant in &data.variants {
-        let variant_name = &variant.ident;
-        match &variant.fields {
-            syn::Fields::Unnamed(fields) => {
-                let first_field = fields.unnamed.first().unwrap();
-                ret_fields.variant_names.push(variant_name.clone());
-                ret_fields
-                    .variant_types_names
-                    .push(format_ident!("{}", get_raw_type_name(&first_field.ty)));
-                ret_fields.variant_builder_names.push(format_ident!(
-                    "{}Builder",
-                    get_raw_type_name(&first_field.ty)
-                ));
+    match data {
+        syn::Data::Enum(ref enum_data) => {
+            for variant in &enum_data.variants {
+                let variant_name = &variant.ident;
+                match &variant.fields {
+                    syn::Fields::Unnamed(fields) => {
+                        let first_field = fields.unnamed.first().unwrap();
+                        ret_fields.variant_names.push(variant_name.clone());
+                        ret_fields
+                            .variant_types_names
+                            .push(format_ident!("{}", get_raw_type_name(&first_field.ty)));
+                        ret_fields.variant_builder_names.push(format_ident!(
+                            "{}Builder",
+                            get_raw_type_name(&first_field.ty)
+                        ));
+                    }
+                    _ => panic!("This proc macro only works with enums"),
+                }
             }
-            _ => panic!("This proc macro only works with enums"),
         }
+        _ => panic!("This proc macro only works with enums"),
     }
 
     ret_fields
