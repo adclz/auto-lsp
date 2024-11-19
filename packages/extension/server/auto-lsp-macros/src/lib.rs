@@ -8,6 +8,7 @@ use quote::{format_ident, quote, ToTokens};
 use syn::{parse_macro_input, DeriveInput};
 
 mod enum_builder;
+mod feature_builder;
 mod features;
 mod meta;
 mod paths;
@@ -15,6 +16,7 @@ mod struct_builder;
 mod utilities;
 
 use enum_builder::*;
+use feature_builder::*;
 use paths::*;
 use struct_builder::*;
 
@@ -62,7 +64,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     match args.kind {
         AstStructKind::Accessor => todo!(),
         AstStructKind::Symbol(symbol_features) => {
-            StructBuilder::new_symbol(
+            StructBuilder::new(
                 &symbol_features,
                 &input_name,
                 &input_builder_name,
