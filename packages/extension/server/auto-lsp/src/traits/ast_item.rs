@@ -40,12 +40,17 @@ pub trait AstItem:
     fn get_parent(&self) -> Option<Weak<RwLock<dyn AstItem>>>;
     fn set_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>);
     fn inject_parent(&mut self, parent: Weak<RwLock<dyn AstItem>>);
-    fn get_highest_parent(&self) -> Weak<RwLock<dyn AstItem>> {
+
+    fn get_parent_scope(&self) -> Option<Weak<RwLock<dyn AstItem>>> {
         let mut parent = self.get_parent();
         while let Some(p) = parent {
-            parent = p.upgrade().unwrap().get_parent();
+            let p = p.upgrade().unwrap();
+            if p.is_scope() {
+                return Some(Arc::downgrade(&p));
+            }
+            parent = p.get_parent();
         }
-        parent.unwrap()
+        None
     }
 
     fn find_at_offset(&self, offset: &usize) -> Option<Arc<RwLock<dyn AstItem>>>;
