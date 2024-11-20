@@ -47,6 +47,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let hover_info = self.generate_hover_info();
         let inlay_hint = self.generate_inlay_hint();
         let semantic_tokens = self.generate_semantic_tokens();
+        let scope = self.generate_scope();
 
         let ast_item_trait = &self.paths.ast_item_trait;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
@@ -94,6 +95,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             #hover_info
             #inlay_hint
             #semantic_tokens
+            #scope
         });
     }
 }
@@ -277,22 +279,6 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                     )*
                 }
             }
-
-            fn is_scope(&self) -> bool {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.is_scope(),
-                    )*
-                }
-            }
-
-            fn get_scope_range(&self) -> [usize; 2] {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.get_scope_range(),
-                    )*
-                }
-            }
         }
     }
 }
@@ -399,6 +385,32 @@ impl<'a> EnumBuilder<'a> {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.build_semantic_tokens(builder),
+                        )*
+                    }
+                }
+            }
+        }
+    }
+
+    fn generate_scope(&self) -> TokenStream {
+        let variant_names = &self.fields.variant_names;
+        let input_name = &self.input_name;
+        let scope_trait = &self.paths.scope_trait;
+
+        quote! {
+            impl #scope_trait for #input_name {
+                fn is_scope(&self) -> bool {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.is_scope(),
+                        )*
+                    }
+                }
+
+                fn get_scope_range(&self) -> [usize; 2] {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.get_scope_range(),
                         )*
                     }
                 }

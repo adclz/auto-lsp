@@ -1,15 +1,17 @@
 extern crate proc_macro;
 
-use darling::{util::PathList, FromMeta};
+use darling::FromMeta;
 use quote::quote;
-use syn::Path;
+use syn::{Ident, Path};
 
-use crate::{utilities::format_tokens::path_to_dot_tokens, FeaturesCodeGen};
+use crate::{
+    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
+    Feature, FeaturesCodeGen, Paths, ToCodeGen,
+};
 
 #[derive(Debug, FromMeta)]
-pub enum ScopeFeature {
-    Range(ScopeRange),
-    ScopeFn(Path),
+pub struct ScopeFeature {
+    range: ScopeRange,
 }
 
 #[derive(Debug, FromMeta)]
@@ -18,38 +20,70 @@ pub struct ScopeRange {
     end: Path,
 }
 
-fn codegen_scope_feature(feature: &ScopeFeature, code_gen: &mut FeaturesCodeGen) {
-    match feature {
-        ScopeFeature::Range(range) => {
-            let start = path_to_dot_tokens(&range.start, None);
-            let end = path_to_dot_tokens(&range.end, None);
+pub struct ScopeBuilder<'a> {
+    pub input_name: &'a Ident,
+    pub paths: &'a Paths,
+    pub params: Option<&'a Feature<ScopeFeature>>,
+    pub fields: &'a StructFields,
+}
 
-            code_gen.input.impl_ast_item.push(quote! {
-                fn is_scope(&self) -> bool {
-                    true
-                }
-
-                fn get_scope_range(&self) -> [usize; 2] {
-
-                    let start = #start.read().unwrap().get_range().start_byte;
-                    let end = #end.read().unwrap().get_range().end_byte;
-
-                    [start, end]
-                }
-            });
+impl<'a> ScopeBuilder<'a> {
+    pub fn new(
+        input_name: &'a Ident,
+        paths: &'a Paths,
+        params: Option<&'a Feature<ScopeFeature>>,
+        fields: &'a StructFields,
+    ) -> Self {
+        Self {
+            paths,
+            input_name,
+            params,
+            fields,
         }
-        ScopeFeature::ScopeFn(scope_fn) => {
-            let scope_fn = path_to_dot_tokens(scope_fn, None);
+    }
+}
 
-            code_gen.input.impl_ast_item.push(quote! {
-                fn is_scope(&self) -> bool {
-                    true
-                }
+impl<'a> ToCodeGen for ScopeBuilder<'a> {
+    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
+        let input_name = &self.input_name;
+        let scope_path = &self.paths.scope_trait;
 
-                fn get_scope_range(&self) -> [usize; 2] {
-                    #scope_fn()
+        match self.params {
+            None => codegen.input.other_impl.push(quote! {
+                impl #scope_path for #input_name {
+                    fn is_scope(&self) -> bool {
+                        false
+                    }
+
+                    fn get_scope_range(&self) -> [usize; 2] {
+                        [0, 0]
+                    }
                 }
-            });
+            }),
+            Some(params) => match params {
+                Feature::User => (),
+                Feature::CodeGen(scope) => {
+                    let range = &scope.range;
+                    let start = path_to_dot_tokens(&range.start, None);
+                    let end = path_to_dot_tokens(&range.end, None);
+
+                    codegen.input.other_impl.push(quote! {
+                        impl #scope_path for #input_name {
+                            fn is_scope(&self) -> bool {
+                                true
+                            }
+
+                            fn get_scope_range(&self) -> [usize; 2] {
+
+                                let start = #start.read().unwrap().get_range().start_byte;
+                                let end = #end.read().unwrap().get_range().end_byte;
+
+                                [start, end]
+                            }
+                        }
+                    });
+                }
+            },
         }
     }
 }

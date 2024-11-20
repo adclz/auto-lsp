@@ -15,6 +15,7 @@ pub struct Paths {
     pub hover_info_trait: Path,
     pub inlay_hints_trait: Path,
     pub semantic_tokens_trait: Path,
+    pub scope_trait: Path,
 }
 
 impl Default for Paths {
@@ -47,6 +48,7 @@ impl Default for Paths {
             hover_info_trait: parse_quote!(auto_lsp::traits::ast_item::HoverInfo),
             inlay_hints_trait: parse_quote!(auto_lsp::traits::ast_item::InlayHints),
             semantic_tokens_trait: parse_quote!(auto_lsp::traits::ast_item::SemanticTokens),
+            scope_trait: parse_quote!(auto_lsp::traits::ast_item::Scope),
         }
     }
 }

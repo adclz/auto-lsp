@@ -17,6 +17,7 @@ pub trait AstItem:
     + InlayHints
     + CodeLens
     + CompletionItems
+    + Scope
 {
     fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> tree_sitter::Range;
@@ -45,14 +46,6 @@ pub trait AstItem:
             parent = p.upgrade().unwrap().get_parent();
         }
         parent.unwrap()
-    }
-
-    fn is_scope(&self) -> bool {
-        false
-    }
-
-    fn get_scope_range(&self) -> [usize; 2] {
-        [0, 0]
     }
 
     fn find_at_offset(&self, offset: &usize) -> Option<Arc<RwLock<dyn AstItem>>>;
@@ -95,6 +88,11 @@ pub trait AstItem:
 }
 
 impl_downcast!(AstItem);
+
+pub trait Scope {
+    fn is_scope(&self) -> bool;
+    fn get_scope_range(&self) -> [usize; 2];
+}
 
 pub trait DocumentSymbols {
     fn get_document_symbols(
@@ -155,7 +153,9 @@ impl AstItem for Arc<RwLock<dyn AstItem>> {
     fn swap_at_offset(&mut self, offset: &usize, item: &Rc<RefCell<dyn AstItemBuilder>>) {
         self.write().unwrap().swap_at_offset(offset, item)
     }
+}
 
+impl Scope for Arc<RwLock<dyn AstItem>> {
     fn is_scope(&self) -> bool {
         self.read().unwrap().is_scope()
     }

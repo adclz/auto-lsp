@@ -31,7 +31,7 @@ pub enum AstStructKind {
 
 #[derive(Debug, FromMeta)]
 pub struct SymbolFeatures {
-    pub scope: Option<ScopeFeature>,
+    pub scope: Option<Feature<ScopeFeature>>,
     // LSP
     pub lsp_document_symbols: Option<Feature<DocumentSymbolFeature>>,
     pub lsp_hover_info: Option<Feature<HoverFeature>>,
