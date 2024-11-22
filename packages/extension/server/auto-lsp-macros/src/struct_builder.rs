@@ -384,22 +384,30 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         fields_builder.extend(self.fields.field_vec_builder_names.iter());
         fields_builder.extend(self.fields.field_hashmap_builder_names.iter());
 
+        let query_binder = quote! {
+            let query_name = query.capture_names()[capture.index as usize];
+            #(
+                if #fields_types::QUERY_NAMES.contains(&query_name)  {
+                        return Some(std::rc::Rc::new(std::cell::RefCell::new(#fields_builder::new(
+                            url,
+                            &query,
+                            capture.index as usize,
+                            capture.node.range(),
+                            capture.node.start_position(),
+                            capture.node.end_position(),
+                        ))))
+                };
+            )*
+            None
+        };
+
         quote! {
+            fn static_query_binder(url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+                #query_binder
+            }
+
             fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
-                let query_name = query.capture_names()[capture.index as usize];
-                #(
-                    if #fields_types::QUERY_NAMES.contains(&query_name)  {
-                            return Some(std::rc::Rc::new(std::cell::RefCell::new(#fields_builder::new(
-                                url,
-                                &query,
-                                capture.index as usize,
-                                capture.node.range(),
-                                capture.node.start_position(),
-                                capture.node.end_position(),
-                            ))))
-                    };
-                )*
-                None
+                #query_binder
             }
         }
     }

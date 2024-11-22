@@ -134,8 +134,28 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
 
     fn generate_query_binder(&self) -> TokenStream {
         let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let variant_types = &self.fields.variant_types_names;
+        let variant_builders = &self.fields.variant_builder_names;
 
         quote! {
+            fn static_query_binder(url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+                let query_name = query.capture_names()[capture.index as usize];
+                #(
+                    if #variant_types::QUERY_NAMES.contains(&query_name)  {
+                            return Some(std::rc::Rc::new(std::cell::RefCell::new(#variant_builders::new(
+                                url,
+                                &query,
+                                capture.index as usize,
+                                capture.node.range(),
+                                capture.node.start_position(),
+                                capture.node.end_position(),
+                            ))))
+                    };
+                )*
+                None
+
+            }
+
             fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
                 self.unique_field.borrow().query_binder(url, capture, query)
             }

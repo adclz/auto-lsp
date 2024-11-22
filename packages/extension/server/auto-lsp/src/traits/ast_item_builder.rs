@@ -31,6 +31,14 @@ pub trait AstItemBuilder: Downcast {
     where
         Self: Sized;
 
+    fn static_query_binder(
+        url: Arc<Url>,
+        capture: &tree_sitter::QueryCapture,
+        query: &tree_sitter::Query,
+    ) -> Option<Rc<RefCell<dyn AstItemBuilder>>>
+    where
+        Self: Sized;
+
     fn query_binder(
         &self,
         url: Arc<Url>,
