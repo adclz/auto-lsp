@@ -52,6 +52,13 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let ast_item_trait = &self.paths.ast_item_trait;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
 
+        let into = quote! {
+            fn try_into_item(&self) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic> {
+                let item = #name::try_from(self.clone())?;
+                Ok(Arc::new(RwLock::new(item)))
+            }
+        };
+
         tokens.extend(quote! {
             pub enum #name {
                 #(
@@ -73,6 +80,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
                 #builder_new
                 #query_binder
                 #add
+                #into
 
                 fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
                     self.unique_field.borrow().get_url()

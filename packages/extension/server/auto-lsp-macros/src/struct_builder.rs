@@ -91,6 +91,13 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let add = self.generate_add();
         let try_from = self.generate_try_from();
 
+        let into = quote! {
+            fn try_into_item(&self) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic> {
+                let item = #input_name::try_from(self.clone())?;
+                Ok(Arc::new(RwLock::new(item)))
+            }
+        };
+
         tokens.extend(quote! {
             #[derive(Clone, Debug)]
             pub struct #input_builder_name {
@@ -106,6 +113,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
                 #new
                 #query_binder
                 #add
+                #into
 
                 fn get_url(&self) -> Arc<lsp_types::Url> {
                     self.url.clone()

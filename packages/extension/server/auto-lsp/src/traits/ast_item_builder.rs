@@ -3,8 +3,10 @@ use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
 use std::fmt::Formatter;
 use std::rc::Rc;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tree_sitter::Query;
+
+use super::ast_item::AstItem;
 
 pub enum DeferredAstItemBuilder {
     None,
@@ -38,6 +40,8 @@ pub trait AstItemBuilder: Downcast {
     ) -> Option<Rc<RefCell<dyn AstItemBuilder>>>
     where
         Self: Sized;
+
+    fn try_into_item(&self) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic>;
 
     fn query_binder(
         &self,
