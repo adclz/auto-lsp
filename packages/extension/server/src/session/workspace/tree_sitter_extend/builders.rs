@@ -1,5 +1,4 @@
 use auto_lsp::builder_error;
-use auto_lsp::macros::ast_builder::AstBuilder;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::{AstItemBuilder, DeferredAstItemBuilder};
 use lsp_types::{Diagnostic, Url};
@@ -7,8 +6,6 @@ use std::rc::Rc;
 use std::sync::RwLock;
 use std::{cell::RefCell, sync::Arc};
 use streaming_iterator::StreamingIterator;
-
-use crate::session::Session;
 
 struct Deferred {
     parent: Rc<RefCell<dyn AstItemBuilder>>,
@@ -41,15 +38,34 @@ fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Rang
     }
 }
 
-impl Session {
-    pub fn builder(
-        &self,
+pub type BuilderFn = fn(
+    query: &tree_sitter::Query,
+    root_node: tree_sitter::Node,
+    source_code: &[u8],
+    url: Arc<Url>,
+) -> BuilderResult;
+
+pub struct BuilderResult {
+    pub item: Result<Arc<RwLock<dyn AstItem>>, Diagnostic>,
+    pub errors: Vec<Diagnostic>,
+}
+
+pub trait Builder {
+    fn builder(
         query: &tree_sitter::Query,
-        ast_builder: &AstBuilder,
         root_node: tree_sitter::Node,
         source_code: &[u8],
         url: Arc<Url>,
-    ) -> Vec<Result<Arc<RwLock<dyn AstItem>>, Diagnostic>> {
+    ) -> BuilderResult;
+}
+
+impl<T: AstItemBuilder> Builder for T {
+    fn builder(
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        source_code: &[u8],
+        url: Arc<Url>,
+    ) -> BuilderResult {
         let mut errors = vec![];
 
         let mut cursor = tree_sitter::QueryCursor::new();
@@ -73,11 +89,7 @@ impl Session {
             loop {
                 match &parent {
                     None => {
-                        let node = match (ast_builder.query_to_builder)(
-                            url.clone(),
-                            &capture,
-                            &query,
-                        ) {
+                        let node = match T::static_query_binder(url.clone(), &capture, &query) {
                             Some(builder) => builder,
                             None => {
                                 errors.push(builder_error!(
@@ -154,8 +166,12 @@ impl Session {
             }
         });
 
-        let mut result = (ast_builder.builder_to_item)(roots);
-        result.extend(errors.into_iter().map(Err));
-        result
+        let result = roots.pop().unwrap();
+        let result: std::cell::Ref<'_, dyn AstItemBuilder> = result.borrow();
+        let result = result.try_into_item();
+        BuilderResult {
+            item: result,
+            errors,
+        }
     }
 }

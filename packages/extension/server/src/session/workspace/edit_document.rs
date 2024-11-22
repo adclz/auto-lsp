@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
-use auto_lsp::traits::workspace;
 use lsp_types::DidChangeTextDocumentParams;
 
 use super::tree_sitter_extend::{
     tree_sitter_edit::edit_tree, tree_sitter_lexer::get_tree_sitter_errors,
 };
-use crate::{session::Session, symbols::symbols::Symbol, AST_BUILDERS, CST_PARSERS};
+use crate::{session::Session, AST_BUILDERS, CST_PARSERS};
 
 impl Session {
     pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
@@ -57,23 +56,20 @@ impl Session {
 
         let arc_uri = Arc::new(uri.clone());
 
-        ast = self
-            .builder(
-                &cst_parser.queries.outline,
-                ast_builder,
-                cst.root_node(),
-                source_code,
-                arc_uri,
-            )
-            .into_iter()
-            .filter_map(|f| match f {
-                Ok(ast) => Some(ast),
-                Err(e) => {
-                    errors.push(e);
-                    None
-                }
-            })
-            .collect();
+        let ast_build = ast_builder(
+            &cst_parser.queries.outline,
+            cst.root_node(),
+            source_code,
+            arc_uri,
+        );
+
+        ast = match ast_build.item {
+            Ok(item) => Some(item),
+            Err(e) => {
+                errors.push(e);
+                None
+            }
+        };
 
         let workspace = self
             .workspaces

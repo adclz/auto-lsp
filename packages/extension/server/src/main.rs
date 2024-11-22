@@ -1,10 +1,8 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
-use auto_lsp::macros::ast_builder::AstBuilder;
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     CodeLensRequest, Completion, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest,
@@ -12,12 +10,13 @@ use lsp_types::request::{
     SemanticTokensRangeRequest, WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
 };
 use lsp_types::{
-    CodeLensOptions, DocumentLinkOptions, InlayHintOptions, SelectionRangeProviderCapability,
+    CodeLensOptions, DocumentLinkOptions, SelectionRangeProviderCapability,
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
 };
 use session::cst_parser::CstParser;
 use session::dispatchers::{NotificationDispatcher, RequestDispatcher};
+use session::workspace::tree_sitter_extend::builders::{Builder, BuilderFn};
 use session::Session;
 
 use crossbeam_channel::select;
@@ -28,7 +27,7 @@ use lsp_types::{
     request::DocumentDiagnosticRequest,
     DiagnosticOptions, DiagnosticServerCapabilities, OneOf, ServerCapabilities,
 };
-use symbols::symbols::Symbol;
+use symbols::symbols::SourceFileBuilder;
 
 mod capabilities;
 mod session;
@@ -55,8 +54,10 @@ lazy_static! {
 // When the CST is built, the LSP will try to build the AST using the corresponding builder.
 // Since all symbols implement the AstItem trait, a node from a specific ast can hold a reference to another symbol located in a different ast.
 lazy_static! {
-    pub static ref AST_BUILDERS: HashMap<String, AstBuilder> =
-        HashMap::from([("iec-61131-2".into(), auto_lsp::create_builder!(Symbol))]);
+    pub static ref AST_BUILDERS: HashMap<String, BuilderFn> = HashMap::from([(
+        "iec-61131-2".to_string(),
+        SourceFileBuilder::builder as BuilderFn
+    )]);
 }
 
 ///// Semantics

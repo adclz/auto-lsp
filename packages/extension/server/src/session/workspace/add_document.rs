@@ -45,23 +45,22 @@ impl Session {
 
         let arc_uri = Arc::new(uri.clone());
 
-        ast = self
-            .builder(
-                &cst_parser.queries.outline,
-                ast_builder,
-                cst.root_node(),
-                source_code,
-                arc_uri,
-            )
-            .into_iter()
-            .filter_map(|f| match f {
-                Ok(ast) => Some(ast),
-                Err(e) => {
-                    errors.push(e);
-                    None
-                }
-            })
-            .collect();
+        let ast_build = ast_builder(
+            &cst_parser.queries.outline,
+            cst.root_node(),
+            source_code,
+            arc_uri,
+        );
+
+        ast = match ast_build.item {
+            Ok(item) => Some(item),
+            Err(e) => {
+                errors.push(e);
+                None
+            }
+        };
+
+        errors.extend(ast_build.errors);
 
         self.workspaces.insert(
             uri.to_owned(),
