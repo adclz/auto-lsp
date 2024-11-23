@@ -51,11 +51,12 @@ impl<'a> ToTokens for EnumBuilder<'a> {
 
         let ast_item_trait = &self.paths.ast_item_trait;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
+        let ast_item_trait_object_arc = &self.paths.ast_item_trait_object_arc;
 
         let into = quote! {
-            fn try_into_item(&self) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic> {
+            fn try_into_item(&self) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
                 let item = #name::try_from(self.clone())?;
-                Ok(Arc::new(RwLock::new(item)))
+                Ok(std::sync::Arc::new(std::sync::RwLock::new(item)))
             }
         };
 
@@ -119,12 +120,12 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let variant_builder_names = &self.fields.variant_builder_names;
 
         quote! {
-            fn new(url: Arc<lsp_types::Url>, query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
+            fn new(url: std::sync::Arc<lsp_types::Url>, query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
                 let query_name = query.capture_names()[query_index as usize];
                 #(
                     if let true = #variant_types_names::QUERY_NAMES.contains(&query_name) {
                         return Self {
-                            unique_field: Rc::new(RefCell::new(#variant_builder_names::new(
+                            unique_field: std::rc::Rc::new(std::cell::RefCell::new(#variant_builder_names::new(
                                 url,
                                 query,
                                 query_index,
@@ -146,7 +147,7 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let variant_builders = &self.fields.variant_builder_names;
 
         quote! {
-            fn static_query_binder(url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
                     if #variant_types::QUERY_NAMES.contains(&query_name)  {
@@ -164,7 +165,7 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
 
             }
 
-            fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
                 self.unique_field.borrow().query_binder(url, capture, query)
             }
         }

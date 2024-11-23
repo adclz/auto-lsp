@@ -91,10 +91,12 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let add = self.generate_add();
         let try_from = self.generate_try_from();
 
+        let ast_item_trait_object_arc = &self.paths.ast_item_trait_object_arc;
+
         let into = quote! {
-            fn try_into_item(&self) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic> {
+            fn try_into_item(&self) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
                 let item = #input_name::try_from(self)?;
-                Ok(Arc::new(RwLock::new(item)))
+                Ok(std::sync::Arc::new(std::sync::RwLock::new(item)))
             }
         };
 
@@ -115,7 +117,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
                 #add
                 #into
 
-                fn get_url(&self) -> Arc<lsp_types::Url> {
+                fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
                     self.url.clone()
                 }
 
@@ -135,16 +137,17 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
 impl<'a> BuildAstItem for StructBuilder<'a> {
     fn generate_fields(&self) -> Vec<TokenStream> {
+        let ast_item_trait_object_weak = &self.paths.ast_item_trait_object_weak;
         let mut fields = vec![
-            quote! { pub url: Arc<lsp_types::Url> },
-            quote! { pub parent: Option<Weak<RwLock<dyn AstItem>>> },
+            quote! { pub url: std::sync::Arc<lsp_types::Url> },
+            quote! { pub parent: Option<#ast_item_trait_object_weak> },
             quote! { pub range: tree_sitter::Range },
             quote! { pub start_position: tree_sitter::Point },
             quote! { pub end_position: tree_sitter::Point },
         ];
 
         if self.is_accessor {
-            fields.push(quote! { pub accessor: Option<Weak<RwLock<dyn AstItem>>> });
+            fields.push(quote! { pub accessor: Option<#ast_item_trait_object_weak> });
         }
 
         if !self.fields.field_names.is_empty() {
@@ -160,7 +163,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
                         quote! {
                            #(#attributes)*
-                           pub #name: Arc<RwLock<#_type>>
+                           pub #name: std::sync::Arc<std::sync::RwLock<#_type>>
                         }
                     }),
             )
@@ -178,7 +181,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
                         quote! {
                            #(#attributes)*
-                           pub #name: Option<Arc<RwLock<#_type>>>
+                           pub #name: Option<std::sync::Arc<std::sync::RwLock<#_type>>>
                         }
                     }),
             )
@@ -196,7 +199,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
                         quote! {
                            #(#attributes)*
-                           pub #name: Vec<Arc<RwLock<#_type>>>
+                           pub #name: Vec<std::sync::Arc<std::sync::RwLock<#_type>>>
                         }
                     }),
             )
@@ -214,7 +217,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
                         quote! {
                            #(#attributes)*
-                           pub #name: HashMap<String, Arc<RwLock<#_type>>>
+                           pub #name: HashMap<String, std::sync::Arc<std::sync::RwLock<#_type>>>
                         }
                     }),
             )
@@ -233,7 +236,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
         let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
 
         quote! {
-            fn get_url(&self) -> Arc<lsp_types::Url> {
+            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
                 self.url.clone()
             }
 
@@ -364,7 +367,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         .concat();
 
         quote! {
-            fn new(url: Arc<lsp_types::Url>, _query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
+            fn new(url: std::sync::Arc<lsp_types::Url>, _query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
                 Self {
                     url,
                     query_index,
@@ -410,11 +413,11 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         };
 
         quote! {
-            fn static_query_binder(url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
                 #query_binder
             }
 
-            fn query_binder(&self, url: Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
                 #query_binder
             }
         }
