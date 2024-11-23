@@ -93,7 +93,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
         let into = quote! {
             fn try_into_item(&self) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic> {
-                let item = #input_name::try_from(self.clone())?;
+                let item = #input_name::try_from(self)?;
                 Ok(Arc::new(RwLock::new(item)))
             }
         };
@@ -523,20 +523,20 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         };
 
         quote! {
-            impl TryFrom<#input_builder_name> for #name {
+            impl TryFrom<&#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from(builder: #input_builder_name) -> Result<Self, Self::Error> {
+                fn try_from(builder: &#input_builder_name) -> Result<Self, Self::Error> {
                     let builder_range = builder.get_lsp_range();
 
                     #(let #field_names =
                         builder
                         .#field_names
+                        .as_ref()
                         .ok_or(auto_lsp::builder_error!(builder_range, format!("Missing field {:?} in {:?}", stringify!(#field_names), stringify!(#input_builder_name))))?
                         .borrow()
                         .downcast_ref::<#field_builder_names>()
                         .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names))))?
-                        .clone()
                         .try_into()?;
                     )*
                     #(let #field_option_names = match builder.#field_option_names {
@@ -545,7 +545,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                                     .borrow()
                                     .downcast_ref::<#field_option_builder_names>()
                                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_option_builder_names))))?
-                                    .clone()
                                     .try_into()?;
                                 Some(item)
                             },
@@ -557,10 +556,10 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                         .into_iter()
                         .map(|b| {
                             let item = b
+                                .as_ref()
                                 .borrow()
                                 .downcast_ref::<#field_vec_builder_names>()
                                 .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_vec_builder_names))))?
-                                .clone()
                                 .try_into()?;
                             Ok(item)
                         })
@@ -572,10 +571,10 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                             .into_iter()
                             .map(|(key, b)| {
                                 let item = b
+                                    .as_ref()
                                     .borrow()
                                     .downcast_ref::<#field_hashmap_builder_names>()
                                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?} at key {}", stringify!(#field_hashmap_builder_names), key)))?
-                                    .clone()
                                     .try_into()?;
                                 Ok((key, item))
                             })
@@ -583,20 +582,20 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     )*
                     Ok(#name {
                         #init_accessor
-                        url: builder.url,
-                        range: builder.range,
-                        start_position: builder.start_position,
-                        end_position: builder.end_position,
+                        url: builder.url.clone(),
+                        range: builder.range.clone(),
+                        start_position: builder.start_position.clone(),
+                        end_position: builder.end_position.clone(),
                         parent: None,
                         #(#fields),*
                     })
                 }
             }
 
-            impl TryFrom<#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+            impl TryFrom<&#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from(builder: #input_builder_name) -> Result<Self, Self::Error> {
+                fn try_from(builder: &#input_builder_name) -> Result<Self, Self::Error> {
                     let item = #name::try_from(builder)?;
                     let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                     result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);

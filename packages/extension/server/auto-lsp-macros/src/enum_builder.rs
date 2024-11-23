@@ -197,7 +197,7 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
                     use std::sync::{Arc, RwLock};
                     #(
                         if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(variant.clone().try_into()?));
+                            return Ok(Self::#variant_names(variant.try_into()?));
                         };
                     )*
                     panic!("")
