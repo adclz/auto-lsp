@@ -1,5 +1,6 @@
 use crate::builders::semantic_tokens::SemanticTokensBuilder;
 use downcast_rs::{impl_downcast, Downcast};
+use lsp_textdocument::FullTextDocument;
 use lsp_types::{CompletionItem, DocumentSymbol, Url};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -137,7 +138,7 @@ pub trait IsAccessor {
 }
 
 pub trait Accessor: IsAccessor {
-    fn find(&self, ctx: &dyn WorkspaceContext);
+    fn find(&self, doc: &FullTextDocument, ctx: &dyn WorkspaceContext);
 }
 
 impl AstItem for Arc<RwLock<dyn AstItem>> {
@@ -230,7 +231,7 @@ impl IsAccessor for Arc<RwLock<dyn AstItem>> {
 }
 
 impl Accessor for Arc<RwLock<dyn AstItem>> {
-    fn find(&self, ctx: &dyn WorkspaceContext) {
-        self.read().unwrap().find(ctx)
+    fn find(&self, doc: &FullTextDocument, ctx: &dyn WorkspaceContext) {
+        self.read().unwrap().find(doc, ctx)
     }
 }

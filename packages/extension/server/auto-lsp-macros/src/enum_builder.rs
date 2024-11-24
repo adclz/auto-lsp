@@ -468,10 +468,10 @@ impl<'a> EnumBuilder<'a> {
         }
 
         impl #accessor_trait for #input_name {
-            fn find(&self, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) {
+            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) {
                     match self {
                         #(
-                            Self::#variant_names(variant) => variant.find(ctx),
+                            Self::#variant_names(variant) => variant.find(doc, ctx),
                         )*
                     }
                 }
