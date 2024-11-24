@@ -55,8 +55,8 @@ impl<'a> ToCodeGen for ScopeBuilder<'a> {
                         false
                     }
 
-                    fn get_scope_range(&self) -> [usize; 2] {
-                        [0, 0]
+                    fn get_scope_range(&self) -> Vec<[usize; 2]> {
+                        vec!()
                     }
                 }
             }),
@@ -73,12 +73,12 @@ impl<'a> ToCodeGen for ScopeBuilder<'a> {
                                 true
                             }
 
-                            fn get_scope_range(&self) -> [usize; 2] {
+                            fn get_scope_range(&self) -> Vec<[usize; 2]> {
 
                                 let start = #start.read().unwrap().get_range().start_byte;
                                 let end = #end.read().unwrap().get_range().end_byte;
 
-                                [start, end]
+                                vec!([start, end])
                             }
                         }
                     });

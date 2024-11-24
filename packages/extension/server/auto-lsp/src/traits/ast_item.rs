@@ -99,7 +99,7 @@ impl_downcast!(AstItem);
 
 pub trait Scope {
     fn is_scope(&self) -> bool;
-    fn get_scope_range(&self) -> [usize; 2];
+    fn get_scope_range(&self) -> Vec<[usize; 2]>;
 }
 
 pub trait DocumentSymbols {
@@ -176,7 +176,7 @@ impl Scope for Arc<RwLock<dyn AstItem>> {
         self.read().unwrap().is_scope()
     }
 
-    fn get_scope_range(&self) -> [usize; 2] {
+    fn get_scope_range(&self) -> Vec<[usize; 2]> {
         self.read().unwrap().get_scope_range()
     }
 }

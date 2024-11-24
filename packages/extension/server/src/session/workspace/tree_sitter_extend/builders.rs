@@ -189,15 +189,18 @@ impl<T: AstItem> Finder for T {
             match scope.upgrade() {
                 Some(scope) => {
                     let scope = scope.read().unwrap();
-                    let range = scope.get_scope_range();
-                    let area = doc
-                        .get_content(None)
-                        .get(range[0] as usize..range[1] as usize)
-                        .unwrap();
+                    let ranges = scope.get_scope_range();
 
-                    for (index, _) in area.match_indices(pattern) {
-                        if let Some(elem) = scope.find_at_offset(&index) {
-                            return Some(Arc::downgrade(&elem));
+                    for range in ranges {
+                        let area = doc
+                            .get_content(None)
+                            .get(range[0] as usize..range[1] as usize)
+                            .unwrap();
+
+                        for (index, _) in area.match_indices(pattern) {
+                            if let Some(elem) = scope.find_at_offset(&index) {
+                                return Some(Arc::downgrade(&elem));
+                            }
                         }
                     }
                 }

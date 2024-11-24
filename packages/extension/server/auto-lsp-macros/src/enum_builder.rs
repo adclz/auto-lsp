@@ -439,7 +439,7 @@ impl<'a> EnumBuilder<'a> {
                     }
                 }
 
-                fn get_scope_range(&self) -> [usize; 2] {
+                fn get_scope_range(&self) -> Vec<[usize; 2]> {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.get_scope_range(),
