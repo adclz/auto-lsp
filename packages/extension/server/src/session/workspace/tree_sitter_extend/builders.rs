@@ -1,9 +1,10 @@
 use auto_lsp::builder_error;
 use auto_lsp::traits::ast_item::AstItem;
 use auto_lsp::traits::ast_item_builder::{AstItemBuilder, DeferredAstItemBuilder};
+use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::rc::Rc;
-use std::sync::RwLock;
+use std::sync::{RwLock, Weak};
 use std::{cell::RefCell, sync::Arc};
 use streaming_iterator::StreamingIterator;
 
@@ -57,6 +58,10 @@ pub trait Builder {
         source_code: &[u8],
         url: Arc<Url>,
     ) -> BuilderResult;
+}
+
+pub trait Finder {
+    fn find_reference(&self, doc: &FullTextDocument) -> Option<Weak<RwLock<dyn AstItem>>>;
 }
 
 impl<T: AstItemBuilder> Builder for T {
@@ -173,5 +178,33 @@ impl<T: AstItemBuilder> Builder for T {
             item: result,
             errors,
         }
+    }
+}
+
+impl<T: AstItem> Finder for T {
+    fn find_reference(&self, doc: &FullTextDocument) -> Option<Weak<RwLock<dyn AstItem>>> {
+        let pattern = self.get_text(doc.get_content(None).as_bytes());
+
+        while let Some(scope) = self.get_parent_scope() {
+            match scope.upgrade() {
+                Some(scope) => {
+                    let scope = scope.read().unwrap();
+                    let range = scope.get_scope_range();
+                    let area = doc
+                        .get_content(None)
+                        .get(range[0] as usize..range[1] as usize)
+                        .unwrap();
+
+                    for (index, _) in area.match_indices(pattern) {
+                        if let Some(elem) = scope.find_at_offset(&index) {
+                            return Some(Arc::downgrade(&elem));
+                        }
+                    }
+                }
+                None => continue,
+            }
+        }
+
+        None
     }
 }
