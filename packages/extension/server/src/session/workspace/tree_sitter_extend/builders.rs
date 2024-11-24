@@ -1,13 +1,13 @@
 use auto_lsp::builder_error;
-use auto_lsp::traits::ast_item::AstItem;
+use auto_lsp::traits::ast_item::{AstItem, IsAccessor};
 use auto_lsp::traits::ast_item_builder::{AstItemBuilder, DeferredAstItemBuilder};
+use auto_lsp::traits::convert::*;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::rc::Rc;
 use std::sync::{RwLock, Weak};
 use std::{cell::RefCell, sync::Arc};
 use streaming_iterator::StreamingIterator;
-
 struct Deferred {
     parent: Rc<RefCell<dyn AstItemBuilder>>,
     child: Rc<RefCell<dyn AstItemBuilder>>,
@@ -173,7 +173,16 @@ impl<T: AstItemBuilder> Builder for T {
 
         let result = roots.pop().unwrap();
         let result: std::cell::Ref<'_, dyn AstItemBuilder> = result.borrow();
-        let result = result.try_into_item();
+
+        let mut todo = vec![];
+        let result = result.try_into_item(&mut todo);
+
+        todo.iter().for_each(|item| {
+            if *item.is_accessor() {
+                todo!()
+            }
+        });
+
         BuilderResult {
             item: result,
             errors,

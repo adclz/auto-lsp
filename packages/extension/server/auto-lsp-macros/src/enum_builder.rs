@@ -55,9 +55,13 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let ast_item_builder = &self.paths.ast_item_builder_trait;
         let ast_item_trait_object_arc = &self.paths.ast_item_trait_object_arc;
 
+        let try_from_builder = &self.paths.try_from_builder;
+
         let into = quote! {
-            fn try_into_item(&self) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
-                let item = #name::try_from(self.clone())?;
+            fn try_into_item(&self, check: &mut Vec<#ast_item_trait_object_arc>) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
+                use #try_from_builder;
+
+                let item = #name::try_from_builder(self, check)?;
                 Ok(std::sync::Arc::new(std::sync::RwLock::new(item)))
             }
         };
@@ -193,26 +197,32 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let variant_names = &self.fields.variant_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
+        let ast_item_object_arc = &self.paths.ast_item_trait_object_arc;
+        let try_from_builder = &self.paths.try_from_builder;
+        let try_into_builder = &self.paths.try_into_builder;
+
         quote! {
-            impl TryFrom<&#input_builder_name> for #name {
+            impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from(builder: &#input_builder_name) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
                     use std::sync::{Arc, RwLock};
+                    use #try_into_builder;
+
                     #(
                         if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(variant.try_into()?));
+                            return Ok(Self::#variant_names(variant.try_into_builder(check)?));
                         };
                     )*
                     panic!("")
                 }
             }
 
-            impl TryFrom<&#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+            impl #try_from_builder<&#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from(builder: &#input_builder_name) -> Result<Self, Self::Error> {
-                    let item = #name::try_from(builder)?;
+                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
+                    let item = #name::try_from_builder(builder, check)?;
                     let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                     result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
                     Ok(result)

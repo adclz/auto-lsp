@@ -41,7 +41,10 @@ pub trait AstItemBuilder: Downcast {
     where
         Self: Sized;
 
-    fn try_into_item(&self) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic>;
+    fn try_into_item(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+    ) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic>;
 
     fn query_binder(
         &self,

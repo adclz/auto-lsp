@@ -18,6 +18,8 @@ pub struct Paths {
     pub scope_trait: Path,
     pub is_accessor_trait: Path,
     pub accessor_trait: Path,
+    pub try_into_builder: Path,
+    pub try_from_builder: Path,
 }
 
 impl Default for Paths {
@@ -53,6 +55,8 @@ impl Default for Paths {
             scope_trait: parse_quote!(auto_lsp::traits::ast_item::Scope),
             is_accessor_trait: parse_quote!(auto_lsp::traits::ast_item::IsAccessor),
             accessor_trait: parse_quote!(auto_lsp::traits::ast_item::Accessor),
+            try_into_builder: parse_quote!(auto_lsp::traits::convert::TryIntoBuilder),
+            try_from_builder: parse_quote!(auto_lsp::traits::convert::TryFromBuilder),
         }
     }
 }

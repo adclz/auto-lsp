@@ -92,10 +92,13 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let try_from = self.generate_try_from();
 
         let ast_item_trait_object_arc = &self.paths.ast_item_trait_object_arc;
+        let try_from_builder = &self.paths.try_from_builder;
 
         let into = quote! {
-            fn try_into_item(&self) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
-                let item = #input_name::try_from(self)?;
+            fn try_into_item(&self, check: &mut Vec<#ast_item_trait_object_arc>) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
+                use #try_from_builder;
+
+                let item = #input_name::try_from_builder(self, check)?;
                 Ok(std::sync::Arc::new(std::sync::RwLock::new(item)))
             }
         };
@@ -519,6 +522,10 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let field_option_builder_names = &self.fields.field_option_builder_names;
         let field_hashmap_builder_names = &self.fields.field_hashmap_builder_names;
 
+        let ast_item_object_arc = &self.paths.ast_item_trait_object_arc;
+        let try_from_builder = &self.paths.try_from_builder;
+        let try_into_builder = &self.paths.try_into_builder;
+
         let init_accessor = if self.is_accessor {
             quote! { accessor: None, }
         } else {
@@ -526,10 +533,13 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         };
 
         quote! {
-            impl TryFrom<&#input_builder_name> for #name {
+            impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from(builder: &#input_builder_name) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
+                    use #try_from_builder;
+                    use #try_into_builder;
+
                     let builder_range = builder.get_lsp_range();
 
                     #(let #field_names =
@@ -540,7 +550,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                         .borrow()
                         .downcast_ref::<#field_builder_names>()
                         .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names))))?
-                        .try_into()?;
+                        .try_into_builder(check)?;
                     )*
                     #(let #field_option_names = match builder.#field_option_names {
                             Some(builder) => {
@@ -548,7 +558,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                                     .borrow()
                                     .downcast_ref::<#field_option_builder_names>()
                                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_option_builder_names))))?
-                                    .try_into()?;
+                                    .try_into_builder(check)?;
                                 Some(item)
                             },
                             None => None
@@ -563,7 +573,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                                 .borrow()
                                 .downcast_ref::<#field_vec_builder_names>()
                                 .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_vec_builder_names))))?
-                                .try_into()?;
+                                .try_into_builder(check)?;
                             Ok(item)
                         })
                         .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
@@ -578,7 +588,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                                     .borrow()
                                     .downcast_ref::<#field_hashmap_builder_names>()
                                     .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?} at key {}", stringify!(#field_hashmap_builder_names), key)))?
-                                    .try_into()?;
+                                    .try_into_builder(check)?;
                                 Ok((key, item))
                             })
                             .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
@@ -595,11 +605,14 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                 }
             }
 
-            impl TryFrom<&#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
+            impl #try_from_builder<&#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from(builder: &#input_builder_name) -> Result<Self, Self::Error> {
-                    let item = #name::try_from(builder)?;
+                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
+                    use #try_from_builder;
+                    use #try_into_builder;
+
+                    let item = #name::try_from_builder(builder, check)?;
                     let result = std::sync::Arc::new(std::sync::RwLock::new(item));
                     result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
                     Ok(result)
