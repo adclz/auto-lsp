@@ -35,7 +35,7 @@ impl<'a> StructBuilder<'a> {
             fields,
             is_accessor,
             paths,
-            features: Features::new(params, input_name, paths, fields),
+            features: Features::new(params, is_accessor, input_name, paths, fields),
         }
     }
 }

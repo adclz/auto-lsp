@@ -1,9 +1,9 @@
 use crate::{
     features::{
-        lsp_code_lens::CodeLensBuilder, lsp_completion_item::CompletionItemsBuilder,
-        lsp_document_symbol::DocumentSymbolBuilder, lsp_hover_info::HoverInfoBuilder,
-        lsp_inlay_hint::InlayHintsBuilder, lsp_semantic_token::SemanticTokensBuilder,
-        scope::ScopeBuilder,
+        accessor::AccessorBuilder, lsp_code_lens::CodeLensBuilder,
+        lsp_completion_item::CompletionItemsBuilder, lsp_document_symbol::DocumentSymbolBuilder,
+        lsp_hover_info::HoverInfoBuilder, lsp_inlay_hint::InlayHintsBuilder,
+        lsp_semantic_token::SemanticTokensBuilder, scope::ScopeBuilder,
     },
     utilities::extract_fields::StructFields,
     Paths, SymbolFeatures,
@@ -35,11 +35,13 @@ pub struct Features<'a> {
     pub lsp_inlay_hints: InlayHintsBuilder<'a>,
     pub lsp_semantic_tokens: SemanticTokensBuilder<'a>,
     pub scope: ScopeBuilder<'a>,
+    pub accessor: AccessorBuilder<'a>,
 }
 
 impl<'a> Features<'a> {
     pub fn new(
         params: Option<&'a SymbolFeatures>,
+        is_accessor: bool,
         input_name: &'a Ident,
         paths: &'a Paths,
         fields: &'a StructFields,
@@ -87,6 +89,7 @@ impl<'a> Features<'a> {
                 params.and_then(|a| a.scope.as_ref()),
                 fields,
             ),
+            accessor: AccessorBuilder::new(input_name, is_accessor, paths, fields),
         }
     }
 }
@@ -100,5 +103,6 @@ impl<'a> ToCodeGen for Features<'a> {
         self.lsp_inlay_hints.to_code_gen(codegen);
         self.lsp_semantic_tokens.to_code_gen(codegen);
         self.scope.to_code_gen(codegen);
+        self.accessor.to_code_gen(codegen);
     }
 }

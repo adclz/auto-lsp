@@ -16,6 +16,8 @@ pub struct Paths {
     pub inlay_hints_trait: Path,
     pub semantic_tokens_trait: Path,
     pub scope_trait: Path,
+    pub is_accessor_trait: Path,
+    pub accessor_trait: Path,
 }
 
 impl Default for Paths {
@@ -49,6 +51,8 @@ impl Default for Paths {
             inlay_hints_trait: parse_quote!(auto_lsp::traits::ast_item::InlayHints),
             semantic_tokens_trait: parse_quote!(auto_lsp::traits::ast_item::SemanticTokens),
             scope_trait: parse_quote!(auto_lsp::traits::ast_item::Scope),
+            is_accessor_trait: parse_quote!(auto_lsp::traits::ast_item::IsAccessor),
+            accessor_trait: parse_quote!(auto_lsp::traits::ast_item::Accessor),
         }
     }
 }

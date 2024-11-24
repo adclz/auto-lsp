@@ -1,3 +1,4 @@
+use crate::features::accessor;
 use crate::utilities::extract_fields::EnumFields;
 use crate::{BuildAstItem, BuildAstItemBuilder, Paths};
 use proc_macro2::TokenStream;
@@ -48,6 +49,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let inlay_hint = self.generate_inlay_hint();
         let semantic_tokens = self.generate_semantic_tokens();
         let scope = self.generate_scope();
+        let accessor = self.generate_accessor();
 
         let ast_item_trait = &self.paths.ast_item_trait;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
@@ -105,6 +107,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             #inlay_hint
             #semantic_tokens
             #scope
+            #accessor
         });
     }
 }
@@ -440,6 +443,35 @@ impl<'a> EnumBuilder<'a> {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.get_scope_range(),
+                        )*
+                    }
+                }
+            }
+        }
+    }
+
+    fn generate_accessor(&self) -> TokenStream {
+        let variant_names = &self.fields.variant_names;
+        let input_name = &self.input_name;
+        let is_accessor_trait = &self.paths.is_accessor_trait;
+        let accessor_trait = &self.paths.accessor_trait;
+
+        quote! {
+        impl #is_accessor_trait for #input_name {
+            fn is_accessor(&self) -> &'static bool {
+                match self {
+                    #(
+                        Self::#variant_names(variant) => variant.is_accessor(),
+                    )*
+                }
+            }
+        }
+
+        impl #accessor_trait for #input_name {
+            fn find(&self, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.find(ctx),
                         )*
                     }
                 }

@@ -6,6 +6,7 @@ use std::rc::Rc;
 use std::sync::{Arc, RwLock, Weak};
 
 use super::ast_item_builder::AstItemBuilder;
+use super::workspace::WorkspaceContext;
 
 pub trait AstItem:
     Downcast
@@ -18,6 +19,7 @@ pub trait AstItem:
     + CodeLens
     + CompletionItems
     + Scope
+    + Accessor
 {
     fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> tree_sitter::Range;
@@ -130,6 +132,14 @@ pub trait CompletionItems {
     );
 }
 
+pub trait IsAccessor {
+    fn is_accessor(&self) -> &'static bool;
+}
+
+pub trait Accessor: IsAccessor {
+    fn find(&self, ctx: &dyn WorkspaceContext);
+}
+
 impl AstItem for Arc<RwLock<dyn AstItem>> {
     fn get_url(&self) -> Arc<Url> {
         self.read().unwrap().get_url()
@@ -210,5 +220,17 @@ impl CompletionItems for Arc<RwLock<dyn AstItem>> {
         doc: &lsp_textdocument::FullTextDocument,
     ) {
         self.read().unwrap().build_completion_items(acc, doc)
+    }
+}
+
+impl IsAccessor for Arc<RwLock<dyn AstItem>> {
+    fn is_accessor(&self) -> &'static bool {
+        self.read().unwrap().is_accessor()
+    }
+}
+
+impl Accessor for Arc<RwLock<dyn AstItem>> {
+    fn find(&self, ctx: &dyn WorkspaceContext) {
+        self.read().unwrap().find(ctx)
     }
 }
