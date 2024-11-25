@@ -42,7 +42,7 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #inlay_hint_path for #input_name {
-                    fn build_inlay_hint(&self, _acc: &mut Vec<lsp_types::InlayHint>) {}
+                    fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, _acc: &mut Vec<lsp_types::InlayHint>) {}
                 }
             }),
             Some(params) => match params {

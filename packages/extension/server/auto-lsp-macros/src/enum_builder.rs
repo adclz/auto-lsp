@@ -405,10 +405,10 @@ impl<'a> EnumBuilder<'a> {
 
         quote! {
             impl #inlay_hint_path for #input_name {
-                fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>) {
+                fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
                     match self {
                         #(
-                            Self::#variant_names(variant) => variant.build_inlay_hint(acc),
+                            Self::#variant_names(variant) => variant.build_inlay_hint(doc, acc),
                         )*
                     }
                 }

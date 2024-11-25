@@ -118,7 +118,7 @@ pub trait SemanticTokens {
 }
 
 pub trait InlayHints {
-    fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>);
+    fn build_inlay_hint(&self, doc: &FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>);
 }
 
 pub trait CodeLens {
@@ -203,8 +203,8 @@ impl SemanticTokens for Arc<RwLock<dyn AstItem>> {
 }
 
 impl InlayHints for Arc<RwLock<dyn AstItem>> {
-    fn build_inlay_hint(&self, acc: &mut Vec<lsp_types::InlayHint>) {
-        self.read().unwrap().build_inlay_hint(acc)
+    fn build_inlay_hint(&self, doc: &FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+        self.read().unwrap().build_inlay_hint(doc, acc)
     }
 }
 
