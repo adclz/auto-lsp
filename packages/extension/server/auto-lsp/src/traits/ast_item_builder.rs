@@ -29,7 +29,7 @@ pub trait AstItemBuilder: Downcast {
         range: tree_sitter::Range,
         start_position: tree_sitter::Point,
         end_position: tree_sitter::Point,
-    ) -> Self
+    ) -> Option<Self>
     where
         Self: Sized;
 

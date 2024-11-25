@@ -71,6 +71,8 @@ impl Session {
             }
         };
 
+        errors.extend(ast_build.errors);
+
         let workspace = self
             .workspaces
             .get_mut(&uri)

@@ -376,15 +376,15 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         .concat();
 
         quote! {
-            fn new(url: std::sync::Arc<lsp_types::Url>, _query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
-                Self {
+            fn new(url: std::sync::Arc<lsp_types::Url>, _query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Option<Self> {
+                Some(Self {
                     url,
                     query_index,
                     range,
                     start_position,
                     end_position,
                     #(#fields),*
-                }
+                })
             }
         }
     }
@@ -408,14 +408,10 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
             let query_name = query.capture_names()[capture.index as usize];
             #(
                 if #fields_types::QUERY_NAMES.contains(&query_name)  {
-                        return Some(std::rc::Rc::new(std::cell::RefCell::new(#fields_builder::new(
-                            url,
-                            &query,
-                            capture.index as usize,
-                            capture.node.range(),
-                            capture.node.start_position(),
-                            capture.node.end_position(),
-                        ))))
+                    match #fields_builder::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
+                        Some(builder) => return Some(std::rc::Rc::new(std::cell::RefCell::new(builder))),
+                        None => return None
+                    }
                 };
             )*
             None
@@ -502,7 +498,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                                     )
                                 ));
                             };
-                            eprintln!("Inserting key {:?} of type {:?} in {}", key, stringify!(#field_hashmap_builder_names), stringify!(#input_builder_name));
                             parent.#field_hashmap_names.insert(key.into(), node.clone());
                             Ok(())
                     })));

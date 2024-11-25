@@ -127,23 +127,19 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let variant_builder_names = &self.fields.variant_builder_names;
 
         quote! {
-            fn new(url: std::sync::Arc<lsp_types::Url>, query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Self {
+            fn new(url: std::sync::Arc<lsp_types::Url>, query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Option<Self> {
                 let query_name = query.capture_names()[query_index as usize];
                 #(
-                    if let true = #variant_types_names::QUERY_NAMES.contains(&query_name) {
-                        return Self {
-                            unique_field: std::rc::Rc::new(std::cell::RefCell::new(#variant_builder_names::new(
-                                url,
-                                query,
-                                query_index,
-                                range,
-                                start_position,
-                                end_position
-                            )))
-                        };
+                    if #variant_types_names::QUERY_NAMES.contains(&query_name) {
+                        match #variant_builder_names::new(url, query, query_index, range, start_position, end_position) {
+                            Some(builder) => return Some(Self {
+                                unique_field: std::rc::Rc::new(std::cell::RefCell::new(builder))
+                            }),
+                            None => return None,
+                        }
                     };
                 )*
-                panic!("Unexpected")
+                None
             }
         }
     }
@@ -158,18 +154,13 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
                     if #variant_types::QUERY_NAMES.contains(&query_name)  {
-                            return Some(std::rc::Rc::new(std::cell::RefCell::new(#variant_builders::new(
-                                url,
-                                &query,
-                                capture.index as usize,
-                                capture.node.range(),
-                                capture.node.start_position(),
-                                capture.node.end_position(),
-                            ))))
+                        match #variant_builders::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
+                            Some(builder) => return Some(std::rc::Rc::new(std::cell::RefCell::new(builder))),
+                            None => return None,
+                        }
                     };
                 )*
                 None
-
             }
 
             fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {

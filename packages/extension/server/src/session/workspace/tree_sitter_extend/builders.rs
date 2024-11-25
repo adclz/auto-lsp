@@ -84,11 +84,6 @@ impl<T: AstItemBuilder> Builder for T {
             let capture = m.captures[*capture_index];
             let capture_index = capture.index as usize;
 
-            eprintln!(
-                "Create builder for query: {:?}",
-                query.capture_names()[capture_index],
-            );
-
             let mut parent = stack.pop();
 
             loop {
@@ -100,18 +95,13 @@ impl<T: AstItemBuilder> Builder for T {
                                 errors.push(builder_error!(
                                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                                     format!(
-                                        "Failed to create builder for query: {:?}, is the symbol declared in root ?",
+                                        "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
                                         query.capture_names()[capture_index as usize]
                                     )
                                 ));
                                 break;
                             }
                         };
-
-                        eprintln!(
-                            "Add parent {:?} to roots",
-                            query.capture_names()[node.borrow().get_query_index()]
-                        );
                         roots.push(node.clone());
                         stack.push(node.clone());
                         break;
@@ -119,28 +109,23 @@ impl<T: AstItemBuilder> Builder for T {
                     Some(ref parent) => {
                         if intersecting_ranges(&parent.borrow().get_range(), &capture.node.range())
                         {
-                            let node =
-                                match parent.borrow().query_binder(url.clone(), &capture, query) {
-                                    Some(builder) => builder,
-                                    None => {
-                                        errors.push(builder_error!(
+                            let node = match parent.borrow().query_binder(
+                                url.clone(),
+                                &capture,
+                                query,
+                            ) {
+                                Some(builder) => builder,
+                                None => {
+                                    errors.push(builder_error!(
                                             tree_sitter_range_to_lsp_range(&capture.node.range()),
                                             format!(
-                                            "Failed to create builder for query: {:?} using {:?}",
+                                            "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
                                             query.capture_names()[capture_index as usize],
-                                            query.capture_names()
-                                                [parent.borrow().get_query_index()]
                                         )
                                         ));
-                                        break;
-                                    }
-                                };
-
-                            eprintln!(
-                                "Add {:?} to parent {:?}",
-                                query.capture_names()[node.borrow().get_query_index()],
-                                query.capture_names()[parent.borrow().get_query_index()]
-                            );
+                                    break;
+                                }
+                            };
 
                             match parent.borrow_mut().add(&query, node.clone(), &source_code) {
                                 Ok(def) => match def {
