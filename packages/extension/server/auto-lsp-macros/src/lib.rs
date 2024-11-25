@@ -157,3 +157,27 @@ pub fn derive_helper_attr(item: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
+
+#[proc_macro_derive(QueryHint)]
+pub fn derive_debug_hint(item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as DeriveInput);
+
+    let name = &input.ident;
+
+    TokenStream::from(quote! {
+        impl auto_lsp::traits::ast_item::InlayHints for #name {
+            fn build_inlay_hint(&self, doc: &lsp_textdocument::FulltextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+                acc.push(InlayHint {
+                    position: self.get_start_position(doc),
+                    kind: Some(lsp_types::InlayHintKind::TYPE),
+                    label: lsp_types::InlayHintLabel::String(Self::QUERY_NAMES[0].to_string()),
+                    text_edits: None,
+                    tooltip: None,
+                    padding_left: None,
+                    padding_right: None,
+                    data: None,
+                });
+            }
+        }
+    })
+}
