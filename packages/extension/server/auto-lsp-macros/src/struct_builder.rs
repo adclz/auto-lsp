@@ -4,9 +4,11 @@ use crate::{
 };
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, quote_spanned, ToTokens};
+use syn::Attribute;
 
 pub struct StructBuilder<'a> {
     // Input data
+    pub input_attr: &'a Vec<Attribute>,
     pub input_name: &'a Ident,
     pub query_name: &'a str,
     pub input_buider_name: &'a Ident,
@@ -21,6 +23,7 @@ pub struct StructBuilder<'a> {
 impl<'a> StructBuilder<'a> {
     pub fn new(
         params: Option<&'a SymbolFeatures>,
+        input_attr: &'a Vec<Attribute>,
         input_name: &'a Ident,
         input_buider_name: &'a Ident,
         query_name: &'a str,
@@ -30,6 +33,7 @@ impl<'a> StructBuilder<'a> {
     ) -> Self {
         Self {
             input_name,
+            input_attr,
             query_name,
             input_buider_name,
             fields,
@@ -43,6 +47,7 @@ impl<'a> StructBuilder<'a> {
 impl<'a> ToTokens for StructBuilder<'a> {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let input_name = &self.input_name;
+        let input_attr = &self.input_attr;
         let query_name = self.query_name;
 
         // Generate features
@@ -61,6 +66,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let methods = self.generate_ast_item_methods();
 
         tokens.extend(quote! {
+            #(#input_attr)*
             #[derive(Clone)]
             pub struct #input_name {
                 #(#fields,)*

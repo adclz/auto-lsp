@@ -61,9 +61,11 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     let query_name = args.query_name;
     let mut tokens = proc_macro2::TokenStream::new();
 
+    let input_attr = input.attrs;
     match args.kind {
         AstStructKind::Accessor => StructBuilder::new(
             None,
+            &input_attr,
             &input_name,
             &input_builder_name,
             &query_name,
@@ -74,6 +76,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         .to_tokens(&mut tokens),
         AstStructKind::Symbol(symbol_features) => StructBuilder::new(
             Some(&symbol_features),
+            &input_attr,
             &input_name,
             &input_builder_name,
             &query_name,
@@ -166,15 +169,15 @@ pub fn derive_debug_hint(item: TokenStream) -> TokenStream {
 
     TokenStream::from(quote! {
         impl auto_lsp::traits::ast_item::InlayHints for #name {
-            fn build_inlay_hint(&self, doc: &lsp_textdocument::FulltextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
-                acc.push(InlayHint {
+            fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+                acc.push(lsp_types::InlayHint {
                     position: self.get_start_position(doc),
                     kind: Some(lsp_types::InlayHintKind::TYPE),
                     label: lsp_types::InlayHintLabel::String(Self::QUERY_NAMES[0].to_string()),
                     text_edits: None,
                     tooltip: None,
                     padding_left: None,
-                    padding_right: None,
+                    padding_right: Some(true),
                     data: None,
                 });
             }
