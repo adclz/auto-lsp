@@ -4,12 +4,15 @@ use darling::FromMeta;
 use quote::quote;
 use syn::{Ident, Path};
 
+use crate::utilities::extract_fields::FieldInfoExtract;
 use crate::{utilities::extract_fields::StructFields, FeaturesCodeGen, ToCodeGen};
 
 use crate::{Feature, Paths};
 
 #[derive(Debug, FromMeta)]
-pub struct InlayHintFeature {}
+pub struct InlayHintFeature {
+    query: Option<bool>,
+}
 
 pub struct InlayHintsBuilder<'a> {
     pub input_name: &'a Ident,
@@ -47,10 +50,52 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
             }),
             Some(params) => match params {
                 Feature::User => (),
-                Feature::CodeGen(_) => {
+                Feature::CodeGen(opt) => {
+                    let field_names = &self.fields.field_names.get_field_names();
+                    let field_vec_names = &self.fields.field_vec_names.get_field_names();
+                    let field_option_names = &self.fields.field_option_names.get_field_names();
+                    let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
+
+                    if opt.query.is_some() {
+                        codegen.input.other_impl.push(quote! {
+                            impl #inlay_hint_path for #input_name {
+                                fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+                                    acc.push(lsp_types::InlayHint {
+                                        position: self.get_start_position(doc),
+                                        kind: Some(lsp_types::InlayHintKind::TYPE),
+                                        label: lsp_types::InlayHintLabel::String(Self::QUERY_NAMES[0].to_string()),
+                                        text_edits: None,
+                                        tooltip: None,
+                                        padding_left: None,
+                                        padding_right: Some(true),
+                                        data: None,
+                                    });
+                                    #(
+                                        self.#field_names.read().unwrap().build_inlay_hint(doc, acc);
+                                    )*
+                                    #(
+                                        if let Some(field) = self.#field_option_names.as_ref() {
+                                            field.read().unwrap().build_inlay_hint(doc, acc);
+                                        };
+                                    )*
+                                    #(
+                                        for field in self.#field_vec_names.iter() {
+                                            field.read().unwrap().build_inlay_hint(doc, acc);
+                                        };
+                                    )*
+                                    #(
+                                        for field in self.#field_hashmap_names.values() {
+                                            field.read().unwrap().build_inlay_hint(doc, acc);
+                                        };
+                                    )*
+                                }
+                            }
+                        });
+                    } else {
                     panic!("Inlay Hint does not provide (yet) code generation, instead implement the trait InlayHint manually");
                 }
             },
         }
+    }
     }
 }
