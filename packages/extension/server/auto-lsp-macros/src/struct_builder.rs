@@ -430,7 +430,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
     fn generate_add(&self) -> TokenStream {
         let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
-        let deferred_ast_item_builder = &self.paths.deferred_ast_item_builder;
+        let deferred_closure = &self.paths.deferred_closure;
 
         let input_builder_name = &self.input_buider_name;
         let field_names = &self.fields.field_names.get_field_names();
@@ -447,7 +447,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         quote! {
             fn add(&mut self, query: &tree_sitter::Query, node: #ast_item_builder_trait_object, source_code: &[u8]) ->
-                Result<#deferred_ast_item_builder, lsp_types::Diagnostic> {
+                Result<Option<#deferred_closure>, lsp_types::Diagnostic> {
 
                 let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
             #(
@@ -456,7 +456,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                         Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#input_builder_name)))),
                         None => self.#field_names = Some(node.clone())
                     }
-                    return Ok(#deferred_ast_item_builder::None)
+                    return Ok(None)
                 };
             )*
             #(
@@ -465,18 +465,18 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                         return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#input_builder_name))));
                     }
                     self.#field_option_names = Some(node.clone());
-                    return Ok(#deferred_ast_item_builder::None);
+                    return Ok(None);
                 };
             )*
             #(
                 if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
                     self.#field_vec_names.push(node.clone());
-                    return Ok(#deferred_ast_item_builder::None);
+                    return Ok(None);
                 };
             )*
             #(
                 if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
-                    return Ok(#deferred_ast_item_builder::HashMap(Box::new(|
+                    return Ok(Box::new(|
                             parent: #ast_item_builder_trait_object,
                             node: #ast_item_builder_trait_object,
                             source_code: &[u8]
@@ -500,7 +500,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                             };
                             parent.#field_hashmap_names.insert(key.into(), node.clone());
                             Ok(())
-                    })));
+                    }));
                 };
             )*
             Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#input_builder_name))))

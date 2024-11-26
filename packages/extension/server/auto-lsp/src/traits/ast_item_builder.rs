@@ -8,11 +8,6 @@ use tree_sitter::Query;
 
 use super::ast_item::AstItem;
 
-pub enum DeferredAstItemBuilder {
-    None,
-    HashMap(DeferredClosure),
-}
-
 pub type DeferredClosure = Box<
     dyn Fn(
         Rc<RefCell<dyn AstItemBuilder>>,
@@ -58,7 +53,7 @@ pub trait AstItemBuilder: Downcast {
         query: &Query,
         node: Rc<RefCell<dyn AstItemBuilder>>,
         source_code: &[u8],
-    ) -> Result<DeferredAstItemBuilder, Diagnostic>;
+    ) -> Result<Option<DeferredClosure>, Diagnostic>;
 
     fn get_url(&self) -> Arc<Url>;
 

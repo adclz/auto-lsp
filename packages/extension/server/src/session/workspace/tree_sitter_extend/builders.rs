@@ -1,7 +1,6 @@
 use auto_lsp::builder_error;
 use auto_lsp::traits::ast_item::{AstItem, IsAccessor};
-use auto_lsp::traits::ast_item_builder::{AstItemBuilder, DeferredAstItemBuilder};
-use auto_lsp::traits::convert::*;
+use auto_lsp::traits::ast_item_builder::AstItemBuilder;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::rc::Rc;
@@ -128,16 +127,15 @@ impl<T: AstItemBuilder> Builder for T {
                             };
 
                             match parent.borrow_mut().add(&query, node.clone(), &source_code) {
-                                Ok(def) => match def {
-                                    DeferredAstItemBuilder::HashMap(def) => {
+                                Ok(def) => {
+                                    if let Some(def) = def {
                                         deferred_maps.push(Deferred {
                                             parent: parent.clone(),
                                             child: node.clone(),
                                             binder: def,
-                                        });
+                                        })
                                     }
-                                    _ => {}
-                                },
+                                }
                                 Err(err) => errors.push(err),
                             };
                             stack.push(parent.clone());

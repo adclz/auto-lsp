@@ -171,11 +171,11 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
 
     fn generate_add(&self) -> TokenStream {
         let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
-        let defferred_ast_item_builder = &self.paths.deferred_ast_item_builder;
+        let deferred_closure = &self.paths.deferred_closure;
 
         quote! {
             fn add(&mut self, query: &tree_sitter::Query, node: #ast_item_builder_trait_object, source_code: &[u8]) ->
-                Result<#defferred_ast_item_builder, lsp_types::Diagnostic> {
+                Result<Option<#deferred_closure>, lsp_types::Diagnostic> {
                     self.unique_field.borrow_mut().add(query, node, source_code)
             }
         }

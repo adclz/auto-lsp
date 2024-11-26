@@ -5,7 +5,7 @@ pub struct Paths {
     pub ast_item_trait_object_arc: Path,
     pub ast_item_trait_object_weak: Path,
     pub ast_item_builder_trait: Path,
-    pub deferred_ast_item_builder: Path,
+    pub deferred_closure: Path,
     pub ast_item_builder_trait_object: Path,
     pub semantic_tokens_builder: Path,
     // Features
@@ -40,9 +40,7 @@ impl Default for Paths {
                     std::cell::RefCell<dyn auto_lsp::traits::ast_item_builder::AstItemBuilder>,
                 >
             ),
-            deferred_ast_item_builder: parse_quote!(
-                auto_lsp::traits::ast_item_builder::DeferredAstItemBuilder
-            ),
+            deferred_closure: parse_quote!(auto_lsp::traits::ast_item_builder::DeferredClosure),
             semantic_tokens_builder: parse_quote!(
                 auto_lsp::builders::semantic_tokens::SemanticTokensBuilder
             ),
