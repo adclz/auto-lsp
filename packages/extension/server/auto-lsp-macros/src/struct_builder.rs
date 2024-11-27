@@ -339,32 +339,35 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
 impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     fn generate_builder_fields(&self) -> Vec<TokenStream> {
-        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+        let pending_symbol = &self.paths.pending_symbol;
 
         [
             self.fields.field_names.apply_to_fields(|field| {
-                quote! { #field: Option<#ast_item_builder_trait_object> }
+                quote! { #field: #maybe_pending_symbol }
             }),
             self.fields.field_option_names.apply_to_fields(|field| {
-                quote! { #field: Option<#ast_item_builder_trait_object> }
+                quote! { #field: #maybe_pending_symbol }
             }),
             self.fields.field_vec_names.apply_to_fields(|field| {
-                quote! { #field: Vec<#ast_item_builder_trait_object> }
+                quote! { #field: Vec<#pending_symbol> }
             }),
             self.fields.field_hashmap_names.apply_to_fields(|field| {
-                quote! { #field: HashMap<String, #ast_item_builder_trait_object> }
+                quote! { #field: HashMap<String, #pending_symbol> }
             }),
         ]
         .concat()
     }
 
     fn generate_builder_new(&self) -> TokenStream {
+        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+
         let fields = [
             self.fields.field_names.apply_to_fields(|field| {
-                quote_spanned! { field.span() => #field: None }
+                quote_spanned! { field.span() => #field: #maybe_pending_symbol::none() }
             }),
             self.fields.field_option_names.apply_to_fields(|field| {
-                quote_spanned! { field.span() => #field: None }
+                quote_spanned! { field.span() => #field: #maybe_pending_symbol::none() }
             }),
             self.fields.field_vec_names.apply_to_fields(|field| {
                 quote_spanned! { field.span() => #field: vec![] }
@@ -390,7 +393,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     }
 
     fn generate_query_binder(&self) -> TokenStream {
-        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
 
         let mut fields_types = vec![];
         fields_types.extend(self.fields.field_types_names.iter());
@@ -409,27 +412,29 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
             #(
                 if #fields_types::QUERY_NAMES.contains(&query_name)  {
                     match #fields_builder::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
-                        Some(builder) => return Some(std::rc::Rc::new(std::cell::RefCell::new(builder))),
-                        None => return None
+                        Some(builder) => return #maybe_pending_symbol::new(builder),
+                        None => return #maybe_pending_symbol::none()
                     }
                 };
             )*
-            None
+            #maybe_pending_symbol::none()
         };
 
         quote! {
-            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
                 #query_binder
             }
 
-            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
                 #query_binder
             }
         }
     }
 
     fn generate_add(&self) -> TokenStream {
-        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let pending_symbol = &self.paths.pending_symbol;
+        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+
         let deferred_closure = &self.paths.deferred_closure;
 
         let input_builder_name = &self.input_buider_name;
@@ -446,63 +451,63 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let field_hashmap_builder_names = &self.fields.field_hashmap_builder_names;
 
         quote! {
-            fn add(&mut self, query: &tree_sitter::Query, node: #ast_item_builder_trait_object, source_code: &[u8]) ->
+            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
                 Result<Option<#deferred_closure>, lsp_types::Diagnostic> {
 
-                let query_name = query.capture_names()[node.borrow().get_query_index() as usize];
-            #(
-                if #field_types_names::QUERY_NAMES.contains(&query_name) {
-                    match self.#field_names {
-                        Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#input_builder_name)))),
-                        None => self.#field_names = Some(node.clone())
-                    }
-                    return Ok(None)
-                };
-            )*
-            #(
-                if #field_option_types_names::QUERY_NAMES.contains(&query_name) {
-                    if self.#field_option_names.is_some() {
-                        return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#input_builder_name))));
-                    }
-                    self.#field_option_names = Some(node.clone());
-                    return Ok(None);
-                };
-            )*
-            #(
-                if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
-                    self.#field_vec_names.push(node.clone());
-                    return Ok(None);
-                };
-            )*
-            #(
-                if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
-                    return Ok(Box::new(|
-                            parent: #ast_item_builder_trait_object,
-                            node: #ast_item_builder_trait_object,
-                            source_code: &[u8]
-                        | {
-                            let field = node.borrow();
-                            let field = field.downcast_ref::<#field_hashmap_builder_names>().expect("Not a builder!");
-                            let key = field.get_key(source_code);
+                let query_name = query.capture_names()[node.get_query_index()];
+                #(
+                    if #field_types_names::QUERY_NAMES.contains(&query_name) {
+                        match self.#field_names.as_ref() {
+                            Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#input_builder_name)))),
+                            None => self.#field_names = #maybe_pending_symbol::from_pending(node.clone())
+                        }
+                        return Ok(None)
+                    };
+                )*
+                #(
+                    if #field_option_types_names::QUERY_NAMES.contains(&query_name) {
+                        if self.#field_option_names.is_some() {
+                            return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#input_builder_name))));
+                        }
+                        self.#field_option_names = #maybe_pending_symbol::from_pending(node.clone());
+                        return Ok(None);
+                    };
+                )*
+                #(
+                    if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
+                        self.#field_vec_names.push(node.clone());
+                        return Ok(None);
+                    };
+                )*
+                #(
+                    if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
+                        return Ok(Box::new(|
+                                parent: #pending_symbol,
+                                node: #pending_symbol,
+                                source_code: &[u8]
+                            | {
+                                let field = node.get_rc().borrow();
+                                let field = field.downcast_ref::<#field_hashmap_builder_names>().expect("Not a builder!");
+                                let key = field.get_key(source_code);
 
-                            let mut parent = parent.borrow_mut();
-                            let parent = parent.downcast_mut::<#input_builder_name>().expect("Not the builder!");
+                                let mut parent = parent.get_rc().borrow_mut();
+                                let parent = parent.downcast_mut::<#input_builder_name>().expect("Not the builder!");
 
-                            if parent.#field_hashmap_names.contains_key(key) {
-                                return Err(auto_lsp::builder_error!(
-                                    field.get_lsp_range(),
-                                    format!(
-                                        "Field {:?} is already declared in {:?}",
-                                        key,
-                                        stringify!(#input_builder_name)
-                                    )
-                                ));
-                            };
-                            parent.#field_hashmap_names.insert(key.into(), node.clone());
-                            Ok(())
-                    }));
-                };
-            )*
+                                if parent.#field_hashmap_names.contains_key(key) {
+                                    return Err(auto_lsp::builder_error!(
+                                        field.get_lsp_range(),
+                                        format!(
+                                            "Field {:?} is already declared in {:?}",
+                                            key,
+                                            stringify!(#input_builder_name)
+                                        )
+                                    ));
+                                };
+                                parent.#field_hashmap_names.insert(key.into(), node.clone());
+                                Ok(())
+                        }));
+                    };
+                )*
             Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#input_builder_name))))
             }
         }
@@ -518,6 +523,11 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let field_vec_names = &self.fields.field_vec_names.get_field_names();
         let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
 
+        let field_types_names = &self.fields.field_types_names;
+        let field_vec_types_names = &self.fields.field_vec_types_names;
+        let field_option_types_names = &self.fields.field_option_types_names;
+        let field_hashmap_types_names = &self.fields.field_hashmap_types_names;
+
         let field_builder_names = &self.fields.field_builder_names;
         let field_vec_builder_names = &self.fields.field_vec_builder_names;
         let field_option_builder_names = &self.fields.field_option_builder_names;
@@ -525,7 +535,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         let ast_item_object_arc = &self.paths.ast_item_trait_object_arc;
         let try_from_builder = &self.paths.try_from_builder;
-        let try_into_builder = &self.paths.try_into_builder;
 
         let init_accessor = if self.is_accessor {
             quote! { accessor: None, }
@@ -538,43 +547,22 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                 type Error = lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
-                    use #try_from_builder;
-                    use #try_into_builder;
-
                     let builder_range = builder.get_lsp_range();
 
-                    #(let #field_names =
-                        builder
+                    #(let #field_names = builder
                         .#field_names
-                        .as_ref()
-                        .ok_or(auto_lsp::builder_error!(builder_range, format!("Missing field {:?} in {:?}", stringify!(#field_names), stringify!(#input_builder_name))))?
-                        .borrow()
-                        .downcast_ref::<#field_builder_names>()
-                        .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_builder_names))))?
-                        .try_into_builder(check)?;
+                        .try_downcast::<#field_builder_names, #field_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                     )*
-                    #(let #field_option_names = match builder.#field_option_names {
-                            Some(builder) => {
-                                let item = builder
-                                    .borrow()
-                                    .downcast_ref::<#field_option_builder_names>()
-                                    .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_option_builder_names))))?
-                                    .try_into_builder(check)?;
-                                Some(item)
-                            },
-                            None => None
-                        };
+                    #(let #field_option_names = builder
+                        .#field_names
+                        .try_downcast::<#field_option_builder_names, #field_option_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                     )*
                     #(let #field_vec_names = builder
                         .#field_vec_names
                         .into_iter()
                         .map(|b| {
                             let item = b
-                                .as_ref()
-                                .borrow()
-                                .downcast_ref::<#field_vec_builder_names>()
-                                .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?}", stringify!(#field_vec_builder_names))))?
-                                .try_into_builder(check)?;
+                            .try_downcast::<#field_vec_builder_names, #field_vec_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                             Ok(item)
                         })
                         .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
@@ -585,12 +573,8 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                             .into_iter()
                             .map(|(key, b)| {
                                 let item = b
-                                    .as_ref()
-                                    .borrow()
-                                    .downcast_ref::<#field_hashmap_builder_names>()
-                                    .ok_or(auto_lsp::builder_error!(builder_range, format!("Failed downcast conversion of {:?} at key {}", stringify!(#field_hashmap_builder_names), key)))?
-                                    .try_into_builder(check)?;
-                                Ok((key, item))
+                                .try_downcast::<#field_hashmap_builder_names, #field_hashmap_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
+                               Ok((key, item))
                             })
                             .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
                     )*
@@ -603,20 +587,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                         parent: None,
                         #(#fields),*
                     })
-                }
-            }
-
-            impl #try_from_builder<&#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
-                type Error = lsp_types::Diagnostic;
-
-                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
-                    use #try_from_builder;
-                    use #try_into_builder;
-
-                    let item = #name::try_from_builder(builder, check)?;
-                    let result = std::sync::Arc::new(std::sync::RwLock::new(item));
-                    result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
-                    Ok(result)
                 }
             }
         }

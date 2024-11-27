@@ -20,6 +20,10 @@ pub struct Paths {
     pub accessor_trait: Path,
     pub try_into_builder: Path,
     pub try_from_builder: Path,
+
+    // new types idioms
+    pub pending_symbol: Path,
+    pub maybe_pending_symbol: Path,
 }
 
 impl Default for Paths {
@@ -55,6 +59,11 @@ impl Default for Paths {
             accessor_trait: parse_quote!(auto_lsp::traits::ast_item::Accessor),
             try_into_builder: parse_quote!(auto_lsp::traits::convert::TryIntoBuilder),
             try_from_builder: parse_quote!(auto_lsp::traits::convert::TryFromBuilder),
+
+            pending_symbol: parse_quote!(auto_lsp::traits::ast_item_builder::PendingSymbol),
+            maybe_pending_symbol: parse_quote!(
+                auto_lsp::traits::ast_item_builder::MaybePendingSymbol
+            ),
         }
     }
 }

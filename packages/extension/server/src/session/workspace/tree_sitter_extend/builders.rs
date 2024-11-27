@@ -1,6 +1,6 @@
 use auto_lsp::builder_error;
 use auto_lsp::traits::ast_item::{AstItem, IsAccessor};
-use auto_lsp::traits::ast_item_builder::AstItemBuilder;
+use auto_lsp::traits::ast_item_builder::{AstItemBuilder, PendingSymbol};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::rc::Rc;
@@ -8,15 +8,9 @@ use std::sync::{RwLock, Weak};
 use std::{cell::RefCell, sync::Arc};
 use streaming_iterator::StreamingIterator;
 struct Deferred {
-    parent: Rc<RefCell<dyn AstItemBuilder>>,
-    child: Rc<RefCell<dyn AstItemBuilder>>,
-    binder: Box<
-        dyn Fn(
-            Rc<RefCell<dyn AstItemBuilder>>,
-            Rc<RefCell<dyn AstItemBuilder>>,
-            &[u8],
-        ) -> Result<(), Diagnostic>,
-    >,
+    parent: PendingSymbol,
+    child: PendingSymbol,
+    binder: Box<dyn Fn(PendingSymbol, PendingSymbol, &[u8]) -> Result<(), Diagnostic>>,
 }
 
 fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range) -> bool {
@@ -76,7 +70,7 @@ impl<T: AstItemBuilder> Builder for T {
         let mut captures = cursor.captures(&query, root_node, source_code);
 
         let mut roots = vec![];
-        let mut stack: Vec<Rc<RefCell<dyn AstItemBuilder>>> = vec![];
+        let mut stack: Vec<_> = vec![];
         let mut deferred_maps: Vec<Deferred> = vec![];
 
         while let Some((m, capture_index)) = captures.next() {
@@ -88,7 +82,8 @@ impl<T: AstItemBuilder> Builder for T {
             loop {
                 match &parent {
                     None => {
-                        let node = match T::static_query_binder(url.clone(), &capture, &query) {
+                        let node = T::static_query_binder(url.clone(), &capture, &query);
+                        let node = match node.as_ref() {
                             Some(builder) => builder,
                             None => {
                                 errors.push(builder_error!(
@@ -106,13 +101,17 @@ impl<T: AstItemBuilder> Builder for T {
                         break;
                     }
                     Some(ref parent) => {
-                        if intersecting_ranges(&parent.borrow().get_range(), &capture.node.range())
-                        {
-                            let node = match parent.borrow().query_binder(
-                                url.clone(),
-                                &capture,
-                                query,
-                            ) {
+                        if intersecting_ranges(
+                            &parent.get_rc().borrow().get_range(),
+                            &capture.node.range(),
+                        ) {
+                            let node =
+                                parent
+                                    .get_rc()
+                                    .borrow()
+                                    .query_binder(url.clone(), &capture, query);
+
+                            let node = match node.as_ref() {
                                 Some(builder) => builder,
                                 None => {
                                     errors.push(builder_error!(
@@ -126,7 +125,11 @@ impl<T: AstItemBuilder> Builder for T {
                                 }
                             };
 
-                            match parent.borrow_mut().add(&query, node.clone(), &source_code) {
+                            match parent.get_rc().borrow_mut().add(
+                                &query,
+                                node.clone(),
+                                &source_code,
+                            ) {
                                 Ok(def) => {
                                     if let Some(def) = def {
                                         deferred_maps.push(Deferred {
@@ -155,7 +158,7 @@ impl<T: AstItemBuilder> Builder for T {
         });
 
         let result = roots.pop().unwrap();
-        let result: std::cell::Ref<'_, dyn AstItemBuilder> = result.borrow();
+        let result: std::cell::Ref<'_, dyn AstItemBuilder> = result.get_rc().borrow();
 
         let mut todo = vec![];
         let result = result.try_into_item(&mut todo);

@@ -90,15 +90,15 @@ impl<'a> ToTokens for EnumBuilder<'a> {
                 #into
 
                 fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
-                    self.unique_field.borrow().get_url()
+                    self.unique_field.get_rc().borrow().get_url()
                 }
 
                 fn get_range(&self) -> tree_sitter::Range {
-                    self.unique_field.borrow().get_range()
+                    self.unique_field.get_rc().borrow().get_range()
                 }
 
                 fn get_query_index(&self) -> usize {
-                    self.unique_field.borrow().get_query_index()
+                    self.unique_field.get_rc().borrow().get_query_index()
                 }
             }
 
@@ -118,11 +118,13 @@ impl<'a> ToTokens for EnumBuilder<'a> {
 
 impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
     fn generate_builder_fields(&self) -> Vec<TokenStream> {
-        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
-        vec![quote! { pub unique_field: #ast_item_builder_trait_object }]
+        let pending_symbol: &syn::Path = &self.paths.pending_symbol;
+        vec![quote! { pub unique_field: #pending_symbol }]
     }
 
     fn generate_builder_new(&self) -> TokenStream {
+        let pending_symbol = &self.paths.pending_symbol;
+
         let variant_types_names = &self.fields.variant_types_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
@@ -133,7 +135,7 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
                     if #variant_types_names::QUERY_NAMES.contains(&query_name) {
                         match #variant_builder_names::new(url, query, query_index, range, start_position, end_position) {
                             Some(builder) => return Some(Self {
-                                unique_field: std::rc::Rc::new(std::cell::RefCell::new(builder))
+                                unique_field: #pending_symbol::new(builder),
                             }),
                             None => return None,
                         }
@@ -145,38 +147,39 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
     }
 
     fn generate_query_binder(&self) -> TokenStream {
-        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+
         let variant_types = &self.fields.variant_types_names;
         let variant_builders = &self.fields.variant_builder_names;
 
         quote! {
-            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
+            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
                     if #variant_types::QUERY_NAMES.contains(&query_name)  {
                         match #variant_builders::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
-                            Some(builder) => return Some(std::rc::Rc::new(std::cell::RefCell::new(builder))),
-                            None => return None,
+                            Some(builder) => return #maybe_pending_symbol::new(builder),
+                            None => return #maybe_pending_symbol::none(),
                         }
                     };
                 )*
-                None
+                #maybe_pending_symbol::none()
             }
 
-            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> Option<#ast_item_builder_trait_object> {
-                self.unique_field.borrow().query_binder(url, capture, query)
+            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
+                self.unique_field.get_rc().borrow().query_binder(url, capture, query)
             }
         }
     }
 
     fn generate_add(&self) -> TokenStream {
-        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
+        let pending_symbol = &self.paths.pending_symbol;
         let deferred_closure = &self.paths.deferred_closure;
 
         quote! {
-            fn add(&mut self, query: &tree_sitter::Query, node: #ast_item_builder_trait_object, source_code: &[u8]) ->
+            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
                 Result<Option<#deferred_closure>, lsp_types::Diagnostic> {
-                    self.unique_field.borrow_mut().add(query, node, source_code)
+                    self.unique_field.get_rc().borrow_mut().add(query, node, source_code)
             }
         }
     }
@@ -201,22 +204,11 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
                     use #try_into_builder;
 
                     #(
-                        if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
+                        if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
                             return Ok(Self::#variant_names(variant.try_into_builder(check)?));
                         };
                     )*
                     panic!("")
-                }
-            }
-
-            impl #try_from_builder<&#input_builder_name> for std::sync::Arc<std::sync::RwLock<#name>> {
-                type Error = lsp_types::Diagnostic;
-
-                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
-                    let item = #name::try_from_builder(builder, check)?;
-                    let result = std::sync::Arc::new(std::sync::RwLock::new(item));
-                    result.write().unwrap().inject_parent(std::sync::Arc::downgrade(&result) as _);
-                    Ok(result)
                 }
             }
         }

@@ -6,13 +6,106 @@ use std::rc::Rc;
 use std::sync::{Arc, RwLock};
 use tree_sitter::Query;
 
+use crate::builder_error;
+
 use super::ast_item::AstItem;
+use super::convert::{TryFromBuilder, TryIntoBuilder};
+
+#[derive(Clone)]
+pub struct PendingSymbol(Rc<RefCell<dyn AstItemBuilder>>);
+
+impl PendingSymbol {
+    pub fn new(builder: impl AstItemBuilder) -> Self {
+        PendingSymbol(Rc::new(RefCell::new(builder)))
+    }
+
+    pub fn get_rc(&self) -> &Rc<RefCell<dyn AstItemBuilder>> {
+        &self.0
+    }
+
+    pub fn get_query_index(&self) -> usize {
+        self.0.borrow().get_query_index()
+    }
+
+    pub fn try_downcast<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Arc<RwLock<Y>>, Diagnostic> {
+        let item: Y = self
+            .0
+            .borrow()
+            .downcast_ref::<T>()
+            .ok_or(builder_error!(
+                field_range,
+                format!(
+                    "Could not cast field {:?} into {:?}",
+                    field_name, input_name
+                )
+            ))?
+            .try_into_builder(check)?;
+        let arc = Arc::new(RwLock::new(item));
+        arc.write().unwrap().set_parent(Arc::downgrade(&arc) as _);
+        Ok(arc)
+    }
+}
+
+#[derive(Clone)]
+pub struct MaybePendingSymbol(Option<PendingSymbol>);
+
+impl MaybePendingSymbol {
+    pub fn none() -> Self {
+        MaybePendingSymbol(None)
+    }
+
+    pub fn new(builder: impl AstItemBuilder) -> Self {
+        MaybePendingSymbol(Some(PendingSymbol::new(builder)))
+    }
+
+    pub fn from_pending(pending: PendingSymbol) -> Self {
+        MaybePendingSymbol(Some(pending))
+    }
+
+    pub fn as_ref(&self) -> Option<&PendingSymbol> {
+        self.0.as_ref().map(|pending| pending)
+    }
+
+    pub fn try_downcast<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Arc<RwLock<Y>>, Diagnostic> {
+        self.0
+            .as_ref()
+            .ok_or(builder_error!(
+                field_range,
+                format!("Missing field {:?} in {:?}", field_name, input_name)
+            ))?
+            .try_downcast::<T, Y>(check, field_name, field_range, input_name)
+    }
+}
+
+impl std::fmt::Debug for MaybePendingSymbol {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "-")
+    }
+}
 
 pub type DeferredClosure = Box<
     dyn Fn(
-        Rc<RefCell<dyn AstItemBuilder>>,
-        Rc<RefCell<dyn AstItemBuilder>>,
-        &[u8],
+        PendingSymbol, // parent
+        PendingSymbol, // child
+        &[u8],         // source_code
     ) -> Result<(), Diagnostic>,
 >;
 
@@ -32,7 +125,7 @@ pub trait AstItemBuilder: Downcast {
         url: Arc<Url>,
         capture: &tree_sitter::QueryCapture,
         query: &tree_sitter::Query,
-    ) -> Option<Rc<RefCell<dyn AstItemBuilder>>>
+    ) -> MaybePendingSymbol
     where
         Self: Sized;
 
@@ -46,12 +139,12 @@ pub trait AstItemBuilder: Downcast {
         url: Arc<Url>,
         capture: &tree_sitter::QueryCapture,
         query: &tree_sitter::Query,
-    ) -> Option<Rc<RefCell<dyn AstItemBuilder>>>;
+    ) -> MaybePendingSymbol;
 
     fn add(
         &mut self,
         query: &Query,
-        node: Rc<RefCell<dyn AstItemBuilder>>,
+        node: PendingSymbol,
         source_code: &[u8],
     ) -> Result<Option<DeferredClosure>, Diagnostic>;
 
@@ -93,7 +186,7 @@ pub trait AstItemBuilder: Downcast {
 
 impl std::fmt::Debug for dyn AstItemBuilder {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.get_range())
+        write!(f, "At - {:?}", self.get_range())
     }
 }
 
