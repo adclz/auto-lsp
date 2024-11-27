@@ -27,6 +27,7 @@ pub struct DocumentSymbolBuilder<'a> {
     pub paths: &'a Paths,
     pub params: Option<&'a Feature<DocumentSymbolFeature>>,
     pub fields: &'a StructFields,
+    pub is_accessor: bool,
 }
 
 impl<'a> DocumentSymbolBuilder<'a> {
@@ -35,12 +36,14 @@ impl<'a> DocumentSymbolBuilder<'a> {
         paths: &'a Paths,
         params: Option<&'a Feature<DocumentSymbolFeature>>,
         fields: &'a StructFields,
+        is_accessor: bool,
     ) -> Self {
         Self {
             paths,
             input_name,
             params,
-            fields
+            fields,
+            is_accessor
          }
     }
 }
@@ -49,6 +52,21 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let document_symbols_path = &self.paths.document_symbols_trait;
+
+        if self.is_accessor {
+            codegen.input.other_impl.push(quote! {
+                impl #document_symbols_path for #input_name {
+                    fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
+                        if let Some(accessor) = &self.accessor {
+                            accessor.get_document_symbols(doc)
+                        } else {
+                            None
+                        }
+                    }
+                }
+            });
+            return
+        } 
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

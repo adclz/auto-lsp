@@ -1,6 +1,5 @@
 extern crate proc_macro;
 
-use auto_lsp::builders::semantic_tokens;
 use darling::FromMeta;
 use quote::quote;
 use syn::{Ident, Path};
@@ -28,6 +27,7 @@ pub struct SemanticTokensBuilder<'a> {
     pub paths: &'a Paths,
     pub params: Option<&'a Feature<SemanticTokenFeature>>,
     pub fields: &'a StructFields,
+    pub is_accessor: bool,
 }
 
 impl<'a> SemanticTokensBuilder<'a> {
@@ -36,12 +36,14 @@ impl<'a> SemanticTokensBuilder<'a> {
         paths: &'a Paths,
         params: Option<&'a Feature<SemanticTokenFeature>>,
         fields: &'a StructFields,
+        is_accessor: bool,
     ) -> Self {
         Self {
             paths,
             input_name,
             params,
             fields,
+            is_accessor,
         }
     }
 }
@@ -51,6 +53,19 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
         let input_name = &self.input_name;
         let semantic_tokens_path = &self.paths.semantic_tokens_trait;
         let semantic_tokens_builder_path = &self.paths.semantic_tokens_builder;
+
+        if self.is_accessor {
+            codegen.input.other_impl.push(quote! {
+                impl #semantic_tokens_path for #input_name {
+                    fn build_semantic_tokens(&self, builder: &mut #semantic_tokens_builder_path) {
+                        if let Some(accessor) = &self.accessor {
+                            accessor.build_semantic_tokens(builder)
+                        }
+                    }
+                }
+            });
+            return;
+        }
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

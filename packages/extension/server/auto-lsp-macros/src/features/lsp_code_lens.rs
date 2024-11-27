@@ -24,6 +24,7 @@ pub struct CodeLensBuilder<'a> {
     pub paths: &'a Paths,
     pub params: Option<&'a Feature<CodeLensFeature>>,
     pub fields: &'a StructFields,
+    pub is_accessor: bool,
 }
 
 impl<'a> CodeLensBuilder<'a> {
@@ -32,12 +33,14 @@ impl<'a> CodeLensBuilder<'a> {
         paths: &'a Paths,
         params: Option<&'a Feature<CodeLensFeature>>,
         fields: &'a StructFields,
+        is_accessor: bool,
     ) -> Self {
         Self {
             paths,
             input_name,
             params,
             fields,
+            is_accessor,
         }
     }
 }
@@ -46,6 +49,19 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let code_lens_path = &self.paths.code_lens_trait;
+
+        if self.is_accessor {
+            codegen.input.other_impl.push(quote! {
+                impl #code_lens_path for #input_name {
+                    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
+                        if let Some(accessor) = &self.accessor {
+                            accessor.build_code_lens(acc)
+                        }
+                    }
+                }
+            });
+            return;
+        }
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

@@ -19,6 +19,7 @@ pub struct InlayHintsBuilder<'a> {
     pub paths: &'a Paths,
     pub params: Option<&'a Feature<InlayHintFeature>>,
     pub fields: &'a StructFields,
+    pub is_accessor: bool,
 }
 
 impl<'a> InlayHintsBuilder<'a> {
@@ -27,12 +28,14 @@ impl<'a> InlayHintsBuilder<'a> {
         paths: &'a Paths,
         params: Option<&'a Feature<InlayHintFeature>>,
         fields: &'a StructFields,
+        is_accessor: bool,
     ) -> Self {
         Self {
             paths,
             input_name,
             params,
             fields,
+            is_accessor,
         }
     }
 }
@@ -41,6 +44,19 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let inlay_hint_path = &self.paths.inlay_hints_trait;
+
+        if self.is_accessor {
+            codegen.input.other_impl.push(quote! {
+                impl #inlay_hint_path for #input_name {
+                    fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+                        if let Some(accessor) = &self.accessor {
+                            accessor.build_inlay_hint(doc, acc)
+                        }
+                    }
+                }
+            });
+            return;
+        }
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {

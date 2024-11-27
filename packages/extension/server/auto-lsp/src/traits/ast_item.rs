@@ -235,3 +235,64 @@ impl Accessor for Arc<RwLock<dyn AstItem>> {
         self.read().unwrap().find(doc, ctx)
     }
 }
+
+// Weak
+
+impl DocumentSymbols for Weak<RwLock<dyn AstItem>> {
+    fn get_document_symbols(
+        &self,
+        doc: &lsp_textdocument::FullTextDocument,
+    ) -> Option<DocumentSymbol> {
+        if let Some(item) = self.upgrade() {
+            item.read().unwrap().get_document_symbols(doc)
+        } else {
+            None
+        }
+    }
+}
+
+impl HoverInfo for Weak<RwLock<dyn AstItem>> {
+    fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
+        if let Some(item) = self.upgrade() {
+            item.read().unwrap().get_hover(doc)
+        } else {
+            None
+        }
+    }
+}
+
+impl SemanticTokens for Weak<RwLock<dyn AstItem>> {
+    fn build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder) {
+        if let Some(item) = self.upgrade() {
+            item.read().unwrap().build_semantic_tokens(builder);
+        }
+    }
+}
+
+impl InlayHints for Weak<RwLock<dyn AstItem>> {
+    fn build_inlay_hint(&self, doc: &FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+        if let Some(item) = self.upgrade() {
+            item.read().unwrap().build_inlay_hint(doc, acc);
+        }
+    }
+}
+
+impl CodeLens for Weak<RwLock<dyn AstItem>> {
+    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
+        if let Some(item) = self.upgrade() {
+            item.read().unwrap().build_code_lens(acc);
+        }
+    }
+}
+
+impl CompletionItems for Weak<RwLock<dyn AstItem>> {
+    fn build_completion_items(
+        &self,
+        acc: &mut Vec<CompletionItem>,
+        doc: &lsp_textdocument::FullTextDocument,
+    ) {
+        if let Some(item) = self.upgrade() {
+            item.read().unwrap().build_completion_items(acc, doc);
+        }
+    }
+}

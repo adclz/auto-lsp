@@ -12,6 +12,97 @@ use crate::builder_error;
 use super::ast_item::AstItem;
 use super::convert::{TryFromBuilder, TryIntoBuilder};
 
+pub trait AstItemBuilder: Downcast {
+    fn new(
+        url: Arc<lsp_types::Url>,
+        _query: &tree_sitter::Query,
+        query_index: usize,
+        range: tree_sitter::Range,
+        start_position: tree_sitter::Point,
+        end_position: tree_sitter::Point,
+    ) -> Option<Self>
+    where
+        Self: Sized;
+
+    fn static_query_binder(
+        url: Arc<Url>,
+        capture: &tree_sitter::QueryCapture,
+        query: &tree_sitter::Query,
+    ) -> MaybePendingSymbol
+    where
+        Self: Sized;
+
+    fn try_into_item(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+    ) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic>;
+
+    fn query_binder(
+        &self,
+        url: Arc<Url>,
+        capture: &tree_sitter::QueryCapture,
+        query: &tree_sitter::Query,
+    ) -> MaybePendingSymbol;
+
+    fn add(
+        &mut self,
+        query: &Query,
+        node: PendingSymbol,
+        source_code: &[u8],
+    ) -> Result<Option<DeferredClosure>, Diagnostic>;
+
+    fn get_url(&self) -> Arc<Url>;
+
+    fn get_range(&self) -> tree_sitter::Range;
+
+    fn get_query_index(&self) -> usize;
+
+    fn get_start_position(&self) -> tree_sitter::Point {
+        self.get_range().start_point
+    }
+
+    fn get_end_position(&self) -> tree_sitter::Point {
+        self.get_range().end_point
+    }
+
+    fn get_lsp_range(&self) -> lsp_types::Range {
+        let range = self.get_range();
+        let start = range.start_point;
+        let end = range.end_point;
+        lsp_types::Range {
+            start: lsp_types::Position {
+                line: start.row as u32,
+                character: start.column as u32,
+            },
+            end: lsp_types::Position {
+                line: end.row as u32,
+                character: end.column as u32,
+            },
+        }
+    }
+
+    fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
+        let range = self.get_range();
+        std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
+    }
+}
+
+impl std::fmt::Debug for dyn AstItemBuilder {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "At - {:?}", self.get_range())
+    }
+}
+
+impl_downcast!(AstItemBuilder);
+
+pub type DeferredClosure = Box<
+    dyn Fn(
+        PendingSymbol, // parent
+        PendingSymbol, // child
+        &[u8],         // source_code
+    ) -> Result<(), Diagnostic>,
+>;
+
 pub trait TryDownCast {
     fn try_downcast<
         T: AstItemBuilder,
@@ -191,94 +282,3 @@ impl<T: TryDownCast> TryDownCastMap for HashMap<String, T> {
             .collect::<Result<HashMap<_, _>, lsp_types::Diagnostic>>()
     }
 }
-
-pub type DeferredClosure = Box<
-    dyn Fn(
-        PendingSymbol, // parent
-        PendingSymbol, // child
-        &[u8],         // source_code
-    ) -> Result<(), Diagnostic>,
->;
-
-pub trait AstItemBuilder: Downcast {
-    fn new(
-        url: Arc<lsp_types::Url>,
-        _query: &tree_sitter::Query,
-        query_index: usize,
-        range: tree_sitter::Range,
-        start_position: tree_sitter::Point,
-        end_position: tree_sitter::Point,
-    ) -> Option<Self>
-    where
-        Self: Sized;
-
-    fn static_query_binder(
-        url: Arc<Url>,
-        capture: &tree_sitter::QueryCapture,
-        query: &tree_sitter::Query,
-    ) -> MaybePendingSymbol
-    where
-        Self: Sized;
-
-    fn try_into_item(
-        &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
-    ) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic>;
-
-    fn query_binder(
-        &self,
-        url: Arc<Url>,
-        capture: &tree_sitter::QueryCapture,
-        query: &tree_sitter::Query,
-    ) -> MaybePendingSymbol;
-
-    fn add(
-        &mut self,
-        query: &Query,
-        node: PendingSymbol,
-        source_code: &[u8],
-    ) -> Result<Option<DeferredClosure>, Diagnostic>;
-
-    fn get_url(&self) -> Arc<Url>;
-
-    fn get_range(&self) -> tree_sitter::Range;
-
-    fn get_query_index(&self) -> usize;
-
-    fn get_start_position(&self) -> tree_sitter::Point {
-        self.get_range().start_point
-    }
-
-    fn get_end_position(&self) -> tree_sitter::Point {
-        self.get_range().end_point
-    }
-
-    fn get_lsp_range(&self) -> lsp_types::Range {
-        let range = self.get_range();
-        let start = range.start_point;
-        let end = range.end_point;
-        lsp_types::Range {
-            start: lsp_types::Position {
-                line: start.row as u32,
-                character: start.column as u32,
-            },
-            end: lsp_types::Position {
-                line: end.row as u32,
-                character: end.column as u32,
-            },
-        }
-    }
-
-    fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
-        let range = self.get_range();
-        std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
-    }
-}
-
-impl std::fmt::Debug for dyn AstItemBuilder {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "At - {:?}", self.get_range())
-    }
-}
-
-impl_downcast!(AstItemBuilder);

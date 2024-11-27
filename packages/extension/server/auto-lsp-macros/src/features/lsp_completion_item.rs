@@ -25,6 +25,7 @@ pub struct CompletionItemsBuilder<'a> {
     pub paths: &'a Paths,
     pub params: Option<&'a Feature<CompletionItemFeature>>,
     pub fields: &'a StructFields,
+    pub is_accessor: bool
 }
 
 impl<'a> CompletionItemsBuilder<'a> {
@@ -33,12 +34,14 @@ impl<'a> CompletionItemsBuilder<'a> {
         paths: &'a Paths,
         params: Option<&'a Feature<CompletionItemFeature>>,
         fields: &'a StructFields,
+        is_accessor: bool,
     ) -> Self {
         Self {
             input_name,
             params,
             paths,
             fields,
+            is_accessor,
         }
     }
 }
@@ -47,6 +50,19 @@ impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let completion_items_path = &self.paths.completion_items_trait;
+
+        if self.is_accessor {
+            codegen.input.other_impl.push(quote! {
+                impl #completion_items_path for #input_name {
+                    fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
+                        if let Some(accessor) = &self.accessor {
+                            accessor.build_completion_items(acc, doc)
+                        }
+                    }
+                }
+            });
+            return
+        } 
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {
@@ -84,7 +100,7 @@ impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
                         }
                     })                      
                 }
-            },
+            }
         }
     }
 }
