@@ -5,7 +5,7 @@ extern crate proc_macro;
 use darling::{ast::NestedMeta, FromMeta};
 use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::{parse_macro_input, DeriveInput};
+use syn::{parse_macro_input, DataStruct, DeriveInput};
 
 mod enum_builder;
 mod feature_builder;
@@ -119,6 +119,27 @@ pub fn derive_helper_attr(item: TokenStream) -> TokenStream {
         }
     };
 
+    let builder = format_ident!("{}Builder", struct_name);
+
+    TokenStream::from(match get_key_helper(&data_struct) {
+        None => quote! {
+            impl auto_lsp::traits::key::Key for #builder {
+                fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
+                    self.get_text(source_code)
+                }
+            }
+        },
+        Some(key_field_ident) => quote! {
+            impl auto_lsp::traits::key::Key for #builder {
+                fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
+                    self.#key_field_ident.as_ref().expect(&format!("Key {} is not present on {}", stringify!(#key_field_ident), stringify!(#builder))).get_rc().borrow().get_text(source_code)
+                }
+            }
+        },
+    })
+}
+
+fn get_key_helper<'a>(data_struct: &'a DataStruct) -> Option<&'a syn::Ident> {
     // Find the field with the 'key' attribute
     let key_field = data_struct
         .fields
@@ -127,36 +148,12 @@ pub fn derive_helper_attr(item: TokenStream) -> TokenStream {
 
     let key_field = match key_field {
         Some(field) => field,
-        None => {
-            return syn::Error::new_spanned(&input.ident, "Expected a field with #[key] attribute")
-                .to_compile_error()
-                .into()
-        }
+        None => return None,
     };
 
     // Get the field name
-    let key_field_ident = match &key_field.ident {
-        Some(ident) => ident,
-        None => {
-            return syn::Error::new_spanned(
-                &key_field,
-                "Expected a named field with #[key] attribute",
-            )
-            .to_compile_error()
-            .into()
-        }
-    };
-
-    let builder = format_ident!("{}Builder", struct_name);
-
-    // Generate the implementation
-    let expanded = quote! {
-        impl auto_lsp::traits::key::Key for #builder {
-            fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
-                self.#key_field_ident.as_ref().expect(&format!("Key {} is not present on {}", stringify!(#key_field_ident), stringify!(#builder))).borrow().get_text(source_code)
-            }
-        }
-    };
-
-    TokenStream::from(expanded)
+    match &key_field.ident {
+        Some(ident) => Some(ident),
+        None => return None,
+    }
 }
