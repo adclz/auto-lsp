@@ -1,6 +1,7 @@
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::fmt::Formatter;
 use std::rc::Rc;
 use std::sync::{Arc, RwLock};
@@ -10,6 +11,19 @@ use crate::builder_error;
 
 use super::ast_item::AstItem;
 use super::convert::{TryFromBuilder, TryIntoBuilder};
+
+pub trait TryDownCast {
+    fn try_downcast<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Arc<RwLock<Y>>, Diagnostic>;
+}
 
 #[derive(Clone)]
 pub struct PendingSymbol(Rc<RefCell<dyn AstItemBuilder>>);
@@ -26,8 +40,16 @@ impl PendingSymbol {
     pub fn get_query_index(&self) -> usize {
         self.0.borrow().get_query_index()
     }
+}
 
-    pub fn try_downcast<
+impl std::fmt::Debug for PendingSymbol {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "-")
+    }
+}
+
+impl TryDownCast for PendingSymbol {
+    fn try_downcast<
         T: AstItemBuilder,
         Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
@@ -63,6 +85,10 @@ impl MaybePendingSymbol {
         MaybePendingSymbol(None)
     }
 
+    pub fn is_some(&self) -> bool {
+        self.0.is_some()
+    }
+
     pub fn new(builder: impl AstItemBuilder) -> Self {
         MaybePendingSymbol(Some(PendingSymbol::new(builder)))
     }
@@ -74,8 +100,10 @@ impl MaybePendingSymbol {
     pub fn as_ref(&self) -> Option<&PendingSymbol> {
         self.0.as_ref().map(|pending| pending)
     }
+}
 
-    pub fn try_downcast<
+impl TryDownCast for MaybePendingSymbol {
+    fn try_downcast<
         T: AstItemBuilder,
         Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
@@ -98,6 +126,69 @@ impl MaybePendingSymbol {
 impl std::fmt::Debug for MaybePendingSymbol {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "-")
+    }
+}
+
+pub trait TryDownCastVec {
+    fn try_downcast_vec<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Vec<Arc<RwLock<Y>>>, Diagnostic>;
+}
+
+impl<T: TryDownCast> TryDownCastVec for Vec<T> {
+    fn try_downcast_vec<
+        Y: AstItemBuilder,
+        V: AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Vec<Arc<RwLock<V>>>, Diagnostic> {
+        self.iter()
+            .map(|item| item.try_downcast::<Y, V>(check, field_name, field_range, input_name))
+            .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()
+    }
+}
+
+pub trait TryDownCastMap {
+    fn try_downcast_map<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<HashMap<String, Arc<RwLock<Y>>>, Diagnostic>;
+}
+
+impl<T: TryDownCast> TryDownCastMap for HashMap<String, T> {
+    fn try_downcast_map<
+        Y: AstItemBuilder,
+        V: AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<HashMap<String, Arc<RwLock<V>>>, Diagnostic> {
+        self.iter()
+            .map(|(key, item)| {
+                item.try_downcast::<Y, V>(check, field_name, field_range, input_name)
+                    .map(|item| (key.clone(), item))
+            })
+            .collect::<Result<HashMap<_, _>, lsp_types::Diagnostic>>()
     }
 }
 

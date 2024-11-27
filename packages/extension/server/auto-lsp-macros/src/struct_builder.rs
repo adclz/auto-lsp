@@ -481,7 +481,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                 )*
                 #(
                     if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
-                        return Ok(Box::new(|
+                        return Ok(Some(Box::new(|
                                 parent: #pending_symbol,
                                 node: #pending_symbol,
                                 source_code: &[u8]
@@ -505,7 +505,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                                 };
                                 parent.#field_hashmap_names.insert(key.into(), node.clone());
                                 Ok(())
-                        }));
+                        })));
                     };
                 )*
             Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#input_builder_name))))
@@ -550,33 +550,20 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     let builder_range = builder.get_lsp_range();
 
                     #(let #field_names = builder
-                        .#field_names
-                        .try_downcast::<#field_builder_names, #field_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
+                            .#field_names
+                            .try_downcast::<#field_builder_names, #field_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                     )*
-                    #(let #field_option_names = builder
-                        .#field_names
-                        .try_downcast::<#field_option_builder_names, #field_option_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
+                    #(let #field_option_names = Some(builder
+                            .#field_option_names
+                            .try_downcast::<#field_option_builder_names, #field_option_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?);
                     )*
                     #(let #field_vec_names = builder
-                        .#field_vec_names
-                        .into_iter()
-                        .map(|b| {
-                            let item = b
-                            .try_downcast::<#field_vec_builder_names, #field_vec_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
-                            Ok(item)
-                        })
-                        .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()?;
+                            .#field_vec_names
+                            .try_downcast_vec::<#field_vec_builder_names, #field_vec_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                     )*
-                    #(
-                        let #field_hashmap_names = builder
+                    #(let #field_hashmap_names = builder
                             .#field_hashmap_names
-                            .into_iter()
-                            .map(|(key, b)| {
-                                let item = b
-                                .try_downcast::<#field_hashmap_builder_names, #field_hashmap_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
-                               Ok((key, item))
-                            })
-                            .collect::<Result<HashMap<String, _>, lsp_types::Diagnostic>>()?;
+                            .try_downcast_map::<#field_hashmap_builder_names, #field_hashmap_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                     )*
                     Ok(#name {
                         #init_accessor
