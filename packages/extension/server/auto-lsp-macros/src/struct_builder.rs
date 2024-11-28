@@ -395,17 +395,8 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     fn generate_query_binder(&self) -> TokenStream {
         let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
 
-        let mut fields_types = vec![];
-        fields_types.extend(self.fields.field_types_names.iter());
-        fields_types.extend(self.fields.field_option_types_names.iter());
-        fields_types.extend(self.fields.field_vec_types_names.iter());
-        fields_types.extend(self.fields.field_hashmap_types_names.iter());
-
-        let mut fields_builder = vec![];
-        fields_builder.extend(self.fields.field_builder_names.iter());
-        fields_builder.extend(self.fields.field_option_builder_names.iter());
-        fields_builder.extend(self.fields.field_vec_builder_names.iter());
-        fields_builder.extend(self.fields.field_hashmap_builder_names.iter());
+        let fields_types = self.fields.get_field_types();
+        let fields_builder = self.fields.get_field_builder_names();
 
         let query_binder = quote! {
             let query_name = query.capture_names()[capture.index as usize];
@@ -553,9 +544,9 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                             .#field_names
                             .try_downcast::<#field_builder_names, #field_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                     )*
-                    #(let #field_option_names = Some(builder
+                    #(let #field_option_names = builder
                             .#field_option_names
-                            .try_downcast::<#field_option_builder_names, #field_option_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?);
+                            .try_downcast_option::<#field_option_builder_names, #field_option_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
                     )*
                     #(let #field_vec_names = builder
                             .#field_vec_names
