@@ -1,3 +1,4 @@
+use core::panic;
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
@@ -162,8 +163,12 @@ impl TryDownCast for PendingSymbol {
                 )
             ))?
             .try_into_builder(check)?;
+        let push = *item.is_accessor();
         let arc = Arc::new(RwLock::new(item));
         arc.write().unwrap().set_parent(Arc::downgrade(&arc) as _);
+        if push {
+            check.push(arc.clone());
+        }
         Ok(arc)
     }
 }

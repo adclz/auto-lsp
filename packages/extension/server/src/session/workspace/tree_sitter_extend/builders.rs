@@ -1,11 +1,11 @@
 use auto_lsp::builder_error;
-use auto_lsp::traits::ast_item::{AstItem, IsAccessor};
+use auto_lsp::traits::ast_item::{Accessor, AstItem, IsAccessor};
 use auto_lsp::traits::ast_item_builder::{AstItemBuilder, PendingSymbol};
+use auto_lsp::traits::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
-use std::rc::Rc;
+use std::sync::Arc;
 use std::sync::{RwLock, Weak};
-use std::{cell::RefCell, sync::Arc};
 use streaming_iterator::StreamingIterator;
 struct Deferred {
     parent: PendingSymbol,
@@ -33,9 +33,10 @@ fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Rang
 }
 
 pub type BuilderFn = fn(
+    ctx: &dyn WorkspaceContext,
     query: &tree_sitter::Query,
     root_node: tree_sitter::Node,
-    source_code: &[u8],
+    doc: &FullTextDocument,
     url: Arc<Url>,
 ) -> BuilderResult;
 
@@ -46,9 +47,10 @@ pub struct BuilderResult {
 
 pub trait Builder {
     fn builder(
+        ctx: &dyn WorkspaceContext,
         query: &tree_sitter::Query,
         root_node: tree_sitter::Node,
-        source_code: &[u8],
+        doc: &FullTextDocument,
         url: Arc<Url>,
     ) -> BuilderResult;
 }
@@ -59,11 +61,13 @@ pub trait Finder {
 
 impl<T: AstItemBuilder> Builder for T {
     fn builder(
+        ctx: &dyn WorkspaceContext,
         query: &tree_sitter::Query,
         root_node: tree_sitter::Node,
-        source_code: &[u8],
+        doc: &FullTextDocument,
         url: Arc<Url>,
     ) -> BuilderResult {
+        let source_code = doc.get_content(None).as_bytes();
         let mut errors = vec![];
 
         let mut cursor = tree_sitter::QueryCursor::new();
@@ -164,8 +168,8 @@ impl<T: AstItemBuilder> Builder for T {
         let result = result.try_into_item(&mut todo);
 
         todo.iter().for_each(|item| {
-            if *item.is_accessor() {
-                todo!()
+            if let Err(a) = item.try_write().unwrap().find(doc, ctx) {
+                errors.push(a);
             }
         });
 

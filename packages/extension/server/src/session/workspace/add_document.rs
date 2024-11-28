@@ -46,9 +46,10 @@ impl Session {
         let arc_uri = Arc::new(uri.clone());
 
         let ast_build = ast_builder(
+            self,
             &cst_parser.queries.outline,
             cst.root_node(),
-            source_code,
+            &document,
             arc_uri,
         );
 

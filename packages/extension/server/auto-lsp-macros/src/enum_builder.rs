@@ -1,4 +1,3 @@
-use crate::features::accessor;
 use crate::utilities::extract_fields::EnumFields;
 use crate::{BuildAstItem, BuildAstItemBuilder, Paths};
 use proc_macro2::TokenStream;
@@ -461,7 +460,7 @@ impl<'a> EnumBuilder<'a> {
         }
 
         impl #accessor_trait for #input_name {
-            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) {
+            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<(), lsp_types::Diagnostic> {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.find(doc, ctx),

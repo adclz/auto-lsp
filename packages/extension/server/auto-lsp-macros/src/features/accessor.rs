@@ -62,7 +62,7 @@ impl<'a> ToCodeGen for AccessorBuilder<'a> {
         if !self.is_accessor {
             codegen.input.other_impl.push(quote! {
             impl #accessor_path for #input_name {
-                fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) {}
+                fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<(), lsp_types::Diagnostic> {Ok(())}
             }
         });
         }
