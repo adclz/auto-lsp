@@ -12,15 +12,15 @@ pub struct FieldInfo {
 }
 
 pub trait FieldInfoExtract {
-    fn get_field_names(&self) -> Vec<Ident>;
+    fn get_field_names<'a>(&'a self) -> Vec<&'a Ident>;
     fn apply_to_fields<F>(&self, f: F) -> Vec<TokenStream>
     where
         F: Fn(&Ident) -> TokenStream;
 }
 
 impl FieldInfoExtract for Vec<FieldInfo> {
-    fn get_field_names(&self) -> Vec<Ident> {
-        self.iter().map(|field| field.ident.clone()).collect()
+    fn get_field_names<'a>(&'a self) -> Vec<&'a Ident> {
+        self.iter().map(|field| &field.ident).collect()
     }
 
     fn apply_to_fields<F>(&self, f: F) -> Vec<TokenStream>
@@ -57,12 +57,30 @@ pub struct StructFields {
 }
 
 impl StructFields {
-    pub fn get_field_names(&self) -> Vec<Ident> {
+    pub fn get_field_names<'a>(&'a self) -> Vec<&'a Ident> {
         let mut ret = vec![];
         ret.extend(self.field_names.get_field_names());
         ret.extend(self.field_vec_names.get_field_names());
         ret.extend(self.field_option_names.get_field_names());
         ret.extend(self.field_hashmap_names.get_field_names());
+        ret
+    }
+
+    pub fn get_field_types<'a>(&'a self) -> Vec<&'a Ident> {
+        let mut ret = vec![];
+        ret.extend(&self.field_types_names);
+        ret.extend(&self.field_vec_types_names);
+        ret.extend(&self.field_option_types_names);
+        ret.extend(&self.field_hashmap_types_names);
+        ret
+    }
+
+    pub fn get_field_builder_names<'a>(&'a self) -> Vec<&'a Ident> {
+        let mut ret = vec![];
+        ret.extend(&self.field_builder_names);
+        ret.extend(&self.field_vec_builder_names);
+        ret.extend(&self.field_option_builder_names);
+        ret.extend(&self.field_hashmap_builder_names);
         ret
     }
 }

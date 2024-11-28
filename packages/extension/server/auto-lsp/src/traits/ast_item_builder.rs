@@ -1,4 +1,3 @@
-use core::panic;
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
@@ -104,19 +103,6 @@ pub type DeferredClosure = Box<
     ) -> Result<(), Diagnostic>,
 >;
 
-pub trait TryDownCast {
-    fn try_downcast<
-        T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
-        &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
-        field_name: &str,
-        field_range: lsp_types::Range,
-        input_name: &str,
-    ) -> Result<Arc<RwLock<Y>>, Diagnostic>;
-}
-
 #[derive(Clone)]
 pub struct PendingSymbol(Rc<RefCell<dyn AstItemBuilder>>);
 
@@ -138,6 +124,19 @@ impl std::fmt::Debug for PendingSymbol {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "-")
     }
+}
+
+pub trait TryDownCast {
+    fn try_downcast<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Arc<RwLock<Y>>, Diagnostic>;
 }
 
 impl TryDownCast for PendingSymbol {
@@ -163,12 +162,11 @@ impl TryDownCast for PendingSymbol {
                 )
             ))?
             .try_into_builder(check)?;
-        let push = *item.is_accessor();
         let arc = Arc::new(RwLock::new(item));
-        arc.write().unwrap().set_parent(Arc::downgrade(&arc) as _);
-        if push {
+        if *arc.read().unwrap().is_accessor() {
             check.push(arc.clone());
         }
+        arc.write().unwrap().set_parent(Arc::downgrade(&arc) as _);
         Ok(arc)
     }
 }
@@ -216,6 +214,38 @@ impl TryDownCast for MaybePendingSymbol {
                 format!("Missing field {:?} in {:?}", field_name, input_name)
             ))?
             .try_downcast::<T, Y>(check, field_name, field_range, input_name)
+    }
+}
+
+pub trait TryDownCastOption: TryDownCast {
+    fn try_downcast_option<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Option<Arc<RwLock<Y>>>, Diagnostic>;
+}
+
+impl TryDownCastOption for MaybePendingSymbol {
+    fn try_downcast_option<
+        T: AstItemBuilder,
+        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    >(
+        &self,
+        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        field_name: &str,
+        field_range: lsp_types::Range,
+        input_name: &str,
+    ) -> Result<Option<Arc<RwLock<Y>>>, Diagnostic> {
+        self.0.as_ref().map_or(Ok(None), |pending| {
+            pending
+                .try_downcast::<T, Y>(check, field_name, field_range, input_name)
+                .map(Some)
+        })
     }
 }
 
