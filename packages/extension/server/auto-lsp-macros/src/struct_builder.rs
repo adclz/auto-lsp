@@ -1,9 +1,9 @@
 use crate::{
-    utilities::extract_fields::{FieldInfoExtract, StructFields},
+    utilities::extract_fields::{FieldBuilder, FieldBuilderType, FieldInfoExtract, StructFields},
     BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, Paths, SymbolFeatures, ToCodeGen,
 };
 use proc_macro2::{Ident, TokenStream};
-use quote::{quote, quote_spanned, ToTokens};
+use quote::{quote, ToTokens};
 use syn::Attribute;
 
 pub struct StructBuilder<'a> {
@@ -159,78 +159,30 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
             fields.push(quote! { pub accessor: Option<#ast_item_trait_object_weak> });
         }
 
-        if !self.fields.field_names.is_empty() {
-            fields.extend(
-                self.fields
-                    .field_names
-                    .iter()
-                    .enumerate()
-                    .map(|(i, field)| {
-                        let attributes = &field.attr;
-                        let name = &field.ident;
-                        let _type = &self.fields.field_types_names[i];
+        let mut builder = FieldBuilder::new(&self.fields);
 
-                        quote! {
-                           #(#attributes)*
-                           pub #name: std::sync::Arc<std::sync::RwLock<#_type>>
-                        }
-                    }),
-            )
-        };
-        if !self.fields.field_option_names.is_empty() {
-            fields.extend(
-                self.fields
-                    .field_option_names
-                    .iter()
-                    .enumerate()
-                    .map(|(i, field)| {
-                        let attributes = &field.attr;
-                        let name = &field.ident;
-                        let _type = &self.fields.field_option_types_names[i];
+        builder.apply_all(|ty, attributes, name, field_type, _| {
+            match ty {
+                FieldBuilderType::Normal => quote! {
+                    #(#attributes)*
+                    pub #name: std::sync::Arc<std::sync::RwLock<#field_type>>
+                },
+                FieldBuilderType::Vec => quote! {
+                    #(#attributes)*
+                    pub #name: Vec<std::sync::Arc<std::sync::RwLock<#field_type>>>
+                },
+                FieldBuilderType::Option => quote! {
+                    #(#attributes)*
+                    pub #name: Option<std::sync::Arc<std::sync::RwLock<#field_type>>>
+                },
+                FieldBuilderType::HashMap => quote! {
+                    #(#attributes)*
+                    pub #name: HashMap<String, std::sync::Arc<std::sync::RwLock<#field_type>>>
+                },
+            }
+        });
 
-                        quote! {
-                           #(#attributes)*
-                           pub #name: Option<std::sync::Arc<std::sync::RwLock<#_type>>>
-                        }
-                    }),
-            )
-        };
-        if !self.fields.field_vec_names.is_empty() {
-            fields.extend(
-                self.fields
-                    .field_vec_names
-                    .iter()
-                    .enumerate()
-                    .map(|(i, field)| {
-                        let attributes = &field.attr;
-                        let name = &field.ident;
-                        let _type = &self.fields.field_vec_types_names[i];
-
-                        quote! {
-                           #(#attributes)*
-                           pub #name: Vec<std::sync::Arc<std::sync::RwLock<#_type>>>
-                        }
-                    }),
-            )
-        };
-        if !self.fields.field_hashmap_names.is_empty() {
-            fields.extend(
-                self.fields
-                    .field_hashmap_names
-                    .iter()
-                    .enumerate()
-                    .map(|(i, field)| {
-                        let attributes = &field.attr;
-                        let name = &field.ident;
-                        let _type = &self.fields.field_hashmap_types_names[i];
-
-                        quote! {
-                           #(#attributes)*
-                           pub #name: HashMap<String, std::sync::Arc<std::sync::RwLock<#_type>>>
-                        }
-                    }),
-            )
-        };
+        fields.extend::<Vec<TokenStream>>(builder.into());
         fields
     }
 
@@ -342,41 +294,30 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
         let pending_symbol = &self.paths.pending_symbol;
 
-        [
-            self.fields.field_names.apply_to_fields(|field| {
-                quote! { #field: #maybe_pending_symbol }
-            }),
-            self.fields.field_option_names.apply_to_fields(|field| {
-                quote! { #field: #maybe_pending_symbol }
-            }),
-            self.fields.field_vec_names.apply_to_fields(|field| {
-                quote! { #field: Vec<#pending_symbol> }
-            }),
-            self.fields.field_hashmap_names.apply_to_fields(|field| {
-                quote! { #field: HashMap<String, #pending_symbol> }
-            }),
-        ]
-        .concat()
-    }
+        let mut builder = FieldBuilder::new(&self.fields);
+
+        builder.apply_all(|ty, _, name, _, _| {
+                match ty {
+                    FieldBuilderType::Vec => quote! { #name: Vec<#pending_symbol> },
+                    FieldBuilderType::HashMap => quote! { #name: HashMap<String, #pending_symbol> },
+                    _ => quote! { #name: #maybe_pending_symbol },
+                }
+            });
+        builder.into()    
+        }
 
     fn generate_builder_new(&self) -> TokenStream {
         let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
 
-        let fields = [
-            self.fields.field_names.apply_to_fields(|field| {
-                quote_spanned! { field.span() => #field: #maybe_pending_symbol::none() }
-            }),
-            self.fields.field_option_names.apply_to_fields(|field| {
-                quote_spanned! { field.span() => #field: #maybe_pending_symbol::none() }
-            }),
-            self.fields.field_vec_names.apply_to_fields(|field| {
-                quote_spanned! { field.span() => #field: vec![] }
-            }),
-            self.fields.field_hashmap_names.apply_to_fields(|field| {
-                quote_spanned! { field.span() => #field: std::collections::HashMap::new() }
-            }),
-        ]
-        .concat();
+        let fields = FieldBuilder::new(&self.fields)
+            .apply_all(|ty, _, name, _, _| {
+                match ty {
+                    FieldBuilderType::Vec => quote! { #name: vec![], },
+                    FieldBuilderType::HashMap => quote! { #name: std::collections::HashMap::new(), },
+                    _ =>  quote! { #name: #maybe_pending_symbol::none(), },
+                }
+            })
+            .to_token_stream();
 
         quote! {
             fn new(url: std::sync::Arc<lsp_types::Url>, _query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Option<Self> {
@@ -386,7 +327,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     range,
                     start_position,
                     end_position,
-                    #(#fields),*
+                    #fields
                 })
             }
         }
@@ -509,23 +450,26 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         let name = self.input_name;
         let input_builder_name = &self.input_buider_name;
-        let field_names = &self.fields.field_names.get_field_names();
-        let field_option_names = &self.fields.field_option_names.get_field_names();
-        let field_vec_names = &self.fields.field_vec_names.get_field_names();
-        let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
-
-        let field_types_names = &self.fields.field_types_names;
-        let field_vec_types_names = &self.fields.field_vec_types_names;
-        let field_option_types_names = &self.fields.field_option_types_names;
-        let field_hashmap_types_names = &self.fields.field_hashmap_types_names;
-
-        let field_builder_names = &self.fields.field_builder_names;
-        let field_vec_builder_names = &self.fields.field_vec_builder_names;
-        let field_option_builder_names = &self.fields.field_option_builder_names;
-        let field_hashmap_builder_names = &self.fields.field_hashmap_builder_names;
 
         let ast_item_object_arc = &self.paths.ast_item_trait_object_arc;
         let try_from_builder = &self.paths.try_from_builder;
+
+        let builder = 
+            FieldBuilder::new(self.fields)
+            .apply_all(|ty, _, name, field_type, builder| {
+                let try_downcast = match ty {
+                    FieldBuilderType::Normal => quote! { try_downcast },
+                    FieldBuilderType::Vec => quote! { try_downcast_vec },
+                    FieldBuilderType::Option => quote! { try_downcast_option },
+                    FieldBuilderType::HashMap => quote! { try_downcast_map },
+                };
+
+                quote! {
+                    let #name = builder
+                        .#name
+                        .#try_downcast::<#builder, #field_type>(check, stringify!(#name), builder_range, stringify!(#input_builder_name))?;
+                }
+            }).to_token_stream();
 
         let init_accessor = if self.is_accessor {
             quote! { accessor: None, }
@@ -540,22 +484,8 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                 fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
                     let builder_range = builder.get_lsp_range();
 
-                    #(let #field_names = builder
-                            .#field_names
-                            .try_downcast::<#field_builder_names, #field_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
-                    )*
-                    #(let #field_option_names = builder
-                            .#field_option_names
-                            .try_downcast_option::<#field_option_builder_names, #field_option_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
-                    )*
-                    #(let #field_vec_names = builder
-                            .#field_vec_names
-                            .try_downcast_vec::<#field_vec_builder_names, #field_vec_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
-                    )*
-                    #(let #field_hashmap_names = builder
-                            .#field_hashmap_names
-                            .try_downcast_map::<#field_hashmap_builder_names, #field_hashmap_types_names>(check, stringify!(#field_names), builder_range, stringify!(#input_builder_name))?;
-                    )*
+                    #builder
+
                     Ok(#name {
                         #init_accessor
                         url: builder.url.clone(),

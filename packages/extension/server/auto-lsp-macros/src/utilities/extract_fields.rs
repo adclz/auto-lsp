@@ -3,7 +3,7 @@ use super::{
     filter::is_hashmap,
 };
 use proc_macro2::{Ident, TokenStream};
-use quote::format_ident;
+use quote::{format_ident, ToTokens};
 use syn::Attribute;
 
 pub struct FieldInfo {
@@ -13,26 +13,11 @@ pub struct FieldInfo {
 
 pub trait FieldInfoExtract {
     fn get_field_names<'a>(&'a self) -> Vec<&'a Ident>;
-    fn apply_to_fields<F>(&self, f: F) -> Vec<TokenStream>
-    where
-        F: Fn(&Ident) -> TokenStream;
 }
 
 impl FieldInfoExtract for Vec<FieldInfo> {
     fn get_field_names<'a>(&'a self) -> Vec<&'a Ident> {
         self.iter().map(|field| &field.ident).collect()
-    }
-
-    fn apply_to_fields<F>(&self, f: F) -> Vec<TokenStream>
-    where
-        F: Fn(&Ident) -> TokenStream,
-    {
-        self.iter()
-            .map(|field| {
-                let ident = &field.ident;
-                f(ident)
-            })
-            .collect()
     }
 }
 
@@ -204,4 +189,154 @@ pub fn match_enum_fields(data: &syn::Data) -> EnumFields {
     }
 
     ret_fields
+}
+
+pub struct FieldBuilder<'a> {
+    fields: &'a StructFields,
+    results: Vec<TokenStream>,
+}
+
+pub enum FieldBuilderType {
+    Normal,
+    Vec,
+    Option,
+    HashMap,
+}
+
+impl<'a> FieldBuilder<'a> {
+    pub fn new(fields: &'a StructFields) -> Self {
+        Self {
+            fields,
+            results: vec![],
+        }
+    }
+
+    pub fn apply_all<F>(&mut self, f: F) -> &mut Self
+    where
+        F: Fn(FieldBuilderType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+        if !self.fields.field_names.is_empty() {
+            self.apply(&f);
+        }
+        if !self.fields.field_option_names.is_empty() {
+            self.apply_opt(&f);
+        }
+        if !self.fields.field_vec_names.is_empty() {
+            self.apply_vec(&f);
+        }
+        if !self.fields.field_hashmap_names.is_empty() {
+            self.apply_map(&f);
+        }
+        self
+    }
+
+    pub fn apply<F>(&mut self, f: F) -> &mut Self
+    where
+        F: Fn(FieldBuilderType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+        let results = self
+            .fields
+            .field_names
+            .iter()
+            .zip(self.fields.field_types_names.iter())
+            .zip(self.fields.field_builder_names.iter())
+            .map(|((field, field_type), field_builder)| {
+                f(
+                    FieldBuilderType::Normal,
+                    &field.attr,
+                    &field.ident,
+                    &field_type,
+                    &field_builder,
+                )
+            })
+            .collect();
+        self.results.push(results);
+        self
+    }
+
+    pub fn apply_opt<F>(&mut self, f: F) -> &mut Self
+    where
+        F: Fn(FieldBuilderType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+        let results = self
+            .fields
+            .field_option_names
+            .iter()
+            .zip(self.fields.field_option_types_names.iter())
+            .zip(self.fields.field_option_builder_names.iter())
+            .map(|((field, field_type), field_builder)| {
+                f(
+                    FieldBuilderType::Option,
+                    &field.attr,
+                    &field.ident,
+                    &field_type,
+                    &field_builder,
+                )
+            })
+            .collect();
+        self.results.push(results);
+        self
+    }
+
+    pub fn apply_vec<F>(&mut self, f: F) -> &mut Self
+    where
+        F: Fn(FieldBuilderType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+        let results = self
+            .fields
+            .field_vec_names
+            .iter()
+            .zip(self.fields.field_vec_types_names.iter())
+            .zip(self.fields.field_vec_builder_names.iter())
+            .map(|((field, field_type), field_builder)| {
+                f(
+                    FieldBuilderType::Vec,
+                    &field.attr,
+                    &field.ident,
+                    &field_type,
+                    &field_builder,
+                )
+            })
+            .collect();
+        self.results.push(results);
+        self
+    }
+
+    pub fn apply_map<F>(&mut self, f: F) -> &mut Self
+    where
+        F: Fn(FieldBuilderType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+        let results = self
+            .fields
+            .field_hashmap_names
+            .iter()
+            .zip(self.fields.field_hashmap_types_names.iter())
+            .zip(self.fields.field_hashmap_builder_names.iter())
+            .map(|((field, field_type), field_builder)| {
+                f(
+                    FieldBuilderType::HashMap,
+                    &field.attr,
+                    &field.ident,
+                    &field_type,
+                    &field_builder,
+                )
+            })
+            .collect();
+        self.results.push(results);
+        self
+    }
+}
+
+impl ToTokens for FieldBuilder<'_> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.results.iter().for_each(|result| {
+            tokens.extend(result.clone());
+        });
+    }
+}
+
+impl<'a> From<FieldBuilder<'a>> for Vec<TokenStream> {
+    fn from(builder: FieldBuilder<'a>) -> Self {
+        builder.results
+    }
 }
