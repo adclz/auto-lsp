@@ -59,7 +59,9 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
                 impl #semantic_tokens_path for #input_name {
                     fn build_semantic_tokens(&self, builder: &mut #semantic_tokens_builder_path) {
                         if let Some(accessor) = &self.accessor {
-                            accessor.build_semantic_tokens(builder)
+                            if let Some(accessor) = accessor.to_dyn() {
+                                accessor.read().build_semantic_tokens(builder)
+                            }
                         }
                     }
                 }
@@ -78,8 +80,7 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
                 Feature::CodeGen(semantic) => {
                     let token_types = &semantic.token_types;
                     let token_index = &semantic.token_type_index;
-                    let range =
-                        path_to_dot_tokens(&semantic.range, Some(quote! { read().unwrap() }));
+                    let range = path_to_dot_tokens(&semantic.range, Some(quote! { read() }));
 
                     let field_names = &self.fields.field_names.get_field_names();
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
@@ -119,21 +120,21 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
                                         },
                                     }
                                     #(
-                                        self.#field_names.read().unwrap().build_semantic_tokens(builder);
+                                        self.#field_names.read().build_semantic_tokens(builder);
                                     )*
                                     #(
                                         if let Some(field) = self.#field_option_names.as_ref() {
-                                            field.read().unwrap().build_semantic_tokens(builder);
+                                            field.read().build_semantic_tokens(builder);
                                         };
                                     )*
                                     #(
                                         for field in self.#field_vec_names.iter() {
-                                            field.read().unwrap().build_semantic_tokens(builder);
+                                            field.read().build_semantic_tokens(builder);
                                         };
                                     )*
                                     #(
                                         for field in self.#field_hashmap_names.values() {
-                                            field.read().unwrap().build_semantic_tokens(builder);
+                                            field.read().build_semantic_tokens(builder);
                                         };
                                     )*
                                 }

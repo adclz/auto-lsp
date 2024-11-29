@@ -97,15 +97,16 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let add = self.generate_add();
         let try_from = self.generate_try_from();
 
-        let ast_item_trait_object_arc = &self.paths.ast_item_trait_object_arc;
+        let symbol = &self.paths.symbol;
+        let dyn_symbol  = &self.paths.dyn_symbol;
         let try_from_builder = &self.paths.try_from_builder;
 
         let into = quote! {
-            fn try_into_item(&self, check: &mut Vec<#ast_item_trait_object_arc>) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
+            fn try_into_item(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
                 use #try_from_builder;
 
                 let item = #input_name::try_from_builder(self, check)?;
-                Ok(std::sync::Arc::new(std::sync::RwLock::new(item)))
+                Ok(#dyn_symbol::new(item))
             }
         };
 
@@ -146,17 +147,20 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
 impl<'a> BuildAstItem for StructBuilder<'a> {
     fn generate_fields(&self) -> Vec<TokenStream> {
-        let ast_item_trait_object_weak = &self.paths.ast_item_trait_object_weak;
+        let symbol = &self.paths.symbol;
+        let dyn_symbol = &self.paths.dyn_symbol;
+        let weak_symbol = &self.paths.weak_symbol;
+        
         let mut fields = vec![
             quote! { pub url: std::sync::Arc<lsp_types::Url> },
-            quote! { pub parent: Option<#ast_item_trait_object_weak> },
+            quote! { pub parent: Option<#weak_symbol> },
             quote! { pub range: tree_sitter::Range },
             quote! { pub start_position: tree_sitter::Point },
             quote! { pub end_position: tree_sitter::Point },
         ];
 
         if self.is_accessor {
-            fields.push(quote! { pub accessor: Option<#ast_item_trait_object_weak> });
+            fields.push(quote! { pub accessor: Option<#weak_symbol> });
         }
 
         let mut builder = FieldBuilder::new(&self.fields);
@@ -165,19 +169,19 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
             match ty {
                 FieldBuilderType::Normal => quote! {
                     #(#attributes)*
-                    pub #name: std::sync::Arc<std::sync::RwLock<#field_type>>
+                    pub #name: #symbol<#field_type>
                 },
                 FieldBuilderType::Vec => quote! {
                     #(#attributes)*
-                    pub #name: Vec<std::sync::Arc<std::sync::RwLock<#field_type>>>
+                    pub #name: Vec<#symbol<#field_type>>
                 },
                 FieldBuilderType::Option => quote! {
                     #(#attributes)*
-                    pub #name: Option<std::sync::Arc<std::sync::RwLock<#field_type>>>
+                    pub #name: Option<#symbol<#field_type>>
                 },
                 FieldBuilderType::HashMap => quote! {
                     #(#attributes)*
-                    pub #name: HashMap<String, std::sync::Arc<std::sync::RwLock<#field_type>>>
+                    pub #name: HashMap<String, #symbol<#field_type>>
                 },
             }
         });
@@ -187,9 +191,8 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
     }
 
     fn generate_ast_item_methods(&self) -> TokenStream {
-        let ast_item_builder_trait_object = &self.paths.ast_item_builder_trait_object;
-        let ast_item_trait_object_arc_path = &self.paths.ast_item_trait_object_arc;
-        let ast_item_trait_object_weak_path = &self.paths.ast_item_trait_object_weak;
+        let dyn_symbol = &self.paths.dyn_symbol;
+        let weak_symbol = &self.paths.weak_symbol;
 
         let field_names = &self.fields.field_names.get_field_names();
         let field_option_names = &self.fields.field_option_names.get_field_names();
@@ -205,54 +208,54 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
                 self.range
             }
 
-            fn get_parent(&self) -> Option<#ast_item_trait_object_weak_path> {
+            fn get_parent(&self) -> Option<#weak_symbol> {
                 self.parent.as_ref().map(|p| p.clone())
             }
 
-            fn set_parent(&mut self, parent: #ast_item_trait_object_weak_path) {
+            fn set_parent(&mut self, parent: #weak_symbol) {
                 self.parent = Some(parent);
             }
 
-            fn inject_parent(&mut self, parent: #ast_item_trait_object_weak_path) {
+            fn inject_parent(&mut self, parent: #weak_symbol) {
                 #(
-                    self.#field_names.write().unwrap().set_parent(parent.clone());
+                    self.#field_names.write().set_parent(parent.clone());
                 )*
                 #(
                     if let Some(ref mut field) = self.#field_option_names {
-                        field.write().unwrap().set_parent(parent.clone());
+                        field.write().set_parent(parent.clone());
                     };
                 )*
                 #(
                     for field in self.#field_vec_names.iter_mut() {
-                        field.write().unwrap().set_parent(parent.clone());
+                        field.write().set_parent(parent.clone());
                     };
                 )*
                 #(
                     for field in self.#field_hashmap_names.values() {
-                        field.write().unwrap().set_parent(parent.clone());
+                        field.write().set_parent(parent.clone());
                     };
                 )*
             }
 
-            fn find_at_offset(&self, offset: &usize) -> Option<#ast_item_trait_object_arc_path> {
+            fn find_at_offset(&self, offset: &usize) -> Option<#dyn_symbol> {
                 // It's pointless to keep searching if the parent item is not inside the offset
                 if (!self.is_inside_offset(offset)) {
                     return None;
                 }
 
-                #(if let true = self.#field_names.read().unwrap().is_inside_offset(offset) {
-                    match self.#field_names.read().unwrap().find_at_offset(offset) {
+                #(if let true = self.#field_names.read().is_inside_offset(offset) {
+                    match self.#field_names.read().find_at_offset(offset) {
                         Some(a) => return Some(a),
-                        None => return Some(self.#field_names.clone())
+                        None => return Some(self.#field_names.to_dyn())
                     }
                 })*
                 #(
                     match self.#field_option_names {
                         Some(ref field) => {
-                            if let true = field.read().unwrap().is_inside_offset(offset) {
-                                match field.read().unwrap().find_at_offset(offset) {
+                            if let true = field.read().is_inside_offset(offset) {
+                                match field.read().find_at_offset(offset) {
                                     Some(a) => return Some(a),
-                                    None => return Some(field.clone())
+                                    None => return Some(field.to_dyn())
                                 }
                             }
                         },
@@ -262,28 +265,24 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
                 #(
                   if let Some(item) = self.#field_vec_names
                     .iter()
-                    .find(|field| field.read().unwrap().is_inside_offset(offset)) {
-                        match item.read().unwrap().find_at_offset(offset) {
+                    .find(|field| field.read().is_inside_offset(offset)) {
+                        match item.read().find_at_offset(offset) {
                             Some(a) => return Some(a),
-                            None => return Some(item.clone())
+                            None => return Some(item.to_dyn())
                         }
                     }
                 )*
                 #(
                     for field in self.#field_hashmap_names.values() {
-                        if let true = field.read().unwrap().is_inside_offset(offset) {
-                            match field.read().unwrap().find_at_offset(offset) {
+                        if let true = field.read().is_inside_offset(offset) {
+                            match field.read().find_at_offset(offset) {
                                 Some(a) => return Some(a),
-                                None => return Some(field.clone())
+                                None => return Some(field.to_dyn())
                             }
                         }
                     }
                 )*
                 None
-            }
-
-            fn swap_at_offset(&mut self, offset: &usize, item: &#ast_item_builder_trait_object) {
-                todo!()
             }
         }
     }
@@ -451,8 +450,9 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let name = self.input_name;
         let input_builder_name = &self.input_buider_name;
 
-        let ast_item_object_arc = &self.paths.ast_item_trait_object_arc;
         let try_from_builder = &self.paths.try_from_builder;
+
+        let dyn_symbol = &self.paths.dyn_symbol;
 
         let builder = 
             FieldBuilder::new(self.fields)
@@ -481,7 +481,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
             impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#dyn_symbol>) -> Result<Self, Self::Error> {
                     let builder_range = builder.get_lsp_range();
 
                     #builder

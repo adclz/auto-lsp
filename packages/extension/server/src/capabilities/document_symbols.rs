@@ -15,7 +15,7 @@ impl Session {
         let symbols = workspace
             .ast
             .iter()
-            .filter_map(|p| p.get_document_symbols(source))
+            .filter_map(|p| p.read().get_document_symbols(source))
             .collect::<Vec<_>>();
 
         Ok(Some(DocumentSymbolResponse::Nested(symbols)))

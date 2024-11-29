@@ -20,7 +20,7 @@ impl Session {
         workspace
             .ast
             .iter()
-            .for_each(|p| p.build_semantic_tokens(&mut builder));
+            .for_each(|p| p.read().build_semantic_tokens(&mut builder));
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }
@@ -37,7 +37,7 @@ impl Session {
         workspace
             .ast
             .iter()
-            .for_each(|p| p.build_semantic_tokens(&mut builder));
+            .for_each(|p| p.read().build_semantic_tokens(&mut builder));
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }

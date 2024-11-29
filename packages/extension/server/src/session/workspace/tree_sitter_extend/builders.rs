@@ -1,5 +1,5 @@
 use auto_lsp::builder_error;
-use auto_lsp::traits::ast_item::{Accessor, AstItem, IsAccessor};
+use auto_lsp::traits::ast_item::{AstItem, DynSymbol};
 use auto_lsp::traits::ast_item_builder::{AstItemBuilder, PendingSymbol};
 use auto_lsp::traits::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
@@ -41,7 +41,7 @@ pub type BuilderFn = fn(
 ) -> BuilderResult;
 
 pub struct BuilderResult {
-    pub item: Result<Arc<RwLock<dyn AstItem>>, Diagnostic>,
+    pub item: Result<DynSymbol, Diagnostic>,
     pub errors: Vec<Diagnostic>,
 }
 
@@ -168,7 +168,7 @@ impl<T: AstItemBuilder> Builder for T {
         let result = result.try_into_item(&mut todo);
 
         todo.iter().for_each(|item| {
-            if let Err(a) = item.try_write().unwrap().find(doc, ctx) {
+            if let Err(a) = item.read().find(doc, ctx) {
                 errors.push(a);
             }
         });
@@ -184,7 +184,7 @@ impl<T: AstItem> Finder for T {
     fn find_reference(&self, doc: &FullTextDocument) -> Option<Weak<RwLock<dyn AstItem>>> {
         let pattern = self.get_text(doc.get_content(None).as_bytes());
 
-        while let Some(scope) = self.get_parent_scope() {
+        /*while let Some(scope) = self.get_parent_scope() {
             match scope.upgrade() {
                 Some(scope) => {
                     let scope = scope.read().unwrap();
@@ -205,7 +205,7 @@ impl<T: AstItem> Finder for T {
                 }
                 None => continue,
             }
-        }
+        }*/
 
         None
     }

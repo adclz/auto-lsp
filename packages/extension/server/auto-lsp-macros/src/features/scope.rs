@@ -75,8 +75,8 @@ impl<'a> ToCodeGen for ScopeBuilder<'a> {
 
                             fn get_scope_range(&self) -> Vec<[usize; 2]> {
 
-                                let start = #start.read().unwrap().get_range().start_byte;
-                                let end = #end.read().unwrap().get_range().end_byte;
+                                let start = #start.read().get_range().start_byte;
+                                let end = #end.read().get_range().end_byte;
 
                                 vec!([start, end])
                             }

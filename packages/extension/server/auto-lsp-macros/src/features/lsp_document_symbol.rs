@@ -58,10 +58,11 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
                 impl #document_symbols_path for #input_name {
                     fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
                         if let Some(accessor) = &self.accessor {
-                            accessor.get_document_symbols(doc)
-                        } else {
-                            None
-                        }
+                            if let Some(accessor) = accessor.to_dyn() {
+                                return accessor.read().get_document_symbols(doc)
+                            }
+                        } 
+                        None
                     }
                 }
             });
@@ -94,7 +95,7 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
                                     quote! {
                                         #path_tokens
                                             .iter()
-                                            .filter_map(|child| child.read().unwrap().get_document_symbols(doc))
+                                            .filter_map(|child| child.read().get_document_symbols(doc))
                                             .collect::<Vec<_>>()
                                     }
                                 });
@@ -116,7 +117,7 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
                                         #path_tokens
                                             .values()
                                             .cloned()
-                                            .filter_map(|child| child.read().unwrap().get_document_symbols(doc))
+                                            .filter_map(|child| child.read().get_document_symbols(doc))
                                             .collect::<Vec<_>>()
                                     }
                                 });
@@ -154,7 +155,7 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
                             impl #document_symbols_path for #input_name {
                                 #[allow(deprecated)]
                                 fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
-                                    let read = #name.read().unwrap();
+                                    let read = #name.read();
                 
                                     Some(lsp_types::DocumentSymbol {
                                         name: read.get_text(doc.get_content(None).as_bytes()).to_string(),

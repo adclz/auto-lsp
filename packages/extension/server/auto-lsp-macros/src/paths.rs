@@ -22,6 +22,9 @@ pub struct Paths {
     pub try_from_builder: Path,
 
     // new types idioms
+    pub symbol: Path,
+    pub dyn_symbol: Path,
+    pub weak_symbol: Path,
     pub pending_symbol: Path,
     pub maybe_pending_symbol: Path,
 }
@@ -60,6 +63,10 @@ impl Default for Paths {
             try_into_builder: parse_quote!(auto_lsp::traits::convert::TryIntoBuilder),
             try_from_builder: parse_quote!(auto_lsp::traits::convert::TryFromBuilder),
 
+            // new types idioms
+            symbol: parse_quote!(auto_lsp::traits::ast_item::Symbol),
+            dyn_symbol: parse_quote!(auto_lsp::traits::ast_item::DynSymbol),
+            weak_symbol: parse_quote!(auto_lsp::traits::ast_item::WeakSymbol),
             pending_symbol: parse_quote!(auto_lsp::traits::ast_item_builder::PendingSymbol),
             maybe_pending_symbol: parse_quote!(
                 auto_lsp::traits::ast_item_builder::MaybePendingSymbol

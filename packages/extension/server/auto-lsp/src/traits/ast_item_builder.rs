@@ -4,17 +4,17 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Formatter;
 use std::rc::Rc;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use tree_sitter::Query;
 
 use crate::builder_error;
 
-use super::ast_item::AstItem;
+use super::ast_item::{AstItem, DynSymbol, Symbol};
 use super::convert::{TryFromBuilder, TryIntoBuilder};
 
 pub trait AstItemBuilder: Downcast {
     fn new(
-        url: Arc<lsp_types::Url>,
+        url: Arc<Url>,
         _query: &tree_sitter::Query,
         query_index: usize,
         range: tree_sitter::Range,
@@ -32,10 +32,8 @@ pub trait AstItemBuilder: Downcast {
     where
         Self: Sized;
 
-    fn try_into_item(
-        &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
-    ) -> Result<Arc<RwLock<dyn AstItem>>, lsp_types::Diagnostic>;
+    fn try_into_item(&self, check: &mut Vec<DynSymbol>)
+        -> Result<DynSymbol, lsp_types::Diagnostic>;
 
     fn query_binder(
         &self,
@@ -129,27 +127,27 @@ impl std::fmt::Debug for PendingSymbol {
 pub trait TryDownCast {
     fn try_downcast<
         T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Arc<RwLock<Y>>, Diagnostic>;
+    ) -> Result<Symbol<Y>, Diagnostic>;
 }
 
 impl TryDownCast for PendingSymbol {
     fn try_downcast<
         T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Arc<RwLock<Y>>, Diagnostic> {
+    ) -> Result<Symbol<Y>, Diagnostic> {
         let item: Y = self
             .0
             .borrow()
@@ -162,11 +160,11 @@ impl TryDownCast for PendingSymbol {
                 )
             ))?
             .try_into_builder(check)?;
-        let arc = Arc::new(RwLock::new(item));
-        if *arc.read().unwrap().is_accessor() {
-            check.push(arc.clone());
+        let arc = Symbol::new(item);
+        if *arc.read().is_accessor() {
+            check.push(arc.to_dyn());
         }
-        arc.write().unwrap().set_parent(Arc::downgrade(&arc) as _);
+        arc.write().set_parent(arc.to_weak());
         Ok(arc)
     }
 }
@@ -199,14 +197,14 @@ impl MaybePendingSymbol {
 impl TryDownCast for MaybePendingSymbol {
     fn try_downcast<
         T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Arc<RwLock<Y>>, Diagnostic> {
+    ) -> Result<Symbol<Y>, Diagnostic> {
         self.0
             .as_ref()
             .ok_or(builder_error!(
@@ -220,27 +218,27 @@ impl TryDownCast for MaybePendingSymbol {
 pub trait TryDownCastOption: TryDownCast {
     fn try_downcast_option<
         T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Option<Arc<RwLock<Y>>>, Diagnostic>;
+    ) -> Result<Option<Symbol<Y>>, Diagnostic>;
 }
 
 impl TryDownCastOption for MaybePendingSymbol {
     fn try_downcast_option<
         T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Option<Arc<RwLock<Y>>>, Diagnostic> {
+    ) -> Result<Option<Symbol<Y>>, Diagnostic> {
         self.0.as_ref().map_or(Ok(None), |pending| {
             pending
                 .try_downcast::<T, Y>(check, field_name, field_range, input_name)
@@ -258,27 +256,27 @@ impl std::fmt::Debug for MaybePendingSymbol {
 pub trait TryDownCastVec {
     fn try_downcast_vec<
         T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Vec<Arc<RwLock<Y>>>, Diagnostic>;
+    ) -> Result<Vec<Symbol<Y>>, Diagnostic>;
 }
 
 impl<T: TryDownCast> TryDownCastVec for Vec<T> {
     fn try_downcast_vec<
         Y: AstItemBuilder,
-        V: AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+        V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Vec<Arc<RwLock<V>>>, Diagnostic> {
+    ) -> Result<Vec<Symbol<V>>, Diagnostic> {
         self.iter()
             .map(|item| item.try_downcast::<Y, V>(check, field_name, field_range, input_name))
             .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()
@@ -288,27 +286,27 @@ impl<T: TryDownCast> TryDownCastVec for Vec<T> {
 pub trait TryDownCastMap {
     fn try_downcast_map<
         T: AstItemBuilder,
-        Y: AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<HashMap<String, Arc<RwLock<Y>>>, Diagnostic>;
+    ) -> Result<HashMap<String, Symbol<Y>>, Diagnostic>;
 }
 
 impl<T: TryDownCast> TryDownCastMap for HashMap<String, T> {
     fn try_downcast_map<
         Y: AstItemBuilder,
-        V: AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+        V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
     >(
         &self,
-        check: &mut Vec<Arc<RwLock<dyn AstItem>>>,
+        check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<HashMap<String, Arc<RwLock<V>>>, Diagnostic> {
+    ) -> Result<HashMap<String, Symbol<V>>, Diagnostic> {
         self.iter()
             .map(|(key, item)| {
                 item.try_downcast::<Y, V>(check, field_name, field_range, input_name)

@@ -19,7 +19,7 @@ impl Session {
 
             symbols.extend(
                 ast.iter()
-                    .filter_map(|p| p.get_document_symbols(&v.document))
+                    .filter_map(|p| p.read().get_document_symbols(&v.document))
                     .map(|p| WorkspaceSymbol {
                         name: p.name,
                         kind: p.kind,

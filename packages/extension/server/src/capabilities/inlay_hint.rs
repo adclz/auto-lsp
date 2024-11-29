@@ -19,7 +19,6 @@ impl Session {
 
         workspace.ast.iter().for_each(|ast| {
             ast.read()
-                .unwrap()
                 .build_inlay_hint(&workspace.document, &mut results);
         });
 

@@ -25,6 +25,7 @@ streaming-iterator = "0.1.9"
 regex = "1.11.1"
 anyhow = "1.0.91"
 crossbeam-channel = "0.5.13"
+parking_lot = "0.12.3"
 
 [workspace]
 members = [
@@ -39,4 +40,4 @@ lsp-textdocument = "0.3.2"
 downcast-rs = "1.2.1"
 constcat = "0.5.1"
 streaming-iterator = "0.1.9"
-
+parking_lot = "0.12.3"

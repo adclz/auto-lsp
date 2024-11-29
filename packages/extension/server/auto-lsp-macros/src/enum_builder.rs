@@ -52,16 +52,17 @@ impl<'a> ToTokens for EnumBuilder<'a> {
 
         let ast_item_trait = &self.paths.ast_item_trait;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
-        let ast_item_trait_object_arc = &self.paths.ast_item_trait_object_arc;
+
+        let dyn_symbol = &self.paths.dyn_symbol;
 
         let try_from_builder = &self.paths.try_from_builder;
 
         let into = quote! {
-            fn try_into_item(&self, check: &mut Vec<#ast_item_trait_object_arc>) -> Result<#ast_item_trait_object_arc, lsp_types::Diagnostic> {
+            fn try_into_item(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
                 use #try_from_builder;
 
                 let item = #name::try_from_builder(self, check)?;
-                Ok(std::sync::Arc::new(std::sync::RwLock::new(item)))
+                Ok(#dyn_symbol::new(item))
             }
         };
 
@@ -190,16 +191,17 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let variant_names = &self.fields.variant_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
-        let ast_item_object_arc = &self.paths.ast_item_trait_object_arc;
         let try_from_builder = &self.paths.try_from_builder;
         let try_into_builder = &self.paths.try_into_builder;
+
+        let symbol = &self.paths.symbol;
+        let dyn_symbol = &self.paths.dyn_symbol;
 
         quote! {
             impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#ast_item_object_arc>) -> Result<Self, Self::Error> {
-                    use std::sync::{Arc, RwLock};
+                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#dyn_symbol>) -> Result<Self, Self::Error> {
                     use #try_into_builder;
 
                     #(
@@ -228,6 +230,8 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
 
     fn generate_ast_item_methods(&self) -> TokenStream {
         let variant_names = &self.fields.variant_names;
+        let dyn_symbol = &self.paths.dyn_symbol;
+        let weak_symbol = &self.paths.weak_symbol;
 
         quote! {
             fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
@@ -246,7 +250,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                 }
             }
 
-            fn get_parent(&self) -> Option<std::sync::Weak<std::sync::RwLock<dyn AstItem>>> {
+            fn get_parent(&self) -> Option<#weak_symbol> {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.get_parent(),
@@ -254,7 +258,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                 }
             }
 
-            fn set_parent(&mut self, parent: std::sync::Weak<std::sync::RwLock<dyn AstItem>>) {
+            fn set_parent(&mut self, parent: #weak_symbol) {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.set_parent(parent),
@@ -262,7 +266,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                 }
             }
 
-            fn inject_parent(&mut self, parent: std::sync::Weak<std::sync::RwLock<dyn AstItem>>) {
+            fn inject_parent(&mut self, parent: #weak_symbol) {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.inject_parent(parent),
@@ -270,7 +274,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                 }
             }
 
-            fn find_at_offset(&self, offset: &usize) -> Option<std::sync::Arc<std::sync::RwLock<dyn AstItem>>> {
+            fn find_at_offset(&self, offset: &usize) -> Option<#dyn_symbol> {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.find_at_offset(offset),
@@ -290,16 +294,6 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.get_end_position(doc),
-                    )*
-                }
-            }
-
-
-            // LSP
-            fn swap_at_offset(&mut self, offset: &usize, item: &std::rc::Rc<std::cell::RefCell<dyn AstItemBuilder>>) {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.swap_at_offset(offset, &item),
                     )*
                 }
             }

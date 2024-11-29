@@ -50,7 +50,9 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
                 impl #inlay_hint_path for #input_name {
                     fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
                         if let Some(accessor) = &self.accessor {
-                            accessor.build_inlay_hint(doc, acc)
+                            if let Some(accessor) = accessor.to_dyn() {
+                                accessor.read().build_inlay_hint(doc, acc)
+                            }
                         }
                     }
                 }
@@ -87,21 +89,21 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
                                         data: None,
                                     });
                                     #(
-                                        self.#field_names.read().unwrap().build_inlay_hint(doc, acc);
+                                        self.#field_names.read().build_inlay_hint(doc, acc);
                                     )*
                                     #(
                                         if let Some(field) = self.#field_option_names.as_ref() {
-                                            field.read().unwrap().build_inlay_hint(doc, acc);
+                                            field.read().build_inlay_hint(doc, acc);
                                         };
                                     )*
                                     #(
                                         for field in self.#field_vec_names.iter() {
-                                            field.read().unwrap().build_inlay_hint(doc, acc);
+                                            field.read().build_inlay_hint(doc, acc);
                                         };
                                     )*
                                     #(
                                         for field in self.#field_hashmap_names.values() {
-                                            field.read().unwrap().build_inlay_hint(doc, acc);
+                                            field.read().build_inlay_hint(doc, acc);
                                         };
                                     )*
                                 }

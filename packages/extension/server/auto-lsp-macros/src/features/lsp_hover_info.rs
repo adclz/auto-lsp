@@ -47,10 +47,11 @@ impl<'a> ToCodeGen for HoverInfoBuilder<'a> {
                 impl #hover_info_path for #input_name {
                     fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
                         if let Some(accessor) = &self.accessor {
-                            accessor.get_hover(doc)
-                        } else {
-                            None
+                            if let Some(accessor) = accessor.to_dyn() {
+                                return accessor.read().get_hover(doc)
+                            }
                         }
+                        None
                     }
                 }
             });

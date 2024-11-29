@@ -1,6 +1,9 @@
 use std::sync::{Arc, RwLock};
 
-use auto_lsp::{macros::ast_builder::AstBuilder, traits::ast_item::AstItem};
+use auto_lsp::{
+    macros::ast_builder::AstBuilder,
+    traits::ast_item::{AstItem, DynSymbol},
+};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Diagnostic;
 use tree_sitter::Tree;
@@ -19,5 +22,5 @@ pub struct Workspace {
     pub document: FullTextDocument,
     pub errors: Vec<Diagnostic>,
     pub cst: Tree,
-    pub ast: Option<Arc<RwLock<dyn AstItem>>>,
+    pub ast: Option<DynSymbol>,
 }

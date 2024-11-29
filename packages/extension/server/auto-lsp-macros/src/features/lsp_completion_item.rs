@@ -56,8 +56,10 @@ impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
                 impl #completion_items_path for #input_name {
                     fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
                         if let Some(accessor) = &self.accessor {
-                            accessor.build_completion_items(acc, doc)
-                        }
+                            if let Some(accessor) = accessor.to_dyn() {
+                                accessor.read().build_completion_items(acc, doc)
+                            }
+                        }                        
                     }
                 }
             });
@@ -88,7 +90,7 @@ impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
                     codegen.input.other_impl.push(quote! {
                         impl #completion_items_path for #input_name {
                             fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
-                                let read = #label.read().unwrap();
+                                let read = #label.read();
                 
                                 acc.push(lsp_types::CompletionItem {
                                     label: read.get_text(doc.get_content(None).as_bytes()).to_string(),
