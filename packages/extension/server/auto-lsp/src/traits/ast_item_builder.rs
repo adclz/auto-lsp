@@ -124,24 +124,60 @@ impl std::fmt::Debug for PendingSymbol {
     }
 }
 
-pub trait TryDownCast {
-    fn try_downcast<
-        T: AstItemBuilder,
-        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
+#[derive(Clone)]
+pub struct MaybePendingSymbol(Option<PendingSymbol>);
+
+impl MaybePendingSymbol {
+    pub fn none() -> Self {
+        MaybePendingSymbol(None)
+    }
+
+    pub fn is_some(&self) -> bool {
+        self.0.is_some()
+    }
+
+    pub fn new(builder: impl AstItemBuilder) -> Self {
+        MaybePendingSymbol(Some(PendingSymbol::new(builder)))
+    }
+
+    pub fn from_pending(pending: PendingSymbol) -> Self {
+        MaybePendingSymbol(Some(pending))
+    }
+
+    pub fn as_ref(&self) -> Option<&PendingSymbol> {
+        self.0.as_ref().map(|pending| pending)
+    }
+}
+
+impl std::fmt::Debug for MaybePendingSymbol {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "-")
+    }
+}
+
+pub trait TryDownCast<
+    T: AstItemBuilder,
+    Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+>
+{
+    type Output;
+
+    fn try_downcast(
         &self,
         check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Symbol<Y>, Diagnostic>;
+    ) -> Result<Self::Output, Diagnostic>;
 }
 
-impl TryDownCast for PendingSymbol {
-    fn try_downcast<
-        T: AstItemBuilder,
-        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
+impl<T, Y> TryDownCast<T, Y> for PendingSymbol
+where
+    T: AstItemBuilder,
+    Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+{
+    type Output = Symbol<Y>;
+    fn try_downcast(
         &self,
         check: &mut Vec<DynSymbol>,
         field_name: &str,
@@ -169,70 +205,14 @@ impl TryDownCast for PendingSymbol {
     }
 }
 
-#[derive(Clone)]
-pub struct MaybePendingSymbol(Option<PendingSymbol>);
+impl<T, Y> TryDownCast<T, Y> for MaybePendingSymbol
+where
+    T: AstItemBuilder,
+    Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+{
+    type Output = Option<Symbol<Y>>;
 
-impl MaybePendingSymbol {
-    pub fn none() -> Self {
-        MaybePendingSymbol(None)
-    }
-
-    pub fn is_some(&self) -> bool {
-        self.0.is_some()
-    }
-
-    pub fn new(builder: impl AstItemBuilder) -> Self {
-        MaybePendingSymbol(Some(PendingSymbol::new(builder)))
-    }
-
-    pub fn from_pending(pending: PendingSymbol) -> Self {
-        MaybePendingSymbol(Some(pending))
-    }
-
-    pub fn as_ref(&self) -> Option<&PendingSymbol> {
-        self.0.as_ref().map(|pending| pending)
-    }
-}
-
-impl TryDownCast for MaybePendingSymbol {
-    fn try_downcast<
-        T: AstItemBuilder,
-        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
-        &self,
-        check: &mut Vec<DynSymbol>,
-        field_name: &str,
-        field_range: lsp_types::Range,
-        input_name: &str,
-    ) -> Result<Symbol<Y>, Diagnostic> {
-        self.0
-            .as_ref()
-            .ok_or(builder_error!(
-                field_range,
-                format!("Missing field {:?} in {:?}", field_name, input_name)
-            ))?
-            .try_downcast::<T, Y>(check, field_name, field_range, input_name)
-    }
-}
-
-pub trait TryDownCastOption: TryDownCast {
-    fn try_downcast_option<
-        T: AstItemBuilder,
-        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
-        &self,
-        check: &mut Vec<DynSymbol>,
-        field_name: &str,
-        field_range: lsp_types::Range,
-        input_name: &str,
-    ) -> Result<Option<Symbol<Y>>, Diagnostic>;
-}
-
-impl TryDownCastOption for MaybePendingSymbol {
-    fn try_downcast_option<
-        T: AstItemBuilder,
-        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
+    fn try_downcast(
         &self,
         check: &mut Vec<DynSymbol>,
         field_name: &str,
@@ -241,66 +221,42 @@ impl TryDownCastOption for MaybePendingSymbol {
     ) -> Result<Option<Symbol<Y>>, Diagnostic> {
         self.0.as_ref().map_or(Ok(None), |pending| {
             pending
-                .try_downcast::<T, Y>(check, field_name, field_range, input_name)
+                .try_downcast(check, field_name, field_range, input_name)
                 .map(Some)
         })
     }
 }
 
-impl std::fmt::Debug for MaybePendingSymbol {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "-")
-    }
-}
+impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
+where
+    T: TryDownCast<Y, V, Output = Symbol<V>>,
+    Y: AstItemBuilder,
+    V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+{
+    type Output = Vec<Symbol<V>>;
 
-pub trait TryDownCastVec {
-    fn try_downcast_vec<
-        T: AstItemBuilder,
-        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
+    fn try_downcast(
         &self,
         check: &mut Vec<DynSymbol>,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Vec<Symbol<Y>>, Diagnostic>;
-}
-
-impl<T: TryDownCast> TryDownCastVec for Vec<T> {
-    fn try_downcast_vec<
-        Y: AstItemBuilder,
-        V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
-    >(
-        &self,
-        check: &mut Vec<DynSymbol>,
-        field_name: &str,
-        field_range: lsp_types::Range,
-        input_name: &str,
-    ) -> Result<Vec<Symbol<V>>, Diagnostic> {
+    ) -> Result<Self::Output, Diagnostic> {
         self.iter()
-            .map(|item| item.try_downcast::<Y, V>(check, field_name, field_range, input_name))
+            .map(|item| item.try_downcast(check, field_name, field_range, input_name))
             .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()
     }
 }
 
-pub trait TryDownCastMap {
-    fn try_downcast_map<
-        T: AstItemBuilder,
-        Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-    >(
-        &self,
-        check: &mut Vec<DynSymbol>,
-        field_name: &str,
-        field_range: lsp_types::Range,
-        input_name: &str,
-    ) -> Result<HashMap<String, Symbol<Y>>, Diagnostic>;
-}
+impl<T, Y, V> TryDownCast<Y, V> for HashMap<String, T>
+where
+    T: TryDownCast<Y, V, Output = Symbol<V>>,
+    Y: AstItemBuilder,
+    V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+{
+    type Output = HashMap<String, Symbol<V>>;
 
-impl<T: TryDownCast> TryDownCastMap for HashMap<String, T> {
-    fn try_downcast_map<
-        Y: AstItemBuilder,
-        V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
-    >(
+    fn try_downcast(
         &self,
         check: &mut Vec<DynSymbol>,
         field_name: &str,
@@ -309,7 +265,7 @@ impl<T: TryDownCast> TryDownCastMap for HashMap<String, T> {
     ) -> Result<HashMap<String, Symbol<V>>, Diagnostic> {
         self.iter()
             .map(|(key, item)| {
-                item.try_downcast::<Y, V>(check, field_name, field_range, input_name)
+                item.try_downcast(check, field_name, field_range, input_name)
                     .map(|item| (key.clone(), item))
             })
             .collect::<Result<HashMap<_, _>, lsp_types::Diagnostic>>()

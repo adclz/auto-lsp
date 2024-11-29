@@ -98,7 +98,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let try_from = self.generate_try_from();
 
         let symbol = &self.paths.symbol;
-        let dyn_symbol  = &self.paths.dyn_symbol;
+        let dyn_symbol = &self.paths.dyn_symbol;
         let try_from_builder = &self.paths.try_from_builder;
 
         let into = quote! {
@@ -150,7 +150,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
         let symbol = &self.paths.symbol;
         let dyn_symbol = &self.paths.dyn_symbol;
         let weak_symbol = &self.paths.weak_symbol;
-        
+
         let mut fields = vec![
             quote! { pub url: std::sync::Arc<lsp_types::Url> },
             quote! { pub parent: Option<#weak_symbol> },
@@ -165,25 +165,23 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
         let mut builder = FieldBuilder::new(&self.fields);
 
-        builder.apply_all(|ty, attributes, name, field_type, _| {
-            match ty {
-                FieldBuilderType::Normal => quote! {
-                    #(#attributes)*
-                    pub #name: #symbol<#field_type>
-                },
-                FieldBuilderType::Vec => quote! {
-                    #(#attributes)*
-                    pub #name: Vec<#symbol<#field_type>>
-                },
-                FieldBuilderType::Option => quote! {
-                    #(#attributes)*
-                    pub #name: Option<#symbol<#field_type>>
-                },
-                FieldBuilderType::HashMap => quote! {
-                    #(#attributes)*
-                    pub #name: HashMap<String, #symbol<#field_type>>
-                },
-            }
+        builder.apply_all(|ty, attributes, name, field_type, _| match ty {
+            FieldBuilderType::Normal => quote! {
+                #(#attributes)*
+                pub #name: #symbol<#field_type>
+            },
+            FieldBuilderType::Vec => quote! {
+                #(#attributes)*
+                pub #name: Vec<#symbol<#field_type>>
+            },
+            FieldBuilderType::Option => quote! {
+                #(#attributes)*
+                pub #name: Option<#symbol<#field_type>>
+            },
+            FieldBuilderType::HashMap => quote! {
+                #(#attributes)*
+                pub #name: HashMap<String, #symbol<#field_type>>
+            },
         });
 
         fields.extend::<Vec<TokenStream>>(builder.into());
@@ -295,26 +293,22 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         let mut builder = FieldBuilder::new(&self.fields);
 
-        builder.apply_all(|ty, _, name, _, _| {
-                match ty {
-                    FieldBuilderType::Vec => quote! { #name: Vec<#pending_symbol> },
-                    FieldBuilderType::HashMap => quote! { #name: HashMap<String, #pending_symbol> },
-                    _ => quote! { #name: #maybe_pending_symbol },
-                }
-            });
-        builder.into()    
-        }
+        builder.apply_all(|ty, _, name, _, _| match ty {
+            FieldBuilderType::Vec => quote! { #name: Vec<#pending_symbol> },
+            FieldBuilderType::HashMap => quote! { #name: HashMap<String, #pending_symbol> },
+            _ => quote! { #name: #maybe_pending_symbol },
+        });
+        builder.into()
+    }
 
     fn generate_builder_new(&self) -> TokenStream {
         let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
 
         let fields = FieldBuilder::new(&self.fields)
-            .apply_all(|ty, _, name, _, _| {
-                match ty {
-                    FieldBuilderType::Vec => quote! { #name: vec![], },
-                    FieldBuilderType::HashMap => quote! { #name: std::collections::HashMap::new(), },
-                    _ =>  quote! { #name: #maybe_pending_symbol::none(), },
-                }
+            .apply_all(|ty, _, name, _, _| match ty {
+                FieldBuilderType::Vec => quote! { #name: vec![], },
+                FieldBuilderType::HashMap => quote! { #name: std::collections::HashMap::new(), },
+                _ => quote! { #name: #maybe_pending_symbol::none(), },
             })
             .to_token_stream();
 
@@ -454,21 +448,20 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         let dyn_symbol = &self.paths.dyn_symbol;
 
-        let builder = 
-            FieldBuilder::new(self.fields)
-            .apply_all(|ty, _, name, field_type, builder| {
-                let try_downcast = match ty {
-                    FieldBuilderType::Normal => quote! { try_downcast },
-                    FieldBuilderType::Vec => quote! { try_downcast_vec },
-                    FieldBuilderType::Option => quote! { try_downcast_option },
-                    FieldBuilderType::HashMap => quote! { try_downcast_map },
-                };
-
-                quote! {
+        let builder = FieldBuilder::new(self.fields)
+            .apply_all(|ty, _, name, field_type, builder| match ty  {
+                FieldBuilderType::Normal  => quote! {
                     let #name = builder
                         .#name
-                        .#try_downcast::<#builder, #field_type>(check, stringify!(#name), builder_range, stringify!(#input_builder_name))?;
-                }
+                        .try_downcast(check, stringify!(#name), builder_range, stringify!(#input_builder_name))?
+                        //todo ! remove expect with builder error
+                        .expect("");
+                },
+                _=> quote! {
+                        let #name = builder
+                            .#name
+                            .try_downcast(check, stringify!(#name), builder_range, stringify!(#input_builder_name))?;
+                    }
             }).to_token_stream();
 
         let init_accessor = if self.is_accessor {
