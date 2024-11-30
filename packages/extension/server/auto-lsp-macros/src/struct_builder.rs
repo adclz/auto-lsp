@@ -97,7 +97,6 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let add = self.generate_add();
         let try_from = self.generate_try_from();
 
-        let symbol = &self.paths.symbol;
         let dyn_symbol = &self.paths.dyn_symbol;
         let try_from_builder = &self.paths.try_from_builder;
 
@@ -148,7 +147,6 @@ impl<'a> ToTokens for StructBuilder<'a> {
 impl<'a> BuildAstItem for StructBuilder<'a> {
     fn generate_fields(&self) -> Vec<TokenStream> {
         let symbol = &self.paths.symbol;
-        let dyn_symbol = &self.paths.dyn_symbol;
         let weak_symbol = &self.paths.weak_symbol;
 
         let mut fields = vec![
@@ -192,10 +190,23 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
         let dyn_symbol = &self.paths.dyn_symbol;
         let weak_symbol = &self.paths.weak_symbol;
 
-        let field_names = &self.fields.field_names.get_field_names();
-        let field_option_names = &self.fields.field_option_names.get_field_names();
-        let field_vec_names = &self.fields.field_vec_names.get_field_names();
-        let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
+        let find = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, _, _| {
+                quote! {
+                    if let Some(symbol) = self.#name.try_locate_at_offset(*offset) {
+                       return Some(symbol);
+                    }
+                }
+            })
+            .to_token_stream();
+
+        let inject = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, _, _| {
+                quote! {
+                    self.#name.inject(parent.clone());
+                }
+            })
+            .to_token_stream();
 
         quote! {
             fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
@@ -215,24 +226,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
             }
 
             fn inject_parent(&mut self, parent: #weak_symbol) {
-                #(
-                    self.#field_names.write().set_parent(parent.clone());
-                )*
-                #(
-                    if let Some(ref mut field) = self.#field_option_names {
-                        field.write().set_parent(parent.clone());
-                    };
-                )*
-                #(
-                    for field in self.#field_vec_names.iter_mut() {
-                        field.write().set_parent(parent.clone());
-                    };
-                )*
-                #(
-                    for field in self.#field_hashmap_names.values() {
-                        field.write().set_parent(parent.clone());
-                    };
-                )*
+                #inject
             }
 
             fn find_at_offset(&self, offset: &usize) -> Option<#dyn_symbol> {
@@ -241,45 +235,8 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
                     return None;
                 }
 
-                #(if let true = self.#field_names.read().is_inside_offset(offset) {
-                    match self.#field_names.read().find_at_offset(offset) {
-                        Some(a) => return Some(a),
-                        None => return Some(self.#field_names.to_dyn())
-                    }
-                })*
-                #(
-                    match self.#field_option_names {
-                        Some(ref field) => {
-                            if let true = field.read().is_inside_offset(offset) {
-                                match field.read().find_at_offset(offset) {
-                                    Some(a) => return Some(a),
-                                    None => return Some(field.to_dyn())
-                                }
-                            }
-                        },
-                        None => {}
-                    }
-                )*
-                #(
-                  if let Some(item) = self.#field_vec_names
-                    .iter()
-                    .find(|field| field.read().is_inside_offset(offset)) {
-                        match item.read().find_at_offset(offset) {
-                            Some(a) => return Some(a),
-                            None => return Some(item.to_dyn())
-                        }
-                    }
-                )*
-                #(
-                    for field in self.#field_hashmap_names.values() {
-                        if let true = field.read().is_inside_offset(offset) {
-                            match field.read().find_at_offset(offset) {
-                                Some(a) => return Some(a),
-                                None => return Some(field.to_dyn())
-                            }
-                        }
-                    }
-                )*
+                #find
+
                 None
             }
         }
@@ -449,7 +406,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let dyn_symbol = &self.paths.dyn_symbol;
 
         let builder = FieldBuilder::new(self.fields)
-            .apply_all(|ty, _, name, field_type, builder| match ty  {
+            .apply_all(|ty, _, name, _, _| match ty  {
                 FieldBuilderType::Normal  => quote! {
                     let #name = builder
                         .#name

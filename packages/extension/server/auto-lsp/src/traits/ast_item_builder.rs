@@ -183,7 +183,7 @@ where
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Symbol<Y>, Diagnostic> {
+    ) -> Result<Self::Output, Diagnostic> {
         let item: Y = self
             .0
             .borrow()
@@ -218,7 +218,7 @@ where
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<Option<Symbol<Y>>, Diagnostic> {
+    ) -> Result<Self::Output, Diagnostic> {
         self.0.as_ref().map_or(Ok(None), |pending| {
             pending
                 .try_downcast(check, field_name, field_range, input_name)
@@ -262,7 +262,7 @@ where
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
-    ) -> Result<HashMap<String, Symbol<V>>, Diagnostic> {
+    ) -> Result<Self::Output, Diagnostic> {
         self.iter()
             .map(|(key, item)| {
                 item.try_downcast(check, field_name, field_range, input_name)

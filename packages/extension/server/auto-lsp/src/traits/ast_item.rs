@@ -3,7 +3,10 @@ use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{CompletionItem, Diagnostic, DocumentSymbol, Position, Range, Url};
 use parking_lot::RwLock;
-use std::sync::{Arc, Weak};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Weak},
+};
 
 use super::workspace::WorkspaceContext;
 
@@ -180,4 +183,98 @@ pub trait IsAccessor {
 
 pub trait Accessor: IsAccessor {
     fn find(&self, doc: &FullTextDocument, ctx: &dyn WorkspaceContext) -> Result<(), Diagnostic>;
+}
+
+pub trait OffsetLocator {
+    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol>;
+}
+
+impl OffsetLocator for DynSymbol {
+    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+        let symbol = self.read();
+        if symbol.is_inside_offset(&offset) {
+            match symbol.find_at_offset(&offset) {
+                Some(symbol) => return Some(symbol),
+                None => return Some(self.clone()),
+            }
+        }
+        None
+    }
+}
+
+impl<T: AstItem> OffsetLocator for Symbol<T> {
+    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+        let symbol = self.read();
+        if symbol.is_inside_offset(&offset) {
+            match symbol.find_at_offset(&offset) {
+                Some(symbol) => return Some(symbol),
+                None => return Some(self.to_dyn()),
+            };
+        }
+        None
+    }
+}
+
+impl<T: AstItem> OffsetLocator for Option<Symbol<T>> {
+    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+        let symbol = match self.as_ref() {
+            Some(symbol) => symbol,
+            None => return None,
+        };
+        symbol.try_locate_at_offset(offset)
+    }
+}
+
+impl<T: OffsetLocator> OffsetLocator for Vec<T> {
+    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+        self.iter()
+            .find_map(|symbol| symbol.try_locate_at_offset(offset))
+    }
+}
+
+impl<T: OffsetLocator> OffsetLocator for HashMap<String, T> {
+    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+        self.values()
+            .find_map(|symbol| symbol.try_locate_at_offset(offset))
+    }
+}
+
+pub trait ParentInject {
+    fn inject(&mut self, parent: WeakSymbol);
+}
+
+impl<T: AstItem> ParentInject for Symbol<T> {
+    fn inject(&mut self, parent: WeakSymbol) {
+        self.write().set_parent(parent);
+    }
+}
+
+impl ParentInject for DynSymbol {
+    fn inject(&mut self, parent: WeakSymbol) {
+        self.write().set_parent(parent);
+    }
+}
+
+impl<T: AstItem> ParentInject for Option<Symbol<T>> {
+    fn inject(&mut self, parent: WeakSymbol) {
+        if let Some(symbol) = self.as_mut() {
+            symbol.write().set_parent(parent);
+        }
+    }
+}
+
+impl<T: AstItem> ParentInject for Vec<Symbol<T>> {
+    fn inject(&mut self, parent: WeakSymbol) {
+        for symbol in self.iter_mut() {
+            symbol.write().set_parent(parent.clone());
+        }
+    }
+}
+
+impl<T: AstItem> ParentInject for HashMap<String, Symbol<T>> {
+    fn inject(&mut self, parent: WeakSymbol) {
+        for symbol in self.values_mut() {
+            symbol.write().set_parent(parent.clone());
+        }
+    }
 }
