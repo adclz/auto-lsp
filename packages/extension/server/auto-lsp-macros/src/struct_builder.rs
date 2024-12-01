@@ -354,8 +354,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     fn generate_add(&self) -> TokenStream {
         let pending_symbol = &self.paths.pending_symbol;
 
-        let deferred_closure = &self.paths.deferred_closure;
-
         let input_builder_name = &self.input_buider_name;
 
         let builder = FieldBuilder::new(&self.fields)
@@ -363,7 +361,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                 quote! {
                     node = match self.#name.add::<#field_type>(query_name, node, range, "", "")? {
                         Some(a) => a,
-                        None => return Ok(None),
+                        None => return Ok(()),
                     };
 
                 }
@@ -372,7 +370,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         quote! {
             fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
-                Result<Option<#deferred_closure>, lsp_types::Diagnostic> {
+                Result<(), lsp_types::Diagnostic> {
 
                 let query_name = query.capture_names()[node.get_query_index()];
                 let range = self.get_lsp_range();

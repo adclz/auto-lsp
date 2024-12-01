@@ -163,11 +163,10 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
 
     fn generate_add(&self) -> TokenStream {
         let pending_symbol = &self.paths.pending_symbol;
-        let deferred_closure = &self.paths.deferred_closure;
 
         quote! {
             fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
-                Result<Option<#deferred_closure>, lsp_types::Diagnostic> {
+                Result<(), lsp_types::Diagnostic> {
                     self.unique_field.get_rc().borrow_mut().add(query, node, source_code)
             }
         }

@@ -36,7 +36,7 @@ pub trait AstItemBuilder: Downcast {
         query: &Query,
         node: PendingSymbol,
         source_code: &[u8],
-    ) -> Result<Option<DeferredClosure>, Diagnostic>;
+    ) -> Result<(), Diagnostic>;
 
     fn try_to_dyn_symbol(
         &self,
@@ -86,14 +86,6 @@ impl std::fmt::Debug for dyn AstItemBuilder {
 }
 
 impl_downcast!(AstItemBuilder);
-
-pub type DeferredClosure = Box<
-    dyn Fn(
-        PendingSymbol, // parent
-        PendingSymbol, // child
-        &[u8],         // source_code
-    ) -> Result<(), Diagnostic>,
->;
 
 #[derive(Clone)]
 pub struct PendingSymbol(Rc<RefCell<dyn AstItemBuilder>>);

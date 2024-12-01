@@ -7,30 +7,7 @@ use lsp_types::{Diagnostic, Url};
 use std::sync::Arc;
 use std::sync::{RwLock, Weak};
 use streaming_iterator::StreamingIterator;
-struct Deferred {
-    parent: PendingSymbol,
-    child: PendingSymbol,
-    binder: Box<dyn Fn(PendingSymbol, PendingSymbol, &[u8]) -> Result<(), Diagnostic>>,
-}
-
-fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range) -> bool {
-    range1.start_byte <= range2.start_byte && range1.end_byte >= range2.end_byte
-}
-
-fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Range {
-    let start = range.start_point;
-    let end = range.end_point;
-    lsp_types::Range {
-        start: lsp_types::Position {
-            line: start.row as u32,
-            character: start.column as u32,
-        },
-        end: lsp_types::Position {
-            line: end.row as u32,
-            character: end.column as u32,
-        },
-    }
-}
+use tree_sitter::{Query, QueryCapture};
 
 pub type BuilderFn = fn(
     ctx: &dyn WorkspaceContext,
@@ -59,8 +36,124 @@ pub trait Finder {
     fn find_reference(&self, doc: &FullTextDocument) -> Option<Weak<RwLock<dyn AstItem>>>;
 }
 
-pub fn g(o: &Option<u8>) {
-    o.expect(&format!("Not a builder! {:?}", 8));
+fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range) -> bool {
+    range1.start_byte <= range2.start_byte && range1.end_byte >= range2.end_byte
+}
+
+fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Range {
+    let start = range.start_point;
+    let end = range.end_point;
+    lsp_types::Range {
+        start: lsp_types::Position {
+            line: start.row as u32,
+            character: start.column as u32,
+        },
+        end: lsp_types::Position {
+            line: end.row as u32,
+            character: end.column as u32,
+        },
+    }
+}
+
+fn create_root_node<T: AstItemBuilder>(
+    url: Arc<Url>,
+    query: &Query,
+    capture: &QueryCapture,
+    capture_index: usize,
+) -> Result<PendingSymbol, Diagnostic> {
+    eprintln!(
+        "Create root {:?}",
+        query.capture_names()[capture_index as usize]
+    );
+
+    let mut node = T::new(
+        url.clone(),
+        query,
+        capture_index,
+        capture.node.range(),
+        capture.node.start_position(),
+        capture.node.end_position(),
+    );
+
+    match node.take() {
+        Some(builder) => Ok(PendingSymbol::new(builder)),
+        None => Err(builder_error!(
+            tree_sitter_range_to_lsp_range(&capture.node.range()),
+            format!(
+                "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
+                query.capture_names()[capture_index as usize]
+            )
+        )),
+    }
+}
+
+fn create_child_node<'a>(
+    parent: &PendingSymbol,
+    url: Arc<Url>,
+    query: &Query,
+    capture: &QueryCapture,
+    capture_index: usize,
+) -> Result<PendingSymbol, Diagnostic> {
+    let node = parent
+        .get_rc()
+        .borrow()
+        .query_binder(url.clone(), &capture, &query);
+
+    match node.as_ref() {
+        Some(builder) => Ok(builder.clone()),
+        None => Err(builder_error!(
+            tree_sitter_range_to_lsp_range(&capture.node.range()),
+            format!(
+                "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
+                query.capture_names()[capture_index as usize],
+            )
+        )),
+    }
+}
+
+fn finalize_builder(
+    mut roots: Vec<PendingSymbol>,
+    errors: &mut Vec<Diagnostic>,
+    doc: &FullTextDocument,
+    ctx: &dyn WorkspaceContext,
+) -> BuilderResult {
+    let result_node = match roots.pop() {
+        Some(node) => node,
+        None => {
+            return BuilderResult {
+                item: Err(builder_error!(
+                    lsp_types::Range {
+                        start: lsp_types::Position {
+                            line: 0,
+                            character: 0,
+                        },
+                        end: lsp_types::Position {
+                            line: doc.line_count() as u32,
+                            character: 0,
+                        },
+                    },
+                    "No root node found".to_string()
+                )),
+                errors: errors.clone(),
+            }
+        }
+    };
+
+    let result: std::cell::Ref<'_, dyn AstItemBuilder> = result_node.get_rc().borrow();
+
+    let mut deferred = vec![];
+    let item = result.try_to_dyn_symbol(&mut deferred);
+
+    for item in deferred {
+        /*if let Err(err) = item.read().find(doc, ctx) {
+            errors.push(err);
+        }*/
+    }
+
+    BuilderResult {
+        item,
+        errors: errors.clone(),
+    }
 }
 
 impl<T: AstItemBuilder> Builder for T {
@@ -79,7 +172,6 @@ impl<T: AstItemBuilder> Builder for T {
 
         let mut roots = vec![];
         let mut stack: Vec<_> = vec![];
-        let mut deferred_maps: Vec<Deferred> = vec![];
 
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
@@ -90,37 +182,18 @@ impl<T: AstItemBuilder> Builder for T {
             loop {
                 match &parent {
                     None => {
-                        eprintln!(
-                            "Create root {:?}",
-                            query.capture_names()[capture_index as usize]
-                        );
-                        let mut node = Self::new(
+                        let node = match create_root_node::<T>(
                             url.clone(),
                             query,
+                            &capture,
                             capture_index,
-                            capture.node.range(),
-                            capture.node.start_position(),
-                            capture.node.end_position(),
-                        );
-
-                        let node = match node.take() {
-                            Some(builder) => PendingSymbol::new(builder),
-                            None => {
-                                errors.push(builder_error!(
-                                    tree_sitter_range_to_lsp_range(&capture.node.range()),
-                                    format!(
-                                        "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
-                                        query.capture_names()[capture_index as usize]
-                                    )
-                                ));
+                        ) {
+                            Ok(node) => node,
+                            Err(err) => {
+                                errors.push(err);
                                 break;
                             }
                         };
-                        eprintln!(
-                            "Add parent {:?} to roots",
-                            query.capture_names()[node.get_query_index()]
-                        );
-
                         roots.push(node.clone());
                         stack.push(node.clone());
                         break;
@@ -130,46 +203,26 @@ impl<T: AstItemBuilder> Builder for T {
                             &parent.get_rc().borrow().get_range(),
                             &capture.node.range(),
                         ) {
-                            let node =
-                                parent
-                                    .get_rc()
-                                    .borrow()
-                                    .query_binder(url.clone(), &capture, query);
-
-                            let node = match node.as_ref() {
-                                Some(builder) => builder,
-                                None => {
-                                    errors.push(builder_error!(
-                                            tree_sitter_range_to_lsp_range(&capture.node.range()),
-                                            format!(
-                                            "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
-                                            query.capture_names()[capture_index as usize],
-                                        )
-                                        ));
+                            let node = match create_child_node(
+                                parent,
+                                url.clone(),
+                                &query,
+                                &capture,
+                                capture_index,
+                            ) {
+                                Ok(node) => node,
+                                Err(err) => {
+                                    errors.push(err);
                                     break;
                                 }
                             };
-
-                            eprintln!(
-                                "Add {:?} to parent {:?}",
-                                query.capture_names()[node.get_query_index()],
-                                query.capture_names()[parent.get_query_index()]
-                            );
 
                             match parent.get_rc().borrow_mut().add(
                                 &query,
                                 node.clone(),
                                 &source_code,
                             ) {
-                                Ok(def) => {
-                                    if let Some(def) = def {
-                                        deferred_maps.push(Deferred {
-                                            parent: parent.clone(),
-                                            child: node.clone(),
-                                            binder: def,
-                                        })
-                                    }
-                                }
+                                Ok(_) => (),
                                 Err(err) => errors.push(err),
                             };
                             stack.push(parent.clone());
@@ -182,28 +235,7 @@ impl<T: AstItemBuilder> Builder for T {
             }
         }
 
-        deferred_maps.into_iter().for_each(|def| {
-            if let Err(err) = (def.binder)(def.parent, def.child, source_code) {
-                errors.push(err);
-            }
-        });
-
-        let result = roots.pop().unwrap();
-        let result: std::cell::Ref<'_, dyn AstItemBuilder> = result.get_rc().borrow();
-
-        let mut todo = vec![];
-        let result = result.try_to_dyn_symbol(&mut todo);
-
-        todo.iter().for_each(|item| {
-            if let Err(a) = item.read().find(doc, ctx) {
-                errors.push(a);
-            }
-        });
-
-        BuilderResult {
-            item: result,
-            errors,
-        }
+        finalize_builder(roots, &mut errors, doc, ctx)
     }
 }
 
