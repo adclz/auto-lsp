@@ -15,7 +15,7 @@ impl Session {
         let item = workspace
             .ast
             .iter()
-            .find_map(|symbol| symbol.read().find_at_offset(&offset));
+            .find_map(|symbol| symbol.read().find_at_offset(offset));
 
         match item {
             Some(item) => Ok(item.read().get_hover(doc)),

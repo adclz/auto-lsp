@@ -65,6 +65,9 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let fields = self.generate_fields();
         let methods = self.generate_ast_item_methods();
 
+        let locator = self.generate_locator_trait();
+        let parent = self.generate_parent_trait();
+
         tokens.extend(quote! {
             #(#input_attr)*
             #[derive(Clone)]
@@ -84,6 +87,8 @@ impl<'a> ToTokens for StructBuilder<'a> {
             }
 
             #(#features_others_impl)*
+            #locator
+            #parent
         });
 
         // Generate builder
@@ -144,6 +149,62 @@ impl<'a> ToTokens for StructBuilder<'a> {
     }
 }
 
+impl<'a> StructBuilder<'a> {
+    fn generate_locator_trait(&self) -> TokenStream {
+        let locator = &self.paths.locator;
+        let input_name = &self.input_name;
+        let dyn_symbol = &self.paths.dyn_symbol;
+
+        let builder = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, _, _| {
+                quote! {
+                    if let Some(symbol) = self.#name.find_at_offset(offset) {
+                       return Some(symbol);
+                    }
+                }
+            })
+            .to_token_stream();
+
+        quote! {
+            impl #locator for #input_name {
+                fn find_at_offset(&self, offset: usize) -> Option<#dyn_symbol> {
+                    if (!self.is_inside_offset(offset)) {
+                        return None;
+                    }
+
+                    #builder
+
+                    None
+                }
+            }
+        }
+    }
+}
+
+impl<'a> StructBuilder<'a> {
+    fn generate_parent_trait(&self) -> TokenStream {
+        let parent = &self.paths.parent;
+        let input_name = &self.input_name;
+        let weak_symbol = &self.paths.weak_symbol;
+
+        let builder = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, _, _| {
+                quote! {
+                    self.#name.inject_parent(parent.clone());
+                }
+            })
+            .to_token_stream();
+
+        quote! {
+            impl #parent for #input_name {
+                fn inject_parent(&mut self, parent: #weak_symbol) {
+                    #builder
+                }
+            }
+        }
+    }
+}
+
 impl<'a> BuildAstItem for StructBuilder<'a> {
     fn generate_fields(&self) -> Vec<TokenStream> {
         let symbol = &self.paths.symbol;
@@ -187,26 +248,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
     }
 
     fn generate_ast_item_methods(&self) -> TokenStream {
-        let dyn_symbol = &self.paths.dyn_symbol;
         let weak_symbol = &self.paths.weak_symbol;
-
-        let find = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, _, _| {
-                quote! {
-                    if let Some(symbol) = self.#name.try_locate_at_offset(*offset) {
-                       return Some(symbol);
-                    }
-                }
-            })
-            .to_token_stream();
-
-        let inject = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, _, _| {
-                quote! {
-                    self.#name.inject(parent.clone());
-                }
-            })
-            .to_token_stream();
 
         quote! {
             fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
@@ -223,21 +265,6 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
             fn set_parent(&mut self, parent: #weak_symbol) {
                 self.parent = Some(parent);
-            }
-
-            fn inject_parent(&mut self, parent: #weak_symbol) {
-                #inject
-            }
-
-            fn find_at_offset(&self, offset: &usize) -> Option<#dyn_symbol> {
-                // It's pointless to keep searching if the parent item is not inside the offset
-                if (!self.is_inside_offset(offset)) {
-                    return None;
-                }
-
-                #find
-
-                None
             }
         }
     }

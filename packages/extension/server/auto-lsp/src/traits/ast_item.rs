@@ -22,6 +22,8 @@ pub trait AstItem:
     + CompletionItems
     + Scope
     + Accessor
+    + Locator
+    + Parent
 {
     fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> tree_sitter::Range;
@@ -43,15 +45,12 @@ pub trait AstItem:
 
     fn get_parent(&self) -> Option<WeakSymbol>;
     fn set_parent(&mut self, parent: WeakSymbol);
-    fn inject_parent(&mut self, parent: WeakSymbol);
-
-    fn find_at_offset(&self, offset: &usize) -> Option<DynSymbol>;
 
     // Accessibility
 
-    fn is_inside_offset(&self, offset: &usize) -> bool {
+    fn is_inside_offset(&self, offset: usize) -> bool {
         let range = self.get_range();
-        range.start_byte <= *offset && *offset <= range.end_byte
+        range.start_byte <= offset && offset <= range.end_byte
     }
 
     fn is_same_text(&mut self, source_code: &[u8], range: &tree_sitter::Range) -> bool {
@@ -185,15 +184,15 @@ pub trait Accessor: IsAccessor {
     fn find(&self, doc: &FullTextDocument, ctx: &dyn WorkspaceContext) -> Result<(), Diagnostic>;
 }
 
-pub trait OffsetLocator {
-    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol>;
+pub trait Locator {
+    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol>;
 }
 
-impl OffsetLocator for DynSymbol {
-    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+impl Locator for DynSymbol {
+    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
-        if symbol.is_inside_offset(&offset) {
-            match symbol.find_at_offset(&offset) {
+        if symbol.is_inside_offset(offset) {
+            match symbol.find_at_offset(offset) {
                 Some(symbol) => return Some(symbol),
                 None => return Some(self.clone()),
             }
@@ -202,11 +201,11 @@ impl OffsetLocator for DynSymbol {
     }
 }
 
-impl<T: AstItem> OffsetLocator for Symbol<T> {
-    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+impl<T: AstItem> Locator for Symbol<T> {
+    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
-        if symbol.is_inside_offset(&offset) {
-            match symbol.find_at_offset(&offset) {
+        if symbol.is_inside_offset(offset) {
+            match symbol.find_at_offset(offset) {
                 Some(symbol) => return Some(symbol),
                 None => return Some(self.to_dyn()),
             };
@@ -215,64 +214,63 @@ impl<T: AstItem> OffsetLocator for Symbol<T> {
     }
 }
 
-impl<T: AstItem> OffsetLocator for Option<Symbol<T>> {
-    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+impl<T: AstItem> Locator for Option<Symbol<T>> {
+    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = match self.as_ref() {
             Some(symbol) => symbol,
             None => return None,
         };
-        symbol.try_locate_at_offset(offset)
+        symbol.find_at_offset(offset)
     }
 }
 
-impl<T: OffsetLocator> OffsetLocator for Vec<T> {
-    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        self.iter()
-            .find_map(|symbol| symbol.try_locate_at_offset(offset))
+impl<T: Locator> Locator for Vec<T> {
+    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+        self.iter().find_map(|symbol| symbol.find_at_offset(offset))
     }
 }
 
-impl<T: OffsetLocator> OffsetLocator for HashMap<String, T> {
-    fn try_locate_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+impl<T: Locator> Locator for HashMap<String, T> {
+    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         self.values()
-            .find_map(|symbol| symbol.try_locate_at_offset(offset))
+            .find_map(|symbol| symbol.find_at_offset(offset))
     }
 }
 
-pub trait ParentInject {
-    fn inject(&mut self, parent: WeakSymbol);
+pub trait Parent {
+    fn inject_parent(&mut self, parent: WeakSymbol);
 }
 
-impl<T: AstItem> ParentInject for Symbol<T> {
-    fn inject(&mut self, parent: WeakSymbol) {
+impl<T: AstItem> Parent for Symbol<T> {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
         self.write().set_parent(parent);
     }
 }
 
-impl ParentInject for DynSymbol {
-    fn inject(&mut self, parent: WeakSymbol) {
+impl Parent for DynSymbol {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
         self.write().set_parent(parent);
     }
 }
 
-impl<T: AstItem> ParentInject for Option<Symbol<T>> {
-    fn inject(&mut self, parent: WeakSymbol) {
+impl<T: AstItem> Parent for Option<Symbol<T>> {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
         if let Some(symbol) = self.as_mut() {
             symbol.write().set_parent(parent);
         }
     }
 }
 
-impl<T: AstItem> ParentInject for Vec<Symbol<T>> {
-    fn inject(&mut self, parent: WeakSymbol) {
+impl<T: AstItem> Parent for Vec<Symbol<T>> {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
         for symbol in self.iter_mut() {
             symbol.write().set_parent(parent.clone());
         }
     }
 }
 
-impl<T: AstItem> ParentInject for HashMap<String, Symbol<T>> {
-    fn inject(&mut self, parent: WeakSymbol) {
+impl<T: AstItem> Parent for HashMap<String, Symbol<T>> {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
         for symbol in self.values_mut() {
             symbol.write().set_parent(parent.clone());
         }

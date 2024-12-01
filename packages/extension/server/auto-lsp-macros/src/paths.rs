@@ -27,6 +27,10 @@ pub struct Paths {
     pub weak_symbol: Path,
     pub pending_symbol: Path,
     pub maybe_pending_symbol: Path,
+
+    // traits
+    pub locator: Path,
+    pub parent: Path,
 }
 
 impl Default for Paths {
@@ -71,6 +75,10 @@ impl Default for Paths {
             maybe_pending_symbol: parse_quote!(
                 auto_lsp::traits::ast_item_builder::MaybePendingSymbol
             ),
+
+            // traits
+            locator: parse_quote!(auto_lsp::traits::ast_item::Locator),
+            parent: parse_quote!(auto_lsp::traits::ast_item::Parent),
         }
     }
 }

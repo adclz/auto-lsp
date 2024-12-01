@@ -57,7 +57,7 @@ impl Session {
                         workspace
                             .ast
                             .iter()
-                            .filter_map(|x| x.read().find_at_offset(&capture.node.start_byte()))
+                            .filter_map(|x| x.read().find_at_offset(capture.node.start_byte()))
                             .for_each(|x| {
                                 x.read()
                                     .build_completion_items(&mut results, &workspace.document);

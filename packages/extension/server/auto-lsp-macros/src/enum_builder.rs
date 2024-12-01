@@ -50,6 +50,9 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let scope = self.generate_scope();
         let accessor = self.generate_accessor();
 
+        let locator = self.generate_locator();
+        let parent = self.generate_parent();
+
         let ast_item_trait = &self.paths.ast_item_trait;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
 
@@ -112,6 +115,8 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             #semantic_tokens
             #scope
             #accessor
+            #locator
+            #parent
         });
     }
 }
@@ -266,22 +271,6 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                 }
             }
 
-            fn inject_parent(&mut self, parent: #weak_symbol) {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.inject_parent(parent),
-                    )*
-                }
-            }
-
-            fn find_at_offset(&self, offset: &usize) -> Option<#dyn_symbol> {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.find_at_offset(offset),
-                    )*
-                }
-            }
-
             fn get_start_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position {
                 match self {
                     #(
@@ -295,6 +284,48 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                     #(
                         Self::#variant_names(variant) => variant.get_end_position(doc),
                     )*
+                }
+            }
+        }
+    }
+}
+
+impl<'a> EnumBuilder<'a> {
+    fn generate_locator(&self) -> TokenStream {
+        let variant_names = &self.fields.variant_names;
+        let input_name = &self.input_name;
+        let dyn_symbol = &self.paths.dyn_symbol;
+        let locator = &self.paths.locator;
+
+        quote! {
+            impl #locator for #input_name {
+                fn find_at_offset(&self, offset: usize) -> Option<#dyn_symbol> {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.find_at_offset(offset),
+                        )*
+                    }
+                }
+            }
+        }
+    }
+}
+
+impl<'a> EnumBuilder<'a> {
+    fn generate_parent(&self) -> TokenStream {
+        let variant_names = &self.fields.variant_names;
+        let input_name = &self.input_name;
+        let weak_symbol = &self.paths.weak_symbol;
+        let parent = &self.paths.parent;
+
+        quote! {
+            impl #parent for #input_name {
+                fn inject_parent(&mut self, parent: #weak_symbol) {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.inject_parent(parent),
+                        )*
+                    }
                 }
             }
         }
