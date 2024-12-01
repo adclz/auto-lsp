@@ -21,13 +21,6 @@ pub fn get_raw_type_name(ty: &Type) -> String {
                 }
             }
 
-            if type_name == "HashMap" {
-                // Get the type of values, not keys
-                if let Some(inner_type) = get_inner_type(ty, 1) {
-                    return get_raw_type_name(&inner_type);
-                }
-            }
-
             type_name
         }
         _ => panic!("Expected a type path"),
@@ -52,16 +45,6 @@ pub fn is_vec(ty: &Type) -> bool {
         if let Some(segment) = path.segments.first() {
             let type_name = segment.ident.to_string();
             return type_name == "Vec";
-        }
-    }
-    false
-}
-
-pub fn is_hashmap(ty: &Type) -> bool {
-    if let Type::Path(TypePath { path, .. }) = ty {
-        if let Some(segment) = path.segments.first() {
-            let type_name = segment.ident.to_string();
-            return type_name == "HashMap";
         }
     }
     false

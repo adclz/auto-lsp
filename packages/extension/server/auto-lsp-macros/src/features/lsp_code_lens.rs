@@ -79,7 +79,6 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
                     let field_names = &self.fields.field_names.get_field_names();
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
                     let field_option_names = &self.fields.field_option_names.get_field_names();
-                    let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
 
                     codegen.input.other_impl.push(quote! {
                         impl #code_lens_path for #input_name {
@@ -95,11 +94,6 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
                                 )*
                                 #(
                                     for field in self.#field_vec_names.iter() {
-                                        field.read().build_code_lens(acc);
-                                    };
-                                )*
-                                #(
-                                    for field in self.#field_hashmap_names.values() {
                                         field.read().build_code_lens(acc);
                                     };
                                 )*

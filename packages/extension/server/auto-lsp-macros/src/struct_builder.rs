@@ -1,8 +1,7 @@
 use crate::{
-    utilities::extract_fields::{FieldBuilder, FieldBuilderType, FieldInfoExtract, StructFields},
+    utilities::extract_fields::{FieldBuilder, FieldBuilderType, StructFields},
     BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, Paths, SymbolFeatures, ToCodeGen,
 };
-use auto_lsp::traits::queryable;
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::Attribute;
@@ -259,10 +258,6 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
                 #(#attributes)*
                 pub #name: Option<#symbol<#field_type>>
             },
-            FieldBuilderType::HashMap => quote! {
-                #(#attributes)*
-                pub #name: HashMap<String, #symbol<#field_type>>
-            },
         });
 
         fields.extend::<Vec<TokenStream>>(builder.into());
@@ -301,7 +296,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         builder.apply_all(|ty, _, name, _, _| match ty {
             FieldBuilderType::Vec => quote! { #name: Vec<#pending_symbol> },
-            FieldBuilderType::HashMap => quote! { #name: HashMap<String, #pending_symbol> },
             _ => quote! { #name: #maybe_pending_symbol },
         });
         builder.into()
@@ -313,7 +307,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let fields = FieldBuilder::new(&self.fields)
             .apply_all(|ty, _, name, _, _| match ty {
                 FieldBuilderType::Vec => quote! { #name: vec![], },
-                FieldBuilderType::HashMap => quote! { #name: std::collections::HashMap::new(), },
                 _ => quote! { #name: #maybe_pending_symbol::none(), },
             })
             .to_token_stream();

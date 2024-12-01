@@ -1,7 +1,6 @@
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::fmt::Formatter;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -240,30 +239,6 @@ where
         self.iter()
             .map(|item| item.try_downcast(check, field_name, field_range, input_name))
             .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()
-    }
-}
-
-impl<T, Y, V> TryDownCast<Y, V> for HashMap<String, T>
-where
-    T: TryDownCast<Y, V, Output = Symbol<V>>,
-    Y: AstItemBuilder,
-    V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
-{
-    type Output = HashMap<String, Symbol<V>>;
-
-    fn try_downcast(
-        &self,
-        check: &mut Vec<DynSymbol>,
-        field_name: &str,
-        field_range: lsp_types::Range,
-        input_name: &str,
-    ) -> Result<Self::Output, Diagnostic> {
-        self.iter()
-            .map(|(key, item)| {
-                item.try_downcast(check, field_name, field_range, input_name)
-                    .map(|item| (key.clone(), item))
-            })
-            .collect::<Result<HashMap<_, _>, lsp_types::Diagnostic>>()
     }
 }
 

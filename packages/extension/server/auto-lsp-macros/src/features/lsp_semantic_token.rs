@@ -85,7 +85,6 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
                     let field_names = &self.fields.field_names.get_field_names();
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
                     let field_option_names = &self.fields.field_option_names.get_field_names();
-                    let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
 
                     let modifiers = match &semantic.modifiers_fn {
                         None => quote! { 0 },
@@ -129,11 +128,6 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
                                     )*
                                     #(
                                         for field in self.#field_vec_names.iter() {
-                                            field.read().build_semantic_tokens(builder);
-                                        };
-                                    )*
-                                    #(
-                                        for field in self.#field_hashmap_names.values() {
                                             field.read().build_semantic_tokens(builder);
                                         };
                                     )*

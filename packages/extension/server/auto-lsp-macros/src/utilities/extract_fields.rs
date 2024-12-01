@@ -1,7 +1,4 @@
-use super::{
-    super::utilities::filter::{get_raw_type_name, is_option, is_vec},
-    filter::is_hashmap,
-};
+use super::super::utilities::filter::{get_raw_type_name, is_option, is_vec};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, ToTokens};
 use syn::Attribute;
@@ -26,19 +23,16 @@ pub struct StructFields {
     pub field_names: Vec<FieldInfo>,
     pub field_vec_names: Vec<FieldInfo>,
     pub field_option_names: Vec<FieldInfo>,
-    pub field_hashmap_names: Vec<FieldInfo>,
 
     // Field: [Type] -> Ident
     pub field_types_names: Vec<proc_macro2::Ident>,
     pub field_vec_types_names: Vec<proc_macro2::Ident>,
     pub field_option_types_names: Vec<proc_macro2::Ident>,
-    pub field_hashmap_types_names: Vec<proc_macro2::Ident>,
 
     // Field(Builder): Type
     pub field_builder_names: Vec<proc_macro2::Ident>,
     pub field_vec_builder_names: Vec<proc_macro2::Ident>,
     pub field_option_builder_names: Vec<proc_macro2::Ident>,
-    pub field_hashmap_builder_names: Vec<proc_macro2::Ident>,
 }
 
 impl StructFields {
@@ -47,7 +41,6 @@ impl StructFields {
         ret.extend(self.field_names.get_field_names());
         ret.extend(self.field_vec_names.get_field_names());
         ret.extend(self.field_option_names.get_field_names());
-        ret.extend(self.field_hashmap_names.get_field_names());
         ret
     }
 
@@ -56,7 +49,6 @@ impl StructFields {
         ret.extend(&self.field_types_names);
         ret.extend(&self.field_vec_types_names);
         ret.extend(&self.field_option_types_names);
-        ret.extend(&self.field_hashmap_types_names);
         ret
     }
 
@@ -65,7 +57,6 @@ impl StructFields {
         ret.extend(&self.field_builder_names);
         ret.extend(&self.field_vec_builder_names);
         ret.extend(&self.field_option_builder_names);
-        ret.extend(&self.field_hashmap_builder_names);
         ret
     }
 }
@@ -86,17 +77,14 @@ pub fn match_struct_fields(data: &syn::Data) -> StructFields {
         field_names: vec![],
         field_vec_names: vec![],
         field_option_names: vec![],
-        field_hashmap_names: vec![],
 
         field_types_names: vec![],
         field_vec_types_names: vec![],
         field_option_types_names: vec![],
-        field_hashmap_types_names: vec![],
 
         field_builder_names: vec![],
         field_vec_builder_names: vec![],
         field_option_builder_names: vec![],
-        field_hashmap_builder_names: vec![],
     };
 
     match data {
@@ -124,17 +112,6 @@ pub fn match_struct_fields(data: &syn::Data) -> StructFields {
                             .push(format_ident!("{}", get_raw_type_name(&field.ty)));
                         ret_fields
                             .field_option_builder_names
-                            .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
-                    } else if let true = is_hashmap(&field.ty) {
-                        ret_fields.field_hashmap_names.push(FieldInfo {
-                            ident: field.ident.as_ref().unwrap().clone(),
-                            attr: field.attrs.clone(),
-                        });
-                        ret_fields
-                            .field_hashmap_types_names
-                            .push(format_ident!("{}", get_raw_type_name(&field.ty)));
-                        ret_fields
-                            .field_hashmap_builder_names
                             .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
                     } else {
                         ret_fields.field_names.push(FieldInfo {
@@ -200,7 +177,6 @@ pub enum FieldBuilderType {
     Normal,
     Vec,
     Option,
-    HashMap,
 }
 
 impl<'a> FieldBuilder<'a> {
@@ -223,9 +199,6 @@ impl<'a> FieldBuilder<'a> {
         }
         if !self.fields.field_vec_names.is_empty() {
             self.apply_vec(&f);
-        }
-        if !self.fields.field_hashmap_names.is_empty() {
-            self.apply_map(&f);
         }
         self
     }
@@ -291,30 +264,6 @@ impl<'a> FieldBuilder<'a> {
             .map(|((field, field_type), field_builder)| {
                 f(
                     FieldBuilderType::Vec,
-                    &field.attr,
-                    &field.ident,
-                    &field_type,
-                    &field_builder,
-                )
-            })
-            .collect();
-        self.results.push(results);
-        self
-    }
-
-    pub fn apply_map<F>(&mut self, f: F) -> &mut Self
-    where
-        F: Fn(FieldBuilderType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
-    {
-        let results = self
-            .fields
-            .field_hashmap_names
-            .iter()
-            .zip(self.fields.field_hashmap_types_names.iter())
-            .zip(self.fields.field_hashmap_builder_names.iter())
-            .map(|((field, field_type), field_builder)| {
-                f(
-                    FieldBuilderType::HashMap,
                     &field.attr,
                     &field.ident,
                     &field_type,

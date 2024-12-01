@@ -3,10 +3,7 @@ use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{CompletionItem, Diagnostic, DocumentSymbol, Position, Range, Url};
 use parking_lot::RwLock;
-use std::{
-    collections::HashMap,
-    sync::{Arc, Weak},
-};
+use std::sync::{Arc, Weak};
 
 use super::workspace::WorkspaceContext;
 
@@ -233,13 +230,6 @@ impl<T: Locator> Locator for Vec<T> {
     }
 }
 
-impl<T: Locator> Locator for HashMap<String, T> {
-    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        self.values()
-            .find_map(|symbol| symbol.find_at_offset(offset))
-    }
-}
-
 pub trait Parent {
     fn inject_parent(&mut self, parent: WeakSymbol);
 }
@@ -267,14 +257,6 @@ impl<T: AstItem> Parent for Option<Symbol<T>> {
 impl<T: AstItem> Parent for Vec<Symbol<T>> {
     fn inject_parent(&mut self, parent: WeakSymbol) {
         for symbol in self.iter_mut() {
-            symbol.write().set_parent(parent.clone());
-        }
-    }
-}
-
-impl<T: AstItem> Parent for HashMap<String, Symbol<T>> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        for symbol in self.values_mut() {
             symbol.write().set_parent(parent.clone());
         }
     }
