@@ -298,9 +298,9 @@ impl AddSymbol for Vec<PendingSymbol> {
         &mut self,
         query_name: &str,
         node: PendingSymbol,
-        range: lsp_types::Range,
-        parent_name: &str,
-        field_name: &str,
+        _range: lsp_types::Range,
+        _parent_name: &str,
+        _field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
         if Y::QUERY_NAMES.contains(&query_name) {
             self.push(node);

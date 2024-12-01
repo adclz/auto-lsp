@@ -1,7 +1,4 @@
-use auto_lsp::traits::ast_item::AstItem;
-use auto_lsp::{
-    builders::semantic_tokens::SemanticTokensBuilder, traits::ast_item::SemanticTokens,
-};
+use auto_lsp::{ast_item::SemanticTokens, semantic_tokens::SemanticTokensBuilder};
 
 use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 

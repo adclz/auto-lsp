@@ -1,12 +1,4 @@
-use std::sync::{Arc, RwLock};
-
-use auto_lsp::{
-    macros::ast_builder::AstBuilder,
-    traits::{
-        ast_item::{AstItem, DynSymbol},
-        builders::BuilderFn,
-    },
-};
+use auto_lsp::{ast_item::DynSymbol, builders::BuilderFn};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Diagnostic;
 use tree_sitter::Tree;

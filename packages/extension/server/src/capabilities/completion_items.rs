@@ -1,4 +1,4 @@
-use auto_lsp::traits::ast_item::{AstItem, CompletionItems};
+use auto_lsp::ast_item::{AstItem, CompletionItems};
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind, Position, Range};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCursor};

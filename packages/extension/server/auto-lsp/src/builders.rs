@@ -1,13 +1,28 @@
+use crate::ast_item::{AstItem, DynSymbol};
+use crate::ast_item_builder::{AstItemBuilder, PendingSymbol};
 use crate::builder_error;
-use crate::traits::ast_item::{AstItem, DynSymbol};
-use crate::traits::ast_item_builder::{AstItemBuilder, PendingSymbol};
-use crate::traits::workspace::WorkspaceContext;
+use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::sync::Arc;
 use std::sync::{RwLock, Weak};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCapture};
+
+#[macro_export]
+macro_rules! builder_error {
+    ($range: expr, $text: expr) => {
+        lsp_types::Diagnostic::new(
+            $range,
+            Some(lsp_types::DiagnosticSeverity::ERROR),
+            None,
+            None,
+            $text.into(),
+            None,
+            None,
+        )
+    };
+}
 
 pub type BuilderFn = fn(
     ctx: &dyn WorkspaceContext,

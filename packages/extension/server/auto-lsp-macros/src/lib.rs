@@ -123,14 +123,14 @@ pub fn derive_helper_attr(item: TokenStream) -> TokenStream {
 
     TokenStream::from(match get_key_helper(&data_struct) {
         None => quote! {
-            impl auto_lsp::traits::key::Key for #builder {
+            impl auto_lsp::key::Key for #builder {
                 fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
                     self.get_text(source_code)
                 }
             }
         },
         Some(key_field_ident) => quote! {
-            impl auto_lsp::traits::key::Key for #builder {
+            impl auto_lsp::key::Key for #builder {
                 fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
                     self.#key_field_ident.as_ref().expect(&format!("Key {} is not present on {}", stringify!(#key_field_ident), stringify!(#builder))).get_rc().borrow().get_text(source_code)
                 }

@@ -409,11 +409,12 @@ impl<'a> EnumBuilder<'a> {
     fn generate_semantic_tokens(&self) -> TokenStream {
         let variant_names = &self.fields.variant_names;
         let input_name = &self.input_name;
+        let semangic_tokens_builder = &self.paths.semantic_tokens_builder;
         let semantic_tokens_path = &self.paths.semantic_tokens_trait;
 
         quote! {
             impl #semantic_tokens_path for #input_name {
-                fn build_semantic_tokens(&self, builder: &mut auto_lsp::builders::semantic_tokens::SemanticTokensBuilder) {
+                fn build_semantic_tokens(&self, builder: &mut #semangic_tokens_builder) {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.build_semantic_tokens(builder),
@@ -468,7 +469,7 @@ impl<'a> EnumBuilder<'a> {
         }
 
         impl #accessor_trait for #input_name {
-            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::traits::workspace::WorkspaceContext) -> Result<(), lsp_types::Diagnostic> {
+            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<(), lsp_types::Diagnostic> {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.find(doc, ctx),

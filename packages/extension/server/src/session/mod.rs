@@ -4,7 +4,7 @@ use std::{
     sync::{Arc, RwLock, Weak},
 };
 
-use auto_lsp::traits::{ast_item::AstItem, workspace::WorkspaceContext};
+use auto_lsp::{ast_item::AstItem, workspace::WorkspaceContext};
 use lsp_server::Connection;
 use lsp_types::Url;
 use streaming_iterator::StreamingIterator;

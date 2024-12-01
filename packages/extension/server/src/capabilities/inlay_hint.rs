@@ -1,6 +1,6 @@
 use lsp_types::{InlayHint, InlayHintParams};
 
-use auto_lsp::traits::ast_item::AstItem;
+use auto_lsp::ast_item::AstItem;
 
 use crate::session::Session;
 

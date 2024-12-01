@@ -1,4 +1,4 @@
-use crate::builders::semantic_tokens::SemanticTokensBuilder;
+use crate::semantic_tokens::SemanticTokensBuilder;
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{CompletionItem, Diagnostic, DocumentSymbol, Position, Range, Url};
