@@ -29,6 +29,7 @@ pub struct Paths {
     pub maybe_pending_symbol: Path,
 
     // traits
+    pub queryable: Path,
     pub locator: Path,
     pub parent: Path,
 }
@@ -77,6 +78,7 @@ impl Default for Paths {
             ),
 
             // traits
+            queryable: parse_quote!(auto_lsp::traits::queryable::Queryable),
             locator: parse_quote!(auto_lsp::traits::ast_item::Locator),
             parent: parse_quote!(auto_lsp::traits::ast_item::Parent),
         }

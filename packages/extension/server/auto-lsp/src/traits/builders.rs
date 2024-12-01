@@ -59,6 +59,10 @@ pub trait Finder {
     fn find_reference(&self, doc: &FullTextDocument) -> Option<Weak<RwLock<dyn AstItem>>>;
 }
 
+pub fn g(o: &Option<u8>) {
+    o.expect(&format!("Not a builder! {:?}", 8));
+}
+
 impl<T: AstItemBuilder> Builder for T {
     fn builder(
         ctx: &dyn WorkspaceContext,
@@ -86,9 +90,21 @@ impl<T: AstItemBuilder> Builder for T {
             loop {
                 match &parent {
                     None => {
-                        let node = T::static_query_binder(url.clone(), &capture, &query);
-                        let node = match node.as_ref() {
-                            Some(builder) => builder,
+                        eprintln!(
+                            "Create root {:?}",
+                            query.capture_names()[capture_index as usize]
+                        );
+                        let mut node = Self::new(
+                            url.clone(),
+                            query,
+                            capture_index,
+                            capture.node.range(),
+                            capture.node.start_position(),
+                            capture.node.end_position(),
+                        );
+
+                        let node = match node.take() {
+                            Some(builder) => PendingSymbol::new(builder),
                             None => {
                                 errors.push(builder_error!(
                                     tree_sitter_range_to_lsp_range(&capture.node.range()),
@@ -100,6 +116,11 @@ impl<T: AstItemBuilder> Builder for T {
                                 break;
                             }
                         };
+                        eprintln!(
+                            "Add parent {:?} to roots",
+                            query.capture_names()[node.get_query_index()]
+                        );
+
                         roots.push(node.clone());
                         stack.push(node.clone());
                         break;
@@ -128,6 +149,12 @@ impl<T: AstItemBuilder> Builder for T {
                                     break;
                                 }
                             };
+
+                            eprintln!(
+                                "Add {:?} to parent {:?}",
+                                query.capture_names()[node.get_query_index()],
+                                query.capture_names()[parent.get_query_index()]
+                            );
 
                             match parent.get_rc().borrow_mut().add(
                                 &query,
@@ -165,7 +192,7 @@ impl<T: AstItemBuilder> Builder for T {
         let result: std::cell::Ref<'_, dyn AstItemBuilder> = result.get_rc().borrow();
 
         let mut todo = vec![];
-        let result = result.try_into_item(&mut todo);
+        let result = result.try_to_dyn_symbol(&mut todo);
 
         todo.iter().for_each(|item| {
             if let Err(a) = item.read().find(doc, ctx) {

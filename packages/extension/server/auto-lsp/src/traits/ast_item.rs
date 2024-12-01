@@ -128,6 +128,10 @@ impl DynSymbol {
     pub fn to_weak(&self) -> WeakSymbol {
         WeakSymbol::new(self)
     }
+
+    pub fn downcast<T: AstItem + Clone>(&self) -> Option<Symbol<T>> {
+        Some(Symbol::new(self.0.read().downcast_ref::<T>().cloned()?))
+    }
 }
 
 #[derive(Clone)]

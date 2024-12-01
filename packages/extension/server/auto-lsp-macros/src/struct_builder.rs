@@ -2,6 +2,7 @@ use crate::{
     utilities::extract_fields::{FieldBuilder, FieldBuilderType, FieldInfoExtract, StructFields},
     BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, Paths, SymbolFeatures, ToCodeGen,
 };
+use auto_lsp::traits::queryable;
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::Attribute;
@@ -67,6 +68,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
         let locator = self.generate_locator_trait();
         let parent = self.generate_parent_trait();
+        let queryable = self.generate_queryable();
 
         tokens.extend(quote! {
             #(#input_attr)*
@@ -89,6 +91,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
             #(#features_others_impl)*
             #locator
             #parent
+            #queryable
         });
 
         // Generate builder
@@ -106,7 +109,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let try_from_builder = &self.paths.try_from_builder;
 
         let into = quote! {
-            fn try_into_item(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
+            fn try_to_dyn_symbol(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
                 use #try_from_builder;
 
                 let item = #input_name::try_from_builder(self, check)?;
@@ -146,6 +149,25 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
             #try_from
         });
+    }
+}
+
+impl<'a> StructBuilder<'a> {
+    fn generate_queryable(&self) -> TokenStream {
+        let query_name = self.query_name;
+        let input_name = &self.input_name;
+        let input_builder_name = &self.input_buider_name;
+        let queryable = &self.paths.queryable;
+
+        quote! {
+            impl #queryable for #input_name {
+                const QUERY_NAMES: &'static [&'static str] = &[#query_name];
+            }
+
+            impl #queryable for #input_builder_name {
+                const QUERY_NAMES: &'static [&'static str] = &[#query_name];
+            }
+        }
     }
 }
 
@@ -330,10 +352,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         };
 
         quote! {
-            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
-                #query_binder
-            }
-
             fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
                 #query_binder
             }
@@ -342,82 +360,34 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
     fn generate_add(&self) -> TokenStream {
         let pending_symbol = &self.paths.pending_symbol;
-        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
 
         let deferred_closure = &self.paths.deferred_closure;
 
         let input_builder_name = &self.input_buider_name;
-        let field_names = &self.fields.field_names.get_field_names();
-        let field_option_names = &self.fields.field_option_names.get_field_names();
-        let field_vec_names = &self.fields.field_vec_names.get_field_names();
-        let field_hashmap_names = &self.fields.field_hashmap_names.get_field_names();
 
-        let field_types_names = &self.fields.field_types_names;
-        let field_vec_types_names = &self.fields.field_vec_types_names;
-        let field_option_types_names = &self.fields.field_option_types_names;
-        let field_hashmap_types_names = &self.fields.field_hashmap_types_names;
+        let builder = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, field_type, _| {
+                quote! {
+                    node = match self.#name.add::<#field_type>(query_name, node, range, "", "")? {
+                        Some(a) => a,
+                        None => return Ok(None),
+                    };
 
-        let field_hashmap_builder_names = &self.fields.field_hashmap_builder_names;
+                }
+            })
+            .into_token_stream();
 
         quote! {
             fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
                 Result<Option<#deferred_closure>, lsp_types::Diagnostic> {
 
                 let query_name = query.capture_names()[node.get_query_index()];
-                #(
-                    if #field_types_names::QUERY_NAMES.contains(&query_name) {
-                        match self.#field_names.as_ref() {
-                            Some(_) => return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_names), stringify!(#input_builder_name)))),
-                            None => self.#field_names = #maybe_pending_symbol::from_pending(node.clone())
-                        }
-                        return Ok(None)
-                    };
-                )*
-                #(
-                    if #field_option_types_names::QUERY_NAMES.contains(&query_name) {
-                        if self.#field_option_names.is_some() {
-                            return Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Field {:?} is already present in {:?}", stringify!(#field_option_names), stringify!(#input_builder_name))));
-                        }
-                        self.#field_option_names = #maybe_pending_symbol::from_pending(node.clone());
-                        return Ok(None);
-                    };
-                )*
-                #(
-                    if #field_vec_types_names::QUERY_NAMES.contains(&query_name) {
-                        self.#field_vec_names.push(node.clone());
-                        return Ok(None);
-                    };
-                )*
-                #(
-                    if #field_hashmap_types_names::QUERY_NAMES.contains(&query_name) {
-                        return Ok(Some(Box::new(|
-                                parent: #pending_symbol,
-                                node: #pending_symbol,
-                                source_code: &[u8]
-                            | {
-                                let field = node.get_rc().borrow();
-                                let field = field.downcast_ref::<#field_hashmap_builder_names>().expect("Not a builder!");
-                                let key = field.get_key(source_code);
+                let range = self.get_lsp_range();
+                let mut node = node;
 
-                                let mut parent = parent.get_rc().borrow_mut();
-                                let parent = parent.downcast_mut::<#input_builder_name>().expect("Not the builder!");
+                #builder
 
-                                if parent.#field_hashmap_names.contains_key(key) {
-                                    return Err(auto_lsp::builder_error!(
-                                        field.get_lsp_range(),
-                                        format!(
-                                            "Field {:?} is already declared in {:?}",
-                                            key,
-                                            stringify!(#input_builder_name)
-                                        )
-                                    ));
-                                };
-                                parent.#field_hashmap_names.insert(key.into(), node.clone());
-                                Ok(())
-                        })));
-                    };
-                )*
-            Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#input_builder_name))))
+                Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#input_builder_name))))
             }
         }
     }

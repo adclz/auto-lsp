@@ -11,6 +11,7 @@ use crate::builder_error;
 
 use super::ast_item::{AstItem, DynSymbol, Symbol};
 use super::convert::{TryFromBuilder, TryIntoBuilder};
+use super::queryable::Queryable;
 
 pub trait AstItemBuilder: Downcast {
     fn new(
@@ -23,17 +24,6 @@ pub trait AstItemBuilder: Downcast {
     ) -> Option<Self>
     where
         Self: Sized;
-
-    fn static_query_binder(
-        url: Arc<Url>,
-        capture: &tree_sitter::QueryCapture,
-        query: &tree_sitter::Query,
-    ) -> MaybePendingSymbol
-    where
-        Self: Sized;
-
-    fn try_into_item(&self, check: &mut Vec<DynSymbol>)
-        -> Result<DynSymbol, lsp_types::Diagnostic>;
 
     fn query_binder(
         &self,
@@ -48,6 +38,11 @@ pub trait AstItemBuilder: Downcast {
         node: PendingSymbol,
         source_code: &[u8],
     ) -> Result<Option<DeferredClosure>, Diagnostic>;
+
+    fn try_to_dyn_symbol(
+        &self,
+        check: &mut Vec<DynSymbol>,
+    ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
     fn get_url(&self) -> Arc<Url>;
 
@@ -269,5 +264,81 @@ where
                     .map(|item| (key.clone(), item))
             })
             .collect::<Result<HashMap<_, _>, lsp_types::Diagnostic>>()
+    }
+}
+
+pub trait Constructor<T: AstItemBuilder + Queryable> {
+    fn new(
+        url: Arc<Url>,
+        query: &tree_sitter::Query,
+        query_index: usize,
+        range: tree_sitter::Range,
+        start_position: tree_sitter::Point,
+        end_position: tree_sitter::Point,
+    ) -> Option<T> {
+        let query_name = query.capture_names()[query_index];
+        if T::QUERY_NAMES.contains(&query_name) {
+            T::new(url, query, query_index, range, start_position, end_position)
+        } else {
+            None
+        }
+    }
+}
+
+pub trait AddSymbol {
+    fn add<Y: Queryable>(
+        &mut self,
+        query_name: &str,
+        node: PendingSymbol,
+        range: lsp_types::Range,
+        parent_name: &str,
+        field_name: &str,
+    ) -> Result<Option<PendingSymbol>, Diagnostic>;
+}
+
+impl AddSymbol for MaybePendingSymbol {
+    fn add<Y: Queryable>(
+        &mut self,
+        query_name: &str,
+        node: PendingSymbol,
+        range: lsp_types::Range,
+        parent_name: &str,
+        field_name: &str,
+    ) -> Result<Option<PendingSymbol>, Diagnostic> {
+        if Y::QUERY_NAMES.contains(&query_name) {
+            match self.0 {
+                Some(_) => {
+                    return Err(builder_error!(
+                        range,
+                        format!(
+                            "Field {:?} already set in {:?} for {:?}",
+                            field_name, parent_name, query_name
+                        )
+                    ))
+                }
+                None => {
+                    self.0 = Some(node);
+                    return Ok(None);
+                }
+            }
+        }
+        Ok(Some(node))
+    }
+}
+
+impl AddSymbol for Vec<PendingSymbol> {
+    fn add<Y: Queryable>(
+        &mut self,
+        query_name: &str,
+        node: PendingSymbol,
+        range: lsp_types::Range,
+        parent_name: &str,
+        field_name: &str,
+    ) -> Result<Option<PendingSymbol>, Diagnostic> {
+        if Y::QUERY_NAMES.contains(&query_name) {
+            self.push(node);
+            return Ok(None);
+        }
+        Ok(Some(node))
     }
 }

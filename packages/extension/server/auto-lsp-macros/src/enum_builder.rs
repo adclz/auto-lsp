@@ -61,7 +61,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let try_from_builder = &self.paths.try_from_builder;
 
         let into = quote! {
-            fn try_into_item(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
+            fn try_to_dyn_symbol(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
                 use #try_from_builder;
 
                 let item = #name::try_from_builder(self, check)?;
@@ -154,23 +154,7 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
     fn generate_query_binder(&self) -> TokenStream {
         let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
 
-        let variant_types = &self.fields.variant_types_names;
-        let variant_builders = &self.fields.variant_builder_names;
-
         quote! {
-            fn static_query_binder(url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
-                let query_name = query.capture_names()[capture.index as usize];
-                #(
-                    if #variant_types::QUERY_NAMES.contains(&query_name)  {
-                        match #variant_builders::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
-                            Some(builder) => return #maybe_pending_symbol::new(builder),
-                            None => return #maybe_pending_symbol::none(),
-                        }
-                    };
-                )*
-                #maybe_pending_symbol::none()
-            }
-
             fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
                 self.unique_field.get_rc().borrow().query_binder(url, capture, query)
             }
