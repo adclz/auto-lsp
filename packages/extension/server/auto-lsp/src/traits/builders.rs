@@ -1,7 +1,7 @@
-use auto_lsp::builder_error;
-use auto_lsp::traits::ast_item::{AstItem, DynSymbol};
-use auto_lsp::traits::ast_item_builder::{AstItemBuilder, PendingSymbol};
-use auto_lsp::traits::workspace::WorkspaceContext;
+use crate::builder_error;
+use crate::traits::ast_item::{AstItem, DynSymbol};
+use crate::traits::ast_item_builder::{AstItemBuilder, PendingSymbol};
+use crate::traits::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::sync::Arc;

@@ -216,11 +216,10 @@ impl<T: AstItem> Locator for Symbol<T> {
 
 impl<T: AstItem> Locator for Option<Symbol<T>> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        let symbol = match self.as_ref() {
-            Some(symbol) => symbol,
-            None => return None,
-        };
-        symbol.find_at_offset(offset)
+        match self.as_ref() {
+            Some(symbol) => symbol.find_at_offset(offset),
+            None => None,
+        }
     }
 }
 

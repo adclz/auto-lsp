@@ -3,6 +3,7 @@ use std::error::Error;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
+use auto_lsp::traits::builders::{Builder, BuilderFn};
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     CodeLensRequest, Completion, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest,
@@ -16,7 +17,6 @@ use lsp_types::{
 };
 use session::cst_parser::CstParser;
 use session::dispatchers::{NotificationDispatcher, RequestDispatcher};
-use session::workspace::tree_sitter_extend::builders::{Builder, BuilderFn};
 use session::Session;
 
 use crossbeam_channel::select;
