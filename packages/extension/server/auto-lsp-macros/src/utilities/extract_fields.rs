@@ -222,8 +222,8 @@ impl<'a> FieldBuilder<'a> {
                     &field_builder,
                 )
             })
-            .collect();
-        self.results.push(results);
+            .collect::<Vec<_>>();
+        self.results.extend(results);
         self
     }
 
@@ -246,8 +246,8 @@ impl<'a> FieldBuilder<'a> {
                     &field_builder,
                 )
             })
-            .collect();
-        self.results.push(results);
+            .collect::<Vec<_>>();
+        self.results.extend(results);
         self
     }
 
@@ -270,17 +270,15 @@ impl<'a> FieldBuilder<'a> {
                     &field_builder,
                 )
             })
-            .collect();
-        self.results.push(results);
+            .collect::<Vec<_>>();
+        self.results.extend(results);
         self
     }
 }
 
 impl ToTokens for FieldBuilder<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.results.iter().for_each(|result| {
-            tokens.extend(result.clone());
-        });
+        tokens.extend(self.results.clone());
     }
 }
 
