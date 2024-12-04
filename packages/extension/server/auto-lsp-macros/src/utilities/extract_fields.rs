@@ -1,4 +1,7 @@
+use crate::StructHelpers;
+
 use super::super::utilities::filter::{get_raw_type_name, is_option, is_vec};
+use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, ToTokens};
 use syn::Attribute;
@@ -72,7 +75,7 @@ pub struct EnumFields {
     pub variant_builder_names: Vec<proc_macro2::Ident>,
 }
 
-pub fn match_struct_fields(data: &syn::Data) -> StructFields {
+pub fn match_struct_fields(data: &ast::Data<util::Ignored, StructHelpers>) -> StructFields {
     let mut ret_fields = StructFields {
         field_names: vec![],
         field_vec_names: vec![],
@@ -87,50 +90,47 @@ pub fn match_struct_fields(data: &syn::Data) -> StructFields {
         field_option_builder_names: vec![],
     };
 
-    match data {
-        syn::Data::Struct(ref struct_data) => match &struct_data.fields {
-            syn::Fields::Named(fields) => {
-                fields.named.iter().for_each(|field| {
-                    if let true = is_vec(&field.ty) {
-                        ret_fields.field_vec_names.push(FieldInfo {
-                            ident: field.ident.as_ref().unwrap().clone(),
-                            attr: field.attrs.clone(),
-                        });
-                        ret_fields
-                            .field_vec_types_names
-                            .push(format_ident!("{}", get_raw_type_name(&field.ty)));
-                        ret_fields
-                            .field_vec_builder_names
-                            .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
-                    } else if let true = is_option(&field.ty) {
-                        ret_fields.field_option_names.push(FieldInfo {
-                            ident: field.ident.as_ref().unwrap().clone(),
-                            attr: field.attrs.clone(),
-                        });
-                        ret_fields
-                            .field_option_types_names
-                            .push(format_ident!("{}", get_raw_type_name(&field.ty)));
-                        ret_fields
-                            .field_option_builder_names
-                            .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
-                    } else {
-                        ret_fields.field_names.push(FieldInfo {
-                            ident: field.ident.as_ref().unwrap().clone(),
-                            attr: field.attrs.clone(),
-                        });
-                        ret_fields
-                            .field_types_names
-                            .push(format_ident!("{}", get_raw_type_name(&field.ty)));
-                        ret_fields
-                            .field_builder_names
-                            .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
-                    }
+    data.as_ref()
+        .take_struct()
+        .unwrap()
+        .fields
+        .iter()
+        .for_each(|field| {
+            if let true = is_vec(&field.ty) {
+                ret_fields.field_vec_names.push(FieldInfo {
+                    ident: field.ident.as_ref().unwrap().clone(),
+                    attr: vec![],
                 });
+                ret_fields
+                    .field_vec_types_names
+                    .push(format_ident!("{}", get_raw_type_name(&field.ty)));
+                ret_fields
+                    .field_vec_builder_names
+                    .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
+            } else if let true = is_option(&field.ty) {
+                ret_fields.field_option_names.push(FieldInfo {
+                    ident: field.ident.as_ref().unwrap().clone(),
+                    attr: vec![],
+                });
+                ret_fields
+                    .field_option_types_names
+                    .push(format_ident!("{}", get_raw_type_name(&field.ty)));
+                ret_fields
+                    .field_option_builder_names
+                    .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
+            } else {
+                ret_fields.field_names.push(FieldInfo {
+                    ident: field.ident.as_ref().unwrap().clone(),
+                    attr: vec![],
+                });
+                ret_fields
+                    .field_types_names
+                    .push(format_ident!("{}", get_raw_type_name(&field.ty)));
+                ret_fields
+                    .field_builder_names
+                    .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
             }
-            _ => panic!("This proc macro only works with struct"),
-        },
-        _ => panic!("This proc macro only works with struct"),
-    };
+        });
     ret_fields
 }
 

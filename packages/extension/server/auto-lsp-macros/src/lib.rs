@@ -45,28 +45,28 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     // Parse args
 
-    let attr_args = match NestedMeta::parse_meta_list(args.into()) {
+    let attr_meta = match NestedMeta::parse_meta_list(args.into()) {
         Ok(v) => v,
         Err(e) => return e.into_compile_error().into(),
     };
 
-    let attributes = match UserFeatures::from_list(&attr_args) {
+    let attributes = match UserFeatures::from_list(&attr_meta) {
         Ok(v) => v,
         Err(e) => return e.write_errors().into(),
     };
 
     // Parse input
 
-    let mut input: DeriveInput = syn::parse_macro_input!(input);
+    let input: DeriveInput = syn::parse_macro_input!(input);
 
-    let mut args = match StructInput::from_derive_input(&input) {
+    let derive_input = match StructInput::from_derive_input(&input) {
         Ok(v) => v,
         Err(e) => {
             return e.write_errors().into();
         }
     };
 
-    if !args.data.is_struct() {
+    if !derive_input.data.is_struct() {
         return syn::Error::new_spanned(input, "Expected a struct")
             .to_compile_error()
             .into();
@@ -75,7 +75,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_name = &input.ident;
     let input_builder_name = format_ident!("{}Builder", input_name);
 
-    let fields = match_struct_fields(&input.data);
+    let fields = match_struct_fields(&derive_input.data);
     let query_name = attributes.query_name;
     let mut tokens = proc_macro2::TokenStream::new();
 
@@ -83,7 +83,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
     match attributes.kind {
         AstStructKind::Accessor => StructBuilder::new(
             None,
-            &args.data,
+            &derive_input.data,
             &input_attr,
             &input_name,
             &input_builder_name,
@@ -95,7 +95,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         .to_tokens(&mut tokens),
         AstStructKind::Symbol(symbol_features) => StructBuilder::new(
             Some(&symbol_features),
-            &args.data,
+            &derive_input.data,
             &input_attr,
             &input_name,
             &input_builder_name,
