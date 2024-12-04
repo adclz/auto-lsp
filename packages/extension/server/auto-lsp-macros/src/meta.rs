@@ -1,12 +1,32 @@
-use syn::Path;
+use syn::{Ident, Path, Type};
 
 use crate::features::{
-    lsp_code_lens::CodeLensFeature, lsp_completion_item::CompletionItemFeature,
-    lsp_document_symbol::DocumentSymbolFeature, lsp_hover_info::HoverFeature,
-    lsp_inlay_hint::InlayHintFeature, lsp_semantic_token::SemanticTokenFeature,
-    scope::ScopeFeature,
+    duplicate::DuplicateCheck, lsp_code_lens::CodeLensFeature,
+    lsp_completion_item::CompletionItemFeature, lsp_document_symbol::DocumentSymbolFeature,
+    lsp_hover_info::HoverFeature, lsp_inlay_hint::InlayHintFeature,
+    lsp_semantic_token::SemanticTokenFeature, scope::ScopeFeature,
 };
-use darling::FromMeta;
+use darling::{ast, util, FromDeriveInput, FromField, FromMeta};
+
+#[derive(Debug, FromDeriveInput)]
+pub struct StructInput {
+    pub data: ast::Data<util::Ignored, StructHelpers>,
+}
+
+#[derive(Debug, FromMeta)]
+pub struct UserFeatures {
+    pub query_name: String,
+    pub kind: AstStructKind,
+}
+
+#[derive(FromField, Debug)]
+#[darling(attributes(ast))]
+pub struct StructHelpers {
+    pub ident: Option<Ident>,
+    pub ty: Type,
+    #[darling(default)]
+    pub dup: Option<DuplicateCheck>,
+}
 
 #[derive(Debug, FromMeta)]
 pub enum Feature<T>
@@ -15,12 +35,6 @@ where
 {
     User,
     CodeGen(T),
-}
-
-#[derive(Debug, FromMeta)]
-pub struct AstStruct {
-    pub query_name: String,
-    pub kind: AstStructKind,
 }
 
 #[derive(Debug, FromMeta)]

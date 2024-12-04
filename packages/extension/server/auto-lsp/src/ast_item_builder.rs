@@ -1,6 +1,8 @@
 use downcast_rs::{impl_downcast, Downcast};
+use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
+use std::collections::{hash_map, HashMap, HashSet};
 use std::fmt::Formatter;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -183,9 +185,11 @@ where
             ))?
             .try_into_builder(check)?;
         let arc = Symbol::new(item);
-        if *arc.read().is_accessor() {
+        let read = arc.read();
+        if read.must_check() {
             check.push(arc.to_dyn());
         }
+        drop(read);
         arc.write().set_parent(arc.to_weak());
         Ok(arc)
     }

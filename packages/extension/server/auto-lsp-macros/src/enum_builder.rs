@@ -52,6 +52,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
 
         let locator = self.generate_locator();
         let parent = self.generate_parent();
+        let dup = self.generate_duplicate();
 
         let ast_item_trait = &self.paths.ast_item_trait;
         let ast_item_builder = &self.paths.ast_item_builder_trait;
@@ -117,6 +118,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             #accessor
             #locator
             #parent
+            #dup
         });
     }
 }
@@ -268,6 +270,35 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                         Self::#variant_names(variant) => variant.get_end_position(doc),
                     )*
                 }
+            }
+        }
+    }
+}
+
+impl<'a> EnumBuilder<'a> {
+    fn generate_duplicate(&self) -> TokenStream {
+        let variant_names = &self.fields.variant_names;
+        let input_name = &self.input_name;
+        let check_duplicate = &self.paths.check_duplicate;
+
+        quote! {
+            impl #check_duplicate for #input_name {
+                fn must_check(&self) -> bool {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.must_check(),
+                        )*
+                    }
+                }
+
+                fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.check(doc, diagnostics),
+                        )*
+                    }
+                }
+
             }
         }
     }

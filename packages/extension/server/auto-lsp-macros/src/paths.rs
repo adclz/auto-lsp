@@ -13,6 +13,7 @@ pub struct Paths {
     pub queryable: Path,
     pub locator: Path,
     pub parent: Path,
+    pub check_duplicate: Path,
 
     pub ast_item_trait: Path,
     pub ast_item_builder_trait: Path,
@@ -45,6 +46,7 @@ impl Default for Paths {
             queryable: parse_quote!(auto_lsp::queryable::Queryable),
             locator: parse_quote!(auto_lsp::ast_item::Locator),
             parent: parse_quote!(auto_lsp::ast_item::Parent),
+            check_duplicate: parse_quote!(auto_lsp::ast_item::CheckDuplicate),
             ast_item_trait: parse_quote!(auto_lsp::ast_item::AstItem),
             ast_item_builder_trait: parse_quote!(auto_lsp::ast_item_builder::AstItemBuilder),
             code_lens_trait: parse_quote!(auto_lsp::ast_item::CodeLens),

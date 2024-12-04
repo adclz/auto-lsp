@@ -2,6 +2,7 @@
 
 extern crate proc_macro;
 
+use darling::FromDeriveInput;
 use darling::{ast::NestedMeta, FromMeta};
 use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
@@ -42,29 +43,47 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 
 #[proc_macro_attribute]
 pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
+    // Parse args
+
     let attr_args = match NestedMeta::parse_meta_list(args.into()) {
         Ok(v) => v,
         Err(e) => return e.into_compile_error().into(),
     };
 
-    let args = match AstStruct::from_list(&attr_args) {
+    let attributes = match UserFeatures::from_list(&attr_args) {
         Ok(v) => v,
         Err(e) => return e.write_errors().into(),
     };
 
-    let input = parse_macro_input!(input as DeriveInput);
+    // Parse input
+
+    let mut input: DeriveInput = syn::parse_macro_input!(input);
+
+    let mut args = match StructInput::from_derive_input(&input) {
+        Ok(v) => v,
+        Err(e) => {
+            return e.write_errors().into();
+        }
+    };
+
+    if !args.data.is_struct() {
+        return syn::Error::new_spanned(input, "Expected a struct")
+            .to_compile_error()
+            .into();
+    }
 
     let input_name = &input.ident;
     let input_builder_name = format_ident!("{}Builder", input_name);
 
     let fields = match_struct_fields(&input.data);
-    let query_name = args.query_name;
+    let query_name = attributes.query_name;
     let mut tokens = proc_macro2::TokenStream::new();
 
     let input_attr = input.attrs;
-    match args.kind {
+    match attributes.kind {
         AstStructKind::Accessor => StructBuilder::new(
             None,
+            &args.data,
             &input_attr,
             &input_name,
             &input_builder_name,
@@ -76,6 +95,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
         .to_tokens(&mut tokens),
         AstStructKind::Symbol(symbol_features) => StructBuilder::new(
             Some(&symbol_features),
+            &args.data,
             &input_attr,
             &input_name,
             &input_builder_name,
@@ -101,59 +121,4 @@ pub fn ast_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     EnumBuilder::new(&input_name, &input_builder_name, &fields, &*PATHS).to_tokens(&mut tokens);
     tokens.into()
-}
-
-#[proc_macro_derive(KeySet, attributes(key))]
-pub fn derive_helper_attr(item: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(item as DeriveInput);
-
-    let struct_name = &input.ident;
-
-    // Ensure the input is a struct
-    let data_struct = match input.data {
-        syn::Data::Struct(ref data) => data,
-        _ => {
-            return syn::Error::new_spanned(input, "Expected a struct")
-                .to_compile_error()
-                .into()
-        }
-    };
-
-    let builder = format_ident!("{}Builder", struct_name);
-
-    TokenStream::from(match get_key_helper(&data_struct) {
-        None => quote! {
-            impl auto_lsp::key::Key for #builder {
-                fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
-                    self.get_text(source_code)
-                }
-            }
-        },
-        Some(key_field_ident) => quote! {
-            impl auto_lsp::key::Key for #builder {
-                fn get_key<'a>(&self, source_code: &'a [u8]) -> &'a str {
-                    self.#key_field_ident.as_ref().expect(&format!("Key {} is not present on {}", stringify!(#key_field_ident), stringify!(#builder))).get_rc().borrow().get_text(source_code)
-                }
-            }
-        },
-    })
-}
-
-fn get_key_helper<'a>(data_struct: &'a DataStruct) -> Option<&'a syn::Ident> {
-    // Find the field with the 'key' attribute
-    let key_field = data_struct
-        .fields
-        .iter()
-        .find(|field| field.attrs.iter().any(|attr| attr.path().is_ident("key")));
-
-    let key_field = match key_field {
-        Some(field) => field,
-        None => return None,
-    };
-
-    // Get the field name
-    match &key_field.ident {
-        Some(ident) => Some(ident),
-        None => return None,
-    }
 }

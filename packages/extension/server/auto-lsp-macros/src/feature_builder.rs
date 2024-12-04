@@ -1,13 +1,15 @@
 use crate::{
     features::{
-        accessor::AccessorBuilder, lsp_code_lens::CodeLensBuilder,
-        lsp_completion_item::CompletionItemsBuilder, lsp_document_symbol::DocumentSymbolBuilder,
-        lsp_hover_info::HoverInfoBuilder, lsp_inlay_hint::InlayHintsBuilder,
-        lsp_semantic_token::SemanticTokensBuilder, scope::ScopeBuilder,
+        accessor::AccessorBuilder, duplicate::CheckDuplicateBuilder,
+        lsp_code_lens::CodeLensBuilder, lsp_completion_item::CompletionItemsBuilder,
+        lsp_document_symbol::DocumentSymbolBuilder, lsp_hover_info::HoverInfoBuilder,
+        lsp_inlay_hint::InlayHintsBuilder, lsp_semantic_token::SemanticTokensBuilder,
+        scope::ScopeBuilder,
     },
     utilities::extract_fields::StructFields,
-    Paths, SymbolFeatures,
+    Paths, StructHelpers, SymbolFeatures,
 };
+use darling::{ast, util};
 use proc_macro2::Ident;
 
 pub trait ToCodeGen {
@@ -36,11 +38,13 @@ pub struct Features<'a> {
     pub lsp_semantic_tokens: SemanticTokensBuilder<'a>,
     pub scope: ScopeBuilder<'a>,
     pub accessor: AccessorBuilder<'a>,
+    pub duplicate: CheckDuplicateBuilder<'a>,
 }
 
 impl<'a> Features<'a> {
     pub fn new(
-        params: Option<&'a SymbolFeatures>,
+        features_attributes: Option<&'a SymbolFeatures>,
+        helper_attributes: &'a ast::Data<util::Ignored, StructHelpers>,
         is_accessor: bool,
         input_name: &'a Ident,
         paths: &'a Paths,
@@ -50,52 +54,53 @@ impl<'a> Features<'a> {
             lsp_code_lens: CodeLensBuilder::new(
                 input_name,
                 paths,
-                params.and_then(|a| a.lsp_code_lens.as_ref()),
+                features_attributes.and_then(|a| a.lsp_code_lens.as_ref()),
                 fields,
                 is_accessor,
             ),
             lsp_completion_items: CompletionItemsBuilder::new(
                 input_name,
                 paths,
-                params.and_then(|a| a.lsp_completion_items.as_ref()),
+                features_attributes.and_then(|a| a.lsp_completion_items.as_ref()),
                 fields,
                 is_accessor,
             ),
             lsp_document_symbols: DocumentSymbolBuilder::new(
                 input_name,
                 paths,
-                params.and_then(|a| a.lsp_document_symbols.as_ref()),
+                features_attributes.and_then(|a| a.lsp_document_symbols.as_ref()),
                 fields,
                 is_accessor,
             ),
             lsp_hover_info: HoverInfoBuilder::new(
                 input_name,
                 paths,
-                params.and_then(|a| a.lsp_hover_info.as_ref()),
+                features_attributes.and_then(|a| a.lsp_hover_info.as_ref()),
                 fields,
                 is_accessor,
             ),
             lsp_inlay_hints: InlayHintsBuilder::new(
                 input_name,
                 paths,
-                params.and_then(|a| a.lsp_inlay_hints.as_ref()),
+                features_attributes.and_then(|a| a.lsp_inlay_hints.as_ref()),
                 fields,
                 is_accessor,
             ),
             lsp_semantic_tokens: SemanticTokensBuilder::new(
                 input_name,
                 paths,
-                params.and_then(|a| a.lsp_semantic_tokens.as_ref()),
+                features_attributes.and_then(|a| a.lsp_semantic_tokens.as_ref()),
                 fields,
                 is_accessor,
             ),
             scope: ScopeBuilder::new(
                 input_name,
                 paths,
-                params.and_then(|a| a.scope.as_ref()),
+                features_attributes.and_then(|a| a.scope.as_ref()),
                 fields,
             ),
             accessor: AccessorBuilder::new(input_name, is_accessor, paths, fields),
+            duplicate: CheckDuplicateBuilder::new(input_name, paths, helper_attributes, fields),
         }
     }
 }
@@ -110,5 +115,6 @@ impl<'a> ToCodeGen for Features<'a> {
         self.lsp_semantic_tokens.to_code_gen(codegen);
         self.scope.to_code_gen(codegen);
         self.accessor.to_code_gen(codegen);
+        self.duplicate.to_code_gen(codegen);
     }
 }

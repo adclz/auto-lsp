@@ -1,7 +1,9 @@
 use crate::{
     utilities::extract_fields::{FieldBuilder, FieldBuilderType, StructFields},
-    BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, Paths, SymbolFeatures, ToCodeGen,
+    BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, Paths, StructHelpers,
+    SymbolFeatures, ToCodeGen,
 };
+use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::Attribute;
@@ -23,6 +25,7 @@ pub struct StructBuilder<'a> {
 impl<'a> StructBuilder<'a> {
     pub fn new(
         params: Option<&'a SymbolFeatures>,
+        helpers: &'a ast::Data<util::Ignored, StructHelpers>,
         input_attr: &'a Vec<Attribute>,
         input_name: &'a Ident,
         input_buider_name: &'a Ident,
@@ -39,7 +42,7 @@ impl<'a> StructBuilder<'a> {
             fields,
             is_accessor,
             paths,
-            features: Features::new(params, is_accessor, input_name, paths, fields),
+            features: Features::new(params, &helpers, is_accessor, input_name, paths, fields),
         }
     }
 }
@@ -245,17 +248,14 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
         let mut builder = FieldBuilder::new(&self.fields);
 
-        builder.apply_all(|ty, attributes, name, field_type, _| match ty {
+        builder.apply_all(|ty, _, name, field_type, _| match ty {
             FieldBuilderType::Normal => quote! {
-                #(#attributes)*
                 pub #name: #symbol<#field_type>
             },
             FieldBuilderType::Vec => quote! {
-                #(#attributes)*
                 pub #name: Vec<#symbol<#field_type>>
             },
             FieldBuilderType::Option => quote! {
-                #(#attributes)*
                 pub #name: Option<#symbol<#field_type>>
             },
         });

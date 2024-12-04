@@ -76,11 +76,6 @@ fn create_root_node<T: AstItemBuilder>(
     capture: &QueryCapture,
     capture_index: usize,
 ) -> Result<PendingSymbol, Diagnostic> {
-    eprintln!(
-        "Create root {:?}",
-        query.capture_names()[capture_index as usize]
-    );
-
     let mut node = T::new(
         url.clone(),
         query,
@@ -159,7 +154,26 @@ fn finalize_builder(
     let mut deferred = vec![];
     let item = result.try_to_dyn_symbol(&mut deferred);
 
+    match item {
+        Err(err) => {
+            return BuilderResult {
+                item: Err(err),
+                errors: errors.clone(),
+            };
+        }
+        Ok(ref item) => {
+            let item = item.read();
+
+            if item.must_check() {
+                item.check(doc, errors);
+            }
+        }
+    }
+
     for item in deferred {
+        if item.read().must_check() {
+            item.read().check(doc, errors);
+        }
         /*if let Err(err) = item.read().find(doc, ctx) {
             errors.push(err);
         }*/

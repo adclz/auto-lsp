@@ -3,7 +3,10 @@ use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{CompletionItem, Diagnostic, DocumentSymbol, Position, Range, Url};
 use parking_lot::RwLock;
-use std::sync::{Arc, Weak};
+use std::{
+    collections::HashSet,
+    sync::{Arc, Weak},
+};
 
 use super::workspace::WorkspaceContext;
 
@@ -21,6 +24,7 @@ pub trait AstItem:
     + Accessor
     + Locator
     + Parent
+    + CheckDuplicate
 {
     fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> tree_sitter::Range;
@@ -259,5 +263,53 @@ impl<T: AstItem> Parent for Vec<Symbol<T>> {
         for symbol in self.iter_mut() {
             symbol.write().set_parent(parent.clone());
         }
+    }
+}
+
+pub trait CheckDuplicate {
+    fn must_check(&self) -> bool;
+    fn check(&self, doc: &FullTextDocument, diagnostics: &mut Vec<Diagnostic>);
+}
+
+pub trait CheckDuplicateVec<'a, T: AstItem> {
+    fn check<F>(
+        &self,
+        f: F,
+        doc: &'a FullTextDocument,
+        hash_set: &mut HashSet<&'a str>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) where
+        F: for<'b> Fn(&T, &'b [u8]) -> &'b str;
+}
+
+impl<'a, T: AstItem> CheckDuplicateVec<'a, T> for [Symbol<T>] {
+    fn check<F>(
+        &self,
+        f: F,
+        doc: &'a FullTextDocument,
+        hash_set: &mut HashSet<&'a str>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) where
+        F: for<'b> Fn(&T, &'b [u8]) -> &'b str,
+    {
+        if self.is_empty() {
+            return;
+        }
+        let source_code = doc.get_content(None).as_bytes();
+
+        self.iter().for_each(|item| {
+            let key = f(&item.read(), source_code);
+            if !hash_set.insert(key) {
+                diagnostics.push(Diagnostic::new(
+                    item.read().get_lsp_range(doc),
+                    None,
+                    None,
+                    None,
+                    format!("Duplicate {}", key),
+                    None,
+                    None,
+                ));
+            }
+        });
     }
 }
