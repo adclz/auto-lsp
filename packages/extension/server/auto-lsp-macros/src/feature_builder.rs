@@ -18,10 +18,10 @@ pub trait ToCodeGen {
 
 #[derive(Default)]
 pub struct InputCodeGen {
-    pub fields: Vec<proc_macro2::TokenStream>,        // Fields
-    pub impl_base: Vec<proc_macro2::TokenStream>,     // Impl <>
-    pub impl_ast_item: Vec<proc_macro2::TokenStream>, // Impl AstItem for <>
-    pub other_impl: Vec<proc_macro2::TokenStream>,    // Other impl
+    pub fields: Vec<proc_macro2::TokenStream>,      // Fields
+    pub impl_base: Vec<proc_macro2::TokenStream>,   // Impl <>
+    pub impl_symbol: Vec<proc_macro2::TokenStream>, // Impl AstSymbol for <>
+    pub other_impl: Vec<proc_macro2::TokenStream>,  // Other impl
 }
 
 #[derive(Default)]

@@ -10,11 +10,11 @@ use tree_sitter::Query;
 
 use crate::builder_error;
 
-use super::ast_item::{AstItem, DynSymbol, Symbol};
 use super::convert::{TryFromBuilder, TryIntoBuilder};
 use super::queryable::Queryable;
+use super::symbol::{AstSymbol, DynSymbol, Symbol};
 
-pub trait AstItemBuilder: Downcast {
+pub trait AstBuilder: Downcast {
     fn new(
         url: Arc<Url>,
         _query: &tree_sitter::Query,
@@ -81,23 +81,23 @@ pub trait AstItemBuilder: Downcast {
     }
 }
 
-impl std::fmt::Debug for dyn AstItemBuilder {
+impl std::fmt::Debug for dyn AstBuilder {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "At - {:?}", self.get_range())
     }
 }
 
-impl_downcast!(AstItemBuilder);
+impl_downcast!(AstBuilder);
 
 #[derive(Clone)]
-pub struct PendingSymbol(Rc<RefCell<dyn AstItemBuilder>>);
+pub struct PendingSymbol(Rc<RefCell<dyn AstBuilder>>);
 
 impl PendingSymbol {
-    pub fn new(builder: impl AstItemBuilder) -> Self {
+    pub fn new(builder: impl AstBuilder) -> Self {
         PendingSymbol(Rc::new(RefCell::new(builder)))
     }
 
-    pub fn get_rc(&self) -> &Rc<RefCell<dyn AstItemBuilder>> {
+    pub fn get_rc(&self) -> &Rc<RefCell<dyn AstBuilder>> {
         &self.0
     }
 
@@ -124,7 +124,7 @@ impl MaybePendingSymbol {
         self.0.is_some()
     }
 
-    pub fn new(builder: impl AstItemBuilder) -> Self {
+    pub fn new(builder: impl AstBuilder) -> Self {
         MaybePendingSymbol(Some(PendingSymbol::new(builder)))
     }
 
@@ -144,8 +144,8 @@ impl std::fmt::Debug for MaybePendingSymbol {
 }
 
 pub trait TryDownCast<
-    T: AstItemBuilder,
-    Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    T: AstBuilder,
+    Y: Clone + AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 >
 {
     type Output;
@@ -161,8 +161,8 @@ pub trait TryDownCast<
 
 impl<T, Y> TryDownCast<T, Y> for PendingSymbol
 where
-    T: AstItemBuilder,
-    Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    T: AstBuilder,
+    Y: Clone + AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
     type Output = Symbol<Y>;
     fn try_downcast(
@@ -197,8 +197,8 @@ where
 
 impl<T, Y> TryDownCast<T, Y> for MaybePendingSymbol
 where
-    T: AstItemBuilder,
-    Y: Clone + AstItem + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    T: AstBuilder,
+    Y: Clone + AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
     type Output = Option<Symbol<Y>>;
 
@@ -220,8 +220,8 @@ where
 impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
 where
     T: TryDownCast<Y, V, Output = Symbol<V>>,
-    Y: AstItemBuilder,
-    V: Clone + AstItem + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+    Y: AstBuilder,
+    V: Clone + AstSymbol + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
 {
     type Output = Vec<Symbol<V>>;
 
@@ -238,7 +238,7 @@ where
     }
 }
 
-pub trait Constructor<T: AstItemBuilder + Queryable> {
+pub trait Constructor<T: AstBuilder + Queryable> {
     fn new(
         url: Arc<Url>,
         query: &tree_sitter::Query,

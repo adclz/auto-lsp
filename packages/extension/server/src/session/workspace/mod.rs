@@ -1,4 +1,4 @@
-use auto_lsp::{ast_item::DynSymbol, builders::BuilderFn};
+use auto_lsp::{symbol::DynSymbol, builders::BuilderFn};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Diagnostic;
 use tree_sitter::Tree;

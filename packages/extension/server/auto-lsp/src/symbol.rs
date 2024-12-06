@@ -10,7 +10,7 @@ use std::{
 
 use super::workspace::WorkspaceContext;
 
-pub trait AstItem:
+pub trait AstSymbol:
     Downcast
     + Send
     + Sync
@@ -91,12 +91,12 @@ pub trait AstItem:
     }
 }
 
-impl_downcast!(AstItem);
+impl_downcast!(AstSymbol);
 
 #[derive(Clone)]
-pub struct Symbol<T: AstItem>(Arc<RwLock<T>>);
+pub struct Symbol<T: AstSymbol>(Arc<RwLock<T>>);
 
-impl<T: AstItem> Symbol<T> {
+impl<T: AstSymbol> Symbol<T> {
     pub fn new(symbol: T) -> Self {
         Self(Arc::new(RwLock::new(symbol)))
     }
@@ -119,26 +119,26 @@ impl<T: AstItem> Symbol<T> {
 }
 
 #[derive(Clone)]
-pub struct DynSymbol(Arc<RwLock<dyn AstItem>>);
+pub struct DynSymbol(Arc<RwLock<dyn AstSymbol>>);
 
 impl DynSymbol {
-    pub fn new(symbol: impl AstItem) -> Self {
+    pub fn new(symbol: impl AstSymbol) -> Self {
         Self(Arc::new(parking_lot::RwLock::new(symbol)))
     }
 
-    pub fn from_symbol<T: AstItem>(symbol: &Symbol<T>) -> Self {
+    pub fn from_symbol<T: AstSymbol>(symbol: &Symbol<T>) -> Self {
         Self(symbol.0.clone())
     }
 
-    pub fn get_arc(&self) -> &Arc<RwLock<dyn AstItem>> {
+    pub fn get_arc(&self) -> &Arc<RwLock<dyn AstSymbol>> {
         &self.0
     }
 
-    pub fn read(&self) -> parking_lot::RwLockReadGuard<dyn AstItem> {
+    pub fn read(&self) -> parking_lot::RwLockReadGuard<dyn AstSymbol> {
         self.0.read()
     }
 
-    pub fn write(&self) -> parking_lot::RwLockWriteGuard<dyn AstItem> {
+    pub fn write(&self) -> parking_lot::RwLockWriteGuard<dyn AstSymbol> {
         self.0.write()
     }
 
@@ -146,20 +146,20 @@ impl DynSymbol {
         WeakSymbol::new(self)
     }
 
-    pub fn downcast<T: AstItem + Clone>(&self) -> Option<Symbol<T>> {
+    pub fn downcast<T: AstSymbol + Clone>(&self) -> Option<Symbol<T>> {
         Some(Symbol::new(self.0.read().downcast_ref::<T>().cloned()?))
     }
 }
 
 #[derive(Clone)]
-pub struct WeakSymbol(Weak<RwLock<dyn AstItem>>);
+pub struct WeakSymbol(Weak<RwLock<dyn AstSymbol>>);
 
 impl WeakSymbol {
     pub fn new(symbol: &DynSymbol) -> Self {
         Self(Arc::downgrade(&symbol.0))
     }
 
-    pub fn from_symbol<T: AstItem>(symbol: &Symbol<T>) -> Self {
+    pub fn from_symbol<T: AstSymbol>(symbol: &Symbol<T>) -> Self {
         Self(Arc::downgrade(&symbol.0) as _)
     }
 
@@ -227,7 +227,7 @@ impl Locator for DynSymbol {
     }
 }
 
-impl<T: AstItem> Locator for Symbol<T> {
+impl<T: AstSymbol> Locator for Symbol<T> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
         if symbol.is_inside_offset(offset) {
@@ -240,7 +240,7 @@ impl<T: AstItem> Locator for Symbol<T> {
     }
 }
 
-impl<T: AstItem> Locator for Option<Symbol<T>> {
+impl<T: AstSymbol> Locator for Option<Symbol<T>> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         match self.as_ref() {
             Some(symbol) => symbol.find_at_offset(offset),
@@ -269,7 +269,7 @@ pub trait Parent {
     fn inject_parent(&mut self, parent: WeakSymbol);
 }
 
-impl<T: AstItem> Parent for Symbol<T> {
+impl<T: AstSymbol> Parent for Symbol<T> {
     fn inject_parent(&mut self, parent: WeakSymbol) {
         self.write().set_parent(parent);
     }
@@ -281,7 +281,7 @@ impl Parent for DynSymbol {
     }
 }
 
-impl<T: AstItem> Parent for Option<Symbol<T>> {
+impl<T: AstSymbol> Parent for Option<Symbol<T>> {
     fn inject_parent(&mut self, parent: WeakSymbol) {
         if let Some(symbol) = self.as_mut() {
             symbol.write().set_parent(parent);
@@ -289,7 +289,7 @@ impl<T: AstItem> Parent for Option<Symbol<T>> {
     }
 }
 
-impl<T: AstItem> Parent for Vec<Symbol<T>> {
+impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
     fn inject_parent(&mut self, parent: WeakSymbol) {
         for symbol in self.iter_mut() {
             symbol.write().set_parent(parent.clone());
@@ -302,7 +302,7 @@ pub trait CheckDuplicate {
     fn check(&self, doc: &FullTextDocument, diagnostics: &mut Vec<Diagnostic>);
 }
 
-pub trait CheckDuplicateVec<'a, T: AstItem> {
+pub trait CheckDuplicateVec<'a, T: AstSymbol> {
     fn check<F>(
         &self,
         f: F,
@@ -313,7 +313,7 @@ pub trait CheckDuplicateVec<'a, T: AstItem> {
         F: for<'b> Fn(&T, &'b [u8]) -> &'b str;
 }
 
-impl<'a, T: AstItem> CheckDuplicateVec<'a, T> for [Symbol<T>] {
+impl<'a, T: AstSymbol> CheckDuplicateVec<'a, T> for [Symbol<T>] {
     fn check<F>(
         &self,
         f: F,

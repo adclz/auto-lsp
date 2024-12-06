@@ -28,7 +28,7 @@ use std::cell::LazyCell;
 
 trait BuildAstItem {
     fn generate_fields(&self) -> Vec<proc_macro2::TokenStream>;
-    fn generate_ast_item_methods(&self) -> proc_macro2::TokenStream;
+    fn generate_symbol_methods(&self) -> proc_macro2::TokenStream;
 }
 
 trait BuildAstItemBuilder {

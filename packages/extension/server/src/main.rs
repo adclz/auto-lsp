@@ -52,7 +52,7 @@ lazy_static! {
 // AST_BUILDERS store all AST builders in a HashMap.
 // An AST builder can be added using the create_builder! macro and the name of the corresponding crate.
 // When the CST is built, the LSP will try to build the AST using the corresponding builder.
-// Since all symbols implement the AstItem trait, a node from a specific ast can hold a reference to another symbol located in a different ast.
+// Since all symbols implement the AstSymbol trait, a node from a specific ast can hold a reference to another symbol located in a different ast.
 lazy_static! {
     pub static ref AST_BUILDERS: HashMap<String, BuilderFn> = HashMap::from([(
         "iec-61131-2".to_string(),

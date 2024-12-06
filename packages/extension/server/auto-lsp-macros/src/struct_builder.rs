@@ -59,14 +59,14 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
         let input_fields = code_gen.input.fields;
         let features_impl = code_gen.input.impl_base;
-        let features_impl_ast = code_gen.input.impl_ast_item;
+        let features_impl_ast = code_gen.input.impl_symbol;
         let features_others_impl = code_gen.input.other_impl;
 
         // generate ast item
-        let ast_item_trait = &self.paths.ast_item_trait;
+        let symbol_trait = &self.paths.symbol_trait;
 
         let fields = self.generate_fields();
-        let methods = self.generate_ast_item_methods();
+        let methods = self.generate_symbol_methods();
 
         let locator = self.generate_locator_trait();
         let parent = self.generate_parent_trait();
@@ -85,7 +85,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
                 #(#features_impl)*
             }
 
-            impl #ast_item_trait for #input_name {
+            impl #symbol_trait for #input_name {
                 #methods
                 #(#features_impl_ast)*
             }
@@ -99,7 +99,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         // Generate builder
 
         let input_builder_name = &self.input_buider_name;
-        let ast_item_builder = &self.paths.ast_item_builder_trait;
+        let pending_symbol = &self.paths.symbol_builder_trait;
 
         let builder_fields = self.generate_builder_fields();
         let new = self.generate_builder_new();
@@ -130,7 +130,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
                 #(#builder_fields),*
             }
 
-            impl #ast_item_builder for #input_builder_name {
+            impl #pending_symbol for #input_builder_name {
                 #new
                 #query_binder
                 #add
@@ -264,7 +264,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
         fields
     }
 
-    fn generate_ast_item_methods(&self) -> TokenStream {
+    fn generate_symbol_methods(&self) -> TokenStream {
         let weak_symbol = &self.paths.weak_symbol;
 
         quote! {

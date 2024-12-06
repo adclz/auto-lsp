@@ -1,6 +1,6 @@
-use crate::ast_item::DynSymbol;
-use crate::ast_item_builder::{AstItemBuilder, PendingSymbol};
 use crate::builder_error;
+use crate::pending_symbol::{AstBuilder, PendingSymbol};
+use crate::symbol::DynSymbol;
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
@@ -65,7 +65,7 @@ fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Rang
     }
 }
 
-fn create_root_node<T: AstItemBuilder>(
+fn create_root_node<T: AstBuilder>(
     url: Arc<Url>,
     query: &Query,
     capture: &QueryCapture,
@@ -144,7 +144,7 @@ fn finalize_builder(
         }
     };
 
-    let result: std::cell::Ref<'_, dyn AstItemBuilder> = result_node.get_rc().borrow();
+    let result: std::cell::Ref<'_, dyn AstBuilder> = result_node.get_rc().borrow();
 
     let mut deferred = vec![];
     let item = result.try_to_dyn_symbol(&mut deferred);
@@ -209,7 +209,7 @@ fn finalize_builder(
     }
 }
 
-impl<T: AstItemBuilder> Builder for T {
+impl<T: AstBuilder> Builder for T {
     fn builder(
         ctx: &dyn WorkspaceContext,
         query: &tree_sitter::Query,

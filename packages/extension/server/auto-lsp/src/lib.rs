@@ -1,5 +1,5 @@
-pub mod ast_item;
-pub mod ast_item_builder;
+pub mod symbol;
+pub mod pending_symbol;
 pub mod builders;
 pub mod convert;
 pub mod find;

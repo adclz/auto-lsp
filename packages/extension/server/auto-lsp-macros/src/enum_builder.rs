@@ -39,7 +39,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let try_from = self.generate_try_from();
 
         let fields = self.generate_fields();
-        let ast_item_methods = self.generate_ast_item_methods();
+        let symbol_methods = self.generate_symbol_methods();
 
         let code_lens = self.generate_code_lens();
         let completion_items = self.generate_completion_items();
@@ -54,8 +54,8 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let parent = self.generate_parent();
         let dup = self.generate_duplicate();
 
-        let ast_item_trait = &self.paths.ast_item_trait;
-        let ast_item_builder = &self.paths.ast_item_builder_trait;
+        let symbol_trait = &self.paths.symbol_trait;
+        let pending_symbol = &self.paths.symbol_builder_trait;
 
         let dyn_symbol = &self.paths.dyn_symbol;
 
@@ -77,8 +77,8 @@ impl<'a> ToTokens for EnumBuilder<'a> {
                 )*
             }
 
-            impl #ast_item_trait for #name {
-                #ast_item_methods
+            impl #symbol_trait for #name {
+                #symbol_methods
             }
 
             pub struct #input_builder_name {
@@ -87,7 +87,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
                 )*
             }
 
-            impl #ast_item_builder for #input_builder_name {
+            impl #pending_symbol for #input_builder_name {
                 #builder_new
                 #query_binder
                 #add
@@ -218,7 +218,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
         }]
     }
 
-    fn generate_ast_item_methods(&self) -> TokenStream {
+    fn generate_symbol_methods(&self) -> TokenStream {
         let variant_names = &self.fields.variant_names;
         let dyn_symbol = &self.paths.dyn_symbol;
         let weak_symbol = &self.paths.weak_symbol;

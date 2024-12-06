@@ -4,7 +4,7 @@ use std::{
     sync::{Arc, RwLock, Weak},
 };
 
-use auto_lsp::{ast_item::AstItem, workspace::WorkspaceContext};
+use auto_lsp::{symbol::AstSymbol, workspace::WorkspaceContext};
 use lsp_server::Connection;
 use lsp_types::Url;
 use streaming_iterator::StreamingIterator;
@@ -34,7 +34,7 @@ impl Session {
 }
 
 impl WorkspaceContext for Session {
-    fn find(&self, node: &dyn AstItem) -> Option<Weak<RwLock<dyn AstItem>>> {
+    fn find(&self, node: &dyn AstSymbol) -> Option<Weak<RwLock<dyn AstSymbol>>> {
         todo!()
     }
 }

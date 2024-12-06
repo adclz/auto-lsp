@@ -1,12 +1,12 @@
 use lsp_textdocument::FullTextDocument;
 
-use crate::ast_item::{AstItem, DynSymbol, WeakSymbol};
+use crate::symbol::{AstSymbol, DynSymbol, WeakSymbol};
 
 pub trait Finder {
     fn find_in_file(&self, doc: &FullTextDocument) -> Option<WeakSymbol>;
 }
 
-impl<T: AstItem> Finder for T {
+impl<T: AstSymbol> Finder for T {
     fn find_in_file(&self, doc: &FullTextDocument) -> Option<WeakSymbol> {
         let source_code = doc.get_content(None).as_bytes();
         let pattern = self.get_text(doc.get_content(None).as_bytes());

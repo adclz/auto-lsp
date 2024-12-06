@@ -1,4 +1,4 @@
-use super::ast_item::DynSymbol;
+use super::symbol::DynSymbol;
 pub trait TryFromBuilder<T>: Sized
 where
     T: Sized,
