@@ -186,11 +186,11 @@ where
             .try_into_builder(check)?;
         let arc = Symbol::new(item);
         let read = arc.read();
-        if read.must_check() {
+        if read.is_accessor() || read.must_check() {
             check.push(arc.to_dyn());
         }
         drop(read);
-        arc.write().set_parent(arc.to_weak());
+        arc.write().inject_parent(arc.to_weak());
         Ok(arc)
     }
 }

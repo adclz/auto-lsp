@@ -1,11 +1,10 @@
-use crate::ast_item::{AstItem, DynSymbol};
+use crate::ast_item::DynSymbol;
 use crate::ast_item_builder::{AstItemBuilder, PendingSymbol};
 use crate::builder_error;
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::sync::Arc;
-use std::sync::{RwLock, Weak};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCapture};
 
@@ -45,10 +44,6 @@ pub trait Builder {
         doc: &FullTextDocument,
         url: Arc<Url>,
     ) -> BuilderResult;
-}
-
-pub trait Finder {
-    fn find_reference(&self, doc: &FullTextDocument) -> Option<Weak<RwLock<dyn AstItem>>>;
 }
 
 fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range) -> bool {
@@ -162,6 +157,22 @@ fn finalize_builder(
             };
         }
         Ok(ref item) => {
+            item.write().inject_parent(item.to_weak());
+            if item.read().is_accessor() {
+                match item.read().find(doc, ctx) {
+                    Ok(a) => {
+                        if let Some(a) = a {
+                            item.write().set_accessor(a);
+                        };
+                    }
+                    Err(err) => errors.push(err),
+                }
+            }
+
+            if let Err(err) = item.write().find(doc, ctx) {
+                errors.push(err);
+            }
+
             let item = item.read();
 
             if item.must_check() {
@@ -171,12 +182,25 @@ fn finalize_builder(
     }
 
     for item in deferred {
+        let acc = if item.read().is_accessor() {
+            match item.read().find(doc, ctx) {
+                Ok(a) => a,
+                Err(err) => {
+                    errors.push(err);
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
+        if let Some(acc) = acc {
+            item.write().set_accessor(acc);
+        }
+
         if item.read().must_check() {
             item.read().check(doc, errors);
         }
-        /*if let Err(err) = item.read().find(doc, ctx) {
-            errors.push(err);
-        }*/
     }
 
     BuilderResult {
@@ -265,36 +289,5 @@ impl<T: AstItemBuilder> Builder for T {
         }
 
         finalize_builder(roots, &mut errors, doc, ctx)
-    }
-}
-
-impl<T: AstItem> Finder for T {
-    fn find_reference(&self, doc: &FullTextDocument) -> Option<Weak<RwLock<dyn AstItem>>> {
-        let pattern = self.get_text(doc.get_content(None).as_bytes());
-
-        /*while let Some(scope) = self.get_parent_scope() {
-            match scope.upgrade() {
-                Some(scope) => {
-                    let scope = scope.read().unwrap();
-                    let ranges = scope.get_scope_range();
-
-                    for range in ranges {
-                        let area = doc
-                            .get_content(None)
-                            .get(range[0] as usize..range[1] as usize)
-                            .unwrap();
-
-                        for (index, _) in area.match_indices(pattern) {
-                            if let Some(elem) = scope.find_at_offset(&index) {
-                                return Some(Arc::downgrade(&elem));
-                            }
-                        }
-                    }
-                }
-                None => continue,
-            }
-        }*/
-
-        None
     }
 }

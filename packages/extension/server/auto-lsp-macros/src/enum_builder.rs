@@ -487,20 +487,29 @@ impl<'a> EnumBuilder<'a> {
         let input_name = &self.input_name;
         let is_accessor_trait = &self.paths.is_accessor_trait;
         let accessor_trait = &self.paths.accessor_trait;
+        let weak_symbol = &self.paths.weak_symbol;
 
         quote! {
         impl #is_accessor_trait for #input_name {
-            fn is_accessor(&self) -> &'static bool {
+            fn is_accessor(&self) -> bool {
                 match self {
                     #(
                         Self::#variant_names(variant) => variant.is_accessor(),
                     )*
                 }
             }
+
+            fn set_accessor(&mut self, accessor: #weak_symbol)  {
+                match self {
+                    #(
+                        Self::#variant_names(variant) => variant.set_accessor(accessor),
+                    )*
+                }
+            }
         }
 
         impl #accessor_trait for #input_name {
-            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<(), lsp_types::Diagnostic> {
+            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<#weak_symbol>, lsp_types::Diagnostic> {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.find(doc, ctx),

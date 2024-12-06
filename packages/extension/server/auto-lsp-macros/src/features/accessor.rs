@@ -46,23 +46,45 @@ impl<'a> ToCodeGen for AccessorBuilder<'a> {
 
         codegen.input.impl_base.push(
             quote! {
-                pub const IS_ACCESSOR: &'static bool = &#bool;
+                pub const IS_ACCESSOR: bool = #bool;
             }
             .into(),
         );
 
-        codegen.input.other_impl.push(quote! {
-            impl #is_accessor_path for #input_name {
-                fn is_accessor(&self) -> &'static bool {
-                    &Self::IS_ACCESSOR
+        let weak_symbol = &self.paths.weak_symbol;
+
+        if self.is_accessor {
+            codegen.input.other_impl.push(quote! {
+                impl #is_accessor_path for #input_name {
+                    fn is_accessor(&self) -> bool {
+                        Self::IS_ACCESSOR
+                    }
+
+                    fn set_accessor(&mut self, accessor: #weak_symbol) {
+                        self.accessor = Some(accessor);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            codegen.input.other_impl.push(quote! {
+                impl #is_accessor_path for #input_name {
+                    fn is_accessor(&self) -> bool {
+                        Self::IS_ACCESSOR
+                    }
+
+                    fn set_accessor(&mut self, accessor: #weak_symbol) {
+
+                    }
+                }
+            });
+        }
 
         if !self.is_accessor {
             codegen.input.other_impl.push(quote! {
             impl #accessor_path for #input_name {
-                fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<(), lsp_types::Diagnostic> {Ok(())}
+                fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<#weak_symbol>, lsp_types::Diagnostic> {
+                    Ok(None)
+                }
             }
         });
         }

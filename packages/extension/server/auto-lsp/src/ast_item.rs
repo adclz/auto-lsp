@@ -47,6 +47,22 @@ pub trait AstItem:
     fn get_parent(&self) -> Option<WeakSymbol>;
     fn set_parent(&mut self, parent: WeakSymbol);
 
+    fn get_parent_scope(&self) -> Option<DynSymbol> {
+        let mut parent = self.get_parent();
+        while let Some(weak) = parent {
+            let symbol = match weak.to_dyn() {
+                Some(weak) => weak,
+                None => return None,
+            };
+            let read = symbol.read();
+            if read.is_scope() {
+                return Some(symbol.clone());
+            }
+            parent = read.get_parent();
+        }
+        None
+    }
+
     // Accessibility
 
     fn is_inside_offset(&self, offset: usize) -> bool {
@@ -182,11 +198,16 @@ pub trait CompletionItems {
 }
 
 pub trait IsAccessor {
-    fn is_accessor(&self) -> &'static bool;
+    fn is_accessor(&self) -> bool;
+    fn set_accessor(&mut self, accessor: WeakSymbol);
 }
 
 pub trait Accessor: IsAccessor {
-    fn find(&self, doc: &FullTextDocument, ctx: &dyn WorkspaceContext) -> Result<(), Diagnostic>;
+    fn find(
+        &self,
+        doc: &FullTextDocument,
+        ctx: &dyn WorkspaceContext,
+    ) -> Result<Option<WeakSymbol>, Diagnostic>;
 }
 
 pub trait Locator {
@@ -230,7 +251,17 @@ impl<T: AstItem> Locator for Option<Symbol<T>> {
 
 impl<T: Locator> Locator for Vec<T> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        self.iter().find_map(|symbol| symbol.find_at_offset(offset))
+        self.iter().enumerate().find_map(|(i, symbol)| {
+            let h = symbol.find_at_offset(offset);
+            if let Some(a) = &h {
+                let range = a.read().get_range();
+                eprintln!(
+                    "Found at index {}: offset {:?}, between {} and {}",
+                    i, offset, range.start_byte, range.end_byte
+                )
+            };
+            h
+        })
     }
 }
 
