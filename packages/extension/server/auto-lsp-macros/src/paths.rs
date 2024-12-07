@@ -1,3 +1,4 @@
+use proc_macro::TokenStream;
 use syn::{parse_quote, Path};
 
 pub struct Paths {

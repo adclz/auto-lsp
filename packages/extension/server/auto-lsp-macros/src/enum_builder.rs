@@ -1,4 +1,4 @@
-use crate::utilities::extract_fields::EnumFields;
+use crate::utilities::extract_fields::{EnumFields, SignatureAndBody, VariantBuilder};
 use crate::{BuildAstItem, BuildAstItemBuilder, Paths};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -41,23 +41,22 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let fields = self.generate_fields();
         let symbol_methods = self.generate_symbol_methods();
 
-        let code_lens = self.generate_code_lens();
-        let completion_items = self.generate_completion_items();
-        let document_symbol = self.generate_document_symbol();
-        let hover_info = self.generate_hover_info();
-        let inlay_hint = self.generate_inlay_hint();
-        let semantic_tokens = self.generate_semantic_tokens();
-        let go_to_definition = self.generate_go_to_definition();
-        let scope = self.generate_scope();
-        let accessor = self.generate_accessor();
+        let builder = VariantBuilder::new(&self)
+            .generate_duplicate()
+            .generate_code_lens()
+            .generate_completion_items()
+            .generate_document_symbol()
+            .generate_hover_info()
+            .generate_inlay_hint()
+            .generate_semantic_tokens()
+            .generate_go_to_definition()
+            .generate_parent()
+            .generate_locator()
+            .generate_scope()
+            .generate_accessor()
+            .to_token_stream();
 
-        let locator = self.generate_locator();
-        let parent = self.generate_parent();
-        let dup = self.generate_duplicate();
-
-        let symbol_trait = &self.paths.symbol_trait;
         let pending_symbol = &self.paths.symbol_builder_trait;
-
         let dyn_symbol = &self.paths.dyn_symbol;
 
         let try_from_builder = &self.paths.try_from_builder;
@@ -78,9 +77,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
                 )*
             }
 
-            impl #symbol_trait for #name {
-                #symbol_methods
-            }
+            #symbol_methods
 
             pub struct #input_builder_name {
                 #(
@@ -108,19 +105,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             }
 
             #try_from
-
-            #code_lens
-            #completion_items
-            #document_symbol
-            #hover_info
-            #inlay_hint
-            #semantic_tokens
-            #go_to_definition
-            #scope
-            #accessor
-            #locator
-            #parent
-            #dup
+            #builder
         });
     }
 }
@@ -186,7 +171,6 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let try_from_builder = &self.paths.try_from_builder;
         let try_into_builder = &self.paths.try_into_builder;
 
-        let symbol = &self.paths.symbol;
         let dyn_symbol = &self.paths.dyn_symbol;
 
         quote! {
@@ -201,7 +185,8 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
                             return Ok(Self::#variant_names(variant.try_into_builder(check)?));
                         };
                     )*
-                    panic!("")
+                    // todo!
+                    panic!("Enum variant is not implemented")
                 }
             }
         }
@@ -221,322 +206,188 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
     }
 
     fn generate_symbol_methods(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let dyn_symbol = &self.paths.dyn_symbol;
         let weak_symbol = &self.paths.weak_symbol;
 
-        quote! {
-            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.get_url(),
-                    )*
-                }
-            }
-
-            fn get_range(&self) -> tree_sitter::Range {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.get_range(),
-                    )*
-                }
-            }
-
-            fn get_parent(&self) -> Option<#weak_symbol> {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.get_parent(),
-                    )*
-                }
-            }
-
-            fn set_parent(&mut self, parent: #weak_symbol) {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.set_parent(parent),
-                    )*
-                }
-            }
-
-            fn get_start_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.get_start_position(doc),
-                    )*
-                }
-            }
-
-            fn get_end_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.get_end_position(doc),
-                    )*
-                }
-            }
-        }
+        VariantBuilder::new(&self)
+        .dispatch(
+            &self.paths.symbol_trait,
+            vec![SignatureAndBody::new(
+                quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },
+                quote! { get_url() },
+            ),
+            SignatureAndBody::new(
+                quote! { fn get_range(&self) -> tree_sitter::Range },
+                quote! { get_range() },
+            ),
+            SignatureAndBody::new(
+                quote! { fn get_parent(&self) -> Option<#weak_symbol> },
+                quote! { get_parent() },
+            ),
+            SignatureAndBody::new(
+                quote! { fn set_parent(&mut self, parent: #weak_symbol) },
+                quote! { set_parent(parent) },
+            ),
+            SignatureAndBody::new(
+                quote! { fn get_start_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
+                quote! { get_start_position(doc) },
+            ),
+            SignatureAndBody::new(
+                quote! { fn get_end_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
+                quote! { get_end_position(doc) },
+            ),],
+        )
+        .to_token_stream()
     }
 }
 
-impl<'a> EnumBuilder<'a> {
-    fn generate_duplicate(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let check_duplicate = &self.paths.check_duplicate;
-
-        quote! {
-            impl #check_duplicate for #input_name {
-                fn must_check(&self) -> bool {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.must_check(),
-                        )*
-                    }
-                }
-
-                fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.check(doc, diagnostics),
-                        )*
-                    }
-                }
-
-            }
-        }
-    }
-}
-
-impl<'a> EnumBuilder<'a> {
-    fn generate_locator(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let dyn_symbol = &self.paths.dyn_symbol;
-        let locator = &self.paths.locator;
-
-        quote! {
-            impl #locator for #input_name {
-                fn find_at_offset(&self, offset: usize) -> Option<#dyn_symbol> {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.find_at_offset(offset),
-                        )*
-                    }
-                }
-            }
-        }
-    }
-}
-
-impl<'a> EnumBuilder<'a> {
-    fn generate_parent(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let weak_symbol = &self.paths.weak_symbol;
-        let parent = &self.paths.parent;
-
-        quote! {
-            impl #parent for #input_name {
-                fn inject_parent(&mut self, parent: #weak_symbol) {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.inject_parent(parent),
-                        )*
-                    }
-                }
-            }
-        }
-    }
-}
-
-impl<'a> EnumBuilder<'a> {
-    fn generate_code_lens(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let code_lens_path = &self.paths.code_lens_trait;
-
-        quote! {
-            impl #code_lens_path for #input_name {
-                fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.build_code_lens(acc),
-                        )*
-                    }
-                }
-            }
-        }
+impl<'a> VariantBuilder<'a> {
+    fn generate_duplicate(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.check_duplicate,
+            vec![SignatureAndBody::new(
+                quote! { fn must_check(&self) -> bool },
+                quote! { must_check() },
+            ), SignatureAndBody::new(
+                quote! { fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) },
+                quote! { check(doc, diagnostics) },
+            )],
+        )
     }
 
-    fn generate_completion_items(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let completion_items_path = &self.paths.completion_items_trait;
+    fn generate_locator(&mut self) -> &mut Self {
+        let dyn_symbol = &self.enum_builder.paths.dyn_symbol;
 
-        quote! {
-            impl #completion_items_path for #input_name {
-                fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.build_completion_items(acc, doc),
-                        )*
-                    }
-                }
-            }
-        }
+        self.dispatch(
+            &self.enum_builder.paths.locator,
+            vec![SignatureAndBody::new(
+                quote! { fn find_at_offset(&self, offset: usize) -> Option<#dyn_symbol> },
+                quote! { find_at_offset(offset) },
+            )],
+        )
     }
 
-    fn generate_document_symbol(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let document_symbols_path = &self.paths.document_symbols_trait;
+    fn generate_parent(&mut self) -> &mut Self {
+        let weak_symbol = &self.enum_builder.paths.weak_symbol;
 
-        quote! {
-            impl #document_symbols_path for #input_name {
-                fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.get_document_symbols(doc),
-                        )*
-                    }
-                }
-            }
-        }
+        self.dispatch(
+            &self.enum_builder.paths.parent,
+            vec![SignatureAndBody::new(
+                quote! { fn inject_parent(&mut self, parent: #weak_symbol) },
+                quote! { inject_parent(parent) },
+            )],
+        )
     }
 
-    fn generate_hover_info(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let hover_info_path = &self.paths.hover_info_trait;
-
-        quote! {
-            impl #hover_info_path for #input_name {
-                fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.get_hover(doc),
-                        )*
-                    }
-                }
-            }
-        }
+    fn generate_code_lens(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.code_lens_trait,
+            vec![SignatureAndBody::new(
+                quote! { fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) },
+                quote! { build_code_lens(acc) },
+            )],
+        )
     }
 
-    fn generate_inlay_hint(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let inlay_hint_path = &self.paths.inlay_hints_trait;
-
-        quote! {
-            impl #inlay_hint_path for #input_name {
-                fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.build_inlay_hint(doc, acc),
-                        )*
-                    }
-                }
-            }
-        }
+    fn generate_completion_items(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.completion_items_trait,
+            vec![SignatureAndBody::new(
+                quote! { fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) },
+                quote! { build_completion_items(acc, doc) },
+            )],
+        )
     }
 
-    fn generate_semantic_tokens(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let semangic_tokens_builder = &self.paths.semantic_tokens_builder;
-        let semantic_tokens_path = &self.paths.semantic_tokens_trait;
-
-        quote! {
-            impl #semantic_tokens_path for #input_name {
-                fn build_semantic_tokens(&self, builder: &mut #semangic_tokens_builder) {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.build_semantic_tokens(builder),
-                        )*
-                    }
-                }
-            }
-        }
+    fn generate_document_symbol(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.document_symbols_trait,
+            vec![SignatureAndBody::new(
+                quote! { fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> },
+                quote! { get_document_symbols(doc) },
+            )],
+        )
     }
 
-    fn generate_go_to_definition(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let go_to_definition_path = &self.paths.go_to_definition_trait;
-
-        quote! {
-            impl #go_to_definition_path for #input_name {
-                fn go_to_definition(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::GotoDefinitionResponse> {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.go_to_definition(doc),
-                        )*
-                    }
-                }
-            }
-        }
+    fn generate_hover_info(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.hover_info_trait,
+            vec![SignatureAndBody::new(
+                quote! { fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> },
+                quote! { get_hover(doc) },
+            )],
+        )
     }
 
-    fn generate_scope(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let scope_trait = &self.paths.scope_trait;
-
-        quote! {
-            impl #scope_trait for #input_name {
-                fn is_scope(&self) -> bool {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.is_scope(),
-                        )*
-                    }
-                }
-
-                fn get_scope_range(&self) -> Vec<[usize; 2]> {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.get_scope_range(),
-                        )*
-                    }
-                }
-            }
-        }
+    fn generate_inlay_hint(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.inlay_hints_trait,
+            vec![SignatureAndBody::new(
+                quote! { fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) },
+                quote! { build_inlay_hint(doc, acc) },
+            )],
+        )
     }
 
-    fn generate_accessor(&self) -> TokenStream {
-        let variant_names = &self.fields.variant_names;
-        let input_name = &self.input_name;
-        let is_accessor_trait = &self.paths.is_accessor_trait;
-        let accessor_trait = &self.paths.accessor_trait;
-        let weak_symbol = &self.paths.weak_symbol;
+    fn generate_semantic_tokens(&mut self) -> &mut Self {
+        let semangic_tokens_builder = &self.enum_builder.paths.semantic_tokens_builder;
 
-        quote! {
-        impl #is_accessor_trait for #input_name {
-            fn is_accessor(&self) -> bool {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.is_accessor(),
-                    )*
-                }
-            }
+        self.dispatch(
+            &self.enum_builder.paths.semantic_tokens_trait,
+            vec![SignatureAndBody::new(
+                quote! { fn build_semantic_tokens(&self, builder: &mut #semangic_tokens_builder) },
+                quote! { build_semantic_tokens(builder) },
+            )],
+        )
+    }
 
-            fn set_accessor(&mut self, accessor: #weak_symbol)  {
-                match self {
-                    #(
-                        Self::#variant_names(variant) => variant.set_accessor(accessor),
-                    )*
-                }
-            }
-        }
+    fn generate_go_to_definition(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.go_to_definition_trait,
+            vec![
+                SignatureAndBody::new(
+                    quote! { fn go_to_definition(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::GotoDefinitionResponse> },
+                    quote! { go_to_definition(doc) },
+                ),
+            ],
+        )
+    }
 
-        impl #accessor_trait for #input_name {
-            fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<#weak_symbol>, lsp_types::Diagnostic> {
-                    match self {
-                        #(
-                            Self::#variant_names(variant) => variant.find(doc, ctx),
-                        )*
-                    }
-                }
-            }
-        }
+    fn generate_scope(&mut self) -> &mut Self {
+        self.dispatch(
+            &self.enum_builder.paths.scope_trait,
+            vec![
+                SignatureAndBody::new(quote! { fn is_scope(&self) -> bool }, quote! { is_scope() }),
+                SignatureAndBody::new(
+                    quote! { fn get_scope_range(&self) -> Vec<[usize; 2]> },
+                    quote! { get_scope_range() },
+                ),
+            ],
+        )
+    }
+
+    fn generate_accessor(&mut self) -> &mut Self {
+        let weak_symbol = &self.enum_builder.paths.weak_symbol;
+
+        self.dispatch(
+            &self.enum_builder.paths.is_accessor_trait,
+            vec![
+                SignatureAndBody::new(
+                    quote! { fn is_accessor(&self) -> bool },
+                    quote! { is_accessor() },
+                ),
+                SignatureAndBody::new(
+                    quote! { fn set_accessor(&mut self, accessor: #weak_symbol) },
+                    quote! { set_accessor(accessor) },
+                ),
+            ],
+        );
+
+        self
+        .dispatch(&self.enum_builder.paths.accessor_trait, 
+            vec![SignatureAndBody::new(
+                quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<#weak_symbol>, lsp_types::Diagnostic> },
+                quote! { find(doc, ctx) },
+            )]
+        )
     }
 }

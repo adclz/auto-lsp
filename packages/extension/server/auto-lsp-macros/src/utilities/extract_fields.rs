@@ -1,10 +1,10 @@
-use crate::StructHelpers;
+use crate::{enum_builder, EnumBuilder, Paths, StructHelpers};
 
 use super::super::utilities::filter::{get_raw_type_name, is_option, is_vec};
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, ToTokens};
-use syn::Attribute;
+use quote::{format_ident, quote, ToTokens};
+use syn::{Attribute, Path};
 
 pub struct FieldInfo {
     pub ident: Ident,
@@ -64,17 +64,6 @@ impl StructFields {
     }
 }
 
-pub struct EnumFields {
-    // [Name]: Type
-    pub variant_names: Vec<proc_macro2::Ident>,
-
-    // Variant: [Type] -> Ident
-    pub variant_types_names: Vec<proc_macro2::Ident>,
-
-    // Variant(Builder): Type
-    pub variant_builder_names: Vec<proc_macro2::Ident>,
-}
-
 pub fn match_struct_fields(data: &ast::Data<util::Ignored, StructHelpers>) -> StructFields {
     let mut ret_fields = StructFields {
         field_names: vec![],
@@ -131,40 +120,6 @@ pub fn match_struct_fields(data: &ast::Data<util::Ignored, StructHelpers>) -> St
                     .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
             }
         });
-    ret_fields
-}
-
-pub fn match_enum_fields(data: &syn::Data) -> EnumFields {
-    let mut ret_fields = EnumFields {
-        variant_names: vec![],
-
-        variant_types_names: vec![],
-
-        variant_builder_names: vec![],
-    };
-    match data {
-        syn::Data::Enum(ref enum_data) => {
-            for variant in &enum_data.variants {
-                let variant_name = &variant.ident;
-                match &variant.fields {
-                    syn::Fields::Unnamed(fields) => {
-                        let first_field = fields.unnamed.first().unwrap();
-                        ret_fields.variant_names.push(variant_name.clone());
-                        ret_fields
-                            .variant_types_names
-                            .push(format_ident!("{}", get_raw_type_name(&first_field.ty)));
-                        ret_fields.variant_builder_names.push(format_ident!(
-                            "{}Builder",
-                            get_raw_type_name(&first_field.ty)
-                        ));
-                    }
-                    _ => panic!("This proc macro only works with enums"),
-                }
-            }
-        }
-        _ => panic!("This proc macro only works with enums"),
-    }
-
     ret_fields
 }
 
@@ -284,6 +239,114 @@ impl ToTokens for FieldBuilder<'_> {
 
 impl<'a> From<FieldBuilder<'a>> for Vec<TokenStream> {
     fn from(builder: FieldBuilder<'a>) -> Self {
+        builder.results
+    }
+}
+
+pub struct EnumFields {
+    // [Name]: Type
+    pub variant_names: Vec<proc_macro2::Ident>,
+
+    // Variant: [Type] -> Ident
+    pub variant_types_names: Vec<proc_macro2::Ident>,
+
+    // Variant(Builder): Type
+    pub variant_builder_names: Vec<proc_macro2::Ident>,
+}
+
+pub fn match_enum_fields(data: &syn::Data) -> EnumFields {
+    let mut ret_fields = EnumFields {
+        variant_names: vec![],
+
+        variant_types_names: vec![],
+
+        variant_builder_names: vec![],
+    };
+    match data {
+        syn::Data::Enum(ref enum_data) => {
+            for variant in &enum_data.variants {
+                let variant_name = &variant.ident;
+                match &variant.fields {
+                    syn::Fields::Unnamed(fields) => {
+                        let first_field = fields.unnamed.first().unwrap();
+                        ret_fields.variant_names.push(variant_name.clone());
+                        ret_fields
+                            .variant_types_names
+                            .push(format_ident!("{}", get_raw_type_name(&first_field.ty)));
+                        ret_fields.variant_builder_names.push(format_ident!(
+                            "{}Builder",
+                            get_raw_type_name(&first_field.ty)
+                        ));
+                    }
+                    _ => panic!("This proc macro only works with enums"),
+                }
+            }
+        }
+        _ => panic!("This proc macro only works with enums"),
+    }
+
+    ret_fields
+}
+
+pub struct VariantBuilder<'a> {
+    pub enum_builder: &'a EnumBuilder<'a>,
+    results: Vec<TokenStream>,
+}
+
+pub struct SignatureAndBody {
+    pub signature: TokenStream,
+    pub body: TokenStream,
+}
+
+impl SignatureAndBody {
+    pub fn new(signature: TokenStream, body: TokenStream) -> Self {
+        Self { signature, body }
+    }
+}
+
+impl<'a> VariantBuilder<'a> {
+    pub fn new(enum_builder: &'a EnumBuilder) -> Self {
+        Self {
+            enum_builder,
+            results: vec![],
+        }
+    }
+
+    pub fn dispatch(&mut self, _trait: &Path, sig: Vec<SignatureAndBody>) -> &mut Self {
+        let input_name = self.enum_builder.input_name;
+        let variants = &self.enum_builder.fields.variant_names;
+
+        let body = sig.iter().map(|s| {
+            let signature = &s.signature;
+            let body = &s.body;
+            quote! {
+                #signature {
+                    match self {
+                        #(
+                            Self::#variants(inner) => inner.#body,
+                        )*
+                    }
+                }
+            }
+        });
+
+        self.results.push(quote! {
+            impl #_trait for #input_name {
+                #(#body)*
+            }
+        });
+        self
+    }
+}
+
+impl ToTokens for VariantBuilder<'_> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.extend(self.results.clone());
+    }
+}
+
+impl<'a> From<VariantBuilder<'a>> for Vec<TokenStream> {
+    fn from(builder: VariantBuilder<'a>) -> Self {
         builder.results
     }
 }
