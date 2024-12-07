@@ -2,9 +2,9 @@ use crate::{
     features::{
         accessor::AccessorBuilder, duplicate::CheckDuplicateBuilder,
         lsp_code_lens::CodeLensBuilder, lsp_completion_item::CompletionItemsBuilder,
-        lsp_document_symbol::DocumentSymbolBuilder, lsp_hover_info::HoverInfoBuilder,
-        lsp_inlay_hint::InlayHintsBuilder, lsp_semantic_token::SemanticTokensBuilder,
-        scope::ScopeBuilder,
+        lsp_document_symbol::DocumentSymbolBuilder, lsp_go_to_definition::GotoDefinitionBuilder,
+        lsp_hover_info::HoverInfoBuilder, lsp_inlay_hint::InlayHintsBuilder,
+        lsp_semantic_token::SemanticTokensBuilder, scope::ScopeBuilder,
     },
     utilities::extract_fields::StructFields,
     Paths, StructHelpers, SymbolFeatures,
@@ -36,6 +36,7 @@ pub struct Features<'a> {
     pub lsp_hover_info: HoverInfoBuilder<'a>,
     pub lsp_inlay_hints: InlayHintsBuilder<'a>,
     pub lsp_semantic_tokens: SemanticTokensBuilder<'a>,
+    pub lsp_go_to_definition: GotoDefinitionBuilder<'a>,
     pub scope: ScopeBuilder<'a>,
     pub accessor: AccessorBuilder<'a>,
     pub duplicate: CheckDuplicateBuilder<'a>,
@@ -93,6 +94,13 @@ impl<'a> Features<'a> {
                 fields,
                 is_accessor,
             ),
+            lsp_go_to_definition: GotoDefinitionBuilder::new(
+                input_name,
+                paths,
+                features_attributes.and_then(|a| a.lsp_go_to_definition.as_ref()),
+                fields,
+                is_accessor,
+            ),
             scope: ScopeBuilder::new(
                 input_name,
                 paths,
@@ -113,6 +121,7 @@ impl<'a> ToCodeGen for Features<'a> {
         self.lsp_hover_info.to_code_gen(codegen);
         self.lsp_inlay_hints.to_code_gen(codegen);
         self.lsp_semantic_tokens.to_code_gen(codegen);
+        self.lsp_go_to_definition.to_code_gen(codegen);
         self.scope.to_code_gen(codegen);
         self.accessor.to_code_gen(codegen);
         self.duplicate.to_code_gen(codegen);

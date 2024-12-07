@@ -1,10 +1,11 @@
-use syn::{Ident, Path, Type};
+use syn::{Ident, Type};
 
 use crate::features::{
     duplicate::DuplicateCheck, lsp_code_lens::CodeLensFeature,
     lsp_completion_item::CompletionItemFeature, lsp_document_symbol::DocumentSymbolFeature,
-    lsp_hover_info::HoverFeature, lsp_inlay_hint::InlayHintFeature,
-    lsp_semantic_token::SemanticTokenFeature, scope::ScopeFeature,
+    lsp_go_to_definition::GotoDefinitionFeature, lsp_hover_info::HoverFeature,
+    lsp_inlay_hint::InlayHintFeature, lsp_semantic_token::SemanticTokenFeature,
+    scope::ScopeFeature,
 };
 use darling::{ast, util, FromDeriveInput, FromField, FromMeta};
 
@@ -53,4 +54,5 @@ pub struct SymbolFeatures {
     pub lsp_inlay_hints: Option<Feature<InlayHintFeature>>,
     pub lsp_code_lens: Option<Feature<CodeLensFeature>>,
     pub lsp_completion_items: Option<Feature<CompletionItemFeature>>,
+    pub lsp_go_to_definition: Option<Feature<GotoDefinitionFeature>>,
 }

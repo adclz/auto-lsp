@@ -1,7 +1,10 @@
 use crate::semantic_tokens::SemanticTokensBuilder;
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
-use lsp_types::{CompletionItem, Diagnostic, DocumentSymbol, Position, Range, Url};
+use lsp_types::{
+    request::{GotoDeclarationResponse, GotoDefinition},
+    CompletionItem, Diagnostic, DocumentSymbol, GotoDefinitionResponse, Position, Range, Url,
+};
 use parking_lot::RwLock;
 use std::{
     collections::HashSet,
@@ -20,6 +23,7 @@ pub trait AstSymbol:
     + InlayHints
     + CodeLens
     + CompletionItems
+    + GoToDefinition
     + Scope
     + Accessor
     + Locator
@@ -195,6 +199,10 @@ pub trait CodeLens {
 
 pub trait CompletionItems {
     fn build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &FullTextDocument);
+}
+
+pub trait GoToDefinition {
+    fn go_to_definition(&self, doc: &FullTextDocument) -> Option<GotoDefinitionResponse>;
 }
 
 pub trait IsAccessor {

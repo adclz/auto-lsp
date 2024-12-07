@@ -47,6 +47,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let hover_info = self.generate_hover_info();
         let inlay_hint = self.generate_inlay_hint();
         let semantic_tokens = self.generate_semantic_tokens();
+        let go_to_definition = self.generate_go_to_definition();
         let scope = self.generate_scope();
         let accessor = self.generate_accessor();
 
@@ -114,6 +115,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             #hover_info
             #inlay_hint
             #semantic_tokens
+            #go_to_definition
             #scope
             #accessor
             #locator
@@ -449,6 +451,24 @@ impl<'a> EnumBuilder<'a> {
                     match self {
                         #(
                             Self::#variant_names(variant) => variant.build_semantic_tokens(builder),
+                        )*
+                    }
+                }
+            }
+        }
+    }
+
+    fn generate_go_to_definition(&self) -> TokenStream {
+        let variant_names = &self.fields.variant_names;
+        let input_name = &self.input_name;
+        let go_to_definition_path = &self.paths.go_to_definition_trait;
+
+        quote! {
+            impl #go_to_definition_path for #input_name {
+                fn go_to_definition(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::GotoDefinitionResponse> {
+                    match self {
+                        #(
+                            Self::#variant_names(variant) => variant.go_to_definition(doc),
                         )*
                     }
                 }

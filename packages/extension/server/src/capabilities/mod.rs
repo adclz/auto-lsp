@@ -5,6 +5,7 @@ pub mod document_link;
 pub mod document_symbols;
 pub mod edit_text_document;
 pub mod folding_ranges;
+pub mod go_to_definition;
 pub mod hover_info;
 pub mod inlay_hint;
 pub mod open_text_document;
