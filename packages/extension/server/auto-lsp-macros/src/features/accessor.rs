@@ -6,25 +6,18 @@ use syn::{Ident, Path};
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    Feature, FeaturesCodeGen, Paths, ToCodeGen,
+    Feature, FeaturesCodeGen, Paths, ToCodeGen, PATHS,
 };
 
 pub struct AccessorBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub fields: &'a StructFields,
     pub is_accessor: bool,
 }
 
 impl<'a> AccessorBuilder<'a> {
-    pub fn new(
-        input_name: &'a Ident,
-        is_accessor: bool,
-        paths: &'a Paths,
-        fields: &'a StructFields,
-    ) -> Self {
+    pub fn new(input_name: &'a Ident, is_accessor: bool, fields: &'a StructFields) -> Self {
         Self {
-            paths,
             input_name,
             fields,
             is_accessor,
@@ -35,8 +28,8 @@ impl<'a> AccessorBuilder<'a> {
 impl<'a> ToCodeGen for AccessorBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let is_accessor_path = &self.paths.is_accessor_trait;
-        let accessor_path = &self.paths.accessor_trait;
+        let is_accessor_path = &PATHS.is_accessor_trait;
+        let accessor_path = &PATHS.accessor_trait;
 
         let bool = if self.is_accessor {
             quote! { true }
@@ -51,7 +44,7 @@ impl<'a> ToCodeGen for AccessorBuilder<'a> {
             .into(),
         );
 
-        let weak_symbol = &self.paths.weak_symbol;
+        let weak_symbol = &PATHS.weak_symbol;
 
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {

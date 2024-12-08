@@ -89,7 +89,6 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &input_builder_name,
             &query_name,
             &fields,
-            &*PATHS,
             true,
         )
         .to_tokens(&mut tokens),
@@ -101,7 +100,6 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &input_builder_name,
             &query_name,
             &fields,
-            &*PATHS,
             false,
         )
         .to_tokens(&mut tokens),
@@ -119,6 +117,6 @@ pub fn ast_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
     let fields = match_enum_fields(&input.data);
     let mut tokens = proc_macro2::TokenStream::new();
 
-    EnumBuilder::new(&input_name, &input_builder_name, &fields, &*PATHS).to_tokens(&mut tokens);
+    EnumBuilder::new(&input_name, &input_builder_name, &fields).to_tokens(&mut tokens);
     tokens.into()
 }

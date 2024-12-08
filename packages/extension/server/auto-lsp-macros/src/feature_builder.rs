@@ -48,7 +48,6 @@ impl<'a> Features<'a> {
         helper_attributes: &'a ast::Data<util::Ignored, StructHelpers>,
         is_accessor: bool,
         input_name: &'a Ident,
-        paths: &'a Paths,
         fields: &'a StructFields,
     ) -> Self {
         Self {
@@ -96,12 +95,11 @@ impl<'a> Features<'a> {
             ),
             scope: ScopeBuilder::new(
                 input_name,
-                paths,
                 features_attributes.and_then(|a| a.scope.as_ref()),
                 fields,
             ),
-            accessor: AccessorBuilder::new(input_name, is_accessor, paths, fields),
-            duplicate: CheckDuplicateBuilder::new(input_name, paths, helper_attributes, fields),
+            accessor: AccessorBuilder::new(input_name, is_accessor, fields),
+            duplicate: CheckDuplicateBuilder::new(input_name, helper_attributes, fields),
         }
     }
 }

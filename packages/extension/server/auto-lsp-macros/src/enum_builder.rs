@@ -5,7 +5,6 @@ use quote::{quote, ToTokens};
 use syn::Ident;
 
 pub struct EnumBuilder<'a> {
-    pub paths: &'a Paths,
     pub fields: &'a EnumFields,
     pub input_name: &'a Ident,
     pub input_builder_name: &'a Ident,
@@ -16,10 +15,8 @@ impl<'a> EnumBuilder<'a> {
         input_name: &'a Ident,
         input_builder_name: &'a Ident,
         fields: &'a EnumFields,
-        paths: &'a Paths,
     ) -> Self {
         Self {
-            paths,
             fields,
             input_name,
             input_builder_name,
@@ -56,10 +53,10 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             .generate_accessor()
             .to_token_stream();
 
-        let pending_symbol = &self.paths.symbol_builder_trait;
-        let dyn_symbol = &self.paths.dyn_symbol;
+        let pending_symbol = &PATHS.symbol_builder_trait;
+        let dyn_symbol = &PATHS.dyn_symbol;
 
-        let try_from_builder = &self.paths.try_from_builder;
+        let try_from_builder = &PATHS.try_from_builder;
 
         let into = quote! {
             fn try_to_dyn_symbol(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
@@ -112,12 +109,12 @@ impl<'a> ToTokens for EnumBuilder<'a> {
 
 impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
     fn generate_builder_fields(&self) -> Vec<TokenStream> {
-        let pending_symbol: &syn::Path = &self.paths.pending_symbol;
+        let pending_symbol: &syn::Path = &PATHS.pending_symbol;
         vec![quote! { pub unique_field: #pending_symbol }]
     }
 
     fn generate_builder_new(&self) -> TokenStream {
-        let pending_symbol = &self.paths.pending_symbol;
+        let pending_symbol = &PATHS.pending_symbol;
 
         let variant_types_names = &self.fields.variant_types_names;
         let variant_builder_names = &self.fields.variant_builder_names;
@@ -141,7 +138,7 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
     }
 
     fn generate_query_binder(&self) -> TokenStream {
-        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
 
         quote! {
             fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
@@ -151,7 +148,7 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
     }
 
     fn generate_add(&self) -> TokenStream {
-        let pending_symbol = &self.paths.pending_symbol;
+        let pending_symbol = &PATHS.pending_symbol;
 
         quote! {
             fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
@@ -168,10 +165,10 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let variant_names = &self.fields.variant_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
-        let try_from_builder = &self.paths.try_from_builder;
-        let try_into_builder = &self.paths.try_into_builder;
+        let try_from_builder = &PATHS.try_from_builder;
+        let try_into_builder = &PATHS.try_into_builder;
 
-        let dyn_symbol = &self.paths.dyn_symbol;
+        let dyn_symbol = &PATHS.dyn_symbol;
 
         quote! {
             impl #try_from_builder<&#input_builder_name> for #name {
@@ -206,11 +203,11 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
     }
 
     fn generate_symbol_methods(&self) -> TokenStream {
-        let weak_symbol = &self.paths.weak_symbol;
+        let weak_symbol = &PATHS.weak_symbol;
 
         VariantBuilder::new(&self)
         .dispatch(
-            &self.paths.symbol_trait,
+            &PATHS.symbol_trait,
             vec![SignatureAndBody::new(
                 quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },
                 quote! { get_url() },
@@ -243,7 +240,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
 impl<'a> VariantBuilder<'a> {
     fn generate_duplicate(&mut self) -> &mut Self {
         self.dispatch(
-            &self.enum_builder.paths.check_duplicate,
+            &PATHS.check_duplicate,
             vec![SignatureAndBody::new(
                 quote! { fn must_check(&self) -> bool },
                 quote! { must_check() },
@@ -255,10 +252,10 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_locator(&mut self) -> &mut Self {
-        let dyn_symbol = &self.enum_builder.paths.dyn_symbol;
+        let dyn_symbol = &PATHS.dyn_symbol;
 
         self.dispatch(
-            &self.enum_builder.paths.locator,
+            &PATHS.locator,
             vec![SignatureAndBody::new(
                 quote! { fn find_at_offset(&self, offset: usize) -> Option<#dyn_symbol> },
                 quote! { find_at_offset(offset) },
@@ -267,10 +264,10 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_parent(&mut self) -> &mut Self {
-        let weak_symbol = &self.enum_builder.paths.weak_symbol;
+        let weak_symbol = &PATHS.weak_symbol;
 
         self.dispatch(
-            &self.enum_builder.paths.parent,
+            &PATHS.parent,
             vec![SignatureAndBody::new(
                 quote! { fn inject_parent(&mut self, parent: #weak_symbol) },
                 quote! { inject_parent(parent) },
@@ -350,7 +347,7 @@ impl<'a> VariantBuilder<'a> {
 
     fn generate_scope(&mut self) -> &mut Self {
         self.dispatch(
-            &self.enum_builder.paths.scope_trait,
+            &PATHS.scope_trait,
             vec![
                 SignatureAndBody::new(quote! { fn is_scope(&self) -> bool }, quote! { is_scope() }),
                 SignatureAndBody::new(
@@ -362,10 +359,10 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_accessor(&mut self) -> &mut Self {
-        let weak_symbol = &self.enum_builder.paths.weak_symbol;
+        let weak_symbol = &PATHS.weak_symbol;
 
         self.dispatch(
-            &self.enum_builder.paths.is_accessor_trait,
+            &PATHS.is_accessor_trait,
             vec![
                 SignatureAndBody::new(
                     quote! { fn is_accessor(&self) -> bool },
@@ -379,7 +376,7 @@ impl<'a> VariantBuilder<'a> {
         );
 
         self
-        .dispatch(&self.enum_builder.paths.accessor_trait, 
+        .dispatch(&PATHS.accessor_trait, 
             vec![SignatureAndBody::new(
                 quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<#weak_symbol>, lsp_types::Diagnostic> },
                 quote! { find(doc, ctx) },

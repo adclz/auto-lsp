@@ -1,7 +1,7 @@
 use crate::{
     utilities::extract_fields::{FieldBuilder, FieldBuilderType, StructFields},
     BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, Paths, StructHelpers,
-    SymbolFeatures, ToCodeGen,
+    SymbolFeatures, ToCodeGen, PATHS,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
@@ -16,8 +16,6 @@ pub struct StructBuilder<'a> {
     pub input_buider_name: &'a Ident,
     pub fields: &'a StructFields,
     pub is_accessor: bool,
-    // Paths
-    pub paths: &'a Paths,
     // Features
     pub features: Features<'a>,
 }
@@ -31,7 +29,6 @@ impl<'a> StructBuilder<'a> {
         input_buider_name: &'a Ident,
         query_name: &'a str,
         fields: &'a StructFields,
-        paths: &'a Paths,
         is_accessor: bool,
     ) -> Self {
         Self {
@@ -41,8 +38,7 @@ impl<'a> StructBuilder<'a> {
             input_buider_name,
             fields,
             is_accessor,
-            paths,
-            features: Features::new(params, &helpers, is_accessor, input_name, paths, fields),
+            features: Features::new(params, &helpers, is_accessor, input_name, fields),
         }
     }
 }
@@ -63,7 +59,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let features_others_impl = code_gen.input.other_impl;
 
         // generate ast item
-        let symbol_trait = &self.paths.symbol_trait;
+        let symbol_trait = &PATHS.symbol_trait;
 
         let fields = self.generate_fields();
         let methods = self.generate_symbol_methods();
@@ -99,7 +95,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         // Generate builder
 
         let input_builder_name = &self.input_buider_name;
-        let pending_symbol = &self.paths.symbol_builder_trait;
+        let pending_symbol = &PATHS.symbol_builder_trait;
 
         let builder_fields = self.generate_builder_fields();
         let new = self.generate_builder_new();
@@ -107,8 +103,8 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let add = self.generate_add();
         let try_from = self.generate_try_from();
 
-        let dyn_symbol = &self.paths.dyn_symbol;
-        let try_from_builder = &self.paths.try_from_builder;
+        let dyn_symbol = &PATHS.dyn_symbol;
+        let try_from_builder = &PATHS.try_from_builder;
 
         let into = quote! {
             fn try_to_dyn_symbol(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
@@ -159,7 +155,7 @@ impl<'a> StructBuilder<'a> {
         let query_name = self.query_name;
         let input_name = &self.input_name;
         let input_builder_name = &self.input_buider_name;
-        let queryable = &self.paths.queryable;
+        let queryable = &PATHS.queryable;
 
         quote! {
             impl #queryable for #input_name {
@@ -175,9 +171,9 @@ impl<'a> StructBuilder<'a> {
 
 impl<'a> StructBuilder<'a> {
     fn generate_locator_trait(&self) -> TokenStream {
-        let locator = &self.paths.locator;
+        let locator = &PATHS.locator;
         let input_name = &self.input_name;
-        let dyn_symbol = &self.paths.dyn_symbol;
+        let dyn_symbol = &PATHS.dyn_symbol;
 
         let builder = FieldBuilder::new(&self.fields)
             .apply_all(|_, _, name, _, _| {
@@ -207,9 +203,9 @@ impl<'a> StructBuilder<'a> {
 
 impl<'a> StructBuilder<'a> {
     fn generate_parent_trait(&self) -> TokenStream {
-        let parent = &self.paths.parent;
+        let parent = &PATHS.parent;
         let input_name = &self.input_name;
-        let weak_symbol = &self.paths.weak_symbol;
+        let weak_symbol = &PATHS.weak_symbol;
 
         let builder = FieldBuilder::new(&self.fields)
             .apply_all(|_, _, name, _, _| {
@@ -231,8 +227,8 @@ impl<'a> StructBuilder<'a> {
 
 impl<'a> BuildAstItem for StructBuilder<'a> {
     fn generate_fields(&self) -> Vec<TokenStream> {
-        let symbol = &self.paths.symbol;
-        let weak_symbol = &self.paths.weak_symbol;
+        let symbol = &PATHS.symbol;
+        let weak_symbol = &PATHS.weak_symbol;
 
         let mut fields = vec![
             quote! { pub url: std::sync::Arc<lsp_types::Url> },
@@ -265,7 +261,7 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
     }
 
     fn generate_symbol_methods(&self) -> TokenStream {
-        let weak_symbol = &self.paths.weak_symbol;
+        let weak_symbol = &PATHS.weak_symbol;
 
         quote! {
             fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
@@ -289,8 +285,8 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
 
 impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     fn generate_builder_fields(&self) -> Vec<TokenStream> {
-        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
-        let pending_symbol = &self.paths.pending_symbol;
+        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
+        let pending_symbol = &PATHS.pending_symbol;
 
         let mut builder = FieldBuilder::new(&self.fields);
 
@@ -302,7 +298,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     }
 
     fn generate_builder_new(&self) -> TokenStream {
-        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
 
         let fields = FieldBuilder::new(&self.fields)
             .apply_all(|ty, _, name, _, _| match ty {
@@ -326,7 +322,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     }
 
     fn generate_query_binder(&self) -> TokenStream {
-        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
 
         let fields_types = self.fields.get_field_types();
         let fields_builder = self.fields.get_field_builder_names();
@@ -352,7 +348,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     }
 
     fn generate_add(&self) -> TokenStream {
-        let pending_symbol = &self.paths.pending_symbol;
+        let pending_symbol = &PATHS.pending_symbol;
 
         let input_builder_name = &self.input_buider_name;
 
@@ -389,9 +385,9 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let name = self.input_name;
         let input_builder_name = &self.input_buider_name;
 
-        let try_from_builder = &self.paths.try_from_builder;
+        let try_from_builder = &PATHS.try_from_builder;
 
-        let dyn_symbol = &self.paths.dyn_symbol;
+        let dyn_symbol = &PATHS.dyn_symbol;
 
         let builder = FieldBuilder::new(self.fields)
             .apply_all(|ty, _, name, _, _| match ty  {

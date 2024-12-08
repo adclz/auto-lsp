@@ -11,6 +11,7 @@ use crate::{
         extract_fields::StructFields,
         format_tokens::path_to_dot_tokens,
     }, FeaturesCodeGen, Paths, StructHelpers, ToCodeGen,
+    PATHS
 };
 
 #[derive(Debug, FromMeta)]
@@ -29,7 +30,6 @@ struct OtherDuplicateCheck {
 
 pub struct CheckDuplicateBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub fields: &'a StructFields,
     pub helper: &'a ast::Data<util::Ignored, StructHelpers>,
 }
@@ -37,12 +37,10 @@ pub struct CheckDuplicateBuilder<'a> {
 impl<'a> CheckDuplicateBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         helper: &'a ast::Data<util::Ignored, StructHelpers>,
         fields: &'a StructFields,
     ) -> Self {
         Self {
-            paths,
             input_name,
             fields,
             helper,
@@ -53,7 +51,7 @@ impl<'a> CheckDuplicateBuilder<'a> {
 impl<'a> ToCodeGen for CheckDuplicateBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let check_duplicate = &self.paths.check_duplicate;
+        let check_duplicate = &PATHS.check_duplicate;
 
         let fields = self
             .helper

@@ -6,7 +6,7 @@ use syn::{Ident, Path};
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    Feature, FeaturesCodeGen, Paths, ToCodeGen,
+    Feature, FeaturesCodeGen, Paths, ToCodeGen, PATHS,
 };
 
 #[derive(Debug, FromMeta)]
@@ -22,7 +22,6 @@ pub struct ScopeRange {
 
 pub struct ScopeBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub params: Option<&'a Feature<ScopeFeature>>,
     pub fields: &'a StructFields,
 }
@@ -30,12 +29,10 @@ pub struct ScopeBuilder<'a> {
 impl<'a> ScopeBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         params: Option<&'a Feature<ScopeFeature>>,
         fields: &'a StructFields,
     ) -> Self {
         Self {
-            paths,
             input_name,
             params,
             fields,
@@ -46,7 +43,7 @@ impl<'a> ScopeBuilder<'a> {
 impl<'a> ToCodeGen for ScopeBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let scope_path = &self.paths.scope_trait;
+        let scope_path = &PATHS.scope_trait;
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {
