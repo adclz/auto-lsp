@@ -1,5 +1,5 @@
 use crate::utilities::extract_fields::{EnumFields, SignatureAndBody, VariantBuilder};
-use crate::{BuildAstItem, BuildAstItemBuilder, Paths};
+use crate::{BuildAstItem, BuildAstItemBuilder, Paths, PATHS};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::Ident;
@@ -279,76 +279,72 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_code_lens(&mut self) -> &mut Self {
-        self.dispatch(
-            &self.enum_builder.paths.code_lens_trait,
-            vec![SignatureAndBody::new(
-                quote! { fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) },
-                quote! { build_code_lens(acc) },
+        self.dispatch2(
+            &PATHS.lsp_code_lens.path,
+            vec![(
+                &PATHS.lsp_code_lens.methods.build_code_lens.sig,
+                &PATHS.lsp_code_lens.methods.build_code_lens.variant,
             )],
         )
     }
 
     fn generate_completion_items(&mut self) -> &mut Self {
-        self.dispatch(
-            &self.enum_builder.paths.completion_items_trait,
-            vec![SignatureAndBody::new(
-                quote! { fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) },
-                quote! { build_completion_items(acc, doc) },
+        self.dispatch2(
+            &PATHS.lsp_completion_items.path,
+            vec![(
+                &PATHS.lsp_completion_items.methods.build_completion_items.sig,
+                &PATHS.lsp_completion_items.methods.build_completion_items.variant,
             )],
         )
     }
 
     fn generate_document_symbol(&mut self) -> &mut Self {
-        self.dispatch(
-            &self.enum_builder.paths.document_symbols_trait,
-            vec![SignatureAndBody::new(
-                quote! { fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> },
-                quote! { get_document_symbols(doc) },
+        self.dispatch2(
+            &PATHS.lsp_document_symbols.path,
+            vec![(
+                &PATHS.lsp_document_symbols.methods.get_document_symbols.sig,
+                &PATHS.lsp_document_symbols.methods.get_document_symbols.variant,
             )],
         )
     }
 
     fn generate_hover_info(&mut self) -> &mut Self {
-        self.dispatch(
-            &self.enum_builder.paths.hover_info_trait,
-            vec![SignatureAndBody::new(
-                quote! { fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> },
-                quote! { get_hover(doc) },
+        self.dispatch2(
+            &PATHS.lsp_hover_info.path,
+            vec![(
+                &PATHS.lsp_hover_info.methods.get_hover.sig,
+                &PATHS.lsp_hover_info.methods.get_hover.variant,
             )],
         )
     }
 
     fn generate_inlay_hint(&mut self) -> &mut Self {
-        self.dispatch(
-            &self.enum_builder.paths.inlay_hints_trait,
-            vec![SignatureAndBody::new(
-                quote! { fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) },
-                quote! { build_inlay_hint(doc, acc) },
+        self.dispatch2(
+            &PATHS.lsp_inlay_hint.path,
+            vec![(
+                &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig,
+                &PATHS.lsp_inlay_hint.methods.build_inlay_hint.variant,
             )],
         )
     }
 
     fn generate_semantic_tokens(&mut self) -> &mut Self {
-        let semangic_tokens_builder = &self.enum_builder.paths.semantic_tokens_builder;
-
-        self.dispatch(
-            &self.enum_builder.paths.semantic_tokens_trait,
-            vec![SignatureAndBody::new(
-                quote! { fn build_semantic_tokens(&self, builder: &mut #semangic_tokens_builder) },
-                quote! { build_semantic_tokens(builder) },
+        self.dispatch2(
+            &PATHS.lsp_semantic_token.path,
+            vec![(
+                &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig,
+                &PATHS.lsp_semantic_token.methods.build_semantic_tokens.variant,
             )],
         )
     }
 
     fn generate_go_to_definition(&mut self) -> &mut Self {
-        self.dispatch(
-            &self.enum_builder.paths.go_to_definition_trait,
-            vec![
-                SignatureAndBody::new(
-                    quote! { fn go_to_definition(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::GotoDefinitionResponse> },
-                    quote! { go_to_definition(doc) },
-                ),
-            ],
+        self.dispatch2(
+            &PATHS.lsp_go_to_definition.path,
+            vec![(
+                &PATHS.lsp_go_to_definition.methods.go_to_definition.sig,
+                &PATHS.lsp_go_to_definition.methods.go_to_definition.variant,
+            )],
         )
     }
 

@@ -7,7 +7,7 @@ use darling::FromMeta;
 use quote::quote;
 use syn::{Ident, Path};
 
-use crate::Feature;
+use crate::{Feature, PATHS};
 
 #[derive(Debug, FromMeta)]
 pub struct CompletionItemFeature {
@@ -22,7 +22,6 @@ pub struct CompletionItem {
 
 pub struct CompletionItemsBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub params: Option<&'a Feature<CompletionItemFeature>>,
     pub fields: &'a StructFields,
     pub is_accessor: bool
@@ -31,7 +30,6 @@ pub struct CompletionItemsBuilder<'a> {
 impl<'a> CompletionItemsBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         params: Option<&'a Feature<CompletionItemFeature>>,
         fields: &'a StructFields,
         is_accessor: bool,
@@ -39,7 +37,6 @@ impl<'a> CompletionItemsBuilder<'a> {
         Self {
             input_name,
             params,
-            paths,
             fields,
             is_accessor,
         }
@@ -49,12 +46,14 @@ impl<'a> CompletionItemsBuilder<'a> {
 impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let completion_items_path = &self.paths.completion_items_trait;
+        let completion_items_path = &PATHS.lsp_completion_items.path;
+        let sig = &PATHS.lsp_completion_items.methods.build_completion_items.sig;
+        let default = &PATHS.lsp_completion_items.methods.build_completion_items.default;
 
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {
                 impl #completion_items_path for #input_name {
-                    fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
+                    #sig {
                         if let Some(accessor) = &self.accessor {
                             if let Some(accessor) = accessor.to_dyn() {
                                 accessor.read().build_completion_items(acc, doc)
@@ -69,11 +68,7 @@ impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #completion_items_path for #input_name {
-                    fn build_completion_items(
-                        &self,
-                        _acc: &mut Vec<lsp_types::CompletionItem>,
-                        _doc: &lsp_textdocument::FullTextDocument,
-                    ) {}
+                    #sig { #default }
                 }
             }),
             Some(params) => match params {
@@ -89,7 +84,7 @@ impl<'a> ToCodeGen for CompletionItemsBuilder<'a> {
                 
                     codegen.input.other_impl.push(quote! {
                         impl #completion_items_path for #input_name {
-                            fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) {
+                            #sig {
                                 let read = #label.read();
                 
                                 acc.push(lsp_types::CompletionItem {

@@ -7,7 +7,7 @@ use syn::{Ident, Path};
 use crate::utilities::extract_fields::FieldInfoExtract;
 use crate::{utilities::extract_fields::StructFields, FeaturesCodeGen, ToCodeGen};
 
-use crate::{Feature, Paths};
+use crate::{Feature, Paths, PATHS};
 
 #[derive(Debug, FromMeta)]
 pub struct InlayHintFeature {
@@ -16,7 +16,6 @@ pub struct InlayHintFeature {
 
 pub struct InlayHintsBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub params: Option<&'a Feature<InlayHintFeature>>,
     pub fields: &'a StructFields,
     pub is_accessor: bool,
@@ -25,13 +24,11 @@ pub struct InlayHintsBuilder<'a> {
 impl<'a> InlayHintsBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         params: Option<&'a Feature<InlayHintFeature>>,
         fields: &'a StructFields,
         is_accessor: bool,
     ) -> Self {
         Self {
-            paths,
             input_name,
             params,
             fields,
@@ -43,12 +40,14 @@ impl<'a> InlayHintsBuilder<'a> {
 impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let inlay_hint_path = &self.paths.inlay_hints_trait;
+        let inlay_hint_path = &PATHS.lsp_inlay_hint.path;
+        let sig = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig;
+        let default = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.default;
 
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {
                 impl #inlay_hint_path for #input_name {
-                    fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+                    #sig {
                         if let Some(accessor) = &self.accessor {
                             if let Some(accessor) = accessor.to_dyn() {
                                 accessor.read().build_inlay_hint(doc, acc)
@@ -63,7 +62,7 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #inlay_hint_path for #input_name {
-                    fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, _acc: &mut Vec<lsp_types::InlayHint>) {}
+                    #sig { #default  }
                 }
             }),
             Some(params) => match params {
@@ -76,7 +75,7 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
                     if opt.query.is_some() {
                         codegen.input.other_impl.push(quote! {
                             impl #inlay_hint_path for #input_name {
-                                fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) {
+                                #sig {
                                     acc.push(lsp_types::InlayHint {
                                         position: self.get_start_position(doc),
                                         kind: Some(lsp_types::InlayHintKind::TYPE),
@@ -104,10 +103,10 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
                             }
                         });
                     } else {
-                    panic!("Inlay Hint does not provide (yet) code generation, instead implement the trait InlayHint manually");
+                        panic!("Inlay Hint does not provide (yet) code generation, instead implement the trait InlayHint manually");
+                    }
                 }
             },
         }
-    }
     }
 }

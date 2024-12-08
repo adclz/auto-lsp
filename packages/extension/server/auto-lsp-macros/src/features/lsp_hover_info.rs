@@ -6,14 +6,13 @@ use syn::Ident;
 
 use crate::{utilities::extract_fields::StructFields, FeaturesCodeGen, Paths, ToCodeGen};
 
-use crate::Feature;
+use crate::{Feature, PATHS};
 
 #[derive(Debug, FromMeta)]
 pub struct HoverFeature {}
 
 pub struct HoverInfoBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub params: Option<&'a Feature<HoverFeature>>,
     pub fields: &'a StructFields,
     pub is_accessor: bool,
@@ -22,13 +21,11 @@ pub struct HoverInfoBuilder<'a> {
 impl<'a> HoverInfoBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         params: Option<&'a Feature<HoverFeature>>,
         fields: &'a StructFields,
         is_accessor: bool,
     ) -> Self {
         Self {
-            paths,
             input_name,
             params,
             fields,
@@ -40,12 +37,14 @@ impl<'a> HoverInfoBuilder<'a> {
 impl<'a> ToCodeGen for HoverInfoBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let hover_info_path = &self.paths.hover_info_trait;
+        let hover_info_path = &PATHS.lsp_hover_info.path;
+        let sig = &PATHS.lsp_hover_info.methods.get_hover.sig;
+        let default = &PATHS.lsp_hover_info.methods.get_hover.default;
 
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {
                 impl #hover_info_path for #input_name {
-                    fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
+                    #sig {
                         if let Some(accessor) = &self.accessor {
                             if let Some(accessor) = accessor.to_dyn() {
                                 return accessor.read().get_hover(doc)
@@ -61,9 +60,7 @@ impl<'a> ToCodeGen for HoverInfoBuilder<'a> {
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #hover_info_path for #input_name {
-                    fn get_hover(&self, _doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> {
-                        None
-                    }
+                    #sig { #default }
                 }
             }),
             Some(params) => match params {
@@ -71,7 +68,7 @@ impl<'a> ToCodeGen for HoverInfoBuilder<'a> {
                 Feature::CodeGen(_) => {
                     panic!("Hover Info does not provide code generation, instead implement the trait HoverInfo manually");
                 }
-            }
+            },
         }
     }
 }

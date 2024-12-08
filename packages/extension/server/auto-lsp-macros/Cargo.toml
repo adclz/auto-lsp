@@ -9,8 +9,15 @@ darling = "0.20.10"
 quote = "1.0"
 proc-macro2 = "1.0"
 paste = "1.0"
+structx = "0.1.11"
 auto-lsp = { path = "../auto-lsp" }
 constcat = {workspace = true}
 
 [lib]
 proc-macro = true
+
+[build-dependencies]
+inwelling = "0.5"
+
+[package.metadata.inwelling]
+structx = true

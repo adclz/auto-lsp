@@ -1,6 +1,7 @@
 extern crate proc_macro;
 
 use crate::{
+    PATHS,
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens}, FeaturesCodeGen, Paths, ToCodeGen
 };
 use darling::{util::PathList, FromMeta};
@@ -24,7 +25,6 @@ pub struct Childrens {
 
 pub struct DocumentSymbolBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub params: Option<&'a Feature<DocumentSymbolFeature>>,
     pub fields: &'a StructFields,
     pub is_accessor: bool,
@@ -33,13 +33,11 @@ pub struct DocumentSymbolBuilder<'a> {
 impl<'a> DocumentSymbolBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         params: Option<&'a Feature<DocumentSymbolFeature>>,
         fields: &'a StructFields,
         is_accessor: bool,
     ) -> Self {
         Self {
-            paths,
             input_name,
             params,
             fields,
@@ -51,12 +49,14 @@ impl<'a> DocumentSymbolBuilder<'a> {
 impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let document_symbols_path = &self.paths.document_symbols_trait;
+        let document_symbols_path = &PATHS.lsp_document_symbols.path;
+        let sig = &PATHS.lsp_document_symbols.methods.get_document_symbols.sig;
+        let default = &PATHS.lsp_document_symbols.methods.get_document_symbols.default;
 
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {
                 impl #document_symbols_path for #input_name {
-                    fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
+                    #sig {
                         if let Some(accessor) = &self.accessor {
                             if let Some(accessor) = accessor.to_dyn() {
                                 return accessor.read().get_document_symbols(doc)
@@ -72,8 +72,8 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #document_symbols_path for #input_name {
-                    fn get_document_symbols(&self, _doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
-                        None
+                    #sig {
+                        #default
                     }
                 }
             }),
@@ -154,7 +154,7 @@ impl<'a> ToCodeGen for DocumentSymbolBuilder<'a> {
                         quote! {
                             impl #document_symbols_path for #input_name {
                                 #[allow(deprecated)]
-                                fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> {
+                                #sig {
                                     let read = #name.read();
                 
                                     Some(lsp_types::DocumentSymbol {

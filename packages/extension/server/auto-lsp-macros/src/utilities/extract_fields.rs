@@ -337,6 +337,36 @@ impl<'a> VariantBuilder<'a> {
         });
         self
     }
+
+    pub fn dispatch2<'b>(
+        &mut self,
+        trait_path: &Path,
+        methods: Vec<(&'b TokenStream, &'b TokenStream)>,
+    ) -> &mut Self {
+        let input_name = self.enum_builder.input_name;
+        let variants = &self.enum_builder.fields.variant_names;
+
+        let body = methods.iter().map(|s| {
+            let signature = &s.0;
+            let body = &s.1;
+            quote! {
+                #signature {
+                    match self {
+                        #(
+                            Self::#variants(inner) => inner.#body,
+                        )*
+                    }
+                }
+            }
+        });
+
+        self.results.push(quote! {
+            impl #trait_path for #input_name {
+                #(#body)*
+            }
+        });
+        self
+    }
 }
 
 impl ToTokens for VariantBuilder<'_> {

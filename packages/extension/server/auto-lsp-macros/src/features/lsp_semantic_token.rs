@@ -9,7 +9,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    FeaturesCodeGen, Paths, ToCodeGen,
+    FeaturesCodeGen, Paths, ToCodeGen, PATHS,
 };
 
 use crate::Feature;
@@ -24,7 +24,6 @@ pub struct SemanticTokenFeature {
 
 pub struct SemanticTokensBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub params: Option<&'a Feature<SemanticTokenFeature>>,
     pub fields: &'a StructFields,
     pub is_accessor: bool,
@@ -33,13 +32,11 @@ pub struct SemanticTokensBuilder<'a> {
 impl<'a> SemanticTokensBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         params: Option<&'a Feature<SemanticTokenFeature>>,
         fields: &'a StructFields,
         is_accessor: bool,
     ) -> Self {
         Self {
-            paths,
             input_name,
             params,
             fields,
@@ -51,13 +48,19 @@ impl<'a> SemanticTokensBuilder<'a> {
 impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let semantic_tokens_path = &self.paths.semantic_tokens_trait;
-        let semantic_tokens_builder_path = &self.paths.semantic_tokens_builder;
+        let semantic_tokens_path = &PATHS.lsp_semantic_token.path;
+        let semantic_tokens_builder_path = &PATHS.semantic_tokens_builder;
+        let sig = &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig;
+        let default = &PATHS
+            .lsp_semantic_token
+            .methods
+            .build_semantic_tokens
+            .default;
 
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {
                 impl #semantic_tokens_path for #input_name {
-                    fn build_semantic_tokens(&self, builder: &mut #semantic_tokens_builder_path) {
+                    #sig {
                         if let Some(accessor) = &self.accessor {
                             if let Some(accessor) = accessor.to_dyn() {
                                 accessor.read().build_semantic_tokens(builder)
@@ -72,7 +75,7 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #semantic_tokens_path for #input_name {
-                    fn build_semantic_tokens(&self, _builder: &mut #semantic_tokens_builder_path) {}
+                    #sig { #default }
                 }
             }),
             Some(params) => match params {
@@ -99,7 +102,7 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
                     codegen.input.other_impl.push(
                         quote! {
                             impl #semantic_tokens_path for #input_name {
-                                fn build_semantic_tokens(&self, builder: &mut #semantic_tokens_builder_path) {
+                                #sig {
                                     let range = #range.get_range();
                                     match #token_types.get_index(#token_index) {
                                         Some(index) => builder.push(

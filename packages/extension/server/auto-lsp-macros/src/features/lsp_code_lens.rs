@@ -9,7 +9,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    FeaturesCodeGen, Paths, ToCodeGen,
+    FeaturesCodeGen, Paths, ToCodeGen, PATHS,
 };
 
 use crate::Feature;
@@ -21,7 +21,6 @@ pub struct CodeLensFeature {
 
 pub struct CodeLensBuilder<'a> {
     pub input_name: &'a Ident,
-    pub paths: &'a Paths,
     pub params: Option<&'a Feature<CodeLensFeature>>,
     pub fields: &'a StructFields,
     pub is_accessor: bool,
@@ -30,13 +29,11 @@ pub struct CodeLensBuilder<'a> {
 impl<'a> CodeLensBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
-        paths: &'a Paths,
         params: Option<&'a Feature<CodeLensFeature>>,
         fields: &'a StructFields,
         is_accessor: bool,
     ) -> Self {
         Self {
-            paths,
             input_name,
             params,
             fields,
@@ -48,12 +45,14 @@ impl<'a> CodeLensBuilder<'a> {
 impl<'a> ToCodeGen for CodeLensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let code_lens_path = &self.paths.code_lens_trait;
+        let code_lens_path = &PATHS.lsp_code_lens.path;
+        let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;
+        let default = &PATHS.lsp_code_lens.methods.build_code_lens.default;
 
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {
                 impl #code_lens_path for #input_name {
-                    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
+                    #sig {
                         if let Some(accessor) = &self.accessor {
                             if let Some(accessor) = accessor.to_dyn() {
                                 accessor.read().build_code_lens(acc)
@@ -68,7 +67,7 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #code_lens_path for #input_name {
-                    fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {}
+                    #sig { #default }
                 }
             }),
             Some(params) => match params {
@@ -82,7 +81,7 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
 
                     codegen.input.other_impl.push(quote! {
                         impl #code_lens_path for #input_name {
-                            fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {
+                            #sig {
                                 #call(acc);
                                 #(
                                     self.#field_names.read().build_code_lens(acc);
