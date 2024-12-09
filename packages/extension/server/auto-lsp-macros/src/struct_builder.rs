@@ -1,7 +1,7 @@
 use crate::{
     utilities::extract_fields::{FieldBuilder, FieldBuilderType, StructFields},
-    BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, Paths, StructHelpers,
-    SymbolFeatures, ToCodeGen, PATHS,
+    BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, StructHelpers, SymbolFeatures,
+    ToCodeGen, PATHS,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};

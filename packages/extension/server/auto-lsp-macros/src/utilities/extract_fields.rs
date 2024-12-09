@@ -293,17 +293,6 @@ pub struct VariantBuilder<'a> {
     results: Vec<TokenStream>,
 }
 
-pub struct SignatureAndBody {
-    pub signature: TokenStream,
-    pub body: TokenStream,
-}
-
-impl SignatureAndBody {
-    pub fn new(signature: TokenStream, body: TokenStream) -> Self {
-        Self { signature, body }
-    }
-}
-
 impl<'a> VariantBuilder<'a> {
     pub fn new(enum_builder: &'a EnumBuilder) -> Self {
         Self {
@@ -312,33 +301,7 @@ impl<'a> VariantBuilder<'a> {
         }
     }
 
-    pub fn dispatch(&mut self, _trait: &Path, sig: Vec<SignatureAndBody>) -> &mut Self {
-        let input_name = self.enum_builder.input_name;
-        let variants = &self.enum_builder.fields.variant_names;
-
-        let body = sig.iter().map(|s| {
-            let signature = &s.signature;
-            let body = &s.body;
-            quote! {
-                #signature {
-                    match self {
-                        #(
-                            Self::#variants(inner) => inner.#body,
-                        )*
-                    }
-                }
-            }
-        });
-
-        self.results.push(quote! {
-            impl #_trait for #input_name {
-                #(#body)*
-            }
-        });
-        self
-    }
-
-    pub fn dispatch2<'b>(
+    pub fn dispatch<'b>(
         &mut self,
         trait_path: &Path,
         methods: Vec<(&'b TokenStream, &'b TokenStream)>,

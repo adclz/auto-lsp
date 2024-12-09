@@ -1,8 +1,6 @@
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
-use std::collections::{hash_map, HashMap, HashSet};
 use std::fmt::Formatter;
 use std::rc::Rc;
 use std::sync::Arc;

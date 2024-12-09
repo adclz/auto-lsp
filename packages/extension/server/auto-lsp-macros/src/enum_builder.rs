@@ -1,5 +1,5 @@
-use crate::utilities::extract_fields::{EnumFields, SignatureAndBody, VariantBuilder};
-use crate::{BuildAstItem, BuildAstItemBuilder, Paths, PATHS};
+use crate::utilities::extract_fields::{EnumFields, VariantBuilder};
+use crate::{BuildAstItem, BuildAstItemBuilder, PATHS};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::Ident;
@@ -182,8 +182,10 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
                             return Ok(Self::#variant_names(variant.try_into_builder(check)?));
                         };
                     )*
-                    // todo!
-                    panic!("Enum variant is not implemented")
+                    Err(auto_lsp::builder_error!(
+                        builder.unique_field.get_rc().borrow().get_lsp_range(),
+                        format!("Failed to downcast builder to enum: {}", stringify!(#name))
+                    ))
                 }
             }
         }
@@ -208,29 +210,29 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
         VariantBuilder::new(&self)
         .dispatch(
             &PATHS.symbol_trait,
-            vec![SignatureAndBody::new(
-                quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },
-                quote! { get_url() },
+            vec![(
+                &quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },
+                &quote! { get_url() },
             ),
-            SignatureAndBody::new(
-                quote! { fn get_range(&self) -> tree_sitter::Range },
-                quote! { get_range() },
+            (
+                &quote! { fn get_range(&self) -> tree_sitter::Range },
+                &quote! { get_range() },
             ),
-            SignatureAndBody::new(
-                quote! { fn get_parent(&self) -> Option<#weak_symbol> },
-                quote! { get_parent() },
+            (
+                &quote! { fn get_parent(&self) -> Option<#weak_symbol> },
+                &quote! { get_parent() },
             ),
-            SignatureAndBody::new(
-                quote! { fn set_parent(&mut self, parent: #weak_symbol) },
-                quote! { set_parent(parent) },
+            (
+                &quote! { fn set_parent(&mut self, parent: #weak_symbol) },
+                &quote! { set_parent(parent) },
             ),
-            SignatureAndBody::new(
-                quote! { fn get_start_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
-                quote! { get_start_position(doc) },
+            (
+                &quote! { fn get_start_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
+                &quote! { get_start_position(doc) },
             ),
-            SignatureAndBody::new(
-                quote! { fn get_end_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
-                quote! { get_end_position(doc) },
+            (
+                &quote! { fn get_end_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
+                &quote! { get_end_position(doc) },
             ),],
         )
         .to_token_stream()
@@ -239,7 +241,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
 
 impl<'a> VariantBuilder<'a> {
     fn generate_duplicate(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.check_duplicate.path,
             vec![
                 (
@@ -255,7 +257,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_locator(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.locator.path,
             vec![(
                 &PATHS.locator.methods.find_at_offset.sig,
@@ -265,7 +267,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_parent(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.parent.path,
             vec![(
                 &PATHS.parent.methods.inject_parent.sig,
@@ -275,7 +277,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_code_lens(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.lsp_code_lens.path,
             vec![(
                 &PATHS.lsp_code_lens.methods.build_code_lens.sig,
@@ -285,7 +287,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_completion_items(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.lsp_completion_items.path,
             vec![(
                 &PATHS
@@ -303,7 +305,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_document_symbol(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.lsp_document_symbols.path,
             vec![(
                 &PATHS.lsp_document_symbols.methods.get_document_symbols.sig,
@@ -317,7 +319,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_hover_info(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.lsp_hover_info.path,
             vec![(
                 &PATHS.lsp_hover_info.methods.get_hover.sig,
@@ -327,7 +329,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_inlay_hint(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.lsp_inlay_hint.path,
             vec![(
                 &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig,
@@ -337,7 +339,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_semantic_tokens(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.lsp_semantic_token.path,
             vec![(
                 &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig,
@@ -351,7 +353,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_go_to_definition(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.lsp_go_to_definition.path,
             vec![(
                 &PATHS.lsp_go_to_definition.methods.go_to_definition.sig,
@@ -361,7 +363,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_scope(&mut self) -> &mut Self {
-        self.dispatch2(
+        self.dispatch(
             &PATHS.scope.path,
             vec![
                 (
@@ -377,9 +379,7 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_accessor(&mut self) -> &mut Self {
-        let weak_symbol = &PATHS.weak_symbol;
-
-        self.dispatch2(
+        self.dispatch(
             &PATHS.is_accessor.path,
             vec![
                 (
@@ -393,7 +393,7 @@ impl<'a> VariantBuilder<'a> {
             ],
         );
 
-        self.dispatch2(
+        self.dispatch(
             &PATHS.accessor.path,
             vec![(
                 &PATHS.accessor.methods.find.sig,
