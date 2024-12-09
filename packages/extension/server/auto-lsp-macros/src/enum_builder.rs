@@ -239,38 +239,37 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
 
 impl<'a> VariantBuilder<'a> {
     fn generate_duplicate(&mut self) -> &mut Self {
-        self.dispatch(
-            &PATHS.check_duplicate,
-            vec![SignatureAndBody::new(
-                quote! { fn must_check(&self) -> bool },
-                quote! { must_check() },
-            ), SignatureAndBody::new(
-                quote! { fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) },
-                quote! { check(doc, diagnostics) },
-            )],
+        self.dispatch2(
+            &PATHS.check_duplicate.path,
+            vec![
+                (
+                    &PATHS.check_duplicate.methods.must_check.sig,
+                    &PATHS.check_duplicate.methods.must_check.variant,
+                ),
+                (
+                    &PATHS.check_duplicate.methods.check.sig,
+                    &PATHS.check_duplicate.methods.check.variant,
+                ),
+            ],
         )
     }
 
     fn generate_locator(&mut self) -> &mut Self {
-        let dyn_symbol = &PATHS.dyn_symbol;
-
-        self.dispatch(
-            &PATHS.locator,
-            vec![SignatureAndBody::new(
-                quote! { fn find_at_offset(&self, offset: usize) -> Option<#dyn_symbol> },
-                quote! { find_at_offset(offset) },
+        self.dispatch2(
+            &PATHS.locator.path,
+            vec![(
+                &PATHS.locator.methods.find_at_offset.sig,
+                &PATHS.locator.methods.find_at_offset.variant,
             )],
         )
     }
 
     fn generate_parent(&mut self) -> &mut Self {
-        let weak_symbol = &PATHS.weak_symbol;
-
-        self.dispatch(
-            &PATHS.parent,
-            vec![SignatureAndBody::new(
-                quote! { fn inject_parent(&mut self, parent: #weak_symbol) },
-                quote! { inject_parent(parent) },
+        self.dispatch2(
+            &PATHS.parent.path,
+            vec![(
+                &PATHS.parent.methods.inject_parent.sig,
+                &PATHS.parent.methods.inject_parent.variant,
             )],
         )
     }
@@ -289,8 +288,16 @@ impl<'a> VariantBuilder<'a> {
         self.dispatch2(
             &PATHS.lsp_completion_items.path,
             vec![(
-                &PATHS.lsp_completion_items.methods.build_completion_items.sig,
-                &PATHS.lsp_completion_items.methods.build_completion_items.variant,
+                &PATHS
+                    .lsp_completion_items
+                    .methods
+                    .build_completion_items
+                    .sig,
+                &PATHS
+                    .lsp_completion_items
+                    .methods
+                    .build_completion_items
+                    .variant,
             )],
         )
     }
@@ -300,7 +307,11 @@ impl<'a> VariantBuilder<'a> {
             &PATHS.lsp_document_symbols.path,
             vec![(
                 &PATHS.lsp_document_symbols.methods.get_document_symbols.sig,
-                &PATHS.lsp_document_symbols.methods.get_document_symbols.variant,
+                &PATHS
+                    .lsp_document_symbols
+                    .methods
+                    .get_document_symbols
+                    .variant,
             )],
         )
     }
@@ -330,7 +341,11 @@ impl<'a> VariantBuilder<'a> {
             &PATHS.lsp_semantic_token.path,
             vec![(
                 &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig,
-                &PATHS.lsp_semantic_token.methods.build_semantic_tokens.variant,
+                &PATHS
+                    .lsp_semantic_token
+                    .methods
+                    .build_semantic_tokens
+                    .variant,
             )],
         )
     }
@@ -346,13 +361,16 @@ impl<'a> VariantBuilder<'a> {
     }
 
     fn generate_scope(&mut self) -> &mut Self {
-        self.dispatch(
-            &PATHS.scope_trait,
+        self.dispatch2(
+            &PATHS.scope.path,
             vec![
-                SignatureAndBody::new(quote! { fn is_scope(&self) -> bool }, quote! { is_scope() }),
-                SignatureAndBody::new(
-                    quote! { fn get_scope_range(&self) -> Vec<[usize; 2]> },
-                    quote! { get_scope_range() },
+                (
+                    &PATHS.scope.methods.is_scope.sig,
+                    &PATHS.scope.methods.is_scope.variant,
+                ),
+                (
+                    &PATHS.scope.methods.get_scope_range.sig,
+                    &PATHS.scope.methods.get_scope_range.variant,
                 ),
             ],
         )
@@ -361,26 +379,26 @@ impl<'a> VariantBuilder<'a> {
     fn generate_accessor(&mut self) -> &mut Self {
         let weak_symbol = &PATHS.weak_symbol;
 
-        self.dispatch(
-            &PATHS.is_accessor_trait,
+        self.dispatch2(
+            &PATHS.is_accessor.path,
             vec![
-                SignatureAndBody::new(
-                    quote! { fn is_accessor(&self) -> bool },
-                    quote! { is_accessor() },
+                (
+                    &PATHS.is_accessor.methods.is_accessor.sig,
+                    &PATHS.is_accessor.methods.is_accessor.variant,
                 ),
-                SignatureAndBody::new(
-                    quote! { fn set_accessor(&mut self, accessor: #weak_symbol) },
-                    quote! { set_accessor(accessor) },
+                (
+                    &PATHS.is_accessor.methods.set_accessor.sig,
+                    &PATHS.is_accessor.methods.set_accessor.variant,
                 ),
             ],
         );
 
-        self
-        .dispatch(&PATHS.accessor_trait, 
-            vec![SignatureAndBody::new(
-                quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<#weak_symbol>, lsp_types::Diagnostic> },
-                quote! { find(doc, ctx) },
-            )]
+        self.dispatch2(
+            &PATHS.accessor.path,
+            vec![(
+                &PATHS.accessor.methods.find.sig,
+                &PATHS.accessor.methods.find.variant,
+            )],
         )
     }
 }

@@ -43,17 +43,22 @@ impl<'a> ScopeBuilder<'a> {
 impl<'a> ToCodeGen for ScopeBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let scope_path = &PATHS.scope_trait;
+        let scope_path = &PATHS.scope.path;
+        let is_scope_sig = &PATHS.scope.methods.is_scope.sig;
+        let is_scope_default = &PATHS.scope.methods.is_scope.default;
+
+        let get_scope_range_sig = &PATHS.scope.methods.get_scope_range.sig;
+        let get_scope_range_default = &PATHS.scope.methods.get_scope_range.default;
 
         match self.params {
             None => codegen.input.other_impl.push(quote! {
                 impl #scope_path for #input_name {
-                    fn is_scope(&self) -> bool {
-                        false
+                    #is_scope_sig {
+                        #is_scope_default
                     }
 
-                    fn get_scope_range(&self) -> Vec<[usize; 2]> {
-                        vec!()
+                    #get_scope_range_sig {
+                        #get_scope_range_default
                     }
                 }
             }),
@@ -66,12 +71,11 @@ impl<'a> ToCodeGen for ScopeBuilder<'a> {
 
                     codegen.input.other_impl.push(quote! {
                         impl #scope_path for #input_name {
-                            fn is_scope(&self) -> bool {
+                            #is_scope_sig {
                                 true
                             }
 
-                            fn get_scope_range(&self) -> Vec<[usize; 2]> {
-
+                            #get_scope_range_sig {
                                 let start = #start.read().get_range().start_byte;
                                 let end = #end.read().get_range().end_byte;
 

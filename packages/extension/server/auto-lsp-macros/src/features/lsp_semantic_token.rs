@@ -49,7 +49,6 @@ impl<'a> ToCodeGen for SemanticTokensBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
         let semantic_tokens_path = &PATHS.lsp_semantic_token.path;
-        let semantic_tokens_builder_path = &PATHS.semantic_tokens_builder;
         let sig = &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig;
         let default = &PATHS
             .lsp_semantic_token

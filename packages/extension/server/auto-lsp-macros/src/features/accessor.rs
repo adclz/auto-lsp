@@ -28,8 +28,14 @@ impl<'a> AccessorBuilder<'a> {
 impl<'a> ToCodeGen for AccessorBuilder<'a> {
     fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
         let input_name = &self.input_name;
-        let is_accessor_path = &PATHS.is_accessor_trait;
-        let accessor_path = &PATHS.accessor_trait;
+        let is_accessor_path = &PATHS.is_accessor.path;
+        let accessor_path = &PATHS.accessor.path;
+
+        let is_accessor_sig = &PATHS.is_accessor.methods.is_accessor.sig;
+        let is_accessor_default = &PATHS.is_accessor.methods.is_accessor.default;
+
+        let set_accessor_sig = &PATHS.is_accessor.methods.set_accessor.sig;
+        let set_accessor_default = &PATHS.is_accessor.methods.set_accessor.default;
 
         let bool = if self.is_accessor {
             quote! { true }
@@ -49,11 +55,11 @@ impl<'a> ToCodeGen for AccessorBuilder<'a> {
         if self.is_accessor {
             codegen.input.other_impl.push(quote! {
                 impl #is_accessor_path for #input_name {
-                    fn is_accessor(&self) -> bool {
+                    #is_accessor_sig {
                         Self::IS_ACCESSOR
                     }
 
-                    fn set_accessor(&mut self, accessor: #weak_symbol) {
+                    #set_accessor_sig {
                         self.accessor = Some(accessor);
                     }
                 }
@@ -61,11 +67,11 @@ impl<'a> ToCodeGen for AccessorBuilder<'a> {
         } else {
             codegen.input.other_impl.push(quote! {
                 impl #is_accessor_path for #input_name {
-                    fn is_accessor(&self) -> bool {
+                    #is_accessor_sig {
                         Self::IS_ACCESSOR
                     }
 
-                    fn set_accessor(&mut self, accessor: #weak_symbol) {
+                    #set_accessor_sig {
 
                     }
                 }

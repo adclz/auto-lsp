@@ -171,7 +171,7 @@ impl<'a> StructBuilder<'a> {
 
 impl<'a> StructBuilder<'a> {
     fn generate_locator_trait(&self) -> TokenStream {
-        let locator = &PATHS.locator;
+        let locator = &PATHS.locator.path;
         let input_name = &self.input_name;
         let dyn_symbol = &PATHS.dyn_symbol;
 
@@ -203,7 +203,7 @@ impl<'a> StructBuilder<'a> {
 
 impl<'a> StructBuilder<'a> {
     fn generate_parent_trait(&self) -> TokenStream {
-        let parent = &PATHS.parent;
+        let parent = &PATHS.parent.path;
         let input_name = &self.input_name;
         let weak_symbol = &PATHS.weak_symbol;
 
