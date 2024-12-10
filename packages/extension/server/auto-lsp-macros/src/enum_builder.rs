@@ -39,7 +39,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let symbol_methods = self.generate_symbol_methods();
 
         let builder = VariantBuilder::new(&self)
-            .generate_duplicate()
+            .generate_check()
             .generate_code_lens()
             .generate_completion_items()
             .generate_document_symbol()
@@ -240,17 +240,17 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
 }
 
 impl<'a> VariantBuilder<'a> {
-    fn generate_duplicate(&mut self) -> &mut Self {
+    fn generate_check(&mut self) -> &mut Self {
         self.dispatch(
-            &PATHS.check_duplicate.path,
+            &PATHS.check.path,
             vec![
                 (
-                    &PATHS.check_duplicate.methods.must_check.sig,
-                    &PATHS.check_duplicate.methods.must_check.variant,
+                    &PATHS.check.methods.must_check.sig,
+                    &PATHS.check.methods.must_check.variant,
                 ),
                 (
-                    &PATHS.check_duplicate.methods.check.sig,
-                    &PATHS.check_duplicate.methods.check.variant,
+                    &PATHS.check.methods.check.sig,
+                    &PATHS.check.methods.check.variant,
                 ),
             ],
         )

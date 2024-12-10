@@ -28,7 +28,7 @@ pub trait AstSymbol:
     + Accessor
     + Locator
     + Parent
-    + CheckDuplicate
+    + Check
 {
     fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> tree_sitter::Range;
@@ -305,50 +305,7 @@ impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
     }
 }
 
-pub trait CheckDuplicate {
+pub trait Check {
     fn must_check(&self) -> bool;
     fn check(&self, doc: &FullTextDocument, diagnostics: &mut Vec<Diagnostic>);
-}
-
-pub trait CheckDuplicateVec<'a, T: AstSymbol> {
-    fn check<F>(
-        &self,
-        f: F,
-        doc: &'a FullTextDocument,
-        hash_set: &mut HashSet<&'a str>,
-        diagnostics: &mut Vec<Diagnostic>,
-    ) where
-        F: for<'b> Fn(&T, &'b [u8]) -> &'b str;
-}
-
-impl<'a, T: AstSymbol> CheckDuplicateVec<'a, T> for [Symbol<T>] {
-    fn check<F>(
-        &self,
-        f: F,
-        doc: &'a FullTextDocument,
-        hash_set: &mut HashSet<&'a str>,
-        diagnostics: &mut Vec<Diagnostic>,
-    ) where
-        F: for<'b> Fn(&T, &'b [u8]) -> &'b str,
-    {
-        if self.is_empty() {
-            return;
-        }
-        let source_code = doc.get_content(None).as_bytes();
-
-        self.iter().for_each(|item| {
-            let key = f(&item.read(), source_code);
-            if !hash_set.insert(key) {
-                diagnostics.push(Diagnostic::new(
-                    item.read().get_lsp_range(doc),
-                    None,
-                    None,
-                    None,
-                    format!("Duplicate {}", key),
-                    None,
-                    None,
-                ));
-            }
-        });
-    }
 }

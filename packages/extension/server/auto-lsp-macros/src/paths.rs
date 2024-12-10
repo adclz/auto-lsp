@@ -141,7 +141,7 @@ pub struct Paths {
             },
         },
     >,
-    pub check_duplicate: TraitInfo<
+    pub check: TraitInfo<
         Structx! {
             must_check: Structx! {
                 sig: TokenStream,
@@ -304,8 +304,8 @@ impl Default for Paths {
                     },
                 },
             },
-            check_duplicate: TraitInfo {
-                path: parse_quote!(auto_lsp::symbol::CheckDuplicate),
+            check: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::Check),
                 methods: structx! {
                     must_check: structx! {
                         sig: quote! { fn must_check(&self) -> bool },
