@@ -1,6 +1,7 @@
 extern crate proc_macro;
 
 use darling::FromMeta;
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, Path};
 
@@ -9,7 +10,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    FeaturesCodeGen, Paths, ToCodeGen, PATHS,
+    AccessorFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -21,57 +22,38 @@ pub struct CodeLensFeature {
 
 pub struct CodeLensBuilder<'a> {
     pub input_name: &'a Ident,
-    pub params: Option<&'a Feature<CodeLensFeature>>,
     pub fields: &'a StructFields,
-    pub is_accessor: bool,
 }
 
 impl<'a> CodeLensBuilder<'a> {
-    pub fn new(
-        input_name: &'a Ident,
-        params: Option<&'a Feature<CodeLensFeature>>,
-        fields: &'a StructFields,
-        is_accessor: bool,
-    ) -> Self {
-        Self {
-            input_name,
-            params,
-            fields,
-            is_accessor,
-        }
+    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+        Self { input_name, fields }
     }
-}
 
-impl<'a> ToCodeGen for CodeLensBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
+    pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let code_lens_path = &PATHS.lsp_code_lens.path;
         let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;
         let default = &PATHS.lsp_code_lens.methods.build_code_lens.default;
 
-        if self.is_accessor {
-            codegen.input.other_impl.push(quote! {
-                impl #code_lens_path for #input_name {
-                    #sig {
-                        if let Some(accessor) = &self.accessor {
-                            if let Some(accessor) = accessor.to_dyn() {
-                                accessor.read().build_code_lens(acc)
-                            }
-                        }
-                    }
-                }
-            });
-            return;
+        quote! {
+            impl #code_lens_path for #input_name {
+                #sig { #default }
+            }
         }
+    }
+}
 
-        match self.params {
-            None => codegen.input.other_impl.push(quote! {
-                impl #code_lens_path for #input_name {
-                    #sig { #default }
-                }
-            }),
+impl<'a> FeaturesCodeGen for CodeLensBuilder<'a> {
+    fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
+        let input_name = &self.input_name;
+        let code_lens_path = &PATHS.lsp_code_lens.path;
+        let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;
+
+        match &params.lsp_code_lens {
+            None => self.default_impl(),
             Some(params) => match params {
-                Feature::User => (),
+                Feature::User => quote! {},
                 Feature::CodeGen(code_lens) => {
                     let call = path_to_dot_tokens(&code_lens.code_lens_fn, None);
 
@@ -79,7 +61,7 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
                     let field_option_names = &self.fields.field_option_names.get_field_names();
 
-                    codegen.input.other_impl.push(quote! {
+                    quote! {
                         impl #code_lens_path for #input_name {
                             #sig {
                                 #call(acc);
@@ -98,8 +80,36 @@ impl<'a> ToCodeGen for CodeLensBuilder<'a> {
                                 )*
                             }
                         }
-                    });
+                    }
                 }
+            },
+        }
+    }
+
+    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+        let input_name = &self.input_name;
+        let code_lens_path = &PATHS.lsp_code_lens.path;
+        let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;
+
+        match &params.lsp_code_lens {
+            None => self.default_impl(),
+            Some(feature) => match feature {
+                ReferenceFeature::Disable => self.default_impl(),
+                ReferenceFeature::Reference => {
+                    quote! {
+                        impl #code_lens_path for #input_name {
+                            #sig {
+                                if let Some(accessor) = &self.accessor {
+                                    if let Some(accessor) = accessor.to_dyn() {
+                                        return accessor.read().build_code_lens(acc)
+                                    }
+                                }
+                                None
+                            }
+                        }
+                    }
+                }
+                ReferenceFeature::User => quote! {},
             },
         }
     }

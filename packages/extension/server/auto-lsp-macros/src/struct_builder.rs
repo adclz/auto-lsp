@@ -1,7 +1,7 @@
 use crate::{
     utilities::extract_fields::{FieldBuilder, FieldBuilderType, StructFields},
-    BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, StructHelpers, SymbolFeatures,
-    ToCodeGen, PATHS,
+    BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, ReferenceOrSymbolFeatures,
+    StructHelpers, SymbolFeatures, PATHS,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
@@ -22,7 +22,7 @@ pub struct StructBuilder<'a> {
 
 impl<'a> StructBuilder<'a> {
     pub fn new(
-        params: Option<&'a SymbolFeatures>,
+        params: &'a ReferenceOrSymbolFeatures<'a>,
         helpers: &'a ast::Data<util::Ignored, StructHelpers>,
         input_attr: &'a Vec<Attribute>,
         input_name: &'a Ident,
@@ -38,7 +38,7 @@ impl<'a> StructBuilder<'a> {
             input_buider_name,
             fields,
             is_accessor,
-            features: Features::new(params, &helpers, is_accessor, input_name, fields),
+            features: Features::new(&params, &helpers, &input_name, &fields),
         }
     }
 }
@@ -49,14 +49,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let input_attr = &self.input_attr;
         let query_name = self.query_name;
 
-        // Generate features
-        let mut code_gen = FeaturesCodeGen::default();
-        self.features.to_code_gen(&mut code_gen);
-
-        let input_fields = code_gen.input.fields;
-        let features_impl = code_gen.input.impl_base;
-        let features_impl_ast = code_gen.input.impl_symbol;
-        let features_others_impl = code_gen.input.other_impl;
+        let features = self.features.to_token_stream();
 
         // generate ast item
         let symbol_trait = &PATHS.symbol_trait;
@@ -73,20 +66,17 @@ impl<'a> ToTokens for StructBuilder<'a> {
             #[derive(Clone)]
             pub struct #input_name {
                 #(#fields,)*
-                #(#input_fields),*
             }
 
             impl #input_name {
                 pub const QUERY_NAMES: &[&str] = &[#query_name];
-                #(#features_impl)*
             }
 
             impl #symbol_trait for #input_name {
                 #methods
-                #(#features_impl_ast)*
             }
 
-            #(#features_others_impl)*
+            #features
             #locator
             #parent
             #queryable

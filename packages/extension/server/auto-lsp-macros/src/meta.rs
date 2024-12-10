@@ -30,18 +30,18 @@ pub struct StructHelpers {
 }
 
 #[derive(Debug, FromMeta)]
+pub enum AstStructKind {
+    Accessor(AccessorFeatures),
+    Symbol(SymbolFeatures),
+}
+
+#[derive(Debug, FromMeta)]
 pub enum Feature<T>
 where
     T: Sized + FromMeta,
 {
     User,
     CodeGen(T),
-}
-
-#[derive(Debug, FromMeta)]
-pub enum AstStructKind {
-    Accessor,
-    Symbol(SymbolFeatures),
 }
 
 #[derive(Debug, FromMeta)]
@@ -55,4 +55,27 @@ pub struct SymbolFeatures {
     pub lsp_code_lens: Option<Feature<CodeLensFeature>>,
     pub lsp_completion_items: Option<Feature<CompletionItemFeature>>,
     pub lsp_go_to_definition: Option<Feature<GotoDefinitionFeature>>,
+}
+
+#[derive(Debug, FromMeta)]
+pub enum ReferenceFeature {
+    User,
+    Reference,
+    Disable,
+}
+
+#[derive(Debug, FromMeta)]
+pub struct AccessorFeatures {
+    pub lsp_document_symbols: Option<ReferenceFeature>,
+    pub lsp_hover_info: Option<ReferenceFeature>,
+    pub lsp_semantic_tokens: Option<ReferenceFeature>,
+    pub lsp_inlay_hints: Option<ReferenceFeature>,
+    pub lsp_code_lens: Option<ReferenceFeature>,
+    pub lsp_completion_items: Option<ReferenceFeature>,
+    pub lsp_go_to_definition: Option<ReferenceFeature>,
+}
+
+pub enum ReferenceOrSymbolFeatures<'a> {
+    Reference(&'a AccessorFeatures),
+    Symbol(&'a SymbolFeatures),
 }

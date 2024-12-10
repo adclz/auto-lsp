@@ -7,29 +7,19 @@ use crate::{
         lsp_semantic_token::SemanticTokensBuilder, scope::ScopeBuilder,
     },
     utilities::extract_fields::StructFields,
-    Paths, StructHelpers, SymbolFeatures,
+    AccessorFeatures, ReferenceFeature, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures,
 };
 use darling::{ast, util};
-use proc_macro2::Ident;
+use proc_macro2::{Ident, TokenStream};
+use quote::ToTokens;
 
-pub trait ToCodeGen {
-    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen);
-}
-
-#[derive(Default)]
-pub struct InputCodeGen {
-    pub fields: Vec<proc_macro2::TokenStream>,      // Fields
-    pub impl_base: Vec<proc_macro2::TokenStream>,   // Impl <>
-    pub impl_symbol: Vec<proc_macro2::TokenStream>, // Impl AstSymbol for <>
-    pub other_impl: Vec<proc_macro2::TokenStream>,  // Other impl
-}
-
-#[derive(Default)]
-pub struct FeaturesCodeGen {
-    pub input: InputCodeGen,
+pub trait FeaturesCodeGen {
+    fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens;
+    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens;
 }
 
 pub struct Features<'a> {
+    pub features_attributes: &'a ReferenceOrSymbolFeatures<'a>,
     pub lsp_code_lens: CodeLensBuilder<'a>,
     pub lsp_completion_items: CompletionItemsBuilder<'a>,
     pub lsp_document_symbols: DocumentSymbolBuilder<'a>,
@@ -44,77 +34,70 @@ pub struct Features<'a> {
 
 impl<'a> Features<'a> {
     pub fn new(
-        features_attributes: Option<&'a SymbolFeatures>,
+        features_attributes: &'a ReferenceOrSymbolFeatures<'a>,
         helper_attributes: &'a ast::Data<util::Ignored, StructHelpers>,
-        is_accessor: bool,
         input_name: &'a Ident,
         fields: &'a StructFields,
     ) -> Self {
         Self {
-            lsp_code_lens: CodeLensBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.lsp_code_lens.as_ref()),
-                fields,
-                is_accessor,
-            ),
-            lsp_completion_items: CompletionItemsBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.lsp_completion_items.as_ref()),
-                fields,
-                is_accessor,
-            ),
-            lsp_document_symbols: DocumentSymbolBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.lsp_document_symbols.as_ref()),
-                fields,
-                is_accessor,
-            ),
-            lsp_hover_info: HoverInfoBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.lsp_hover_info.as_ref()),
-                fields,
-                is_accessor,
-            ),
-            lsp_inlay_hints: InlayHintsBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.lsp_inlay_hints.as_ref()),
-                fields,
-                is_accessor,
-            ),
-            lsp_semantic_tokens: SemanticTokensBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.lsp_semantic_tokens.as_ref()),
-                fields,
-                is_accessor,
-            ),
-            lsp_go_to_definition: GotoDefinitionBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.lsp_go_to_definition.as_ref()),
-                fields,
-                is_accessor,
-            ),
-            scope: ScopeBuilder::new(
-                input_name,
-                features_attributes.and_then(|a| a.scope.as_ref()),
-                fields,
-            ),
-            accessor: AccessorBuilder::new(input_name, is_accessor, fields),
+            features_attributes,
+            lsp_code_lens: CodeLensBuilder::new(input_name, fields),
+            lsp_completion_items: CompletionItemsBuilder::new(input_name, fields),
+            lsp_document_symbols: DocumentSymbolBuilder::new(input_name, fields),
+            lsp_hover_info: HoverInfoBuilder::new(input_name, fields),
+            lsp_inlay_hints: InlayHintsBuilder::new(input_name, fields),
+            lsp_semantic_tokens: SemanticTokensBuilder::new(input_name, fields),
+            lsp_go_to_definition: GotoDefinitionBuilder::new(input_name, fields),
+            scope: ScopeBuilder::new(input_name, fields),
+            accessor: AccessorBuilder::new(input_name, fields),
             duplicate: CheckDuplicateBuilder::new(input_name, helper_attributes, fields),
         }
     }
 }
 
-impl<'a> ToCodeGen for Features<'a> {
-    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
-        self.lsp_code_lens.to_code_gen(codegen);
-        self.lsp_completion_items.to_code_gen(codegen);
-        self.lsp_document_symbols.to_code_gen(codegen);
-        self.lsp_hover_info.to_code_gen(codegen);
-        self.lsp_inlay_hints.to_code_gen(codegen);
-        self.lsp_semantic_tokens.to_code_gen(codegen);
-        self.lsp_go_to_definition.to_code_gen(codegen);
-        self.scope.to_code_gen(codegen);
-        self.accessor.to_code_gen(codegen);
-        self.duplicate.to_code_gen(codegen);
+impl<'a> ToTokens for Features<'a> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match &self.features_attributes {
+            ReferenceOrSymbolFeatures::Reference(reference) => {
+                self.accessor.code_gen_accessor(reference).to_tokens(tokens);
+                self.scope.code_gen_accessor(reference).to_tokens(tokens);
+                self.duplicate
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+                self.lsp_code_lens
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+                self.lsp_completion_items
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+                self.lsp_document_symbols
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+                self.lsp_hover_info
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+                self.lsp_inlay_hints
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+                self.lsp_semantic_tokens
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+                self.lsp_go_to_definition
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
+            }
+            ReferenceOrSymbolFeatures::Symbol(symbol) => {
+                self.accessor.code_gen(symbol).to_tokens(tokens);
+                self.scope.code_gen(symbol).to_tokens(tokens);
+                self.duplicate.code_gen(symbol).to_tokens(tokens);
+                self.lsp_code_lens.code_gen(symbol).to_tokens(tokens);
+                self.lsp_completion_items.code_gen(symbol).to_tokens(tokens);
+                self.lsp_document_symbols.code_gen(symbol).to_tokens(tokens);
+                self.lsp_hover_info.code_gen(symbol).to_tokens(tokens);
+                self.lsp_inlay_hints.code_gen(symbol).to_tokens(tokens);
+                self.lsp_semantic_tokens.code_gen(symbol).to_tokens(tokens);
+                self.lsp_go_to_definition.code_gen(symbol).to_tokens(tokens);
+            }
+        }
     }
 }

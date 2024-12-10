@@ -4,6 +4,7 @@ extern crate proc_macro;
 
 use darling::FromDeriveInput;
 use darling::{ast::NestedMeta, FromMeta};
+use features::accessor;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{parse_macro_input, DataStruct, DeriveInput};
@@ -77,12 +78,11 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let fields = match_struct_fields(&derive_input.data);
     let query_name = attributes.query_name;
-    let mut tokens = proc_macro2::TokenStream::new();
 
     let input_attr = input.attrs;
-    match attributes.kind {
-        AstStructKind::Accessor => StructBuilder::new(
-            None,
+    let tokens = match attributes.kind {
+        AstStructKind::Accessor(accessor_features) => StructBuilder::new(
+            &ReferenceOrSymbolFeatures::Reference(&accessor_features),
             &derive_input.data,
             &input_attr,
             &input_name,
@@ -91,9 +91,9 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &fields,
             true,
         )
-        .to_tokens(&mut tokens),
+        .to_token_stream(),
         AstStructKind::Symbol(symbol_features) => StructBuilder::new(
-            Some(&symbol_features),
+            &ReferenceOrSymbolFeatures::Symbol(&symbol_features),
             &derive_input.data,
             &input_attr,
             &input_name,
@@ -102,10 +102,10 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &fields,
             false,
         )
-        .to_tokens(&mut tokens),
+        .to_token_stream(),
     };
 
-    tokens.into()
+    TokenStream::from(tokens)
 }
 
 #[proc_macro_attribute]

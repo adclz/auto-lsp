@@ -1,35 +1,61 @@
 extern crate proc_macro;
 
-use darling::FromMeta;
+use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Ident, Path};
+use syn::Ident;
 
 use crate::{
-    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    Feature, FeaturesCodeGen, Paths, ToCodeGen, PATHS,
+    utilities::extract_fields::StructFields, AccessorFeatures, FeaturesCodeGen, SymbolFeatures,
+    PATHS,
 };
 
 pub struct AccessorBuilder<'a> {
     pub input_name: &'a Ident,
     pub fields: &'a StructFields,
-    pub is_accessor: bool,
 }
 
 impl<'a> AccessorBuilder<'a> {
-    pub fn new(input_name: &'a Ident, is_accessor: bool, fields: &'a StructFields) -> Self {
-        Self {
-            input_name,
-            fields,
-            is_accessor,
+    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+        Self { input_name, fields }
+    }
+
+    pub fn default_impl(&self) -> TokenStream {
+        let input_name = &self.input_name;
+        let is_accessor_path = &PATHS.is_accessor.path;
+        let is_accessor_sig = &PATHS.is_accessor.methods.is_accessor.sig;
+        let is_accessor_default = &PATHS.is_accessor.methods.is_accessor.default;
+
+        let set_accessor_sig = &PATHS.is_accessor.methods.set_accessor.sig;
+        let set_accessor_default = &PATHS.is_accessor.methods.set_accessor.default;
+
+        let accessor_path = &PATHS.accessor.path;
+        let accessor_find_sig = &PATHS.accessor.methods.find.sig;
+        let accessor_find_default = &PATHS.accessor.methods.find.default;
+
+        quote! {
+            impl #is_accessor_path for #input_name {
+                #is_accessor_sig {
+                    #is_accessor_default
+                }
+
+                #set_accessor_sig {
+                    #set_accessor_default
+                }
+            }
+
+            impl #accessor_path for #input_name {
+                #accessor_find_sig {
+                    #accessor_find_default
+                }
+            }
         }
     }
 }
 
-impl<'a> ToCodeGen for AccessorBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
+impl<'a> FeaturesCodeGen for AccessorBuilder<'a> {
+    fn code_gen(&self, _params: &SymbolFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let is_accessor_path = &PATHS.is_accessor.path;
-        let accessor_path = &PATHS.accessor.path;
 
         let is_accessor_sig = &PATHS.is_accessor.methods.is_accessor.sig;
         let is_accessor_default = &PATHS.is_accessor.methods.is_accessor.default;
@@ -37,55 +63,46 @@ impl<'a> ToCodeGen for AccessorBuilder<'a> {
         let set_accessor_sig = &PATHS.is_accessor.methods.set_accessor.sig;
         let set_accessor_default = &PATHS.is_accessor.methods.set_accessor.default;
 
-        let bool = if self.is_accessor {
-            quote! { true }
-        } else {
-            quote! { false }
-        };
+        let accessor_path = &PATHS.accessor.path;
+        let accessor_find_sig = &PATHS.accessor.methods.find.sig;
+        let accessor_find_default = &PATHS.accessor.methods.find.default;
 
-        codegen.input.impl_base.push(
-            quote! {
-                pub const IS_ACCESSOR: bool = #bool;
+        quote! {
+            impl #is_accessor_path for #input_name {
+                #is_accessor_sig {
+                    #is_accessor_default
+                }
+
+                #set_accessor_sig {
+                    #set_accessor_default
+                }
             }
-            .into(),
-        );
 
-        let weak_symbol = &PATHS.weak_symbol;
-
-        if self.is_accessor {
-            codegen.input.other_impl.push(quote! {
-                impl #is_accessor_path for #input_name {
-                    #is_accessor_sig {
-                        Self::IS_ACCESSOR
-                    }
-
-                    #set_accessor_sig {
-                        self.accessor = Some(accessor);
-                    }
-                }
-            });
-        } else {
-            codegen.input.other_impl.push(quote! {
-                impl #is_accessor_path for #input_name {
-                    #is_accessor_sig {
-                        Self::IS_ACCESSOR
-                    }
-
-                    #set_accessor_sig {
-
-                    }
-                }
-            });
-        }
-
-        if !self.is_accessor {
-            codegen.input.other_impl.push(quote! {
             impl #accessor_path for #input_name {
-                fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<#weak_symbol>, lsp_types::Diagnostic> {
-                    Ok(None)
+                #accessor_find_sig {
+                    #accessor_find_default
                 }
             }
-        });
+        }
+    }
+
+    fn code_gen_accessor(&self, _params: &AccessorFeatures) -> impl quote::ToTokens {
+        let input_name = &self.input_name;
+        let is_accessor_path = &PATHS.is_accessor.path;
+        let is_accessor_sig = &PATHS.is_accessor.methods.is_accessor.sig;
+
+        let set_accessor_sig = &PATHS.is_accessor.methods.set_accessor.sig;
+
+        quote! {
+            impl #is_accessor_path for #input_name {
+                #is_accessor_sig {
+                    true
+                }
+
+                #set_accessor_sig {
+                    self.accessor = Some(accessor);
+                }
+            }
         }
     }
 }

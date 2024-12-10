@@ -1,14 +1,16 @@
 extern crate proc_macro;
 
 use darling::FromMeta;
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, Path};
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    Feature, FeaturesCodeGen, Paths, ToCodeGen, PATHS,
+    AccessorFeatures, FeaturesCodeGen, SymbolFeatures, PATHS,
 };
 
+use crate::Feature;
 #[derive(Debug, FromMeta)]
 pub struct ScopeFeature {
     range: ScopeRange,
@@ -22,26 +24,15 @@ pub struct ScopeRange {
 
 pub struct ScopeBuilder<'a> {
     pub input_name: &'a Ident,
-    pub params: Option<&'a Feature<ScopeFeature>>,
     pub fields: &'a StructFields,
 }
 
 impl<'a> ScopeBuilder<'a> {
-    pub fn new(
-        input_name: &'a Ident,
-        params: Option<&'a Feature<ScopeFeature>>,
-        fields: &'a StructFields,
-    ) -> Self {
-        Self {
-            input_name,
-            params,
-            fields,
-        }
+    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+        Self { input_name, fields }
     }
-}
 
-impl<'a> ToCodeGen for ScopeBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
+    pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let scope_path = &PATHS.scope.path;
         let is_scope_sig = &PATHS.scope.methods.is_scope.sig;
@@ -50,26 +41,38 @@ impl<'a> ToCodeGen for ScopeBuilder<'a> {
         let get_scope_range_sig = &PATHS.scope.methods.get_scope_range.sig;
         let get_scope_range_default = &PATHS.scope.methods.get_scope_range.default;
 
-        match self.params {
-            None => codegen.input.other_impl.push(quote! {
-                impl #scope_path for #input_name {
-                    #is_scope_sig {
-                        #is_scope_default
-                    }
-
-                    #get_scope_range_sig {
-                        #get_scope_range_default
-                    }
+        quote! {
+            impl #scope_path for #input_name {
+                #is_scope_sig {
+                    #is_scope_default
                 }
-            }),
+
+                #get_scope_range_sig {
+                    #get_scope_range_default
+                }
+            }
+        }
+    }
+}
+
+impl<'a> FeaturesCodeGen for ScopeBuilder<'a> {
+    fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
+        let input_name = &self.input_name;
+        let scope_path = &PATHS.scope.path;
+        let is_scope_sig = &PATHS.scope.methods.is_scope.sig;
+
+        let get_scope_range_sig = &PATHS.scope.methods.get_scope_range.sig;
+
+        match &params.scope {
+            None => self.default_impl(),
             Some(params) => match params {
-                Feature::User => (),
+                Feature::User => quote! {},
                 Feature::CodeGen(scope) => {
                     let range = &scope.range;
                     let start = path_to_dot_tokens(&range.start, None);
                     let end = path_to_dot_tokens(&range.end, None);
 
-                    codegen.input.other_impl.push(quote! {
+                    quote! {
                         impl #scope_path for #input_name {
                             #is_scope_sig {
                                 true
@@ -82,9 +85,13 @@ impl<'a> ToCodeGen for ScopeBuilder<'a> {
                                 vec!([start, end])
                             }
                         }
-                    });
+                    }
                 }
             },
         }
+    }
+
+    fn code_gen_accessor(&self, _params: &AccessorFeatures) -> impl quote::ToTokens {
+        self.default_impl()
     }
 }

@@ -1,13 +1,16 @@
 extern crate proc_macro;
 
 use darling::FromMeta;
+use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Ident, Path};
+use syn::Ident;
 
-use crate::utilities::extract_fields::FieldInfoExtract;
-use crate::{utilities::extract_fields::StructFields, FeaturesCodeGen, ToCodeGen};
+use crate::{
+    utilities::extract_fields::{FieldInfoExtract, StructFields},
+    AccessorFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+};
 
-use crate::{Feature, Paths, PATHS};
+use crate::Feature;
 
 #[derive(Debug, FromMeta)]
 pub struct InlayHintFeature {
@@ -16,64 +19,45 @@ pub struct InlayHintFeature {
 
 pub struct InlayHintsBuilder<'a> {
     pub input_name: &'a Ident,
-    pub params: Option<&'a Feature<InlayHintFeature>>,
     pub fields: &'a StructFields,
-    pub is_accessor: bool,
 }
 
 impl<'a> InlayHintsBuilder<'a> {
-    pub fn new(
-        input_name: &'a Ident,
-        params: Option<&'a Feature<InlayHintFeature>>,
-        fields: &'a StructFields,
-        is_accessor: bool,
-    ) -> Self {
-        Self {
-            input_name,
-            params,
-            fields,
-            is_accessor,
-        }
+    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+        Self { input_name, fields }
     }
-}
 
-impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
-    fn to_code_gen(&self, codegen: &mut FeaturesCodeGen) {
+    pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let inlay_hint_path = &PATHS.lsp_inlay_hint.path;
         let sig = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig;
         let default = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.default;
 
-        if self.is_accessor {
-            codegen.input.other_impl.push(quote! {
-                impl #inlay_hint_path for #input_name {
-                    #sig {
-                        if let Some(accessor) = &self.accessor {
-                            if let Some(accessor) = accessor.to_dyn() {
-                                accessor.read().build_inlay_hint(doc, acc)
-                            }
-                        }
-                    }
-                }
-            });
-            return;
+        quote! {
+            impl #inlay_hint_path for #input_name {
+                #sig { #default }
+            }
         }
+    }
+}
 
-        match self.params {
-            None => codegen.input.other_impl.push(quote! {
-                impl #inlay_hint_path for #input_name {
-                    #sig { #default  }
-                }
-            }),
+impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
+    fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
+        let input_name = &self.input_name;
+        let inlay_hint_path = &PATHS.lsp_inlay_hint.path;
+        let sig = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig;
+
+        match &params.lsp_inlay_hints {
+            None => self.default_impl(),
             Some(params) => match params {
-                Feature::User => (),
+                Feature::User => quote! {},
                 Feature::CodeGen(opt) => {
                     let field_names = &self.fields.field_names.get_field_names();
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
                     let field_option_names = &self.fields.field_option_names.get_field_names();
 
                     if opt.query.is_some() {
-                        codegen.input.other_impl.push(quote! {
+                        quote! {
                             impl #inlay_hint_path for #input_name {
                                 #sig {
                                     acc.push(lsp_types::InlayHint {
@@ -101,11 +85,38 @@ impl<'a> ToCodeGen for InlayHintsBuilder<'a> {
                                     )*
                                 }
                             }
-                        });
+                        }
                     } else {
                         panic!("Inlay Hint does not provide (yet) code generation, instead implement the trait InlayHint manually");
                     }
                 }
+            },
+        }
+    }
+
+    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+        let input_name = &self.input_name;
+        let hover_info_path = &PATHS.lsp_hover_info.path;
+        let sig = &PATHS.lsp_hover_info.methods.get_hover.sig;
+
+        match &params.lsp_inlay_hints {
+            None => self.default_impl(),
+            Some(params) => match params {
+                ReferenceFeature::Disable => self.default_impl(),
+                ReferenceFeature::Reference => {
+                    quote! {
+                        impl #hover_info_path for #input_name {
+                            #sig {
+                                if let Some(accessor) = &self.accessor {
+                                    if let Some(accessor) = accessor.to_dyn() {
+                                        accessor.read().build_inlay_hint(doc, acc)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                ReferenceFeature::User => quote! {},
             },
         }
     }
