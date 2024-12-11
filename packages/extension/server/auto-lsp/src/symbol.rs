@@ -2,14 +2,10 @@ use crate::semantic_tokens::SemanticTokensBuilder;
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{
-    request::{GotoDeclarationResponse, GotoDefinition},
     CompletionItem, Diagnostic, DocumentSymbol, GotoDefinitionResponse, Position, Range, Url,
 };
 use parking_lot::RwLock;
-use std::{
-    collections::HashSet,
-    sync::{Arc, Weak},
-};
+use std::sync::{Arc, Weak};
 
 use super::workspace::WorkspaceContext;
 
@@ -204,6 +200,37 @@ pub trait CompletionItems {
 pub trait GoToDefinition {
     fn go_to_definition(&self, doc: &FullTextDocument) -> Option<GotoDefinitionResponse>;
 }
+
+macro_rules! impl_build {
+    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
+        impl $trait for DynSymbol {
+            fn $fn_name(&self, $($param_name: $param_type),*) {
+                self.read().$fn_name($($param_name),*)
+            }
+        }
+
+        impl<T: AstSymbol> $trait for Option<Symbol<T>> {
+            fn $fn_name(&self, $($param_name: $param_type),*) {
+                if let Some(node) = self.as_ref() {
+                    node.read().$fn_name($($param_name),*)
+                }
+            }
+        }
+
+        impl<T: AstSymbol> $trait for [Symbol<T>] {
+            fn $fn_name(&self, $($param_name: $param_type),*) {
+                for symbol in self.iter() {
+                    symbol.read().$fn_name($($param_name),*)
+                }
+            }
+        }
+    };
+}
+
+impl_build!(SemanticTokens, build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder));
+impl_build!(InlayHints, build_inlay_hint(&self, doc: &FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>));
+impl_build!(CodeLens, build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>));
+impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &FullTextDocument));
 
 pub trait IsAccessor {
     fn is_accessor(&self) -> bool;
