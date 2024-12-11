@@ -94,6 +94,30 @@ pub trait AstSymbol:
 impl_downcast!(AstSymbol);
 
 #[derive(Clone)]
+pub struct Referrers(Arc<RwLock<Vec<WeakSymbol>>>);
+
+impl Referrers {
+    pub fn new() -> Self {
+        Self(Arc::new(RwLock::new(Vec::new())))
+    }
+
+    pub fn add_reference(&self, symbol: WeakSymbol) {
+        self.0.write().push(symbol);
+    }
+
+    pub fn remove_reference(&self, symbol: &WeakSymbol) {
+        let mut references = self.0.write();
+        if let Some(index) = references.iter().position(|r| r.0.ptr_eq(&symbol.0)) {
+            references.remove(index);
+        }
+    }
+
+    pub fn read(&self) -> parking_lot::RwLockReadGuard<Vec<WeakSymbol>> {
+        self.0.read()
+    }
+}
+
+#[derive(Clone)]
 pub struct Symbol<T: AstSymbol>(Arc<RwLock<T>>);
 
 impl<T: AstSymbol> Symbol<T> {
