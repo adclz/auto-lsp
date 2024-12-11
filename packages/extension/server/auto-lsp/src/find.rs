@@ -1,6 +1,6 @@
 use lsp_textdocument::FullTextDocument;
 
-use crate::symbol::{AstSymbol, DynSymbol, WeakSymbol};
+use crate::symbol::{AstSymbol, SymbolData, WeakSymbol};
 
 pub trait Finder {
     fn find_in_file(&self, doc: &FullTextDocument) -> Option<WeakSymbol>;

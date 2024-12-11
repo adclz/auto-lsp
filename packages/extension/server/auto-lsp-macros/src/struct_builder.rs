@@ -1,7 +1,6 @@
 use crate::{
     utilities::extract_fields::{FieldBuilder, FieldBuilderType, StructFields},
-    BuildAstItem, BuildAstItemBuilder, Features, FeaturesCodeGen, ReferenceOrSymbolFeatures,
-    StructHelpers, SymbolFeatures, PATHS,
+    BuildAstItem, BuildAstItemBuilder, Features, ReferenceOrSymbolFeatures, StructHelpers, PATHS,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
@@ -15,7 +14,6 @@ pub struct StructBuilder<'a> {
     pub query_name: &'a str,
     pub input_buider_name: &'a Ident,
     pub fields: &'a StructFields,
-    pub is_accessor: bool,
     // Features
     pub features: Features<'a>,
 }
@@ -29,7 +27,6 @@ impl<'a> StructBuilder<'a> {
         input_buider_name: &'a Ident,
         query_name: &'a str,
         fields: &'a StructFields,
-        is_accessor: bool,
     ) -> Self {
         Self {
             input_name,
@@ -37,7 +34,6 @@ impl<'a> StructBuilder<'a> {
             query_name,
             input_buider_name,
             fields,
-            is_accessor,
             features: Features::new(&params, &helpers, &input_name, &fields),
         }
     }
@@ -218,19 +214,9 @@ impl<'a> StructBuilder<'a> {
 impl<'a> BuildAstItem for StructBuilder<'a> {
     fn generate_fields(&self) -> Vec<TokenStream> {
         let symbol = &PATHS.symbol;
-        let weak_symbol = &PATHS.weak_symbol;
+        let symbol_data = &PATHS.symbol_data;
 
-        let mut fields = vec![
-            quote! { pub url: std::sync::Arc<lsp_types::Url> },
-            quote! { pub parent: Option<#weak_symbol> },
-            quote! { pub range: tree_sitter::Range },
-            quote! { pub start_position: tree_sitter::Point },
-            quote! { pub end_position: tree_sitter::Point },
-        ];
-
-        if self.is_accessor {
-            fields.push(quote! { pub accessor: Option<#weak_symbol> });
-        }
+        let mut fields = vec![quote! { pub _data: #symbol_data }];
 
         let mut builder = FieldBuilder::new(&self.fields);
 
@@ -251,23 +237,15 @@ impl<'a> BuildAstItem for StructBuilder<'a> {
     }
 
     fn generate_symbol_methods(&self) -> TokenStream {
-        let weak_symbol = &PATHS.weak_symbol;
+        let symbol_data = &PATHS.symbol_data;
 
         quote! {
-            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
-                self.url.clone()
+            fn get_data(&self) -> &#symbol_data {
+                &self._data
             }
 
-            fn get_range(&self) -> tree_sitter::Range {
-                self.range
-            }
-
-            fn get_parent(&self) -> Option<#weak_symbol> {
-                self.parent.as_ref().map(|p| p.clone())
-            }
-
-            fn set_parent(&mut self, parent: #weak_symbol) {
-                self.parent = Some(parent);
+            fn get_mut_data(&mut self) -> &mut #symbol_data {
+                &mut self._data
             }
         }
     }
@@ -377,6 +355,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         let try_from_builder = &PATHS.try_from_builder;
 
+        let symbol_data = &PATHS.symbol_data;
         let dyn_symbol = &PATHS.dyn_symbol;
 
         let builder = FieldBuilder::new(self.fields)
@@ -395,12 +374,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     }
             }).to_token_stream();
 
-        let init_accessor = if self.is_accessor {
-            quote! { accessor: None, }
-        } else {
-            quote! {}
-        };
-
         quote! {
             impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
@@ -411,12 +384,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     #builder
 
                     Ok(#name {
-                        #init_accessor
-                        url: builder.url.clone(),
-                        range: builder.range.clone(),
-                        start_position: builder.start_position.clone(),
-                        end_position: builder.end_position.clone(),
-                        parent: None,
+                        _data: #symbol_data::new(builder.url.clone(), builder.range.clone()),
                         #(#fields),*
                     })
                 }

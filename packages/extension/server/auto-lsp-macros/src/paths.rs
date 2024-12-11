@@ -13,6 +13,8 @@ pub struct Paths {
     pub symbol: Path,
     pub dyn_symbol: Path,
     pub weak_symbol: Path,
+    pub referrers: Path,
+    pub symbol_data: Path,
     pub pending_symbol: Path,
     pub maybe_pending_symbol: Path,
 
@@ -164,6 +166,8 @@ impl Default for Paths {
             symbol: parse_quote!(auto_lsp::symbol::Symbol),
             dyn_symbol: parse_quote!(auto_lsp::symbol::DynSymbol),
             weak_symbol: parse_quote!(auto_lsp::symbol::WeakSymbol),
+            symbol_data: parse_quote!(auto_lsp::symbol::AstSymbolData),
+            referrers: parse_quote!(auto_lsp::symbol::Referrers),
             pending_symbol: parse_quote!(auto_lsp::pending_symbol::PendingSymbol),
             maybe_pending_symbol: parse_quote!(auto_lsp::pending_symbol::MaybePendingSymbol),
 

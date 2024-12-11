@@ -205,37 +205,23 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
     }
 
     fn generate_symbol_methods(&self) -> TokenStream {
-        let weak_symbol = &PATHS.weak_symbol;
+        let symbol_data = &PATHS.symbol_data;
 
         VariantBuilder::new(&self)
-        .dispatch(
-            &PATHS.symbol_trait,
-            vec![(
-                &quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },
-                &quote! { get_url() },
-            ),
-            (
-                &quote! { fn get_range(&self) -> tree_sitter::Range },
-                &quote! { get_range() },
-            ),
-            (
-                &quote! { fn get_parent(&self) -> Option<#weak_symbol> },
-                &quote! { get_parent() },
-            ),
-            (
-                &quote! { fn set_parent(&mut self, parent: #weak_symbol) },
-                &quote! { set_parent(parent) },
-            ),
-            (
-                &quote! { fn get_start_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
-                &quote! { get_start_position(doc) },
-            ),
-            (
-                &quote! { fn get_end_position(&self, doc: &lsp_textdocument::FullTextDocument) -> lsp_types::Position },
-                &quote! { get_end_position(doc) },
-            ),],
-        )
-        .to_token_stream()
+            .dispatch(
+                &PATHS.symbol_trait,
+                vec![
+                    (
+                        &quote! { fn get_data(&self) -> &#symbol_data },
+                        &quote! { get_data() },
+                    ),
+                    (
+                        &quote! { fn get_mut_data(&mut self) -> &mut #symbol_data },
+                        &quote! { get_mut_data() },
+                    ),
+                ],
+            )
+            .to_token_stream()
     }
 }
 

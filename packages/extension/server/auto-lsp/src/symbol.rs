@@ -9,6 +9,57 @@ use std::sync::{Arc, Weak};
 
 use super::workspace::WorkspaceContext;
 
+#[derive(Clone)]
+pub struct AstSymbolData {
+    pub url: Arc<Url>,
+    pub parent: Option<WeakSymbol>,
+    pub referrers: Option<Referrers>,
+    pub target: Option<WeakSymbol>,
+    pub range: tree_sitter::Range,
+}
+
+impl AstSymbolData {
+    pub fn new(url: Arc<Url>, range: tree_sitter::Range) -> Self {
+        Self {
+            url,
+            parent: None,
+            referrers: None,
+            target: None,
+            range,
+        }
+    }
+}
+
+pub trait SymbolData {
+    fn get_url(&self) -> Arc<Url>;
+    fn get_range(&self) -> tree_sitter::Range;
+    fn get_parent(&self) -> Option<WeakSymbol>;
+    fn set_parent(&mut self, parent: WeakSymbol);
+    fn set_target(&mut self, target: WeakSymbol);
+}
+
+impl SymbolData for AstSymbolData {
+    fn get_url(&self) -> Arc<Url> {
+        self.url.clone()
+    }
+
+    fn get_range(&self) -> tree_sitter::Range {
+        self.range
+    }
+
+    fn get_parent(&self) -> Option<WeakSymbol> {
+        self.parent.as_ref().map(|p| p.clone())
+    }
+
+    fn set_parent(&mut self, parent: WeakSymbol) {
+        self.parent = Some(parent);
+    }
+
+    fn set_target(&mut self, target: WeakSymbol) {
+        self.target = Some(target);
+    }
+}
+
 pub trait AstSymbol:
     Downcast
     + Send
@@ -26,29 +77,21 @@ pub trait AstSymbol:
     + Parent
     + Check
 {
-    fn get_url(&self) -> Arc<Url>;
-    fn get_range(&self) -> tree_sitter::Range;
-    fn edit_range(&mut self, shift: i32) {
-        let mut range = self.get_range();
-        range.start_byte += shift as usize;
-        range.end_byte += shift as usize;
-    }
+    fn get_data(&self) -> &AstSymbolData;
+    fn get_mut_data(&mut self) -> &mut AstSymbolData;
 
     fn get_size(&self) -> usize {
-        let range = self.get_range();
+        let range = self.get_data().get_range();
         range.end_byte - range.start_byte
     }
 
     fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
-        let range = self.get_range();
+        let range = self.get_data().get_range();
         std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
     }
 
-    fn get_parent(&self) -> Option<WeakSymbol>;
-    fn set_parent(&mut self, parent: WeakSymbol);
-
     fn get_parent_scope(&self) -> Option<DynSymbol> {
-        let mut parent = self.get_parent();
+        let mut parent = self.get_data().get_parent();
         while let Some(weak) = parent {
             let symbol = match weak.to_dyn() {
                 Some(weak) => weak,
@@ -66,22 +109,17 @@ pub trait AstSymbol:
     // Accessibility
 
     fn is_inside_offset(&self, offset: usize) -> bool {
-        let range = self.get_range();
+        let range = self.get_data().get_range();
         range.start_byte <= offset && offset <= range.end_byte
-    }
-
-    fn is_same_text(&mut self, source_code: &[u8], range: &tree_sitter::Range) -> bool {
-        self.get_text(source_code)
-            == std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
     }
     // LSP
 
     fn get_start_position(&self, doc: &FullTextDocument) -> Position {
-        doc.position_at(self.get_range().start_byte as u32)
+        doc.position_at(self.get_data().get_range().start_byte as u32)
     }
 
     fn get_end_position(&self, doc: &FullTextDocument) -> Position {
-        doc.position_at(self.get_range().end_byte as u32)
+        doc.position_at(self.get_data().get_range().end_byte as u32)
     }
 
     fn get_lsp_range(&self, doc: &FullTextDocument) -> Range {
@@ -92,6 +130,50 @@ pub trait AstSymbol:
 }
 
 impl_downcast!(AstSymbol);
+
+impl<T: AstSymbol> SymbolData for T {
+    fn get_url(&self) -> Arc<Url> {
+        self.get_data().get_url()
+    }
+
+    fn get_range(&self) -> tree_sitter::Range {
+        self.get_data().get_range()
+    }
+
+    fn get_parent(&self) -> Option<WeakSymbol> {
+        self.get_data().get_parent()
+    }
+
+    fn set_parent(&mut self, parent: WeakSymbol) {
+        self.get_mut_data().set_parent(parent)
+    }
+
+    fn set_target(&mut self, target: WeakSymbol) {
+        self.get_mut_data().set_target(target)
+    }
+}
+
+impl SymbolData for dyn AstSymbol {
+    fn get_url(&self) -> Arc<Url> {
+        self.get_data().get_url()
+    }
+
+    fn get_range(&self) -> tree_sitter::Range {
+        self.get_data().get_range()
+    }
+
+    fn get_parent(&self) -> Option<WeakSymbol> {
+        self.get_data().get_parent()
+    }
+
+    fn set_parent(&mut self, parent: WeakSymbol) {
+        self.get_mut_data().set_parent(parent)
+    }
+
+    fn set_target(&mut self, target: WeakSymbol) {
+        self.get_mut_data().set_target(target)
+    }
+}
 
 #[derive(Clone)]
 pub struct Referrers(Arc<RwLock<Vec<WeakSymbol>>>);
@@ -310,17 +392,9 @@ impl<T: AstSymbol> Locator for Option<Symbol<T>> {
 
 impl<T: Locator> Locator for Vec<T> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        self.iter().enumerate().find_map(|(i, symbol)| {
-            let h = symbol.find_at_offset(offset);
-            if let Some(a) = &h {
-                let range = a.read().get_range();
-                eprintln!(
-                    "Found at index {}: offset {:?}, between {} and {}",
-                    i, offset, range.start_byte, range.end_byte
-                )
-            };
-            h
-        })
+        self.iter()
+            .enumerate()
+            .find_map(|(_, symbol)| symbol.find_at_offset(offset))
     }
 }
 

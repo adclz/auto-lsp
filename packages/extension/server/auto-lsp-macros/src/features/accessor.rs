@@ -100,7 +100,7 @@ impl<'a> FeaturesCodeGen for AccessorBuilder<'a> {
                 }
 
                 #set_accessor_sig {
-                    self.accessor = Some(accessor);
+                    self._data.set_target(accessor);
                 }
             }
         }

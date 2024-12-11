@@ -4,10 +4,9 @@ extern crate proc_macro;
 
 use darling::FromDeriveInput;
 use darling::{ast::NestedMeta, FromMeta};
-use features::accessor;
 use proc_macro::TokenStream;
-use quote::{format_ident, quote, ToTokens};
-use syn::{parse_macro_input, DataStruct, DeriveInput};
+use quote::{format_ident, ToTokens};
+use syn::{parse_macro_input, DeriveInput};
 
 mod enum_builder;
 mod feature_builder;
@@ -89,7 +88,6 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &input_builder_name,
             &query_name,
             &fields,
-            true,
         )
         .to_token_stream(),
         AstStructKind::Symbol(symbol_features) => StructBuilder::new(
@@ -100,7 +98,6 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
             &input_builder_name,
             &query_name,
             &fields,
-            false,
         )
         .to_token_stream(),
     };
