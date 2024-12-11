@@ -99,7 +99,7 @@ impl<'a> FeaturesCodeGen for CodeLensBuilder<'a> {
                     quote! {
                         impl #code_lens_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.accessor {
+                                if let Some(accessor) = &self.get_target() {
                                     if let Some(accessor) = accessor.to_dyn() {
                                         return accessor.read().build_code_lens(acc)
                                     }

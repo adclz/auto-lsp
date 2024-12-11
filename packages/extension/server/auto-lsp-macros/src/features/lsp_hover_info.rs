@@ -64,7 +64,7 @@ impl<'a> FeaturesCodeGen for HoverInfoBuilder<'a> {
                     quote! {
                         impl #hover_info_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.accessor {
+                                if let Some(accessor) = &self.get_target() {
                                     if let Some(accessor) = accessor.to_dyn() {
                                         return accessor.read().get_hover(doc)
                                     }

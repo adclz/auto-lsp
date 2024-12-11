@@ -267,7 +267,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::symbol::Accessor),
                 methods: structx! {
                     find: structx! {
-                        sig: quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<auto_lsp::symbol::WeakSymbol>, lsp_types::Diagnostic> },
+                        sig: quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<auto_lsp::symbol::DynSymbol>, lsp_types::Diagnostic> },
                         variant: quote! { find(doc, ctx) },
                         default: quote! { Ok(None) }
                     },

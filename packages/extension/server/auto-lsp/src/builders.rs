@@ -1,6 +1,6 @@
 use crate::builder_error;
 use crate::pending_symbol::{AstBuilder, PendingSymbol};
-use crate::symbol::DynSymbol;
+use crate::symbol::{DynSymbol, SymbolData};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
@@ -162,7 +162,10 @@ fn finalize_builder(
                 match item.read().find(doc, ctx) {
                     Ok(a) => {
                         if let Some(a) = a {
-                            item.write().set_accessor(a);
+                            // todo!
+                            a.write().get_mut_referrers().add_reference(item.to_weak());
+
+                            item.write().set_target(a.to_weak());
                         };
                     }
                     Err(err) => errors.push(err),
@@ -194,8 +197,11 @@ fn finalize_builder(
             None
         };
 
-        if let Some(acc) = acc {
-            item.write().set_accessor(acc);
+        if let Some(a) = acc {
+            // todo!
+            a.write().get_mut_referrers().add_reference(item.to_weak());
+
+            item.write().set_target(a.to_weak());
         }
 
         if item.read().must_check() {

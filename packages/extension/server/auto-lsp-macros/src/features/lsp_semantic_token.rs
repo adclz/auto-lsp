@@ -135,7 +135,7 @@ impl<'a> FeaturesCodeGen for SemanticTokensBuilder<'a> {
                     quote! {
                         impl #semantic_tokens_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.accessor {
+                                if let Some(accessor) = &self.get_target() {
                                     if let Some(accessor) = accessor.to_dyn() {
                                         accessor.read().build_semantic_tokens(builder)
                                     }

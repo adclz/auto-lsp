@@ -123,7 +123,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                     quote! {
                         impl #document_symbols_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.accessor {
+                                if let Some(accessor) = &self.get_target() {
                                     if let Some(accessor) = accessor.to_dyn() {
                                         return accessor.read().get_document_symbols(doc)
                                     }

@@ -110,7 +110,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
                     quote! {
                         impl #completion_items_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.accessor {
+                                if let Some(accessor) = &self.get_target() {
                                     if let Some(accessor) = accessor.to_dyn() {
                                         accessor.read().build_completion_items(doc, acc)
                                     }

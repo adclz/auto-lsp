@@ -35,7 +35,10 @@ pub trait SymbolData {
     fn get_range(&self) -> tree_sitter::Range;
     fn get_parent(&self) -> Option<WeakSymbol>;
     fn set_parent(&mut self, parent: WeakSymbol);
+    fn get_target(&self) -> Option<WeakSymbol>;
     fn set_target(&mut self, target: WeakSymbol);
+    fn get_referrers(&self) -> &Option<Referrers>;
+    fn get_mut_referrers(&mut self) -> &mut Referrers;
 }
 
 impl SymbolData for AstSymbolData {
@@ -55,8 +58,20 @@ impl SymbolData for AstSymbolData {
         self.parent = Some(parent);
     }
 
+    fn get_target(&self) -> Option<WeakSymbol> {
+        self.target.as_ref().map(|t| t.clone())
+    }
+
     fn set_target(&mut self, target: WeakSymbol) {
         self.target = Some(target);
+    }
+
+    fn get_referrers(&self) -> &Option<Referrers> {
+        &self.referrers
+    }
+
+    fn get_mut_referrers(&mut self) -> &mut Referrers {
+        self.referrers.get_or_insert_default()
     }
 }
 
@@ -148,8 +163,20 @@ impl<T: AstSymbol> SymbolData for T {
         self.get_mut_data().set_parent(parent)
     }
 
+    fn get_target(&self) -> Option<WeakSymbol> {
+        self.get_data().get_target()
+    }
+
     fn set_target(&mut self, target: WeakSymbol) {
         self.get_mut_data().set_target(target)
+    }
+
+    fn get_referrers(&self) -> &Option<Referrers> {
+        self.get_data().get_referrers()
+    }
+
+    fn get_mut_referrers(&mut self) -> &mut Referrers {
+        self.get_mut_data().get_mut_referrers()
     }
 }
 
@@ -170,20 +197,35 @@ impl SymbolData for dyn AstSymbol {
         self.get_mut_data().set_parent(parent)
     }
 
+    fn get_target(&self) -> Option<WeakSymbol> {
+        self.get_data().get_target()
+    }
+
     fn set_target(&mut self, target: WeakSymbol) {
         self.get_mut_data().set_target(target)
+    }
+
+    fn get_referrers(&self) -> &Option<Referrers> {
+        self.get_data().get_referrers()
+    }
+
+    fn get_mut_referrers(&mut self) -> &mut Referrers {
+        self.get_mut_data().get_mut_referrers()
     }
 }
 
 #[derive(Clone)]
 pub struct Referrers(Arc<RwLock<Vec<WeakSymbol>>>);
 
-impl Referrers {
-    pub fn new() -> Self {
+impl Default for Referrers {
+    fn default() -> Self {
         Self(Arc::new(RwLock::new(Vec::new())))
     }
+}
 
+impl Referrers {
     pub fn add_reference(&self, symbol: WeakSymbol) {
+        eprintln!("Received reference !!!!");
         self.0.write().push(symbol);
     }
 
@@ -348,7 +390,7 @@ pub trait Accessor: IsAccessor {
         &self,
         doc: &FullTextDocument,
         ctx: &dyn WorkspaceContext,
-    ) -> Result<Option<WeakSymbol>, Diagnostic>;
+    ) -> Result<Option<DynSymbol>, Diagnostic>;
 }
 
 pub trait Locator {

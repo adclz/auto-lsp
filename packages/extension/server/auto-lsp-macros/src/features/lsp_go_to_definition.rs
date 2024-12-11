@@ -65,7 +65,7 @@ impl<'a> FeaturesCodeGen for GotoDefinitionBuilder<'a> {
                     quote! {
                         impl #go_to_definitions_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.accessor {
+                                if let Some(accessor) = &self.get_target() {
                                     if let Some(accessor) = accessor.to_dyn() {
                                         let read = accessor.read();
                                         return Some(lsp_types::GotoDefinitionResponse::Scalar(lsp_types::Location {
