@@ -6,6 +6,7 @@ use crate::features::{
     lsp_code_lens::CodeLensFeature,
     lsp_completion_item::CompletionItemFeature,
     lsp_document_symbol::DocumentSymbolFeature,
+    lsp_go_to_declaration::GoToDeclarationFeature,
     lsp_go_to_definition::GotoDefinitionFeature,
     lsp_hover_info::HoverFeature,
     lsp_inlay_hint::InlayHintFeature,
@@ -61,6 +62,7 @@ pub struct SymbolFeatures {
     pub lsp_code_lens: Option<Feature<CodeLensFeature>>,
     pub lsp_completion_items: Option<Feature<CompletionItemFeature>>,
     pub lsp_go_to_definition: Option<Feature<GotoDefinitionFeature>>,
+    pub lsp_go_to_declaration: Option<Feature<GoToDeclarationFeature>>,
 }
 
 #[derive(Debug, FromMeta)]
@@ -80,6 +82,7 @@ pub struct AccessorFeatures {
     pub lsp_code_lens: Option<ReferenceFeature>,
     pub lsp_completion_items: Option<ReferenceFeature>,
     pub lsp_go_to_definition: Option<ReferenceFeature>,
+    pub lsp_go_to_declaration: Option<ReferenceFeature>,
 }
 
 pub enum ReferenceOrSymbolFeatures<'a> {

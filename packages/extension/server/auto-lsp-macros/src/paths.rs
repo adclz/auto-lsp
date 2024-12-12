@@ -57,6 +57,14 @@ pub struct Paths {
             }
         },
     >,
+    pub lsp_go_to_declaration: TraitInfo<
+        Structx! {
+            go_to_declaration: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            }
+        },
+    >,
     pub lsp_hover_info: TraitInfo<
         Structx! {
             get_hover: Structx! {
@@ -195,6 +203,15 @@ impl Default for Paths {
                     go_to_definition: structx! {
                         sig: quote! { fn go_to_definition(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::GotoDefinitionResponse> },
                         variant: quote! { go_to_definition(doc) },
+                    }
+                },
+            },
+            lsp_go_to_declaration: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::GoToDeclaration),
+                methods: structx! {
+                    go_to_declaration: structx! {
+                        sig: quote! { fn go_to_declaration(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::request::GotoDeclarationResponse> },
+                        variant: quote! { go_to_declaration(doc) },
                     }
                 },
             },

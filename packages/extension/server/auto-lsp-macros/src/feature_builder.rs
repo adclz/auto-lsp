@@ -2,12 +2,12 @@ use crate::{
     features::{
         accessor::AccessorBuilder, check::CheckBuilder, lsp_code_lens::CodeLensBuilder,
         lsp_completion_item::CompletionItemsBuilder, lsp_document_symbol::DocumentSymbolBuilder,
-        lsp_go_to_definition::GotoDefinitionBuilder, lsp_hover_info::HoverInfoBuilder,
-        lsp_inlay_hint::InlayHintsBuilder, lsp_semantic_token::SemanticTokensBuilder,
-        scope::ScopeBuilder,
+        lsp_go_to_declaration::GoToDeclarationBuilder, lsp_go_to_definition::GotoDefinitionBuilder,
+        lsp_hover_info::HoverInfoBuilder, lsp_inlay_hint::InlayHintsBuilder,
+        lsp_semantic_token::SemanticTokensBuilder, scope::ScopeBuilder,
     },
     utilities::extract_fields::StructFields,
-    AccessorFeatures, ReferenceFeature, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures,
+    AccessorFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
@@ -27,6 +27,7 @@ pub struct Features<'a> {
     pub lsp_inlay_hints: InlayHintsBuilder<'a>,
     pub lsp_semantic_tokens: SemanticTokensBuilder<'a>,
     pub lsp_go_to_definition: GotoDefinitionBuilder<'a>,
+    pub lsp_go_to_declaration: GoToDeclarationBuilder<'a>,
     pub scope: ScopeBuilder<'a>,
     pub accessor: AccessorBuilder<'a>,
     pub check: CheckBuilder<'a>,
@@ -48,6 +49,7 @@ impl<'a> Features<'a> {
             lsp_inlay_hints: InlayHintsBuilder::new(input_name, fields),
             lsp_semantic_tokens: SemanticTokensBuilder::new(input_name, fields),
             lsp_go_to_definition: GotoDefinitionBuilder::new(input_name, fields),
+            lsp_go_to_declaration: GoToDeclarationBuilder::new(input_name, fields),
             scope: ScopeBuilder::new(input_name, fields),
             accessor: AccessorBuilder::new(input_name, fields),
             check: CheckBuilder::new(input_name, helper_attributes, fields),
@@ -83,6 +85,9 @@ impl<'a> ToTokens for Features<'a> {
                 self.lsp_go_to_definition
                     .code_gen_accessor(reference)
                     .to_tokens(tokens);
+                self.lsp_go_to_declaration
+                    .code_gen_accessor(reference)
+                    .to_tokens(tokens);
             }
             ReferenceOrSymbolFeatures::Symbol(symbol) => {
                 self.accessor.code_gen(symbol).to_tokens(tokens);
@@ -95,6 +100,9 @@ impl<'a> ToTokens for Features<'a> {
                 self.lsp_inlay_hints.code_gen(symbol).to_tokens(tokens);
                 self.lsp_semantic_tokens.code_gen(symbol).to_tokens(tokens);
                 self.lsp_go_to_definition.code_gen(symbol).to_tokens(tokens);
+                self.lsp_go_to_declaration
+                    .code_gen(symbol)
+                    .to_tokens(tokens);
             }
         }
     }

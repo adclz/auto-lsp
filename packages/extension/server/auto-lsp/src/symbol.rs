@@ -2,7 +2,8 @@ use crate::semantic_tokens::SemanticTokensBuilder;
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{
-    CompletionItem, Diagnostic, DocumentSymbol, GotoDefinitionResponse, Position, Range, Url,
+    request::GotoDeclarationResponse, CompletionItem, Diagnostic, DocumentSymbol,
+    GotoDefinitionResponse, Position, Range, Url,
 };
 use parking_lot::RwLock;
 use std::sync::{Arc, Weak};
@@ -86,6 +87,7 @@ pub trait AstSymbol:
     + CodeLens
     + CompletionItems
     + GoToDefinition
+    + GoToDeclaration
     + Scope
     + Accessor
     + Locator
@@ -342,6 +344,12 @@ pub trait GoToDefinition {
     }
 }
 
+pub trait GoToDeclaration {
+    fn go_to_declaration(&self, _doc: &FullTextDocument) -> Option<GotoDeclarationResponse> {
+        None
+    }
+}
+
 pub trait SemanticTokens {
     fn build_semantic_tokens(&self, _builder: &mut SemanticTokensBuilder) {}
 }
@@ -399,8 +407,8 @@ pub trait IsAccessor {
 pub trait Accessor: IsAccessor {
     fn find(
         &self,
-        doc: &FullTextDocument,
-        ctx: &dyn WorkspaceContext,
+        _doc: &FullTextDocument,
+        _ctx: &dyn WorkspaceContext,
     ) -> Result<Option<DynSymbol>, Diagnostic> {
         Ok(None)
     }

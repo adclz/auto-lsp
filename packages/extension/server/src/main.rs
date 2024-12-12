@@ -7,12 +7,12 @@ use auto_lsp::builders::{Builder, BuilderFn};
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     CodeLensRequest, Completion, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest,
-    GotoDefinition, HoverRequest, InlayHintRequest, References, SelectionRangeRequest,
-    SemanticTokensFullRequest, SemanticTokensRangeRequest, WorkspaceDiagnosticRequest,
-    WorkspaceSymbolRequest,
+    GotoDeclaration, GotoDefinition, HoverRequest, InlayHintRequest, References,
+    SelectionRangeRequest, SemanticTokensFullRequest, SemanticTokensRangeRequest,
+    WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
 };
 use lsp_types::{
-    CodeLensOptions, DocumentLinkOptions, SelectionRangeProviderCapability,
+    CodeLensOptions, DeclarationCapability, DocumentLinkOptions, SelectionRangeProviderCapability,
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
 };
@@ -150,6 +150,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             ..Default::default()
         }),
         definition_provider: Some(OneOf::Left(true)),
+        declaration_provider: Some(DeclarationCapability::Simple(true)),
         references_provider: Some(OneOf::Left(true)),
         ..Default::default()
     })
@@ -198,6 +199,7 @@ impl Session {
                                 .on::<CodeLensRequest, _>(Self::get_code_lens)?
                                 .on::<Completion, _>(Self::get_completion_items)?
                                 .on::<GotoDefinition, _>(Self::go_to_definition)?
+                                .on::<GotoDeclaration, _>(Self::go_to_declaration)?
                                 .on::<References, _>(Self::get_references)?;
                         }
                         Message::Notification(not) => {

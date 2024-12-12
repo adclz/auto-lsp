@@ -47,6 +47,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             .generate_inlay_hint()
             .generate_semantic_tokens()
             .generate_go_to_definition()
+            .generate_go_to_declaration()
             .generate_parent()
             .generate_locator()
             .generate_scope()
@@ -344,6 +345,20 @@ impl<'a> VariantBuilder<'a> {
             vec![(
                 &PATHS.lsp_go_to_definition.methods.go_to_definition.sig,
                 &PATHS.lsp_go_to_definition.methods.go_to_definition.variant,
+            )],
+        )
+    }
+
+    fn generate_go_to_declaration(&mut self) -> &mut Self {
+        self.dispatch(
+            &PATHS.lsp_go_to_declaration.path,
+            vec![(
+                &PATHS.lsp_go_to_declaration.methods.go_to_declaration.sig,
+                &PATHS
+                    .lsp_go_to_declaration
+                    .methods
+                    .go_to_declaration
+                    .variant,
             )],
         )
     }
