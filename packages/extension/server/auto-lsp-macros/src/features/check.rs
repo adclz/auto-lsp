@@ -48,22 +48,9 @@ impl<'a> CheckBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let check = &PATHS.check.path;
-        let must_check_sig = &PATHS.check.methods.must_check.sig;
-        let must_check_default = &PATHS.check.methods.must_check.default;
-
-        let check_sig = &PATHS.check.methods.check.sig;
-        let check_default = &PATHS.check.methods.check.default;
 
         quote! {
-            impl #check for #input_name {
-                #must_check_sig {
-                    #must_check_default
-                }
-
-                #check_sig {
-                    #check_default
-                }
-            }
+            impl #check for #input_name {}
         }
     }
 }

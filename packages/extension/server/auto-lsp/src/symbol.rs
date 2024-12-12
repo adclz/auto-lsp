@@ -316,36 +316,46 @@ impl WeakSymbol {
 }
 
 pub trait Scope {
-    fn is_scope(&self) -> bool;
-    fn get_scope_range(&self) -> Vec<[usize; 2]>;
+    fn is_scope(&self) -> bool {
+        false
+    }
+    fn get_scope_range(&self) -> Vec<[usize; 2]> {
+        Vec::new()
+    }
 }
 
 pub trait DocumentSymbols {
-    fn get_document_symbols(&self, doc: &FullTextDocument) -> Option<DocumentSymbol>;
+    fn get_document_symbols(&self, _doc: &FullTextDocument) -> Option<DocumentSymbol> {
+        None
+    }
 }
 
 pub trait HoverInfo {
-    fn get_hover(&self, doc: &FullTextDocument) -> Option<lsp_types::Hover>;
-}
-
-pub trait SemanticTokens {
-    fn build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder);
-}
-
-pub trait InlayHints {
-    fn build_inlay_hint(&self, doc: &FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>);
-}
-
-pub trait CodeLens {
-    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>);
-}
-
-pub trait CompletionItems {
-    fn build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &FullTextDocument);
+    fn get_hover(&self, _doc: &FullTextDocument) -> Option<lsp_types::Hover> {
+        None
+    }
 }
 
 pub trait GoToDefinition {
-    fn go_to_definition(&self, doc: &FullTextDocument) -> Option<GotoDefinitionResponse>;
+    fn go_to_definition(&self, _doc: &FullTextDocument) -> Option<GotoDefinitionResponse> {
+        None
+    }
+}
+
+pub trait SemanticTokens {
+    fn build_semantic_tokens(&self, _builder: &mut SemanticTokensBuilder) {}
+}
+
+pub trait InlayHints {
+    fn build_inlay_hint(&self, _doc: &FullTextDocument, _acc: &mut Vec<lsp_types::InlayHint>) {}
+}
+
+pub trait CodeLens {
+    fn build_code_lens(&self, _acc: &mut Vec<lsp_types::CodeLens>) {}
+}
+
+pub trait CompletionItems {
+    fn build_completion_items(&self, _acc: &mut Vec<CompletionItem>, _doc: &FullTextDocument) {}
 }
 
 macro_rules! impl_build {
@@ -380,8 +390,10 @@ impl_build!(CodeLens, build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>)
 impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &FullTextDocument));
 
 pub trait IsAccessor {
-    fn is_accessor(&self) -> bool;
-    fn set_accessor(&mut self, accessor: WeakSymbol);
+    fn is_accessor(&self) -> bool {
+        false
+    }
+    fn set_accessor(&mut self, _accessor: WeakSymbol) {}
 }
 
 pub trait Accessor: IsAccessor {
@@ -389,7 +401,9 @@ pub trait Accessor: IsAccessor {
         &self,
         doc: &FullTextDocument,
         ctx: &dyn WorkspaceContext,
-    ) -> Result<Option<DynSymbol>, Diagnostic>;
+    ) -> Result<Option<DynSymbol>, Diagnostic> {
+        Ok(None)
+    }
 }
 
 pub trait Locator {
@@ -472,6 +486,8 @@ impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
 }
 
 pub trait Check {
-    fn must_check(&self) -> bool;
-    fn check(&self, doc: &FullTextDocument, diagnostics: &mut Vec<Diagnostic>);
+    fn must_check(&self) -> bool {
+        false
+    }
+    fn check(&self, _doc: &FullTextDocument, _diagnostics: &mut Vec<Diagnostic>) {}
 }

@@ -27,13 +27,9 @@ impl<'a> HoverInfoBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let hover_info_path = &PATHS.lsp_hover_info.path;
-        let sig = &PATHS.lsp_hover_info.methods.get_hover.sig;
-        let default = &PATHS.lsp_hover_info.methods.get_hover.default;
 
         quote! {
-            impl #hover_info_path for #input_name {
-                #sig { #default }
-            }
+            impl #hover_info_path for #input_name { }
         }
     }
 }

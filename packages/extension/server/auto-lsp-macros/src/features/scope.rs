@@ -35,22 +35,8 @@ impl<'a> ScopeBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let scope_path = &PATHS.scope.path;
-        let is_scope_sig = &PATHS.scope.methods.is_scope.sig;
-        let is_scope_default = &PATHS.scope.methods.is_scope.default;
-
-        let get_scope_range_sig = &PATHS.scope.methods.get_scope_range.sig;
-        let get_scope_range_default = &PATHS.scope.methods.get_scope_range.default;
-
         quote! {
-            impl #scope_path for #input_name {
-                #is_scope_sig {
-                    #is_scope_default
-                }
-
-                #get_scope_range_sig {
-                    #get_scope_range_default
-                }
-            }
+            impl #scope_path for #input_name { }
         }
     }
 }

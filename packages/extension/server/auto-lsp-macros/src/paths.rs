@@ -30,7 +30,6 @@ pub struct Paths {
             build_code_lens: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             }
         },
     >,
@@ -39,7 +38,6 @@ pub struct Paths {
             get_document_symbols: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             }
         },
     >,
@@ -48,7 +46,6 @@ pub struct Paths {
             build_completion_items: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             }
         },
     >,
@@ -57,7 +54,6 @@ pub struct Paths {
             go_to_definition: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             }
         },
     >,
@@ -66,7 +62,6 @@ pub struct Paths {
             get_hover: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             }
         },
     >,
@@ -75,7 +70,6 @@ pub struct Paths {
             build_inlay_hint: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             }
         },
     >,
@@ -84,7 +78,6 @@ pub struct Paths {
             build_semantic_tokens: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             }
         },
     >,
@@ -93,12 +86,10 @@ pub struct Paths {
             is_accessor: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
             set_accessor: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
         },
     >,
@@ -107,7 +98,6 @@ pub struct Paths {
             find: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
         },
     >,
@@ -116,12 +106,10 @@ pub struct Paths {
             is_scope: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
             get_scope_range: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
         },
     >,
@@ -130,7 +118,6 @@ pub struct Paths {
             find_at_offset: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
         },
     >,
@@ -139,7 +126,6 @@ pub struct Paths {
             inject_parent: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
         },
     >,
@@ -148,12 +134,10 @@ pub struct Paths {
             must_check: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
             check: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-                default: TokenStream
             },
         },
     >,
@@ -184,7 +168,6 @@ impl Default for Paths {
                     build_code_lens: structx! {
                         sig: quote! { fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) },
                         variant: quote! { build_code_lens(acc) },
-                        default: quote! { }
                     }
                 },
             },
@@ -194,7 +177,6 @@ impl Default for Paths {
                     build_completion_items: structx! {
                         sig: quote! { fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) },
                         variant: quote! { build_completion_items(acc, doc) },
-                        default: quote! { }
                     }
                 },
             },
@@ -204,7 +186,6 @@ impl Default for Paths {
                     get_document_symbols: structx! {
                         sig: quote! { fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> },
                         variant: quote! { get_document_symbols(doc) },
-                        default: quote! { None }
                     }
                 },
             },
@@ -214,7 +195,6 @@ impl Default for Paths {
                     go_to_definition: structx! {
                         sig: quote! { fn go_to_definition(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::GotoDefinitionResponse> },
                         variant: quote! { go_to_definition(doc) },
-                        default: quote! { None }
                     }
                 },
             },
@@ -224,7 +204,6 @@ impl Default for Paths {
                     get_hover: structx! {
                         sig: quote! { fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> },
                         variant: quote! { get_hover(doc) },
-                        default: quote! { None }
                     }
                 },
             },
@@ -234,7 +213,6 @@ impl Default for Paths {
                     build_inlay_hint: structx! {
                         sig: quote! { fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) },
                         variant: quote! { build_inlay_hint(doc, acc) },
-                        default: quote! { }
                     }
                 },
             },
@@ -244,7 +222,6 @@ impl Default for Paths {
                     build_semantic_tokens: structx! {
                         sig: quote! { fn build_semantic_tokens(&self, builder: &mut auto_lsp::semantic_tokens::SemanticTokensBuilder) },
                         variant: quote! { build_semantic_tokens(builder) },
-                        default: quote! { }
                     }
                 },
             },
@@ -254,12 +231,10 @@ impl Default for Paths {
                     is_accessor: structx! {
                         sig: quote! { fn is_accessor(&self) -> bool},
                         variant: quote! { is_accessor() },
-                        default: quote! { false }
                     },
                     set_accessor: structx! {
                         sig: quote! { fn set_accessor(&mut self, accessor: auto_lsp::symbol::WeakSymbol) },
                         variant: quote! { set_accessor(accessor) },
-                        default: quote! { }
                     },
                 },
             },
@@ -269,7 +244,6 @@ impl Default for Paths {
                     find: structx! {
                         sig: quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<auto_lsp::symbol::DynSymbol>, lsp_types::Diagnostic> },
                         variant: quote! { find(doc, ctx) },
-                        default: quote! { Ok(None) }
                     },
                 },
             },
@@ -279,12 +253,10 @@ impl Default for Paths {
                     is_scope: structx! {
                         sig: quote! { fn is_scope(&self) -> bool },
                         variant: quote! { is_scope() },
-                        default: quote! { false }
                     },
                     get_scope_range: structx! {
                         sig: quote! { fn get_scope_range(&self) -> Vec<[usize; 2]> },
                         variant: quote! { get_scope_range() },
-                        default: quote! { Vec::new() }
                     },
                 },
             },
@@ -294,7 +266,6 @@ impl Default for Paths {
                     find_at_offset: structx! {
                         sig: quote! { fn find_at_offset(&self, offset: usize) -> Option<auto_lsp::symbol::DynSymbol> },
                         variant: quote! { find_at_offset(offset) },
-                        default: quote! { None }
                     },
                 },
             },
@@ -304,7 +275,6 @@ impl Default for Paths {
                     inject_parent: structx! {
                         sig: quote! { fn inject_parent(&mut self, parent: auto_lsp::symbol::WeakSymbol) },
                         variant: quote! { inject_parent(parent) },
-                        default: quote! { }
                     },
                 },
             },
@@ -314,12 +284,10 @@ impl Default for Paths {
                     must_check: structx! {
                         sig: quote! { fn must_check(&self) -> bool },
                         variant: quote! { must_check() },
-                        default: quote! { false }
                     },
                     check: structx! {
                         sig: quote! { fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) },
                         variant: quote! { check(doc, diagnostics) },
-                        default: quote! { }
                     },
                 },
             },

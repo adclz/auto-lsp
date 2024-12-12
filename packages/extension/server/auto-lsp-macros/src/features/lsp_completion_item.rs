@@ -36,21 +36,9 @@ impl<'a> CompletionItemsBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let completion_items_path = &PATHS.lsp_completion_items.path;
-        let sig = &PATHS
-            .lsp_completion_items
-            .methods
-            .build_completion_items
-            .sig;
-        let default = &PATHS
-            .lsp_completion_items
-            .methods
-            .build_completion_items
-            .default;
 
         quote! {
-            impl #completion_items_path for #input_name {
-                #sig { #default }
-            }
+            impl #completion_items_path for #input_name { }
         }
     }
 }

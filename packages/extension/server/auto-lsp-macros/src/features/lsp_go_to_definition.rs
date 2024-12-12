@@ -28,13 +28,9 @@ impl<'a> GotoDefinitionBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let go_to_definitions_path = &PATHS.lsp_go_to_definition.path;
-        let sig = &PATHS.lsp_go_to_definition.methods.go_to_definition.sig;
-        let default = &PATHS.lsp_go_to_definition.methods.go_to_definition.default;
 
         quote! {
-            impl #go_to_definitions_path for #input_name {
-                #sig { #default }
-            }
+            impl #go_to_definitions_path for #input_name { }
         }
     }
 }

@@ -36,17 +36,9 @@ impl<'a> SemanticTokensBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let semantic_tokens_path = &PATHS.lsp_semantic_token.path;
-        let sig = &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig;
-        let default = &PATHS
-            .lsp_semantic_token
-            .methods
-            .build_semantic_tokens
-            .default;
 
         quote! {
-            impl #semantic_tokens_path for #input_name {
-                #sig { #default }
-            }
+            impl #semantic_tokens_path for #input_name { }
         }
     }
 }

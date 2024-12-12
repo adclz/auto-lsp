@@ -30,13 +30,9 @@ impl<'a> InlayHintsBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let inlay_hint_path = &PATHS.lsp_inlay_hint.path;
-        let sig = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig;
-        let default = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.default;
 
         quote! {
-            impl #inlay_hint_path for #input_name {
-                #sig { #default }
-            }
+            impl #inlay_hint_path for #input_name { }
         }
     }
 }

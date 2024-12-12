@@ -33,13 +33,9 @@ impl<'a> CodeLensBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let code_lens_path = &PATHS.lsp_code_lens.path;
-        let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;
-        let default = &PATHS.lsp_code_lens.methods.build_code_lens.default;
 
         quote! {
-            impl #code_lens_path for #input_name {
-                #sig { #default }
-            }
+            impl #code_lens_path for #input_name { }
         }
     }
 }

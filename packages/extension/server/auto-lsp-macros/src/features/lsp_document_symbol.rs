@@ -31,17 +31,9 @@ impl<'a> DocumentSymbolBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let document_symbols_path = &PATHS.lsp_document_symbols.path;
-        let sig = &PATHS.lsp_document_symbols.methods.get_document_symbols.sig;
-        let default = &PATHS
-            .lsp_document_symbols
-            .methods
-            .get_document_symbols
-            .default;
 
         quote! {
-            impl #document_symbols_path for #input_name {
-                #sig { #default }
-            }
+            impl #document_symbols_path for #input_name { }
         }
     }
 }
