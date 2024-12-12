@@ -7,7 +7,7 @@ use auto_lsp::builders::{Builder, BuilderFn};
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     CodeLensRequest, Completion, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest,
-    GotoDefinition, HoverRequest, InlayHintRequest, SelectionRangeRequest,
+    GotoDefinition, HoverRequest, InlayHintRequest, References, SelectionRangeRequest,
     SemanticTokensFullRequest, SemanticTokensRangeRequest, WorkspaceDiagnosticRequest,
     WorkspaceSymbolRequest,
 };
@@ -150,6 +150,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             ..Default::default()
         }),
         definition_provider: Some(OneOf::Left(true)),
+        references_provider: Some(OneOf::Left(true)),
         ..Default::default()
     })
     .unwrap();
@@ -196,7 +197,8 @@ impl Session {
                                 .on::<InlayHintRequest, _>(Self::get_inlay_hint)?
                                 .on::<CodeLensRequest, _>(Self::get_code_lens)?
                                 .on::<Completion, _>(Self::get_completion_items)?
-                                .on::<GotoDefinition, _>(Self::go_to_definition)?;
+                                .on::<GotoDefinition, _>(Self::go_to_definition)?
+                                .on::<References, _>(Self::get_references)?;
                         }
                         Message::Notification(not) => {
                             NotificationDispatcher::new(self, not)

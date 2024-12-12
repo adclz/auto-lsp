@@ -9,6 +9,7 @@ pub mod go_to_definition;
 pub mod hover_info;
 pub mod inlay_hint;
 pub mod open_text_document;
+pub mod references;
 pub mod selection_ranges;
 pub mod semantic_tokens;
 pub mod watched_files;

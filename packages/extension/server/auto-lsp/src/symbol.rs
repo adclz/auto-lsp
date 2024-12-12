@@ -225,7 +225,6 @@ impl Default for Referrers {
 
 impl Referrers {
     pub fn add_reference(&self, symbol: WeakSymbol) {
-        eprintln!("Received reference !!!!");
         self.0.write().push(symbol);
     }
 
