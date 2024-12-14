@@ -99,6 +99,14 @@ pub struct Paths {
                 sig: TokenStream,
                 variant: TokenStream,
             },
+            get_accessor: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            reset_accessor: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
         },
     >,
     pub accessor: TraitInfo<
@@ -252,6 +260,14 @@ impl Default for Paths {
                     set_accessor: structx! {
                         sig: quote! { fn set_accessor(&mut self, accessor: auto_lsp::symbol::WeakSymbol) },
                         variant: quote! { set_accessor(accessor) },
+                    },
+                    get_accessor: structx! {
+                        sig: quote! { fn get_accessor(&self) -> Option<&auto_lsp::symbol::WeakSymbol>  },
+                        variant: quote! { get_accessor() },
+                    },
+                    reset_accessor: structx! {
+                        sig: quote! { fn reset_accessor(&mut self) },
+                        variant: quote! { reset_accessor() },
                     },
                 },
             },

@@ -22,7 +22,7 @@ impl Session {
         match item {
             Some(item) => match item.read().get_referrers().as_ref() {
                 Some(item) => Ok(Some(
-                    item.read()
+                    item.get_references()
                         .iter()
                         .filter_map(|reference| {
                             let reference = reference.to_dyn()?;

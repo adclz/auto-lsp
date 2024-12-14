@@ -391,6 +391,14 @@ impl<'a> VariantBuilder<'a> {
                     &PATHS.is_accessor.methods.set_accessor.sig,
                     &PATHS.is_accessor.methods.set_accessor.variant,
                 ),
+                (
+                    &PATHS.is_accessor.methods.reset_accessor.sig,
+                    &PATHS.is_accessor.methods.reset_accessor.variant,
+                ),
+                (
+                    &PATHS.is_accessor.methods.get_accessor.sig,
+                    &PATHS.is_accessor.methods.get_accessor.variant,
+                ),
             ],
         );
 

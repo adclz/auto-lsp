@@ -36,10 +36,35 @@ pub trait SymbolData {
     fn get_range(&self) -> tree_sitter::Range;
     fn get_parent(&self) -> Option<WeakSymbol>;
     fn set_parent(&mut self, parent: WeakSymbol);
-    fn get_target(&self) -> Option<WeakSymbol>;
+    fn get_target(&self) -> Option<&WeakSymbol>;
     fn set_target(&mut self, target: WeakSymbol);
+    fn reset_target(&mut self);
     fn get_referrers(&self) -> &Option<Referrers>;
     fn get_mut_referrers(&mut self) -> &mut Referrers;
+    fn drop_referrers(&self) {
+        self.get_referrers().as_ref().map(|r| {
+            r.0.iter().for_each(|r| {
+                r.to_dyn().map(|r| {
+                    r.write().reset_accessor();
+                });
+            });
+        });
+    }
+}
+
+impl<T: AstSymbol> Drop for Symbol<T> {
+    fn drop(&mut self) {
+        let write = self.write();
+        write.drop_referrers();
+
+        if write.is_accessor() {
+            write.get_accessor().map(|a| {
+                a.to_dyn().map(|a| {
+                    a.write().get_mut_referrers().remove_empty_references();
+                })
+            });
+        }
+    }
 }
 
 impl SymbolData for AstSymbolData {
@@ -59,12 +84,16 @@ impl SymbolData for AstSymbolData {
         self.parent = Some(parent);
     }
 
-    fn get_target(&self) -> Option<WeakSymbol> {
-        self.target.as_ref().map(|t| t.clone())
+    fn get_target(&self) -> Option<&WeakSymbol> {
+        self.target.as_ref()
     }
 
     fn set_target(&mut self, target: WeakSymbol) {
         self.target = Some(target);
+    }
+
+    fn reset_target(&mut self) {
+        self.target = None;
     }
 
     fn get_referrers(&self) -> &Option<Referrers> {
@@ -165,12 +194,16 @@ impl<T: AstSymbol> SymbolData for T {
         self.get_mut_data().set_parent(parent)
     }
 
-    fn get_target(&self) -> Option<WeakSymbol> {
+    fn get_target(&self) -> Option<&WeakSymbol> {
         self.get_data().get_target()
     }
 
     fn set_target(&mut self, target: WeakSymbol) {
         self.get_mut_data().set_target(target)
+    }
+
+    fn reset_target(&mut self) {
+        self.get_mut_data().reset_target();
     }
 
     fn get_referrers(&self) -> &Option<Referrers> {
@@ -199,12 +232,16 @@ impl SymbolData for dyn AstSymbol {
         self.get_mut_data().set_parent(parent)
     }
 
-    fn get_target(&self) -> Option<WeakSymbol> {
+    fn get_target(&self) -> Option<&WeakSymbol> {
         self.get_data().get_target()
     }
 
     fn set_target(&mut self, target: WeakSymbol) {
         self.get_mut_data().set_target(target)
+    }
+
+    fn reset_target(&mut self) {
+        self.get_mut_data().reset_target();
     }
 
     fn get_referrers(&self) -> &Option<Referrers> {
@@ -217,28 +254,25 @@ impl SymbolData for dyn AstSymbol {
 }
 
 #[derive(Clone)]
-pub struct Referrers(Arc<RwLock<Vec<WeakSymbol>>>);
+pub struct Referrers(Vec<WeakSymbol>);
 
 impl Default for Referrers {
     fn default() -> Self {
-        Self(Arc::new(RwLock::new(Vec::new())))
+        Self(Vec::new())
     }
 }
 
 impl Referrers {
-    pub fn add_reference(&self, symbol: WeakSymbol) {
-        self.0.write().push(symbol);
+    pub fn add_reference(&mut self, symbol: WeakSymbol) {
+        self.0.push(symbol);
     }
 
-    pub fn remove_reference(&self, symbol: &WeakSymbol) {
-        let mut references = self.0.write();
-        if let Some(index) = references.iter().position(|r| r.0.ptr_eq(&symbol.0)) {
-            references.remove(index);
-        }
+    pub fn remove_empty_references(&mut self) {
+        self.0.retain(|f| f.0.weak_count() > 0);
     }
 
-    pub fn read(&self) -> parking_lot::RwLockReadGuard<Vec<WeakSymbol>> {
-        self.0.read()
+    pub fn get_references(&self) -> &Vec<WeakSymbol> {
+        &self.0
     }
 }
 
@@ -401,7 +435,11 @@ pub trait IsAccessor {
     fn is_accessor(&self) -> bool {
         false
     }
+    fn get_accessor(&self) -> Option<&WeakSymbol> {
+        None
+    }
     fn set_accessor(&mut self, _accessor: WeakSymbol) {}
+    fn reset_accessor(&mut self) {}
 }
 
 pub trait Accessor: IsAccessor {
