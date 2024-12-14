@@ -421,43 +421,34 @@ pub trait Locator {
 impl Locator for DynSymbol {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
-        if symbol.is_inside_offset(offset) {
-            match symbol.find_at_offset(offset) {
-                Some(symbol) => return Some(symbol),
-                None => return Some(self.clone()),
-            }
+        match symbol.is_inside_offset(offset) {
+            true => symbol.find_at_offset(offset).or_else(|| Some(self.clone())),
+            false => None,
         }
-        None
     }
 }
 
 impl<T: AstSymbol> Locator for Symbol<T> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
-        if symbol.is_inside_offset(offset) {
-            match symbol.find_at_offset(offset) {
-                Some(symbol) => return Some(symbol),
-                None => return Some(self.to_dyn()),
-            };
+        match symbol.is_inside_offset(offset) {
+            true => symbol
+                .find_at_offset(offset)
+                .or_else(|| Some(self.to_dyn())),
+            false => None,
         }
-        None
     }
 }
 
 impl<T: AstSymbol> Locator for Option<Symbol<T>> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        match self.as_ref() {
-            Some(symbol) => symbol.find_at_offset(offset),
-            None => None,
-        }
+        self.as_ref()?.find_at_offset(offset)
     }
 }
 
 impl<T: Locator> Locator for Vec<T> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        self.iter()
-            .enumerate()
-            .find_map(|(_, symbol)| symbol.find_at_offset(offset))
+        self.iter().find_map(|symbol| symbol.find_at_offset(offset))
     }
 }
 
