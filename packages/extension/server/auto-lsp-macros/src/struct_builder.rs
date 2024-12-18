@@ -54,8 +54,11 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let methods = self.generate_symbol_methods();
 
         let locator = self.generate_locator_trait();
+        let edit_locator = self.generate_edit_locator_trait();
+
         let parent = self.generate_parent_trait();
         let queryable = self.generate_queryable();
+        let new = self.generate_builder_ast__new();
 
         tokens.extend(quote! {
             #(#input_attr)*
@@ -70,10 +73,12 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
             impl #symbol_trait for #input_name {
                 #methods
+                #new
             }
 
             #features
             #locator
+            #edit_locator
             #parent
             #queryable
         });
@@ -185,6 +190,37 @@ impl<'a> StructBuilder<'a> {
             }
         }
     }
+
+    fn generate_edit_locator_trait(&self) -> TokenStream {
+        let locator = &PATHS.edit_locator.path;
+        let locator_sig = &PATHS.edit_locator.methods.edit_at_offset.sig;
+        let input_name = &self.input_name;
+        let dyn_symbol = &PATHS.dyn_symbol;
+
+        let builder = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, _, _| {
+                quote! {
+                    if let Some(symbol) = self.#name.edit_at_offset(offset) {
+                       return Some(symbol);
+                    }
+                }
+            })
+            .to_token_stream();
+
+        quote! {
+            impl #locator for #input_name {
+                #locator_sig {
+                    if (!self.is_inside_offset(offset)) {
+                        return None;
+                    }
+
+                    #builder
+
+                    None
+                }
+            }
+        }
+    }
 }
 
 impl<'a> StructBuilder<'a> {
@@ -206,6 +242,38 @@ impl<'a> StructBuilder<'a> {
                 fn inject_parent(&mut self, parent: #weak_symbol) {
                     #builder
                 }
+            }
+        }
+    }
+
+    fn generate_builder_ast__new(&self) -> TokenStream {
+        let pending_symbol = &PATHS.pending_symbol;
+        let builder_name = &self.input_buider_name;
+
+        quote! {
+            fn builder(
+                &self,
+                ctx: &dyn auto_lsp::workspace::WorkspaceContext,
+                query: &tree_sitter::Query,
+                root_node: tree_sitter::Node,
+                range: Option<std::ops::Range<usize>>,
+                doc: &lsp_textdocument::FullTextDocument,
+                url: std::sync::Arc<lsp_types::Url>,
+            ) -> auto_lsp::builders::BuilderResult {
+                use auto_lsp::builders::Builder;
+                #builder_name::builder(ctx, query, root_node, range, doc, url)
+            }
+
+            fn static_builder(
+                ctx: &dyn auto_lsp::workspace::WorkspaceContext,
+                query: &tree_sitter::Query,
+                root_node: tree_sitter::Node,
+                range: Option<std::ops::Range<usize>>,
+                doc: &lsp_textdocument::FullTextDocument,
+                url: std::sync::Arc<lsp_types::Url>,
+            ) -> auto_lsp::builders::BuilderResult {
+                use auto_lsp::builders::Builder;
+                #builder_name::builder(ctx, query, root_node, range, doc, url)
             }
         }
     }
@@ -318,12 +386,13 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     fn generate_add(&self) -> TokenStream {
         let pending_symbol = &PATHS.pending_symbol;
 
+        let input_name = &self.input_name;
         let input_builder_name = &self.input_buider_name;
 
         let builder = FieldBuilder::new(&self.fields)
             .apply_all(|_, _, name, field_type, _| {
                 quote! {
-                    node = match self.#name.add::<#field_type>(query_name, node, range, "", "")? {
+                    node = match self.#name.add::<#field_type>(query_name, node, range, stringify!(#input_name), stringify!(#field_type))? {
                         Some(a) => a,
                         None => return Ok(()),
                     };
@@ -342,7 +411,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
                 #builder
 
-                Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid field {:?} in {:?}", query_name, stringify!(#input_builder_name))))
+                Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid query {:?} in {:?}", query_name, stringify!(#input_name))))
             }
         }
     }
@@ -350,7 +419,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
     fn generate_try_from(&self) -> TokenStream {
         let fields = self.fields.get_field_names();
 
-        let name = self.input_name;
+        let input_name = self.input_name;
         let input_builder_name = &self.input_buider_name;
 
         let try_from_builder = &PATHS.try_from_builder;
@@ -359,23 +428,29 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let dyn_symbol = &PATHS.dyn_symbol;
 
         let builder = FieldBuilder::new(self.fields)
-            .apply_all(|ty, _, name, _, _| match ty  {
+            .apply_all(|ty, _, name, field_type, _| match ty  {
                 FieldBuilderType::Normal  => quote! {
                     let #name = builder
                         .#name
-                        .try_downcast(check, stringify!(#name), builder_range, stringify!(#input_builder_name))?
+                        .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?
                         //todo ! remove expect with builder error
-                        .expect("");
+                        .ok_or(auto_lsp::builder_error!(
+                            builder_range,
+                            format!(
+                                "Could not cast field {:?} in {:?}",
+                                stringify!(#name), stringify!(#input_name)
+                            )
+                        ))?;
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(check, stringify!(#name), builder_range, stringify!(#input_builder_name))?;
+                            .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?;
                     }
             }).to_token_stream();
 
         quote! {
-            impl #try_from_builder<&#input_builder_name> for #name {
+            impl #try_from_builder<&#input_builder_name> for #input_name {
                 type Error = lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#dyn_symbol>) -> Result<Self, Self::Error> {
@@ -383,7 +458,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
                     #builder
 
-                    Ok(#name {
+                    Ok(#input_name {
                         _data: #symbol_data::new(builder.url.clone(), builder.range.clone()),
                         #(#fields),*
                     })

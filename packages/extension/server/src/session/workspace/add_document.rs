@@ -49,6 +49,7 @@ impl Session {
             self,
             &cst_parser.queries.outline,
             cst.root_node(),
+            None,
             &document,
             arc_uri,
         );

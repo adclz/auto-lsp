@@ -1,4 +1,9 @@
-use crate::semantic_tokens::SemanticTokensBuilder;
+use crate::{
+    builders::BuilderResult,
+    convert::TryIntoBuilder,
+    pending_symbol::{AstBuilder, PendingSymbol, TryDownCast},
+    semantic_tokens::SemanticTokensBuilder,
+};
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{
@@ -6,7 +11,12 @@ use lsp_types::{
     GotoDefinitionResponse, Position, Range, Url,
 };
 use parking_lot::RwLock;
-use std::sync::{Arc, Weak};
+use std::{
+    cell::RefCell,
+    marker::PhantomData,
+    rc::Rc,
+    sync::{Arc, Weak},
+};
 
 use super::workspace::WorkspaceContext;
 
@@ -120,9 +130,31 @@ pub trait AstSymbol:
     + Scope
     + Accessor
     + Locator
+    + EditLocator
     + Parent
     + Check
 {
+    fn builder(
+        &self,
+        ctx: &dyn WorkspaceContext,
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
+        doc: &FullTextDocument,
+        url: Arc<Url>,
+    ) -> BuilderResult;
+
+    fn static_builder(
+        ctx: &dyn WorkspaceContext,
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
+        doc: &FullTextDocument,
+        url: Arc<Url>,
+    ) -> BuilderResult
+    where
+        Self: Sized;
+
     fn get_data(&self) -> &AstSymbolData;
     fn get_mut_data(&mut self) -> &mut AstSymbolData;
 
@@ -177,45 +209,7 @@ pub trait AstSymbol:
 
 impl_downcast!(AstSymbol);
 
-impl<T: AstSymbol> SymbolData for T {
-    fn get_url(&self) -> Arc<Url> {
-        self.get_data().get_url()
-    }
-
-    fn get_range(&self) -> tree_sitter::Range {
-        self.get_data().get_range()
-    }
-
-    fn get_parent(&self) -> Option<WeakSymbol> {
-        self.get_data().get_parent()
-    }
-
-    fn set_parent(&mut self, parent: WeakSymbol) {
-        self.get_mut_data().set_parent(parent)
-    }
-
-    fn get_target(&self) -> Option<&WeakSymbol> {
-        self.get_data().get_target()
-    }
-
-    fn set_target(&mut self, target: WeakSymbol) {
-        self.get_mut_data().set_target(target)
-    }
-
-    fn reset_target(&mut self) {
-        self.get_mut_data().reset_target();
-    }
-
-    fn get_referrers(&self) -> &Option<Referrers> {
-        self.get_data().get_referrers()
-    }
-
-    fn get_mut_referrers(&mut self) -> &mut Referrers {
-        self.get_mut_data().get_mut_referrers()
-    }
-}
-
-impl SymbolData for dyn AstSymbol {
+impl<T: AstSymbol + ?Sized> SymbolData for T {
     fn get_url(&self) -> Arc<Url> {
         self.get_data().get_url()
     }
@@ -416,7 +410,7 @@ macro_rules! impl_build {
             }
         }
 
-        impl<T: AstSymbol> $trait for [Symbol<T>] {
+        impl<T: AstSymbol> $trait for Vec<Symbol<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) {
                 for symbol in self.iter() {
                     symbol.read().$fn_name($($param_name),*)
@@ -527,4 +521,212 @@ pub trait Check {
         false
     }
     fn check(&self, _doc: &FullTextDocument, _diagnostics: &mut Vec<Diagnostic>) {}
+}
+
+pub struct Editable<T: AstBuilder> {
+    builder: PhantomData<T>,
+}
+
+pub trait EditLocator {
+    fn edit_at_offset(&self, offset: usize) -> Option<Rc<RefCell<dyn Editor>>>;
+}
+
+impl EditLocator for DynSymbol {
+    fn edit_at_offset(&self, offset: usize) -> Option<Rc<RefCell<dyn Editor>>> {
+        let symbol = self.read();
+        match symbol.is_inside_offset(offset) {
+            true => symbol
+                .edit_at_offset(offset)
+                .or_else(|| Some(Rc::new(RefCell::new(self.clone())) as _)),
+            false => None,
+        }
+    }
+}
+
+impl<T: AstSymbol + Clone> EditLocator for Symbol<T> {
+    fn edit_at_offset(&self, offset: usize) -> Option<Rc<RefCell<dyn Editor>>> {
+        let symbol = self.read();
+        match symbol.is_inside_offset(offset) {
+            true => symbol
+                .edit_at_offset(offset)
+                .or_else(|| Some(Rc::new(RefCell::new(self.clone())) as _)),
+            false => None,
+        }
+    }
+}
+
+impl<T: AstSymbol + Clone> EditLocator for Option<Symbol<T>> {
+    fn edit_at_offset(&self, offset: usize) -> Option<Rc<RefCell<dyn Editor>>> {
+        self.as_ref()?.edit_at_offset(offset)
+    }
+}
+
+impl<T: AstSymbol + Clone> EditLocator for Vec<Symbol<T>> {
+    fn edit_at_offset(&self, offset: usize) -> Option<Rc<RefCell<dyn Editor>>> {
+        let symbol = self.iter().find_map(|symbol| symbol.edit_at_offset(offset));
+        match symbol {
+            Some(symbol) => Some(symbol),
+            None => match self.len() {
+                0 => None,
+                1 => {
+                    if self[0].read().is_inside_offset(offset) {
+                        Some(Rc::new(RefCell::new(self.clone())) as _)
+                    } else {
+                        None
+                    }
+                }
+                other => {
+                    let start = self[0].read().get_range().start_byte;
+                    let end = self[other - 1].read().get_range().end_byte;
+                    if start <= offset && offset <= end {
+                        Some(Rc::new(RefCell::new(self.clone())) as _)
+                    } else {
+                        None
+                    }
+                }
+            },
+        }
+    }
+}
+
+pub trait Editor {
+    fn swap(
+        &mut self,
+        ctx: &dyn WorkspaceContext,
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
+        doc: &FullTextDocument,
+        url: Arc<Url>,
+        diagnostics: &mut Vec<Diagnostic>,
+    );
+}
+
+impl Editor for DynSymbol {
+    fn swap(
+        &mut self,
+        ctx: &dyn WorkspaceContext,
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
+        doc: &FullTextDocument,
+        url: Arc<Url>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
+        eprintln!("Swapping in dyn symbol");
+
+        let symbol = self.read().builder(ctx, query, root_node, range, doc, url);
+        match symbol.item {
+            Ok(symbol) => {
+                // Replace the current symbol with the new symbol
+                *self = symbol;
+            }
+            Err(diagnostic) => {
+                diagnostics.push(diagnostic);
+            }
+        }
+
+        diagnostics.extend(symbol.errors);
+    }
+}
+
+impl<T: AstSymbol + Clone> Editor for Symbol<T> {
+    fn swap(
+        &mut self,
+        ctx: &dyn WorkspaceContext,
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
+        doc: &FullTextDocument,
+        url: Arc<Url>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
+        eprintln!("Swapping in symbol");
+
+        let symbol = T::static_builder(ctx, query, root_node, range, doc, url);
+        match symbol.item {
+            Ok(symbol) => {
+                // Replace the current symbol with the new symbol
+                *self = symbol.downcast::<T>().expect("Failed to downcast symbol");
+            }
+            Err(diagnostic) => {
+                diagnostics.push(diagnostic);
+            }
+        }
+
+        diagnostics.extend(symbol.errors);
+    }
+}
+
+impl<T: AstSymbol + Clone> Editor for Option<Symbol<T>> {
+    fn swap(
+        &mut self,
+        ctx: &dyn WorkspaceContext,
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
+        doc: &FullTextDocument,
+        url: Arc<Url>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
+        eprintln!("Swapping in option");
+
+        let symbol = T::static_builder(ctx, query, root_node, range, doc, url);
+        match symbol.item {
+            Ok(symbol) => {
+                // Replace the current symbol with the new symbol
+                *self = Some(symbol.downcast::<T>().expect("Failed to downcast symbol"));
+            }
+            Err(diagnostic) => {
+                diagnostics.push(diagnostic);
+            }
+        }
+
+        diagnostics.extend(symbol.errors);
+    }
+}
+
+impl<T: AstSymbol + Clone> Editor for Vec<Symbol<T>> {
+    fn swap(
+        &mut self,
+        ctx: &dyn WorkspaceContext,
+        query: &tree_sitter::Query,
+        root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
+        doc: &FullTextDocument,
+        url: Arc<Url>,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) {
+        eprintln!("Swapping in vec");
+
+        let try_symbol = T::static_builder(ctx, query, root_node, range, doc, url);
+        let symbol = match try_symbol.item {
+            Ok(symbol) => {
+                // Replace the current symbol with the new symbol
+                symbol.downcast::<T>().expect("Failed to downcast symbol")
+            }
+            Err(diagnostic) => {
+                diagnostics.push(diagnostic);
+                diagnostics.extend(try_symbol.errors);
+                return;
+            }
+        };
+
+        diagnostics.extend(try_symbol.errors);
+        let node_start_byte = symbol.read().get_range().start_byte;
+
+        // Find the correct insertion index based on node's start_byte
+        let insert_index = match self.binary_search_by(|existing_symbol| {
+            existing_symbol
+                .read()
+                .get_range()
+                .start_byte
+                .cmp(&node_start_byte)
+        }) {
+            Ok(index) | Err(index) => index,
+        };
+
+        // Insert the symbol at the calculated index
+        self.insert(insert_index, symbol);
+    }
 }

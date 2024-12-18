@@ -1,10 +1,15 @@
 use crate::builder_error;
 use crate::pending_symbol::{AstBuilder, PendingSymbol};
-use crate::symbol::{DynSymbol, SymbolData};
+use crate::queryable::Queryable;
+use crate::symbol::{AstSymbol, DynSymbol, EditLocator, Editor, Locator, SymbolData};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
-use lsp_types::{Diagnostic, Url};
+use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
+use std::cell::RefCell;
+use std::ops::Range;
+use std::rc::Rc;
 use std::sync::Arc;
+use std::vec;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCapture};
 
@@ -23,24 +28,28 @@ macro_rules! builder_error {
     };
 }
 
-pub type BuilderFn = fn(
-    ctx: &dyn WorkspaceContext,
-    query: &tree_sitter::Query,
-    root_node: tree_sitter::Node,
-    doc: &FullTextDocument,
-    url: Arc<Url>,
-) -> BuilderResult;
-
 pub struct BuilderResult {
     pub item: Result<DynSymbol, Diagnostic>,
     pub errors: Vec<Diagnostic>,
 }
 
+pub type BuilderFn = fn(
+    ctx: &dyn WorkspaceContext,
+    query: &tree_sitter::Query,
+    root_node: tree_sitter::Node,
+    range: Option<std::ops::Range<usize>>,
+    doc: &FullTextDocument,
+    url: Arc<Url>,
+) -> BuilderResult;
+
 pub trait Builder {
+    fn incomplete_builder() {}
+
     fn builder(
         ctx: &dyn WorkspaceContext,
         query: &tree_sitter::Query,
         root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
         doc: &FullTextDocument,
         url: Arc<Url>,
     ) -> BuilderResult;
@@ -220,6 +229,7 @@ impl<T: AstBuilder> Builder for T {
         ctx: &dyn WorkspaceContext,
         query: &tree_sitter::Query,
         root_node: tree_sitter::Node,
+        range: Option<std::ops::Range<usize>>,
         doc: &FullTextDocument,
         url: Arc<Url>,
     ) -> BuilderResult {
@@ -227,14 +237,41 @@ impl<T: AstBuilder> Builder for T {
         let mut errors = vec![];
 
         let mut cursor = tree_sitter::QueryCursor::new();
+
+        let start_node = match &range {
+            Some(range) => {
+                let node = root_node
+                    .descendant_for_byte_range(range.start, range.end)
+                    .unwrap();
+                cursor.set_byte_range(range.clone());
+                Some(node)
+            }
+            None => None,
+        };
+
         let mut captures = cursor.captures(&query, root_node, source_code);
 
         let mut roots = vec![];
         let mut stack: Vec<_> = vec![];
+        let mut trigger = false;
 
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
             let capture_index = capture.index as usize;
+
+            if !trigger {
+                if let Some(node) = start_node {
+                    if node.range() != capture.node.range() {
+                        continue;
+                    } else {
+                        trigger = true;
+                    }
+                }
+            }
+
+            if range.is_some() {
+                eprintln!("captures: {:?}", query.capture_names()[capture_index]);
+            }
 
             let mut parent = stack.pop();
 
@@ -296,4 +333,94 @@ impl<T: AstBuilder> Builder for T {
 
         finalize_builder(roots, &mut errors, doc, ctx)
     }
+}
+
+pub struct RangeEdit {
+    pub start: usize,
+    pub steps: isize,
+}
+
+pub struct SwapResult {
+    pub node: Rc<RefCell<dyn Editor>>,
+    pub start_byte: usize,
+    pub end_byte: usize,
+}
+
+#[derive(Default)]
+pub struct EditResult {
+    pub ast: Option<Vec<SwapResult>>,
+    pub ranges: Vec<RangeEdit>,
+}
+
+pub fn get_ast_edit(
+    old_ast: Option<&DynSymbol>,
+    doc: &FullTextDocument,
+    edit_ranges: &Vec<TextDocumentContentChangeEvent>,
+) -> EditResult {
+    let mut results = EditResult::default();
+
+    let root = match old_ast.as_ref() {
+        Some(ast) => ast,
+        None => return results,
+    };
+
+    let mut nodes = vec![];
+
+    for edit in edit_ranges.iter() {
+        let edit_range = edit.range.unwrap();
+
+        let range_offset = doc.offset_at(edit_range.start) as usize;
+        let start_byte = range_offset;
+        let old_end_byte = range_offset + edit.range_length.unwrap() as usize;
+        let new_end_byte = range_offset + edit.text.len();
+
+        let start_position = doc.position_at(start_byte as u32);
+        let old_end_position = doc.position_at(old_end_byte as u32);
+
+        let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
+        if is_noop {
+            continue;
+        }
+
+        let is_insertion = old_end_byte == start_byte;
+
+        let is_ws = match is_insertion {
+            true => edit.text.trim().is_empty(),
+            false => doc
+                .get_content(Some(lsp_types::Range {
+                    start: start_position,
+                    end: old_end_position,
+                }))
+                .trim()
+                .is_empty(),
+        };
+
+        if !is_ws {
+            match root.edit_at_offset(range_offset) {
+                Some(item) => {
+                    eprintln!("Edit: Found node at offset: {:?}", range_offset);
+                    nodes.push(SwapResult {
+                        node: item,
+                        start_byte: range_offset,
+                        end_byte: new_end_byte,
+                    });
+                }
+                None => eprintln!("No node found at offset: {:?}", range_offset),
+            }
+        }
+
+        results.ranges.push(RangeEdit {
+            start: start_byte,
+            steps: (new_end_byte - old_end_byte) as isize,
+        });
+        eprintln!(
+            "Edit: Shift at {:?} of {:?}",
+            start_byte,
+            (new_end_byte - old_end_byte) as isize,
+        );
+    }
+
+    results.ast = Some(nodes);
+
+    results
 }

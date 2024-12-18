@@ -1,6 +1,8 @@
-use std::sync::Arc;
+use std::{ops::Range, sync::Arc};
 
+use auto_lsp::builders::get_ast_edit;
 use lsp_types::DidChangeTextDocumentParams;
+use rayon::vec;
 
 use super::tree_sitter_extend::{
     tree_sitter_edit::edit_tree, tree_sitter_lexer::get_tree_sitter_errors,
@@ -26,6 +28,8 @@ impl Session {
             }
         };
 
+        let arc_uri = Arc::new(uri.clone());
+
         let cst_parser = CST_PARSERS
             .get(extension)
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
@@ -34,6 +38,22 @@ impl Session {
             "No AST builder available for {}",
             extension
         ))?;
+
+        let workspace = self
+            .workspaces
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
+        let nodes_to_edit = get_ast_edit(
+            workspace.ast.as_ref(),
+            &workspace.document,
+            &params.content_changes,
+        );
+
+        let workspace = self
+            .workspaces
+            .get_mut(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         workspace
             .document
@@ -54,12 +74,35 @@ impl Session {
 
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
-        let arc_uri = Arc::new(uri.clone());
+        match nodes_to_edit.ast {
+            Some(nodes) => {
+                eprintln!("Editing nodes");
+                nodes.iter().for_each(|node| {
+                    let arc_uri = arc_uri.clone();
+                    let mut as_mut = node.node.borrow_mut();
+                    as_mut.swap(
+                        self,
+                        &cst_parser.queries.outline,
+                        cst.root_node(),
+                        Some(Range {
+                            start: node.start_byte,
+                            end: node.end_byte,
+                        }),
+                        &workspace.document,
+                        arc_uri,
+                        &mut errors,
+                    );
+                });
+            }
+            None => eprintln!("No nodes to edit"),
+        }
 
+        // todo: remove when finished
         let ast_build = ast_builder(
             self,
             &cst_parser.queries.outline,
             cst.root_node(),
+            None,
             &workspace.document,
             arc_uri,
         );
@@ -80,8 +123,8 @@ impl Session {
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         workspace.cst = cst;
-        workspace.ast = ast;
-        workspace.errors = errors;
+        //workspace.ast = ast;
+        workspace.errors.extend(errors);
 
         Ok(())
     }

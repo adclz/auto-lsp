@@ -305,6 +305,7 @@ impl<'a> VariantBuilder<'a> {
         &mut self,
         trait_path: &Path,
         methods: Vec<(&'b TokenStream, &'b TokenStream)>,
+        other: Vec<&'b TokenStream>,
     ) -> &mut Self {
         let input_name = self.enum_builder.input_name;
         let variants = &self.enum_builder.fields.variant_names;
@@ -326,6 +327,7 @@ impl<'a> VariantBuilder<'a> {
         self.results.push(quote! {
             impl #trait_path for #input_name {
                 #(#body)*
+                #(#other)*
             }
         });
         self

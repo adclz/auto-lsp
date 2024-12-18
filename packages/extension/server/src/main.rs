@@ -55,10 +55,8 @@ lazy_static! {
 // When the CST is built, the LSP will try to build the AST using the corresponding builder.
 // Since all symbols implement the AstSymbol trait, a node from a specific ast can hold a reference to another symbol located in a different ast.
 lazy_static! {
-    pub static ref AST_BUILDERS: HashMap<String, BuilderFn> = HashMap::from([(
-        "iec-61131-2".to_string(),
-        SourceFileBuilder::builder as BuilderFn
-    )]);
+    pub static ref AST_BUILDERS: HashMap<String, BuilderFn> =
+        HashMap::from([("iec-61131-2".to_string(), SourceFileBuilder::builder as _)]);
 }
 
 ///// Semantics
