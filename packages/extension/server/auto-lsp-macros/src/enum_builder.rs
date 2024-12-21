@@ -51,7 +51,6 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             .generate_go_to_declaration()
             .generate_parent()
             .generate_locator()
-            .generate_edit_locator()
             .generate_scope()
             .generate_accessor()
             .to_token_stream();
@@ -225,32 +224,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
                         &quote! { get_mut_data() },
                     ),
                 ],
-                vec![&quote! {
-                    fn builder(
-                        &self,
-                        ctx: &dyn auto_lsp::workspace::WorkspaceContext,
-                        query: &tree_sitter::Query,
-                        root_node: tree_sitter::Node,
-                        range: Option<std::ops::Range<usize>>,
-                        doc: &lsp_textdocument::FullTextDocument,
-                        url: std::sync::Arc<lsp_types::Url>,
-                    ) -> auto_lsp::builders::BuilderResult {
-                        use auto_lsp::builders::Builder;
-                        #builder_name::builder(ctx, query, root_node, range, doc, url)
-                    }
-
-                    fn static_builder(
-                        ctx: &dyn auto_lsp::workspace::WorkspaceContext,
-                        query: &tree_sitter::Query,
-                        root_node: tree_sitter::Node,
-                        range: Option<std::ops::Range<usize>>,
-                        doc: &lsp_textdocument::FullTextDocument,
-                        url: std::sync::Arc<lsp_types::Url>,
-                    ) -> auto_lsp::builders::BuilderResult {
-                        use auto_lsp::builders::Builder;
-                        #builder_name::builder(ctx, query, root_node, range, doc, url)
-                    }
-                }],
+                vec![],
             )
             .to_token_stream()
     }
@@ -280,17 +254,6 @@ impl<'a> VariantBuilder<'a> {
             vec![(
                 &PATHS.locator.methods.find_at_offset.sig,
                 &PATHS.locator.methods.find_at_offset.variant,
-            )],
-            vec![],
-        )
-    }
-
-    fn generate_edit_locator(&mut self) -> &mut Self {
-        self.dispatch(
-            &PATHS.edit_locator.path,
-            vec![(
-                &PATHS.edit_locator.methods.edit_at_offset.sig,
-                &PATHS.edit_locator.methods.edit_at_offset.variant,
             )],
             vec![],
         )

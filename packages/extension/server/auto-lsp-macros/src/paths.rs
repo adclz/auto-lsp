@@ -137,14 +137,6 @@ pub struct Paths {
             },
         },
     >,
-    pub edit_locator: TraitInfo<
-        Structx! {
-            edit_at_offset: Structx! {
-                sig: TokenStream,
-                variant: TokenStream,
-            },
-        },
-    >,
     pub parent: TraitInfo<
         Structx! {
             inject_parent: Structx! {
@@ -307,15 +299,6 @@ impl Default for Paths {
                     find_at_offset: structx! {
                         sig: quote! { fn find_at_offset(&self, offset: usize) -> Option<auto_lsp::symbol::DynSymbol> },
                         variant: quote! { find_at_offset(offset) },
-                    },
-                },
-            },
-            edit_locator: TraitInfo {
-                path: parse_quote!(auto_lsp::symbol::EditLocator),
-                methods: structx! {
-                    edit_at_offset: structx! {
-                        sig: quote! { fn edit_at_offset(&self, offset: usize) -> Option<std::rc::Rc<std::cell::RefCell<dyn auto_lsp::symbol::Editor>>> },
-                        variant: quote! { edit_at_offset(offset) },
                     },
                 },
             },

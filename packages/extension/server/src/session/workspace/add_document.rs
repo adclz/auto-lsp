@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use auto_lsp::builders::BuilderParams;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Url;
 
@@ -46,23 +47,24 @@ impl Session {
         let arc_uri = Arc::new(uri.clone());
 
         let ast_build = ast_builder(
-            self,
-            &cst_parser.queries.outline,
-            cst.root_node(),
+            &mut BuilderParams {
+                doc: &document,
+                diagnostics: &mut errors,
+                ctx: self,
+                query: &cst_parser.queries.outline,
+                root_node: cst.root_node(),
+                url: arc_uri.clone(),
+            },
             None,
-            &document,
-            arc_uri,
         );
 
-        ast = match ast_build.item {
+        ast = match ast_build {
             Ok(item) => Some(item),
             Err(e) => {
                 errors.push(e);
                 None
             }
         };
-
-        errors.extend(ast_build.errors);
 
         self.workspaces.insert(
             uri.to_owned(),

@@ -143,7 +143,7 @@ impl std::fmt::Debug for MaybePendingSymbol {
 
 pub trait TryDownCast<
     T: AstBuilder,
-    Y: Clone + AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 >
 {
     type Output;
@@ -160,7 +160,7 @@ pub trait TryDownCast<
 impl<T, Y> TryDownCast<T, Y> for PendingSymbol
 where
     T: AstBuilder,
-    Y: Clone + AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
     type Output = Symbol<Y>;
     fn try_downcast(
@@ -196,7 +196,7 @@ where
 impl<T, Y> TryDownCast<T, Y> for MaybePendingSymbol
 where
     T: AstBuilder,
-    Y: Clone + AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
     type Output = Option<Symbol<Y>>;
 
@@ -219,7 +219,7 @@ impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
 where
     T: TryDownCast<Y, V, Output = Symbol<V>>,
     Y: AstBuilder,
-    V: Clone + AstSymbol + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
+    V: AstSymbol + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
 {
     type Output = Vec<Symbol<V>>;
 

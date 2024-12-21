@@ -54,11 +54,9 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let methods = self.generate_symbol_methods();
 
         let locator = self.generate_locator_trait();
-        let edit_locator = self.generate_edit_locator_trait();
 
         let parent = self.generate_parent_trait();
         let queryable = self.generate_queryable();
-        let new = self.generate_builder_ast__new();
 
         tokens.extend(quote! {
             #(#input_attr)*
@@ -73,12 +71,10 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
             impl #symbol_trait for #input_name {
                 #methods
-                #new
             }
 
             #features
             #locator
-            #edit_locator
             #parent
             #queryable
         });
@@ -190,37 +186,6 @@ impl<'a> StructBuilder<'a> {
             }
         }
     }
-
-    fn generate_edit_locator_trait(&self) -> TokenStream {
-        let locator = &PATHS.edit_locator.path;
-        let locator_sig = &PATHS.edit_locator.methods.edit_at_offset.sig;
-        let input_name = &self.input_name;
-        let dyn_symbol = &PATHS.dyn_symbol;
-
-        let builder = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, _, _| {
-                quote! {
-                    if let Some(symbol) = self.#name.edit_at_offset(offset) {
-                       return Some(symbol);
-                    }
-                }
-            })
-            .to_token_stream();
-
-        quote! {
-            impl #locator for #input_name {
-                #locator_sig {
-                    if (!self.is_inside_offset(offset)) {
-                        return None;
-                    }
-
-                    #builder
-
-                    None
-                }
-            }
-        }
-    }
 }
 
 impl<'a> StructBuilder<'a> {
@@ -259,7 +224,7 @@ impl<'a> StructBuilder<'a> {
                 range: Option<std::ops::Range<usize>>,
                 doc: &lsp_textdocument::FullTextDocument,
                 url: std::sync::Arc<lsp_types::Url>,
-            ) -> auto_lsp::builders::BuilderResult {
+            ) -> auto_lsp::builders::PendingBuilderResult {
                 use auto_lsp::builders::Builder;
                 #builder_name::builder(ctx, query, root_node, range, doc, url)
             }
@@ -271,7 +236,7 @@ impl<'a> StructBuilder<'a> {
                 range: Option<std::ops::Range<usize>>,
                 doc: &lsp_textdocument::FullTextDocument,
                 url: std::sync::Arc<lsp_types::Url>,
-            ) -> auto_lsp::builders::BuilderResult {
+            ) -> auto_lsp::builders::PendingBuilderResult {
                 use auto_lsp::builders::Builder;
                 #builder_name::builder(ctx, query, root_node, range, doc, url)
             }
@@ -433,7 +398,6 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     let #name = builder
                         .#name
                         .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?
-                        //todo ! remove expect with builder error
                         .ok_or(auto_lsp::builder_error!(
                             builder_range,
                             format!(
