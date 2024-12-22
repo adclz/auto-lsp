@@ -5,7 +5,10 @@ use crate::symbol::{AstSymbol, DynSymbol, Locator, Symbol, SymbolData};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
+use parking_lot::Mutex;
+use std::cell::RefCell;
 use std::ops::Range;
+use std::rc::Rc;
 use std::sync::Arc;
 use std::vec;
 use streaming_iterator::StreamingIterator;
@@ -35,18 +38,28 @@ pub struct BuilderParams<'a> {
     pub diagnostics: &'a mut Vec<Diagnostic>,
 }
 
-struct StackBuilder<'a> {
-    builder_params: &'a mut BuilderParams<'a>,
+pub struct h<'a> {
+    builder: &'a mut BuilderParams<'a>,
+}
+
+impl<'a> h<'a> {
+    fn new(builder: &'a mut BuilderParams<'a>) -> Self {
+        Self { builder }
+    }
+}
+
+struct StackBuilder<'a, 'b> {
+    params: &'a mut BuilderParams<'b>,
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
     start_building: bool,
 }
 
-impl<'a> StackBuilder<'a> {
+impl<'a, 'b> StackBuilder<'a, 'b> {
     fn create_root_node<T: AstBuilder>(&mut self, capture: &QueryCapture, capture_index: usize) {
         let mut node = T::new(
-            self.builder_params.url.clone(),
-            &self.builder_params.query,
+            self.params.url.clone(),
+            self.params.query,
             capture_index,
             capture.node.range(),
             capture.node.start_position(),
@@ -59,11 +72,11 @@ impl<'a> StackBuilder<'a> {
                 self.roots.push(node.clone());
                 self.stack.push(node);
             }
-            None => self.builder_params.diagnostics.push(builder_error!(
+            None => self.params.diagnostics.push(builder_error!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
                     "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
-                    self.builder_params.query.capture_names()[capture_index as usize]
+                    self.params.query.capture_names()[capture_index as usize]
                 )
             )),
         }
@@ -87,15 +100,15 @@ impl<'a> StackBuilder<'a> {
                 if let Err(e) = parent.get_rc().borrow_mut().add(
                     &query,
                     node.clone(),
-                    &self.builder_params.doc.get_content(None).as_bytes(),
+                    self.params.doc.get_content(None).as_bytes(),
                 ) {
-                    self.builder_params.diagnostics.push(e);
+                    self.params.diagnostics.push(e);
                     return;
                 };
                 self.stack.push(parent.clone());
                 self.stack.push(node.clone());
             }
-            None => self.builder_params.diagnostics.push(builder_error!(
+            None => self.params.diagnostics.push(builder_error!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
                     "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
@@ -105,23 +118,22 @@ impl<'a> StackBuilder<'a> {
         };
     }
 
-    pub fn build<T: AstBuilder>(
-        range: Option<std::ops::Range<usize>>,
-        builder_params: &'a mut BuilderParams<'a>,
-    ) -> StackBuilder<'a> {
-        let mut builder = Self {
-            builder_params,
+    pub fn new(builder_params: &'a mut BuilderParams<'b>) -> Self {
+        Self {
+            params: builder_params,
             roots: vec![],
             stack: vec![],
             start_building: false,
-        };
+        }
+    }
 
+    pub fn build<T: AstBuilder>(&mut self, range: Option<std::ops::Range<usize>>) {
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let start_node = match &range {
             Some(range) => {
-                let node = builder
-                    .builder_params
+                let node = self
+                    .params
                     .root_node
                     .descendant_for_byte_range(range.start, range.end)
                     .unwrap();
@@ -132,38 +144,38 @@ impl<'a> StackBuilder<'a> {
         };
 
         let mut captures = cursor.captures(
-            &builder.builder_params.query,
-            builder.builder_params.root_node,
-            builder.builder_params.doc.get_content(None).as_bytes(),
+            &self.params.query,
+            self.params.root_node,
+            self.params.doc.get_content(None).as_bytes(),
         );
 
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
             let capture_index = capture.index as usize;
 
-            if !builder.start_building {
+            if !self.start_building {
                 if let Some(node) = start_node {
                     if node.range() != capture.node.range() {
                         continue;
                     } else {
-                        builder.start_building = true;
+                        self.start_building = true;
                     }
                 }
             }
 
-            /*if range.is_some() {
+            if range.is_some() {
                 eprintln!(
                     "captures: {:?}",
-                    builder.builder_params.query.capture_names()[capture_index]
+                    self.params.query.capture_names()[capture_index]
                 );
-            }*/
+            }
 
-            let mut parent = builder.stack.pop();
+            let mut parent = self.stack.pop();
 
             loop {
                 match &parent {
                     None => {
-                        builder.create_root_node::<T>(&capture, capture_index);
+                        self.create_root_node::<T>(&capture, capture_index);
                         break;
                     }
                     Some(p) => {
@@ -171,10 +183,10 @@ impl<'a> StackBuilder<'a> {
                             &p.get_rc().borrow().get_range(),
                             &capture.node.range(),
                         ) {
-                            builder.create_child_node(
+                            self.create_child_node(
                                 p,
-                                builder.builder_params.url.clone(),
-                                &builder.builder_params.query,
+                                self.params.url.clone(),
+                                &self.params.query,
                                 &capture,
                                 capture_index,
                             );
@@ -182,10 +194,9 @@ impl<'a> StackBuilder<'a> {
                         }
                     }
                 }
-                parent = builder.stack.pop();
+                parent = self.stack.pop();
             }
         }
-        builder
     }
 
     fn get_root_node(&mut self) -> Result<PendingSymbol, Diagnostic> {
@@ -198,7 +209,7 @@ impl<'a> StackBuilder<'a> {
                         character: 0,
                     },
                     end: lsp_types::Position {
-                        line: self.builder_params.doc.line_count() as u32,
+                        line: self.params.doc.line_count() as u32,
                         character: 0,
                     },
                 },
@@ -216,10 +227,7 @@ impl<'a> StackBuilder<'a> {
         item.write().inject_parent(item.to_weak());
 
         if item.read().is_accessor() {
-            match item
-                .read()
-                .find(&self.builder_params.doc, self.builder_params.ctx)
-            {
+            match item.read().find(&self.params.doc, self.params.ctx) {
                 Ok(a) => {
                     if let Some(a) = a {
                         // todo!
@@ -228,32 +236,26 @@ impl<'a> StackBuilder<'a> {
                         item.write().set_target(a.to_weak());
                     };
                 }
-                Err(err) => self.builder_params.diagnostics.push(err),
+                Err(err) => self.params.diagnostics.push(err),
             }
         }
 
-        if let Err(err) = item
-            .write()
-            .find(&self.builder_params.doc, self.builder_params.ctx)
-        {
-            self.builder_params.diagnostics.push(err);
+        if let Err(err) = item.write().find(&self.params.doc, self.params.ctx) {
+            self.params.diagnostics.push(err);
         }
 
         let read = item.read();
 
         if read.must_check() {
-            read.check(self.builder_params.doc, self.builder_params.diagnostics);
+            read.check(self.params.doc, self.params.diagnostics);
         }
 
         for item in deferred {
             let acc = if item.read().is_accessor() {
-                match item
-                    .read()
-                    .find(&self.builder_params.doc, self.builder_params.ctx)
-                {
+                match item.read().find(&self.params.doc, self.params.ctx) {
                     Ok(a) => a,
                     Err(err) => {
-                        self.builder_params.diagnostics.push(err);
+                        self.params.diagnostics.push(err);
                         None
                     }
                 }
@@ -269,8 +271,7 @@ impl<'a> StackBuilder<'a> {
             }
 
             if item.read().must_check() {
-                item.read()
-                    .check(&self.builder_params.doc, self.builder_params.diagnostics);
+                item.read().check(&self.params.doc, self.params.diagnostics);
             }
         }
         drop(read);
@@ -296,7 +297,7 @@ pub trait StaticBuilder<
 >
 {
     fn static_build<'a>(
-        params: &'a mut BuilderParams<'a>,
+        params: &'a mut BuilderParams,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Symbol<Y>, Diagnostic>;
 }
@@ -307,10 +308,11 @@ where
     Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
 {
     fn static_build<'a>(
-        builder_params: &'a mut BuilderParams<'a>,
+        builder_params: &'a mut BuilderParams,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Symbol<Y>, Diagnostic> {
-        let builder = StackBuilder::build::<T>(range, builder_params);
+        let mut builder = StackBuilder::new(builder_params);
+        builder.build::<T>(range);
 
         let root = &builder.roots[0];
         let ds = root.try_downcast(
@@ -348,7 +350,9 @@ impl<T: AstBuilder> Builder for T {
         params: &'a mut BuilderParams<'a>,
         range: Option<Range<usize>>,
     ) -> Result<DynSymbol, Diagnostic> {
-        StackBuilder::build::<T>(range, params).to_dyn_symbol()
+        let mut builder = StackBuilder::new(params);
+        builder.build::<T>(range);
+        builder.to_dyn_symbol()
     }
 }
 
@@ -357,10 +361,10 @@ pub struct EditRange {
     pub steps: isize,
 }
 
-pub fn swap_ast(
+pub fn swap_ast<'a>(
     old_ast: Option<&DynSymbol>,
     edit_ranges: &Vec<TextDocumentContentChangeEvent>,
-    builder_params: &mut BuilderParams,
+    builder_params: &'a mut BuilderParams<'a>,
 ) -> Vec<EditRange> {
     let mut results = vec![];
 
@@ -410,6 +414,9 @@ pub fn swap_ast(
                         (new_end_byte - old_end_byte) as isize,
                     );
                     eprintln!("Edited: Found node at offset: {:?}", range_offset);
+                    if let Err(err) = node.write().dyn_swap(range_offset, builder_params) {
+                        builder_params.diagnostics.push(err);
+                    }
                     results.push(EditRange {
                         start_byte,
                         steps: (new_end_byte - old_end_byte) as isize,

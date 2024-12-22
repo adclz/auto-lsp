@@ -53,6 +53,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             .generate_locator()
             .generate_scope()
             .generate_accessor()
+            .generate_dynamic_swap()
             .to_token_stream();
 
         let pending_symbol = &PATHS.symbol_builder_trait;
@@ -254,6 +255,17 @@ impl<'a> VariantBuilder<'a> {
             vec![(
                 &PATHS.locator.methods.find_at_offset.sig,
                 &PATHS.locator.methods.find_at_offset.variant,
+            )],
+            vec![],
+        )
+    }
+
+    fn generate_dynamic_swap(&mut self) -> &mut Self {
+        self.dispatch(
+            &PATHS.dynamic_swap.path,
+            vec![(
+                &PATHS.dynamic_swap.methods.swap.sig,
+                &PATHS.dynamic_swap.methods.swap.variant,
             )],
             vec![],
         )

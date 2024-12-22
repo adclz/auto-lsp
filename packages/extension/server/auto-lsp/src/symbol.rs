@@ -127,6 +127,7 @@ pub trait AstSymbol:
     + Locator
     + Parent
     + Check
+    + DynamicSwap
 {
     fn get_data(&self) -> &AstSymbolData;
     fn get_mut_data(&mut self) -> &mut AstSymbolData;
@@ -520,21 +521,15 @@ impl BuilderParams<'_> {
     }
 }
 
-pub trait Swap<T, Y>
-where
-    T: AstBuilder,
-    Y: AstSymbol
-        + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuilder<T, Y>,
-{
-    fn to_swap<'a>(
+pub trait DynamicSwap {
+    fn dyn_swap<'a>(
         &mut self,
         offset: usize,
-        builder_params: &'a mut BuilderParams<'a>,
+        builder_params: &'a mut BuilderParams,
     ) -> Result<(), Diagnostic>;
 }
 
-impl<T, Y> Swap<T, Y> for Symbol<Y>
+pub trait StaticSwap<T, Y>
 where
     T: AstBuilder,
     Y: AstSymbol
@@ -544,7 +539,21 @@ where
     fn to_swap<'a>(
         &mut self,
         offset: usize,
-        builder_params: &'a mut BuilderParams<'a>,
+        builder_params: &'a mut BuilderParams,
+    ) -> Result<(), Diagnostic>;
+}
+
+impl<T, Y> StaticSwap<T, Y> for Symbol<Y>
+where
+    T: AstBuilder,
+    Y: AstSymbol
+        + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
+        + StaticBuilder<T, Y>,
+{
+    fn to_swap<'a>(
+        &mut self,
+        offset: usize,
+        builder_params: &'a mut BuilderParams,
     ) -> Result<(), Diagnostic> {
         let symbol = Y::static_build(
             builder_params,
@@ -558,7 +567,7 @@ where
     }
 }
 
-impl<T, Y> Swap<T, Y> for Vec<Symbol<Y>>
+impl<T, Y> StaticSwap<T, Y> for Vec<Symbol<Y>>
 where
     T: AstBuilder,
     Y: AstSymbol
@@ -568,7 +577,7 @@ where
     fn to_swap<'a>(
         &mut self,
         offset: usize,
-        builder_params: &'a mut BuilderParams<'a>,
+        builder_params: &'a mut BuilderParams,
     ) -> Result<(), Diagnostic> {
         let symbol = Y::static_build(
             builder_params,

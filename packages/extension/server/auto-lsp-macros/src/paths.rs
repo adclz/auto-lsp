@@ -157,6 +157,14 @@ pub struct Paths {
             },
         },
     >,
+    pub dynamic_swap: TraitInfo<
+        Structx! {
+            swap: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+        },
+    >,
 }
 
 impl Default for Paths {
@@ -321,6 +329,19 @@ impl Default for Paths {
                     check: structx! {
                         sig: quote! { fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) },
                         variant: quote! { check(doc, diagnostics) },
+                    },
+                },
+            },
+            dynamic_swap: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::DynamicSwap),
+                methods: structx! {
+                    swap: structx! {
+                        sig: quote! { fn dyn_swap<'a>(
+                            &mut self,
+                            offset: usize,
+                            builder_params: &'a mut BuilderParams,
+                        ) -> Result<(), Diagnostic> },
+                        variant: quote! { dyn_swap(offset, builder_params) },
                     },
                 },
             },

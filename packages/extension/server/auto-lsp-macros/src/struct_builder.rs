@@ -57,6 +57,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
         let parent = self.generate_parent_trait();
         let queryable = self.generate_queryable();
+        let dynamic_swap = self.generate_dynamic_swap();
 
         tokens.extend(quote! {
             #(#input_attr)*
@@ -77,6 +78,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
             #locator
             #parent
             #queryable
+            #dynamic_swap
         });
 
         // Generate builder
@@ -211,34 +213,30 @@ impl<'a> StructBuilder<'a> {
         }
     }
 
-    fn generate_builder_ast__new(&self) -> TokenStream {
-        let pending_symbol = &PATHS.pending_symbol;
-        let builder_name = &self.input_buider_name;
+    fn generate_dynamic_swap(&self) -> TokenStream {
+        let input_name = &self.input_name;
+        let dynamic_swap = &PATHS.dynamic_swap.path;
+
+        let builder = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, _, _| {
+                quote! {
+                    self.#name.to_swap(offset, builder_params)?;
+                }
+            })
+            .to_token_stream();
 
         quote! {
-            fn builder(
-                &self,
-                ctx: &dyn auto_lsp::workspace::WorkspaceContext,
-                query: &tree_sitter::Query,
-                root_node: tree_sitter::Node,
-                range: Option<std::ops::Range<usize>>,
-                doc: &lsp_textdocument::FullTextDocument,
-                url: std::sync::Arc<lsp_types::Url>,
-            ) -> auto_lsp::builders::PendingBuilderResult {
-                use auto_lsp::builders::Builder;
-                #builder_name::builder(ctx, query, root_node, range, doc, url)
-            }
+            impl #dynamic_swap for #input_name {
+                fn dyn_swap<'a>(
+                    &mut self,
+                    offset: usize,
+                    builder_params: &'a mut BuilderParams,
+                ) -> Result<(), Diagnostic> {
 
-            fn static_builder(
-                ctx: &dyn auto_lsp::workspace::WorkspaceContext,
-                query: &tree_sitter::Query,
-                root_node: tree_sitter::Node,
-                range: Option<std::ops::Range<usize>>,
-                doc: &lsp_textdocument::FullTextDocument,
-                url: std::sync::Arc<lsp_types::Url>,
-            ) -> auto_lsp::builders::PendingBuilderResult {
-                use auto_lsp::builders::Builder;
-                #builder_name::builder(ctx, query, root_node, range, doc, url)
+                    #builder
+
+                    Ok(())
+                }
             }
         }
     }
