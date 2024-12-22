@@ -232,10 +232,9 @@ impl<'a> StructBuilder<'a> {
                     offset: usize,
                     builder_params: &'a mut BuilderParams,
                 ) -> Result<(), Diagnostic> {
-
+                    eprintln!("SWAP {:?}", stringify!(#input_name));
                     #builder
-
-                    Ok(())
+                    self.to_swap(offset, builder_params)
                 }
             }
         }
@@ -393,21 +392,22 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
         let builder = FieldBuilder::new(self.fields)
             .apply_all(|ty, _, name, field_type, _| match ty  {
                 FieldBuilderType::Normal  => quote! {
-                    let #name = builder
+                    let #name = Symbol::new_and_check(builder
                         .#name
-                        .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?
+                        .as_ref()
                         .ok_or(auto_lsp::builder_error!(
                             builder_range,
                             format!(
                                 "Could not cast field {:?} in {:?}",
                                 stringify!(#name), stringify!(#input_name)
                             )
-                        ))?;
+                        ))?
+                        .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?, check);
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?;
+                            .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(check);
                     }
             }).to_token_stream();
 

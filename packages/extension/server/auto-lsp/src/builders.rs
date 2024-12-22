@@ -38,16 +38,6 @@ pub struct BuilderParams<'a> {
     pub diagnostics: &'a mut Vec<Diagnostic>,
 }
 
-pub struct h<'a> {
-    builder: &'a mut BuilderParams<'a>,
-}
-
-impl<'a> h<'a> {
-    fn new(builder: &'a mut BuilderParams<'a>) -> Self {
-        Self { builder }
-    }
-}
-
 struct StackBuilder<'a, 'b> {
     params: &'a mut BuilderParams<'b>,
     roots: Vec<PendingSymbol>,
@@ -299,7 +289,7 @@ pub trait StaticBuilder<
     fn static_build<'a>(
         params: &'a mut BuilderParams,
         range: Option<std::ops::Range<usize>>,
-    ) -> Result<Symbol<Y>, Diagnostic>;
+    ) -> Result<Y, Diagnostic>;
 }
 
 impl<T, Y> StaticBuilder<T, Y> for Y
@@ -310,7 +300,7 @@ where
     fn static_build<'a>(
         builder_params: &'a mut BuilderParams,
         range: Option<std::ops::Range<usize>>,
-    ) -> Result<Symbol<Y>, Diagnostic> {
+    ) -> Result<Y, Diagnostic> {
         let mut builder = StackBuilder::new(builder_params);
         builder.build::<T>(range);
 
@@ -413,10 +403,10 @@ pub fn swap_ast<'a>(
                         start_byte,
                         (new_end_byte - old_end_byte) as isize,
                     );
-                    eprintln!("Edited: Found node at offset: {:?}", range_offset);
                     if let Err(err) = node.write().dyn_swap(range_offset, builder_params) {
                         builder_params.diagnostics.push(err);
                     }
+                    eprintln!("Edited: Found node at offset: {:?}", range_offset);
                     results.push(EditRange {
                         start_byte,
                         steps: (new_end_byte - old_end_byte) as isize,

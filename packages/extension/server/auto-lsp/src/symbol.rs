@@ -248,8 +248,19 @@ impl Referrers {
 pub struct Symbol<T: AstSymbol>(Arc<RwLock<T>>);
 
 impl<T: AstSymbol> Symbol<T> {
-    pub fn new(symbol: T) -> Self {
+    fn new(symbol: T) -> Self {
         Self(Arc::new(RwLock::new(symbol)))
+    }
+
+    pub fn new_and_check(symbol: T, check: &mut Vec<DynSymbol>) -> Self {
+        let arc = Symbol::new(symbol);
+        let read = arc.read();
+        if read.is_accessor() || read.must_check() {
+            check.push(arc.to_dyn());
+        }
+        drop(read);
+        arc.write().inject_parent(arc.to_weak());
+        arc
     }
 
     pub fn read(&self) -> parking_lot::RwLockReadGuard<T> {
@@ -543,6 +554,30 @@ where
     ) -> Result<(), Diagnostic>;
 }
 
+impl<T, Y> StaticSwap<T, Y> for Y
+where
+    T: AstBuilder,
+    Y: AstSymbol
+        + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
+        + StaticBuilder<T, Y>,
+{
+    fn to_swap<'a>(
+        &mut self,
+        offset: usize,
+        builder_params: &'a mut BuilderParams,
+    ) -> Result<(), Diagnostic> {
+        eprintln!("swapping in symbol");
+        *self = Y::static_build(
+            builder_params,
+            Some(std::ops::Range {
+                start: offset,
+                end: offset,
+            }),
+        )?;
+        Ok(())
+    }
+}
+
 impl<T, Y> StaticSwap<T, Y> for Symbol<Y>
 where
     T: AstBuilder,
@@ -555,14 +590,14 @@ where
         offset: usize,
         builder_params: &'a mut BuilderParams,
     ) -> Result<(), Diagnostic> {
-        let symbol = Y::static_build(
+        eprintln!("swapping in symbol");
+        *self = Symbol::new(Y::static_build(
             builder_params,
             Some(std::ops::Range {
                 start: offset,
                 end: offset,
             }),
-        );
-        *self = symbol?;
+        )?);
         Ok(())
     }
 }
@@ -579,13 +614,15 @@ where
         offset: usize,
         builder_params: &'a mut BuilderParams,
     ) -> Result<(), Diagnostic> {
-        let symbol = Y::static_build(
+        eprintln!("swapping in vec");
+
+        let symbol = Symbol::new(Y::static_build(
             builder_params,
             Some(std::ops::Range {
                 start: offset,
                 end: offset,
             }),
-        )?;
+        )?);
 
         for existing_symbol in self.iter_mut() {
             if existing_symbol.write().is_inside_offset(offset) {

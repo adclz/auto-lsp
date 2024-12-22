@@ -133,6 +133,14 @@ impl MaybePendingSymbol {
     pub fn as_ref(&self) -> Option<&PendingSymbol> {
         self.0.as_ref().map(|pending| pending)
     }
+
+    pub fn as_mut(&mut self) -> Option<&mut PendingSymbol> {
+        self.0.as_mut().map(|pending| pending)
+    }
+
+    pub fn into_inner(self) -> Option<PendingSymbol> {
+        self.0
+    }
 }
 
 impl std::fmt::Debug for MaybePendingSymbol {
@@ -162,7 +170,7 @@ where
     T: AstBuilder,
     Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
-    type Output = Symbol<Y>;
+    type Output = Y;
     fn try_downcast(
         &self,
         check: &mut Vec<DynSymbol>,
@@ -170,8 +178,7 @@ where
         field_range: lsp_types::Range,
         input_name: &str,
     ) -> Result<Self::Output, Diagnostic> {
-        let item: Y = self
-            .0
+        self.0
             .borrow()
             .downcast_ref::<T>()
             .ok_or(builder_error!(
@@ -181,15 +188,7 @@ where
                     field_name, input_name
                 )
             ))?
-            .try_into_builder(check)?;
-        let arc = Symbol::new(item);
-        let read = arc.read();
-        if read.is_accessor() || read.must_check() {
-            check.push(arc.to_dyn());
-        }
-        drop(read);
-        arc.write().inject_parent(arc.to_weak());
-        Ok(arc)
+            .try_into_builder(check)
     }
 }
 
@@ -198,7 +197,7 @@ where
     T: AstBuilder,
     Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
-    type Output = Option<Symbol<Y>>;
+    type Output = Option<Y>;
 
     fn try_downcast(
         &self,
@@ -217,11 +216,11 @@ where
 
 impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
 where
-    T: TryDownCast<Y, V, Output = Symbol<V>>,
+    T: TryDownCast<Y, V, Output = V>,
     Y: AstBuilder,
     V: AstSymbol + for<'a> TryFromBuilder<&'a Y, Error = lsp_types::Diagnostic>,
 {
-    type Output = Vec<Symbol<V>>;
+    type Output = Vec<V>;
 
     fn try_downcast(
         &self,
@@ -233,6 +232,30 @@ where
         self.iter()
             .map(|item| item.try_downcast(check, field_name, field_range, input_name))
             .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()
+    }
+}
+
+pub trait Finalize<T: AstSymbol> {
+    type Output;
+
+    fn finalize(self, checks: &mut Vec<DynSymbol>) -> Self::Output;
+}
+
+impl<T: AstSymbol> Finalize<T> for T {
+    type Output = Symbol<T>;
+
+    fn finalize(self, checks: &mut Vec<DynSymbol>) -> Self::Output {
+        Symbol::new_and_check(self, checks)
+    }
+}
+
+impl<T: AstSymbol> Finalize<T> for Vec<T> {
+    type Output = Vec<Symbol<T>>;
+
+    fn finalize(self, checks: &mut Vec<DynSymbol>) -> Self::Output {
+        self.into_iter()
+            .map(|f| Symbol::new_and_check(f, checks))
+            .collect()
     }
 }
 
