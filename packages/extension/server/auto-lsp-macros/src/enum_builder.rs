@@ -54,6 +54,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             .generate_scope()
             .generate_accessor()
             .generate_dynamic_swap()
+            .generate_edit_range()
             .to_token_stream();
 
         let pending_symbol = &PATHS.symbol_builder_trait;
@@ -266,6 +267,17 @@ impl<'a> VariantBuilder<'a> {
             vec![(
                 &PATHS.dynamic_swap.methods.swap.sig,
                 &PATHS.dynamic_swap.methods.swap.variant,
+            )],
+            vec![],
+        )
+    }
+
+    fn generate_edit_range(&mut self) -> &mut Self {
+        self.dispatch(
+            &PATHS.edit_range.path,
+            vec![(
+                &PATHS.edit_range.methods.edit_range.sig,
+                &PATHS.edit_range.methods.edit_range.variant,
             )],
             vec![],
         )

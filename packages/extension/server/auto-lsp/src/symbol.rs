@@ -128,6 +128,7 @@ pub trait AstSymbol:
     + Parent
     + Check
     + DynamicSwap
+    + EditRange
 {
     fn get_data(&self) -> &AstSymbolData;
     fn get_mut_data(&mut self) -> &mut AstSymbolData;
@@ -470,6 +471,46 @@ impl<T: AstSymbol> Locator for Option<Symbol<T>> {
 impl<T: Locator> Locator for Vec<T> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         self.iter().find_map(|symbol| symbol.find_at_offset(offset))
+    }
+}
+
+pub trait EditRange {
+    fn edit_range(&mut self, start: usize, offset: isize);
+}
+
+impl<T: AstSymbol> EditRange for Symbol<T> {
+    fn edit_range(&mut self, start: usize, offset: isize) {
+        let mut write = self.write();
+        let data = write.get_mut_data();
+        if data.range.start_byte > start {
+            eprintln!(
+                "start: {}, RANGES: {} {}",
+                start, data.range.start_byte, data.range.end_byte
+            );
+            data.range.start_byte = (data.range.start_byte as isize + offset) as usize;
+            data.range.end_byte = (data.range.end_byte as isize + offset) as usize;
+        }
+        write.edit_range(start, offset);
+    }
+}
+
+impl<T: AstSymbol> EditRange for Option<Symbol<T>> {
+    fn edit_range(&mut self, start: usize, offset: isize) {
+        if let Some(symbol) = self.as_mut() {
+            let mut write = symbol.write();
+            let data = write.get_mut_data();
+            data.range.start_byte = (data.range.start_byte as isize + offset) as usize;
+            data.range.end_byte = (data.range.end_byte as isize + offset) as usize;
+            write.edit_range(start, offset);
+        }
+    }
+}
+
+impl<T: AstSymbol> EditRange for Vec<Symbol<T>> {
+    fn edit_range(&mut self, start: usize, offset: isize) {
+        for symbol in self.iter_mut() {
+            symbol.write().edit_range(start, offset);
+        }
     }
 }
 

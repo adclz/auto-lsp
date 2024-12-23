@@ -58,6 +58,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         let parent = self.generate_parent_trait();
         let queryable = self.generate_queryable();
         let dynamic_swap = self.generate_dynamic_swap();
+        let edit_range = self.generate_edit_range();
 
         tokens.extend(quote! {
             #(#input_attr)*
@@ -79,6 +80,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
             #parent
             #queryable
             #dynamic_swap
+            #edit_range
         });
 
         // Generate builder
@@ -235,6 +237,27 @@ impl<'a> StructBuilder<'a> {
                     eprintln!("SWAP {:?}", stringify!(#input_name));
                     #builder
                     self.to_swap(offset, builder_params)
+                }
+            }
+        }
+    }
+
+    fn generate_edit_range(&self) -> TokenStream {
+        let input_name = &self.input_name;
+        let edit_range = &PATHS.edit_range.path;
+
+        let builder = FieldBuilder::new(&self.fields)
+            .apply_all(|_, _, name, _, _| {
+                quote! {
+                    self.#name.edit_range(start, offset);
+                }
+            })
+            .to_token_stream();
+
+        quote! {
+            impl #edit_range for #input_name {
+                fn edit_range<'a>(&mut self, start: usize, offset: isize) {
+                    #builder
                 }
             }
         }

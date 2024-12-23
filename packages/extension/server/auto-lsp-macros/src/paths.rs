@@ -165,6 +165,14 @@ pub struct Paths {
             },
         },
     >,
+    pub edit_range: TraitInfo<
+        Structx! {
+            edit_range: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+        },
+    >,
 }
 
 impl Default for Paths {
@@ -342,6 +350,15 @@ impl Default for Paths {
                             builder_params: &'a mut BuilderParams,
                         ) -> Result<(), Diagnostic> },
                         variant: quote! { dyn_swap(offset, builder_params) },
+                    },
+                },
+            },
+            edit_range: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::EditRange),
+                methods: structx! {
+                    edit_range: structx! {
+                        sig: quote! { fn edit_range(&mut self, start: usize, offset: isize) },
+                        variant: quote! { edit_range(start, offset) },
                     },
                 },
             },

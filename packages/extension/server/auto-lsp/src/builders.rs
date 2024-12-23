@@ -403,14 +403,13 @@ pub fn swap_ast<'a>(
                         start_byte,
                         (new_end_byte - old_end_byte) as isize,
                     );
+
+                    root.write()
+                        .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
                     if let Err(err) = node.write().dyn_swap(range_offset, builder_params) {
                         builder_params.diagnostics.push(err);
                     }
                     eprintln!("Edited: Found node at offset: {:?}", range_offset);
-                    results.push(EditRange {
-                        start_byte,
-                        steps: (new_end_byte - old_end_byte) as isize,
-                    });
                 }
                 None => {
                     eprintln!(
@@ -419,10 +418,8 @@ pub fn swap_ast<'a>(
                         (new_end_byte - old_end_byte) as isize,
                     );
                     eprintln!("No node found at offset: {:?}", range_offset);
-                    results.push(EditRange {
-                        start_byte,
-                        steps: (new_end_byte - old_end_byte) as isize,
-                    });
+                    root.write()
+                        .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
                 }
             }
         }
