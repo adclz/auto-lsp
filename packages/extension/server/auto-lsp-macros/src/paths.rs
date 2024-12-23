@@ -17,6 +17,7 @@ pub struct Paths {
     pub symbol_data: Path,
     pub pending_symbol: Path,
     pub maybe_pending_symbol: Path,
+    pub builder_params: Path,
 
     // traits
     pub queryable: Path,
@@ -186,6 +187,7 @@ impl Default for Paths {
             referrers: parse_quote!(auto_lsp::symbol::Referrers),
             pending_symbol: parse_quote!(auto_lsp::pending_symbol::PendingSymbol),
             maybe_pending_symbol: parse_quote!(auto_lsp::pending_symbol::MaybePendingSymbol),
+            builder_params: parse_quote!(auto_lsp::builders::BuilderParams),
 
             // traits
             queryable: parse_quote!(auto_lsp::queryable::Queryable),

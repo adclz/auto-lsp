@@ -61,9 +61,10 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         let dyn_symbol = &PATHS.dyn_symbol;
 
         let try_from_builder = &PATHS.try_from_builder;
+        let params = &PATHS.builder_params;
 
         let into = quote! {
-            fn try_to_dyn_symbol(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
+            fn try_to_dyn_symbol(&self, check: &mut #params) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
                 use #try_from_builder;
 
                 let item = #name::try_from_builder(self, check)?;
@@ -96,7 +97,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
                     self.unique_field.get_rc().borrow().get_url()
                 }
 
-                fn get_range(&self) -> tree_sitter::Range {
+                fn get_range(&self) -> std::ops::Range<usize> {
                     self.unique_field.get_rc().borrow().get_range()
                 }
 
@@ -153,11 +154,12 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
 
     fn generate_add(&self) -> TokenStream {
         let pending_symbol = &PATHS.pending_symbol;
+        let params = &PATHS.builder_params;
 
         quote! {
-            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
+            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8], params: &mut #params) ->
                 Result<(), lsp_types::Diagnostic> {
-                    self.unique_field.get_rc().borrow_mut().add(query, node, source_code)
+                    self.unique_field.get_rc().borrow_mut().add(query, node, source_code, params)
             }
         }
     }
@@ -173,21 +175,22 @@ impl<'a> BuildAstItemBuilder for EnumBuilder<'a> {
         let try_into_builder = &PATHS.try_into_builder;
 
         let dyn_symbol = &PATHS.dyn_symbol;
+        let params = &PATHS.builder_params;
 
         quote! {
             impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#dyn_symbol>) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, params: &mut #params) -> Result<Self, Self::Error> {
                     use #try_into_builder;
 
                     #(
                         if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(variant.try_into_builder(check)?));
+                            return Ok(Self::#variant_names(variant.try_into_builder(params)?));
                         };
                     )*
                     Err(auto_lsp::builder_error!(
-                        builder.unique_field.get_rc().borrow().get_lsp_range(),
+                        builder.unique_field.get_rc().borrow().get_lsp_range(params.doc),
                         format!("Failed to downcast builder to enum: {}", stringify!(#name))
                     ))
                 }

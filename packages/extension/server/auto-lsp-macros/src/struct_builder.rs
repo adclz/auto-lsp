@@ -96,9 +96,10 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
         let dyn_symbol = &PATHS.dyn_symbol;
         let try_from_builder = &PATHS.try_from_builder;
+        let params = &PATHS.builder_params;
 
         let into = quote! {
-            fn try_to_dyn_symbol(&self, check: &mut Vec<#dyn_symbol>) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
+            fn try_to_dyn_symbol(&self, check: &mut #params) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
                 use #try_from_builder;
 
                 let item = #input_name::try_from_builder(self, check)?;
@@ -111,7 +112,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
             pub struct #input_builder_name {
                 url: std::sync::Arc<lsp_types::Url>,
                 query_index: usize,
-                range: tree_sitter::Range,
+                range: std::ops::Range<usize>,
                 start_position: tree_sitter::Point,
                 end_position: tree_sitter::Point,
                 #(#builder_fields),*
@@ -127,8 +128,8 @@ impl<'a> ToTokens for StructBuilder<'a> {
                     self.url.clone()
                 }
 
-                fn get_range(&self) -> tree_sitter::Range {
-                    self.range
+                fn get_range(&self) -> std::ops::Range<usize>{
+                    self.range.clone()
                 }
 
                 fn get_query_index(&self) -> usize {
@@ -333,7 +334,10 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                 Some(Self {
                     url,
                     query_index,
-                    range,
+                    range: std::ops::Range {
+                        start: range.start_byte,
+                        end: range.end_byte,
+                    },
                     start_position,
                     end_position,
                     #fields
@@ -386,17 +390,19 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
             })
             .into_token_stream();
 
+        let params = &PATHS.builder_params;
+
         quote! {
-            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8]) ->
+            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8], params: &mut #params) ->
                 Result<(), lsp_types::Diagnostic> {
 
                 let query_name = query.capture_names()[node.get_query_index()];
-                let range = self.get_lsp_range();
+                let range = self.get_lsp_range(params.doc);
                 let mut node = node;
 
                 #builder
 
-                Err(auto_lsp::builder_error!(self.get_lsp_range(), format!("Invalid query {:?} in {:?}", query_name, stringify!(#input_name))))
+                Err(auto_lsp::builder_error!(self.get_lsp_range(params.doc), format!("Invalid query {:?} in {:?}", query_name, stringify!(#input_name))))
             }
         }
     }
@@ -411,6 +417,7 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
 
         let symbol_data = &PATHS.symbol_data;
         let dyn_symbol = &PATHS.dyn_symbol;
+        let builder_params = &PATHS.builder_params;
 
         let builder = FieldBuilder::new(self.fields)
             .apply_all(|ty, _, name, field_type, _| match ty  {
@@ -425,12 +432,12 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                                 stringify!(#name), stringify!(#input_name)
                             )
                         ))?
-                        .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?, check);
+                        .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?, params.checks);
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(check, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(check);
+                            .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(params.checks);
                     }
             }).to_token_stream();
 
@@ -438,8 +445,8 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
             impl #try_from_builder<&#input_builder_name> for #input_name {
                 type Error = lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, check: &mut Vec<#dyn_symbol>) -> Result<Self, Self::Error> {
-                    let builder_range = builder.get_lsp_range();
+                fn try_from_builder(builder: &#input_builder_name, params: &mut #builder_params) -> Result<Self, Self::Error> {
+                    let builder_range = builder.get_lsp_range(params.doc);
 
                     #builder
 

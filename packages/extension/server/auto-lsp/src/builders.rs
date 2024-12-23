@@ -36,6 +36,7 @@ pub struct BuilderParams<'a> {
     pub doc: &'a FullTextDocument,
     pub url: Arc<Url>,
     pub diagnostics: &'a mut Vec<Diagnostic>,
+    pub checks: &'a mut Vec<DynSymbol>,
 }
 
 struct StackBuilder<'a, 'b> {
@@ -91,6 +92,7 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
                     &query,
                     node.clone(),
                     self.params.doc.get_content(None).as_bytes(),
+                    self.params,
                 ) {
                     self.params.diagnostics.push(e);
                     return;
@@ -212,8 +214,8 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
         let result = self.get_root_node()?;
         let result = result.get_rc().borrow();
 
-        let mut deferred = vec![];
-        let item = result.try_to_dyn_symbol(&mut deferred)?;
+        let mut deferred: Vec<DynSymbol> = vec![];
+        let item = result.try_to_dyn_symbol(self.params)?;
         item.write().inject_parent(item.to_weak());
 
         if item.read().is_accessor() {
@@ -306,7 +308,7 @@ where
 
         let root = &builder.roots[0];
         let ds = root.try_downcast(
-            &mut vec![],
+            builder_params,
             "field_name",
             lsp_types::Range::default(),
             "input_name",
@@ -316,8 +318,8 @@ where
     }
 }
 
-fn intersecting_ranges(range1: &tree_sitter::Range, range2: &tree_sitter::Range) -> bool {
-    range1.start_byte <= range2.start_byte && range1.end_byte >= range2.end_byte
+fn intersecting_ranges(range1: &std::ops::Range<usize>, range2: &tree_sitter::Range) -> bool {
+    range1.start <= range2.start_byte && range1.end >= range2.end_byte
 }
 
 fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Range {
@@ -345,22 +347,14 @@ impl<T: AstBuilder> Builder for T {
         builder.to_dyn_symbol()
     }
 }
-
-pub struct EditRange {
-    pub start_byte: usize,
-    pub steps: isize,
-}
-
 pub fn swap_ast<'a>(
     old_ast: Option<&DynSymbol>,
     edit_ranges: &Vec<TextDocumentContentChangeEvent>,
     builder_params: &'a mut BuilderParams<'a>,
-) -> Vec<EditRange> {
-    let mut results = vec![];
-
+) {
     let root = match old_ast.as_ref() {
         Some(ast) => ast,
-        None => return results,
+        None => return,
     };
 
     let doc = builder_params.doc;
@@ -373,57 +367,53 @@ pub fn swap_ast<'a>(
         let old_end_byte = range_offset + edit.range_length.unwrap() as usize;
         let new_end_byte = range_offset + edit.text.len();
 
-        let start_position = doc.position_at(start_byte as u32);
-        let old_end_position = doc.position_at(old_end_byte as u32);
-
         let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
         if is_noop {
             continue;
         }
 
-        let is_insertion = old_end_byte == start_byte;
+        let is_ws = edit.text.trim().is_empty();
 
-        let is_ws = match is_insertion {
-            true => edit.text.trim().is_empty(),
-            false => doc
-                .get_content(Some(lsp_types::Range {
-                    start: start_position,
-                    end: old_end_position,
-                }))
-                .trim()
-                .is_empty(),
-        };
+        // Handle whitespace-only edits
+        if is_ws {
+            eprintln!(
+                "Whitespace edit: Shift at {:?} of {:?}",
+                start_byte,
+                (new_end_byte - old_end_byte) as isize,
+            );
+            root.write()
+                .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
+            continue;
+        }
 
-        if !is_ws {
-            match root.find_at_offset(range_offset) {
-                // todo! implement to_swap
-                Some(node) => {
-                    eprintln!(
-                        "Edit: Shift at {:?} of {:?}",
-                        start_byte,
-                        (new_end_byte - old_end_byte) as isize,
-                    );
+        // Handle non-whitespace edits
+        match root.find_at_offset(range_offset) {
+            Some(node) => {
+                eprintln!(
+                    "Edit: Shift at {:?} of {:?}",
+                    start_byte,
+                    (new_end_byte - old_end_byte) as isize,
+                );
 
-                    root.write()
-                        .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
-                    if let Err(err) = node.write().dyn_swap(range_offset, builder_params) {
-                        builder_params.diagnostics.push(err);
-                    }
-                    eprintln!("Edited: Found node at offset: {:?}", range_offset);
+                let start_edit = node.read().get_range().start;
+
+                root.write()
+                    .edit_range(start_edit, (new_end_byte - old_end_byte) as isize);
+                if let Err(err) = node.write().dyn_swap(range_offset, builder_params) {
+                    builder_params.diagnostics.push(err);
                 }
-                None => {
-                    eprintln!(
-                        "Edit: Shift at {:?} of {:?}",
-                        start_byte,
-                        (new_end_byte - old_end_byte) as isize,
-                    );
-                    eprintln!("No node found at offset: {:?}", range_offset);
-                    root.write()
-                        .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
-                }
+                eprintln!("Edited: Found node at offset: {:?}", range_offset);
+            }
+            None => {
+                eprintln!(
+                    "Edit: Shift at {:?} of {:?}",
+                    start_byte,
+                    (new_end_byte - old_end_byte) as isize,
+                );
+                eprintln!("No node found at offset: {:?}", range_offset);
+                root.write()
+                    .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
             }
         }
     }
-
-    results
 }

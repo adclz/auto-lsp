@@ -1,4 +1,5 @@
 use downcast_rs::{impl_downcast, Downcast};
+use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, Url};
 use std::cell::RefCell;
 use std::fmt::Formatter;
@@ -7,6 +8,7 @@ use std::sync::Arc;
 use tree_sitter::Query;
 
 use crate::builder_error;
+use crate::builders::BuilderParams;
 
 use super::convert::{TryFromBuilder, TryIntoBuilder};
 use super::queryable::Queryable;
@@ -36,46 +38,33 @@ pub trait AstBuilder: Downcast {
         query: &Query,
         node: PendingSymbol,
         source_code: &[u8],
+        params: &mut BuilderParams,
     ) -> Result<(), Diagnostic>;
 
     fn try_to_dyn_symbol(
         &self,
-        check: &mut Vec<DynSymbol>,
+        check: &mut BuilderParams,
     ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
     fn get_url(&self) -> Arc<Url>;
 
-    fn get_range(&self) -> tree_sitter::Range;
+    fn get_range(&self) -> std::ops::Range<usize>;
 
     fn get_query_index(&self) -> usize;
 
-    fn get_start_position(&self) -> tree_sitter::Point {
-        self.get_range().start_point
-    }
-
-    fn get_end_position(&self) -> tree_sitter::Point {
-        self.get_range().end_point
-    }
-
-    fn get_lsp_range(&self) -> lsp_types::Range {
+    fn get_lsp_range(&self, doc: &FullTextDocument) -> lsp_types::Range {
         let range = self.get_range();
-        let start = range.start_point;
-        let end = range.end_point;
+        let start = range.start;
+        let end = range.start;
         lsp_types::Range {
-            start: lsp_types::Position {
-                line: start.row as u32,
-                character: start.column as u32,
-            },
-            end: lsp_types::Position {
-                line: end.row as u32,
-                character: end.column as u32,
-            },
+            start: doc.position_at(start as u32).into(),
+            end: doc.position_at(end as u32).into(),
         }
     }
 
     fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
         let range = self.get_range();
-        std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
+        std::str::from_utf8(&source_code[range.start..range.end]).unwrap()
     }
 }
 
@@ -158,7 +147,7 @@ pub trait TryDownCast<
 
     fn try_downcast(
         &self,
-        check: &mut Vec<DynSymbol>,
+        check: &mut BuilderParams,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
@@ -173,7 +162,7 @@ where
     type Output = Y;
     fn try_downcast(
         &self,
-        check: &mut Vec<DynSymbol>,
+        check: &mut BuilderParams,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
@@ -201,7 +190,7 @@ where
 
     fn try_downcast(
         &self,
-        check: &mut Vec<DynSymbol>,
+        check: &mut BuilderParams,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
@@ -224,7 +213,7 @@ where
 
     fn try_downcast(
         &self,
-        check: &mut Vec<DynSymbol>,
+        check: &mut BuilderParams,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,

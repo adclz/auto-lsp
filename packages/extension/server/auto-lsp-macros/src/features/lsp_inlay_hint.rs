@@ -56,10 +56,13 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                         quote! {
                             impl #inlay_hint_path for #input_name {
                                 #sig {
+                                    let range = self.get_range();
                                     acc.push(lsp_types::InlayHint {
                                         position: self.get_start_position(doc),
                                         kind: Some(lsp_types::InlayHintKind::TYPE),
-                                        label: lsp_types::InlayHintLabel::String(Self::QUERY_NAMES[0].to_string()),
+                                        label: lsp_types::InlayHintLabel::String(
+                                            format!("[{}-{}] {}", range.start, range.end, Self::QUERY_NAMES[0].to_string())
+                                        ),
                                         text_edits: None,
                                         tooltip: None,
                                         padding_left: None,

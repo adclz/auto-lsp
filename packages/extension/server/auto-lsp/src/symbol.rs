@@ -21,11 +21,11 @@ pub struct AstSymbolData {
     pub parent: Option<WeakSymbol>,
     pub referrers: Option<Referrers>,
     pub target: Option<WeakSymbol>,
-    pub range: tree_sitter::Range,
+    pub range: std::ops::Range<usize>,
 }
 
 impl AstSymbolData {
-    pub fn new(url: Arc<Url>, range: tree_sitter::Range) -> Self {
+    pub fn new(url: Arc<Url>, range: std::ops::Range<usize>) -> Self {
         Self {
             url,
             parent: None,
@@ -38,7 +38,7 @@ impl AstSymbolData {
 
 pub trait SymbolData {
     fn get_url(&self) -> Arc<Url>;
-    fn get_range(&self) -> tree_sitter::Range;
+    fn get_range(&self) -> std::ops::Range<usize>;
     fn get_parent(&self) -> Option<WeakSymbol>;
     fn set_parent(&mut self, parent: WeakSymbol);
     fn get_target(&self) -> Option<&WeakSymbol>;
@@ -77,8 +77,8 @@ impl SymbolData for AstSymbolData {
         self.url.clone()
     }
 
-    fn get_range(&self) -> tree_sitter::Range {
-        self.range
+    fn get_range(&self) -> std::ops::Range<usize> {
+        self.range.clone()
     }
 
     fn get_parent(&self) -> Option<WeakSymbol> {
@@ -133,14 +133,9 @@ pub trait AstSymbol:
     fn get_data(&self) -> &AstSymbolData;
     fn get_mut_data(&mut self) -> &mut AstSymbolData;
 
-    fn get_size(&self) -> usize {
-        let range = self.get_data().get_range();
-        range.end_byte - range.start_byte
-    }
-
     fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
         let range = self.get_data().get_range();
-        std::str::from_utf8(&source_code[range.start_byte..range.end_byte]).unwrap()
+        std::str::from_utf8(&source_code[range.start..range.end]).unwrap()
     }
 
     fn get_parent_scope(&self) -> Option<DynSymbol> {
@@ -163,16 +158,16 @@ pub trait AstSymbol:
 
     fn is_inside_offset(&self, offset: usize) -> bool {
         let range = self.get_data().get_range();
-        range.start_byte <= offset && offset <= range.end_byte
+        range.start <= offset && offset <= range.end
     }
     // LSP
 
     fn get_start_position(&self, doc: &FullTextDocument) -> Position {
-        doc.position_at(self.get_data().get_range().start_byte as u32)
+        doc.position_at(self.get_data().get_range().start as u32)
     }
 
     fn get_end_position(&self, doc: &FullTextDocument) -> Position {
-        doc.position_at(self.get_data().get_range().end_byte as u32)
+        doc.position_at(self.get_data().get_range().end as u32)
     }
 
     fn get_lsp_range(&self, doc: &FullTextDocument) -> Range {
@@ -189,7 +184,7 @@ impl<T: AstSymbol + ?Sized> SymbolData for T {
         self.get_data().get_url()
     }
 
-    fn get_range(&self) -> tree_sitter::Range {
+    fn get_range(&self) -> std::ops::Range<usize> {
         self.get_data().get_range()
     }
 
@@ -478,18 +473,24 @@ pub trait EditRange {
     fn edit_range(&mut self, start: usize, offset: isize);
 }
 
+fn edit(data: &mut AstSymbolData, start: usize, offset: isize) {
+    if data.range.start > start {
+        data.range.start = (data.range.start as isize + offset) as usize;
+        data.range.end = (data.range.end as isize + offset) as usize;
+    } else if data.range.end >= start {
+        data.range.end = (data.range.end as isize + offset) as usize;
+        eprintln!(
+            "start: {}, RANGES: {} {}",
+            start, data.range.start, data.range.end
+        );
+    }
+}
+
 impl<T: AstSymbol> EditRange for Symbol<T> {
     fn edit_range(&mut self, start: usize, offset: isize) {
         let mut write = self.write();
         let data = write.get_mut_data();
-        if data.range.start_byte > start {
-            eprintln!(
-                "start: {}, RANGES: {} {}",
-                start, data.range.start_byte, data.range.end_byte
-            );
-            data.range.start_byte = (data.range.start_byte as isize + offset) as usize;
-            data.range.end_byte = (data.range.end_byte as isize + offset) as usize;
-        }
+        edit(data, start, offset);
         write.edit_range(start, offset);
     }
 }
@@ -499,8 +500,7 @@ impl<T: AstSymbol> EditRange for Option<Symbol<T>> {
         if let Some(symbol) = self.as_mut() {
             let mut write = symbol.write();
             let data = write.get_mut_data();
-            data.range.start_byte = (data.range.start_byte as isize + offset) as usize;
-            data.range.end_byte = (data.range.end_byte as isize + offset) as usize;
+            edit(data, start, offset);
             write.edit_range(start, offset);
         }
     }
@@ -509,7 +509,10 @@ impl<T: AstSymbol> EditRange for Option<Symbol<T>> {
 impl<T: AstSymbol> EditRange for Vec<Symbol<T>> {
     fn edit_range(&mut self, start: usize, offset: isize) {
         for symbol in self.iter_mut() {
-            symbol.write().edit_range(start, offset);
+            let mut write = symbol.write();
+            let data = write.get_mut_data();
+            edit(data, start, offset);
+            write.edit_range(start, offset);
         }
     }
 }
@@ -551,26 +554,6 @@ pub trait Check {
         false
     }
     fn check(&self, _doc: &FullTextDocument, _diagnostics: &mut Vec<Diagnostic>) {}
-}
-
-impl BuilderParams<'_> {
-    pub fn new<'a>(
-        ctx: &'a dyn WorkspaceContext,
-        query: &'a tree_sitter::Query,
-        root_node: tree_sitter::Node<'a>,
-        doc: &'static FullTextDocument,
-        url: Arc<Url>,
-        diagnostics: &'a mut Vec<Diagnostic>,
-    ) -> BuilderParams<'a> {
-        BuilderParams {
-            ctx,
-            query,
-            root_node,
-            doc,
-            url,
-            diagnostics,
-        }
-    }
 }
 
 pub trait DynamicSwap {
@@ -673,7 +656,7 @@ where
         }
 
         let insert_index = match self.binary_search_by(|existing_symbol| {
-            existing_symbol.read().get_range().start_byte.cmp(&offset)
+            existing_symbol.read().get_range().start.cmp(&offset)
         }) {
             Ok(index) | Err(index) => index,
         };

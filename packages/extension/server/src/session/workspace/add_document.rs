@@ -54,6 +54,7 @@ impl Session {
                 query: &cst_parser.queries.outline,
                 root_node: cst.root_node(),
                 url: arc_uri.clone(),
+                checks: &mut vec![],
             },
             None,
         );

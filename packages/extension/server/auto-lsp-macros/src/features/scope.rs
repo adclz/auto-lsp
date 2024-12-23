@@ -65,8 +65,8 @@ impl<'a> FeaturesCodeGen for ScopeBuilder<'a> {
                             }
 
                             #get_scope_range_sig {
-                                let start = #start.read().get_range().start_byte;
-                                let end = #end.read().get_range().end_byte;
+                                let start = #start.read().get_range().start;
+                                let end = #end.read().get_range().end;
 
                                 vec!([start, end])
                             }

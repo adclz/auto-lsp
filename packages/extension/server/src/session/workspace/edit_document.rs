@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use auto_lsp::{builders::swap_ast, builders::BuilderParams};
+use auto_lsp::{
+    builders::{swap_ast, BuilderParams},
+    symbol::SymbolData,
+};
 use lsp_types::DidChangeTextDocumentParams;
 
 use super::tree_sitter_extend::{
@@ -61,6 +64,7 @@ impl Session {
                 doc: &workspace.document,
                 url: arc_uri.clone(),
                 diagnostics: &mut errors,
+                checks: &mut vec![],
             },
         );
 
@@ -68,6 +72,9 @@ impl Session {
             .workspaces
             .get_mut(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
+        let range = workspace.ast.as_ref().unwrap().read().get_range();
+        eprintln!("WHOLE RANGE: {:?}", range);
 
         workspace.cst = cst;
         workspace.errors.extend(errors);
