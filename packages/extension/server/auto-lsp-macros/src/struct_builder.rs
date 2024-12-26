@@ -1,18 +1,18 @@
 use crate::{
-    utilities::extract_fields::{FieldBuilder, FieldBuilderType, StructFields},
-    BuildAstItem, BuildAstItemBuilder, Features, ReferenceOrSymbolFeatures, StructHelpers, PATHS,
+    utilities::extract_fields::StructFields,
+    Features, ReferenceOrSymbolFeatures, StructHelpers, PATHS,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
-use syn::Attribute;
+use syn::{Attribute, Path};
 
 pub struct StructBuilder<'a> {
     // Input data
     pub input_attr: &'a Vec<Attribute>,
     pub input_name: &'a Ident,
     pub query_name: &'a str,
-    pub input_buider_name: &'a Ident,
+    pub input_builder_name: &'a Ident,
     pub fields: &'a StructFields,
     // Features
     pub features: Features<'a>,
@@ -32,7 +32,7 @@ impl<'a> StructBuilder<'a> {
             input_name,
             input_attr,
             query_name,
-            input_buider_name,
+            input_builder_name: input_buider_name,
             fields,
             features: Features::new(&params, &helpers, &input_name, &fields),
         }
@@ -41,345 +41,264 @@ impl<'a> StructBuilder<'a> {
 
 impl<'a> ToTokens for StructBuilder<'a> {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let input_name = &self.input_name;
-        let input_attr = &self.input_attr;
-        let query_name = self.query_name;
-
-        let features = self.features.to_token_stream();
-
         // generate ast item
-        let symbol_trait = &PATHS.symbol_trait;
 
-        let fields = self.generate_fields();
-        let methods = self.generate_symbol_methods();
+        let mut builder = FieldBuilder::default();
 
-        let locator = self.generate_locator_trait();
+        self.struct_input(&mut builder);
 
-        let parent = self.generate_parent_trait();
-        let queryable = self.generate_queryable();
-        let dynamic_swap = self.generate_dynamic_swap();
-        let edit_range = self.generate_edit_range();
+        self.impl_ast_symbol(&mut builder);
+        self.impl_locator(&mut builder);
+        self.impl_parent(&mut builder);
+        self.impl_queryable(&mut builder);
+        self.impl_dynamic_swap(&mut builder);
+        self.impl_edit_range(&mut builder);
 
-        tokens.extend(quote! {
-            #(#input_attr)*
-            #[derive(Clone)]
-            pub struct #input_name {
-                #(#fields,)*
-            }
-
-            impl #input_name {
-                pub const QUERY_NAMES: &[&str] = &[#query_name];
-            }
-
-            impl #symbol_trait for #input_name {
-                #methods
-            }
-
-            #features
-            #locator
-            #parent
-            #queryable
-            #dynamic_swap
-            #edit_range
-        });
+        builder.add(self.features.to_token_stream());
+        builder.stage();
 
         // Generate builder
 
-        let input_builder_name = &self.input_buider_name;
-        let pending_symbol = &PATHS.symbol_builder_trait;
+        self.struct_input_builder(&mut builder);
 
-        let builder_fields = self.generate_builder_fields();
-        let new = self.generate_builder_new();
-        let query_binder = self.generate_query_binder();
-        let add = self.generate_add();
-        let try_from = self.generate_try_from();
+        builder.add(quote! {
+            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
+                self.url.clone()
+            }
 
+            fn get_range(&self) -> std::ops::Range<usize>{
+                self.range.clone()
+            }
+
+            fn get_query_index(&self) -> usize {
+                self.query_index
+            }
+        });
+        self.fn_try_to_dyn_symbol(&mut builder);
+        self.fn_new(&mut builder);
+        self.fn_query_binder(&mut builder);
+        self.fn_add(&mut builder);
+        builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
+
+        self.impl_try_from(&mut builder);
+
+        tokens.extend(builder.to_token_stream());
+    }
+}
+
+impl<'a> StructBuilder<'a> {
+    fn struct_input(&self, builder: &mut FieldBuilder) {
+        let symbol = &PATHS.symbol;
+        let symbol_data = &PATHS.symbol_data;
+
+        builder
+            .add(quote! { pub _data: #symbol_data } )
+            .add_iter(&self.fields, |ty, _, name, field_type, _| match ty {
+                FieldType::Normal => quote! {
+                    pub #name: #symbol<#field_type>
+                },
+                FieldType::Vec => quote! {
+                    pub #name: Vec<#symbol<#field_type>>
+                },
+                FieldType::Option => quote! {
+                    pub #name: Option<#symbol<#field_type>>
+                },
+            })
+            .stage_struct(&self.input_name);
+    }
+
+    fn impl_ast_symbol(&self, builder: &mut FieldBuilder) {
+        let get_data = &PATHS.symbol_trait.methods.get_data.sig;
+        let get_mut_data = &PATHS.symbol_trait.methods.get_mut_data.sig;
+
+        builder
+            .add(quote! { #get_data { &self._data } })
+            .add(quote! { #get_mut_data { &mut self._data } })
+            .stage_trait(&self.input_name, &PATHS.symbol_trait.path);
+    }
+
+    fn impl_locator(&self, builder: &mut FieldBuilder) {
+        builder
+            .add_fn_iter(
+                &self.fields,
+                &PATHS.locator.methods.find_at_offset.sig,
+                Some(quote! {
+                    if (!self.is_inside_offset(offset)) {
+                        return None;
+                    }
+                }),
+                |_, _, name, _, _| {
+                    quote! {
+                        if let Some(symbol) = self.#name.find_at_offset(offset) {
+                           return Some(symbol);
+                        }
+                    }
+                },
+                Some(quote! { None }),
+            )
+            .stage_trait(&self.input_name, &PATHS.locator.path);
+    }
+
+    fn impl_parent(&self, builder: &mut FieldBuilder) {
+        builder
+            .add_fn_iter(
+                &self.fields,
+                &PATHS.parent.methods.inject_parent.sig,
+                None,
+                |_, _, name, _, _| {
+                    quote! {
+                        self.#name.inject_parent(parent.clone());
+                    }
+                },
+                None,
+            )
+            .stage_trait(&self.input_name, &PATHS.parent.path);
+    }
+
+    fn impl_queryable(&self, builder: &mut FieldBuilder) {
+        let query_name = self.query_name;
+
+        builder
+            .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
+            .stage_trait(&self.input_name, &PATHS.queryable);
+
+        builder
+            .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
+            .stage_trait(&self.input_builder_name, &PATHS.queryable);
+    }
+
+    fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {
+        builder
+            .add_fn_iter(
+                &self.fields,
+                &PATHS.dynamic_swap.methods.swap.sig,
+                None,
+                |_, _, name, _, _| {
+                    quote! {
+                        self.#name.to_swap(offset, builder_params)?;
+                    }
+                },
+                Some(quote! { self.to_swap(offset, builder_params) }),
+            )
+            .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
+    }
+
+    fn impl_edit_range(&self, builder: &mut FieldBuilder) {
+        builder
+            .add_fn_iter(
+                &self.fields,
+                &PATHS.edit_range.methods.edit_range.sig,
+                None,
+                |_, _, name, _, _| {
+                    quote! {
+                        self.#name.edit_range(start, offset);
+                    }
+                },
+                None,
+            )
+            .stage_trait(&self.input_name, &PATHS.edit_range.path);
+    }
+
+    fn struct_input_builder(&self, builder: &mut FieldBuilder) {
+        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
+        let pending_symbol = &PATHS.pending_symbol;
+
+        builder
+            .add(quote! { url: std::sync::Arc<lsp_types::Url> })
+            .add(quote! { query_index: usize })
+            .add(quote! { range: std::ops::Range<usize> })
+            .add(quote! { start_position: tree_sitter::Point })
+            .add(quote! { end_position: tree_sitter::Point })
+            .add_iter(&self.fields, |ty, _, name, _, _| match ty {
+                FieldType::Vec => quote! { #name: Vec<#pending_symbol> },
+                _ => quote! { #name: #maybe_pending_symbol },
+            })
+            .stage_struct(&self.input_builder_name)
+            .to_token_stream();
+    }
+
+    fn fn_new(&self, builder: &mut FieldBuilder) {
+        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
+        let sig = &PATHS.symbol_builder_trait.methods.new.sig;
+
+        let fields = FieldBuilder::default()
+            .add_iter(&self.fields, |ty, _, name, _, _| match ty {
+                FieldType::Vec => quote! { #name: vec![] },
+                _ => quote! { #name: #maybe_pending_symbol::none() },
+            })
+            .stage_fields()
+            .to_token_stream();
+
+        builder.add(quote! {
+          #sig {
+            Some(Self {
+                url,
+                query_index,
+                range: std::ops::Range {
+                    start: range.start_byte,
+                    end: range.end_byte,
+                },
+                start_position,
+                end_position,
+                #fields
+            })
+          }
+        });
+    }
+
+    fn fn_try_to_dyn_symbol(&self, builder: &mut FieldBuilder) {
         let dyn_symbol = &PATHS.dyn_symbol;
+        let sig = &PATHS.symbol_builder_trait.methods.try_to_dyn_symbol.sig;
+        let input_name = &self.input_name;
         let try_from_builder = &PATHS.try_from_builder;
-        let params = &PATHS.builder_params;
 
-        let into = quote! {
-            fn try_to_dyn_symbol(&self, check: &mut #params) -> Result<#dyn_symbol, lsp_types::Diagnostic> {
+        builder.add(quote! {
+            #sig {
                 use #try_from_builder;
 
                 let item = #input_name::try_from_builder(self, check)?;
                 Ok(#dyn_symbol::new(item))
             }
-        };
-
-        tokens.extend(quote! {
-            #[derive(Clone, Debug)]
-            pub struct #input_builder_name {
-                url: std::sync::Arc<lsp_types::Url>,
-                query_index: usize,
-                range: std::ops::Range<usize>,
-                start_position: tree_sitter::Point,
-                end_position: tree_sitter::Point,
-                #(#builder_fields),*
-            }
-
-            impl #pending_symbol for #input_builder_name {
-                #new
-                #query_binder
-                #add
-                #into
-
-                fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
-                    self.url.clone()
-                }
-
-                fn get_range(&self) -> std::ops::Range<usize>{
-                    self.range.clone()
-                }
-
-                fn get_query_index(&self) -> usize {
-                    self.query_index
-                }
-            }
-
-            #try_from
         });
     }
-}
 
-impl<'a> StructBuilder<'a> {
-    fn generate_queryable(&self) -> TokenStream {
-        let query_name = self.query_name;
-        let input_name = &self.input_name;
-        let input_builder_name = &self.input_buider_name;
+    fn fn_query_binder(&self, builder: &mut FieldBuilder) {
         let queryable = &PATHS.queryable;
-
-        quote! {
-            impl #queryable for #input_name {
-                const QUERY_NAMES: &'static [&'static str] = &[#query_name];
-            }
-
-            impl #queryable for #input_builder_name {
-                const QUERY_NAMES: &'static [&'static str] = &[#query_name];
-            }
-        }
-    }
-}
-
-impl<'a> StructBuilder<'a> {
-    fn generate_locator_trait(&self) -> TokenStream {
-        let locator = &PATHS.locator.path;
-        let input_name = &self.input_name;
-        let dyn_symbol = &PATHS.dyn_symbol;
-
-        let builder = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, _, _| {
-                quote! {
-                    if let Some(symbol) = self.#name.find_at_offset(offset) {
-                       return Some(symbol);
-                    }
-                }
-            })
-            .to_token_stream();
-
-        quote! {
-            impl #locator for #input_name {
-                fn find_at_offset(&self, offset: usize) -> Option<#dyn_symbol> {
-                    if (!self.is_inside_offset(offset)) {
-                        return None;
-                    }
-
-                    #builder
-
-                    None
-                }
-            }
-        }
-    }
-}
-
-impl<'a> StructBuilder<'a> {
-    fn generate_parent_trait(&self) -> TokenStream {
-        let parent = &PATHS.parent.path;
-        let input_name = &self.input_name;
-        let weak_symbol = &PATHS.weak_symbol;
-
-        let builder = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, _, _| {
-                quote! {
-                    self.#name.inject_parent(parent.clone());
-                }
-            })
-            .to_token_stream();
-
-        quote! {
-            impl #parent for #input_name {
-                fn inject_parent(&mut self, parent: #weak_symbol) {
-                    #builder
-                }
-            }
-        }
-    }
-
-    fn generate_dynamic_swap(&self) -> TokenStream {
-        let input_name = &self.input_name;
-        let dynamic_swap = &PATHS.dynamic_swap.path;
-
-        let builder = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, _, _| {
-                quote! {
-                    self.#name.to_swap(offset, builder_params)?;
-                }
-            })
-            .to_token_stream();
-
-        quote! {
-            impl #dynamic_swap for #input_name {
-                fn dyn_swap<'a>(
-                    &mut self,
-                    offset: usize,
-                    builder_params: &'a mut BuilderParams,
-                ) -> Result<(), Diagnostic> {
-                    eprintln!("SWAP {:?}", stringify!(#input_name));
-                    #builder
-                    self.to_swap(offset, builder_params)
-                }
-            }
-        }
-    }
-
-    fn generate_edit_range(&self) -> TokenStream {
-        let input_name = &self.input_name;
-        let edit_range = &PATHS.edit_range.path;
-
-        let builder = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, _, _| {
-                quote! {
-                    self.#name.edit_range(start, offset);
-                }
-            })
-            .to_token_stream();
-
-        quote! {
-            impl #edit_range for #input_name {
-                fn edit_range<'a>(&mut self, start: usize, offset: isize) {
-                    #builder
-                }
-            }
-        }
-    }
-}
-
-impl<'a> BuildAstItem for StructBuilder<'a> {
-    fn generate_fields(&self) -> Vec<TokenStream> {
-        let symbol = &PATHS.symbol;
-        let symbol_data = &PATHS.symbol_data;
-
-        let mut fields = vec![quote! { pub _data: #symbol_data }];
-
-        let mut builder = FieldBuilder::new(&self.fields);
-
-        builder.apply_all(|ty, _, name, field_type, _| match ty {
-            FieldBuilderType::Normal => quote! {
-                pub #name: #symbol<#field_type>
-            },
-            FieldBuilderType::Vec => quote! {
-                pub #name: Vec<#symbol<#field_type>>
-            },
-            FieldBuilderType::Option => quote! {
-                pub #name: Option<#symbol<#field_type>>
-            },
-        });
-
-        fields.extend::<Vec<TokenStream>>(builder.into());
-        fields
-    }
-
-    fn generate_symbol_methods(&self) -> TokenStream {
-        let symbol_data = &PATHS.symbol_data;
-
-        quote! {
-            fn get_data(&self) -> &#symbol_data {
-                &self._data
-            }
-
-            fn get_mut_data(&mut self) -> &mut #symbol_data {
-                &mut self._data
-            }
-        }
-    }
-}
-
-impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
-    fn generate_builder_fields(&self) -> Vec<TokenStream> {
-        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
-        let pending_symbol = &PATHS.pending_symbol;
-
-        let mut builder = FieldBuilder::new(&self.fields);
-
-        builder.apply_all(|ty, _, name, _, _| match ty {
-            FieldBuilderType::Vec => quote! { #name: Vec<#pending_symbol> },
-            _ => quote! { #name: #maybe_pending_symbol },
-        });
-        builder.into()
-    }
-
-    fn generate_builder_new(&self) -> TokenStream {
         let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
 
-        let fields = FieldBuilder::new(&self.fields)
-            .apply_all(|ty, _, name, _, _| match ty {
-                FieldBuilderType::Vec => quote! { #name: vec![], },
-                _ => quote! { #name: #maybe_pending_symbol::none(), },
-            })
-            .to_token_stream();
-
-        quote! {
-            fn new(url: std::sync::Arc<lsp_types::Url>, _query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Option<Self> {
-                Some(Self {
-                    url,
-                    query_index,
-                    range: std::ops::Range {
-                        start: range.start_byte,
-                        end: range.end_byte,
-                    },
-                    start_position,
-                    end_position,
-                    #fields
-                })
-            }
-        }
+        builder.add_fn_iter(
+            &self.fields,
+            &PATHS.symbol_builder_trait.methods.query_binder.sig,
+            Some(quote! { 
+                use #queryable;
+                let query_name = query.capture_names()[capture.index as usize];
+            }),
+            |_, _, _, _type, builder| {
+                quote! {
+                    if #_type::QUERY_NAMES.contains(&query_name)  {
+                        match #builder::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
+                            Some(builder) => return #maybe_pending_symbol::new(builder),
+                            None => return #maybe_pending_symbol::none()
+                        }
+                    };
+                }
+            },
+            Some(quote! { #maybe_pending_symbol::none() }),
+        );
     }
 
-    fn generate_query_binder(&self) -> TokenStream {
-        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
-
-        let fields_types = self.fields.get_field_types();
-        let fields_builder = self.fields.get_field_builder_names();
-
-        let query_binder = quote! {
-            let query_name = query.capture_names()[capture.index as usize];
-            #(
-                if #fields_types::QUERY_NAMES.contains(&query_name)  {
-                    match #fields_builder::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
-                        Some(builder) => return #maybe_pending_symbol::new(builder),
-                        None => return #maybe_pending_symbol::none()
-                    }
-                };
-            )*
-            #maybe_pending_symbol::none()
-        };
-
-        quote! {
-            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
-                #query_binder
-            }
-        }
-    }
-
-    fn generate_add(&self) -> TokenStream {
-        let pending_symbol = &PATHS.pending_symbol;
-
+    fn fn_add(&self, builder: &mut FieldBuilder) {
         let input_name = &self.input_name;
-        let input_builder_name = &self.input_buider_name;
-
-        let builder = FieldBuilder::new(&self.fields)
-            .apply_all(|_, _, name, field_type, _| {
+        
+        builder.add_fn_iter(
+            &self.fields,
+            &PATHS.symbol_builder_trait.methods.add.sig,
+            Some(quote! {
+                let query_name = query.capture_names()[node.get_query_index()];
+                let range = self.get_lsp_range(params.doc);
+                let mut node = node;
+             }),
+            |_, _, name, field_type, _| {
                 quote! {
                     node = match self.#name.add::<#field_type>(query_name, node, range, stringify!(#input_name), stringify!(#field_type))? {
                         Some(a) => a,
@@ -387,41 +306,30 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     };
 
                 }
-            })
-            .into_token_stream();
-
-        let params = &PATHS.builder_params;
-
-        quote! {
-            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8], params: &mut #params) ->
-                Result<(), lsp_types::Diagnostic> {
-
-                let query_name = query.capture_names()[node.get_query_index()];
-                let range = self.get_lsp_range(params.doc);
-                let mut node = node;
-
-                #builder
-
-                Err(auto_lsp::builder_error!(self.get_lsp_range(params.doc), format!("Invalid query {:?} in {:?}", query_name, stringify!(#input_name))))
-            }
-        }
+            },
+            Some(quote! { 
+                Err(auto_lsp::builder_error!(self.get_lsp_range(params.doc), 
+                    format!("Invalid query {:?} in {:?}", query_name, stringify!(#input_name)
+                )))
+            }),
+        );
     }
 
-    fn generate_try_from(&self) -> TokenStream {
+    fn impl_try_from(&self, builder: &mut FieldBuilder) {
         let fields = self.fields.get_field_names();
 
         let input_name = self.input_name;
-        let input_builder_name = &self.input_buider_name;
+        let input_builder_name = &self.input_builder_name;
 
         let try_from_builder = &PATHS.try_from_builder;
 
         let symbol_data = &PATHS.symbol_data;
-        let dyn_symbol = &PATHS.dyn_symbol;
         let builder_params = &PATHS.builder_params;
 
-        let builder = FieldBuilder::new(self.fields)
-            .apply_all(|ty, _, name, field_type, _| match ty  {
-                FieldBuilderType::Normal  => quote! {
+        let _builder = FieldBuilder::default()
+            .add_iter(&self.fields,
+                |ty, _, name, field_type, _| match ty  {
+                FieldType::Normal  => quote! {
                     let #name = Symbol::new_and_check(builder
                         .#name
                         .as_ref()
@@ -439,16 +347,18 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                             .#name
                             .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(params.checks);
                     }
-            }).to_token_stream();
+            })
+            .stage()
+            .to_token_stream();
 
-        quote! {
+        builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #input_name {
                 type Error = lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, params: &mut #builder_params) -> Result<Self, Self::Error> {
                     let builder_range = builder.get_lsp_range(params.doc);
 
-                    #builder
+                    #_builder
 
                     Ok(#input_name {
                         _data: #symbol_data::new(builder.url.clone(), builder.range.clone()),
@@ -456,6 +366,203 @@ impl<'a> BuildAstItemBuilder for StructBuilder<'a> {
                     })
                 }
             }
+        });
+        builder.stage();
+    }
+}
+
+
+#[derive(Default)]
+pub struct FieldBuilder {
+    staged: Vec<TokenStream>,
+    unstaged: Vec<TokenStream>
+}
+
+pub enum FieldType {
+    Normal,
+    Vec,
+    Option,
+}
+
+impl FieldBuilder {
+    pub fn add(&mut self, field: TokenStream) -> &mut Self {
+        self.unstaged.push(field);
+        self
+    }
+
+    pub fn add_iter<F>(&mut self, fields: &StructFields, f: F) -> &mut Self
+    where
+        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+        let mut _fields: Vec<TokenStream> = vec![];
+
+        if !fields.field_names.is_empty() {
+            _fields.extend::<Vec<TokenStream>>(self.apply(&fields, &f) as _);
         }
+        if !fields.field_option_names.is_empty() {
+            _fields.extend::<Vec<TokenStream>>(self.apply_opt(&fields, &f) as _);
+        }
+        if !fields.field_vec_names.is_empty() {
+            _fields.extend::<Vec<TokenStream>>(self.apply_vec(&fields, &f) as _);
+        }
+        self.unstaged.extend(_fields);
+        self
+    }
+
+    pub fn add_fn_iter<F>(
+        &mut self,
+        fields: &StructFields,
+        sig_path: &TokenStream,
+        before: Option<TokenStream>,
+        body: F,
+        after: Option<TokenStream>,
+    ) -> &mut Self
+    where
+        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+        let mut _body: Vec<TokenStream> = vec![];
+        if !fields.field_names.is_empty() {
+            _body.extend::<Vec<TokenStream>>(self.apply(&fields, &body) as _);
+        }
+        if !fields.field_option_names.is_empty() {
+            _body.extend::<Vec<TokenStream>>(self.apply_opt(&fields, &body) as _);
+        }
+        if !fields.field_vec_names.is_empty() {
+            _body.extend::<Vec<TokenStream>>(self.apply_vec(&fields, &body) as _);
+        }
+
+        let mut result = TokenStream::default();
+        if let Some(before) = before {
+            result.extend(before);
+        }
+
+        result.extend(_body);
+
+        if let Some(after) = after {
+            result.extend(after);
+        }
+
+        self.unstaged.push(quote! {
+            #sig_path {
+                #result
+            }
+        });
+        self
+    }
+
+    fn drain(&mut self) -> Vec<TokenStream> {
+        std::mem::take(&mut self.unstaged)
+    }
+
+    pub fn stage(&mut self) -> &mut Self {
+        let drain = self.drain();
+        self.staged.extend(drain);
+        self
+    }
+
+    pub fn stage_fields(&mut self) -> &mut Self {
+        let fields = self.drain();
+        self.staged.push(quote! { #(#fields,)* });
+        self
+    }
+
+
+    pub fn stage_trait(&mut self, input_name: &Ident, trait_path: &Path) -> &mut Self {
+        let drain = self.drain();
+        let result = quote! {
+            impl #trait_path for #input_name {
+                #(#drain)*
+            }
+        };
+        self.staged.push(result);
+        self
+    }
+
+    pub fn stage_struct(&mut self, input_name: &Ident) -> &mut Self {
+        let drain = self.drain();
+        let result = quote! {
+            #[derive(Clone)]
+            pub struct #input_name {
+                #(#drain,)*
+            }
+        };
+        self.staged.push(result);
+        self
+    }
+
+    fn apply<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
+    where
+        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+            fields
+                .field_names
+                .iter()
+                .zip(fields.field_types_names.iter())
+                .zip(fields.field_builder_names.iter())
+                .map(|((field, field_type), field_builder)| {
+                    f(
+                        FieldType::Normal,
+                        &field.attr,
+                        &field.ident,
+                        &field_type,
+                        &field_builder,
+                    )
+                })
+                .collect::<Vec<_>>()
+    }
+
+    fn apply_opt<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
+    where
+        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+            fields
+                .field_option_names
+                .iter()
+                .zip(fields.field_option_types_names.iter())
+                .zip(fields.field_option_builder_names.iter())
+                .map(|((field, field_type), field_builder)| {
+                    f(
+                        FieldType::Option,
+                        &field.attr,
+                        &field.ident,
+                        &field_type,
+                        &field_builder,
+                    )
+                })
+                .collect::<Vec<_>>()
+    }
+
+    fn apply_vec<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
+    where
+        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
+    {
+            fields
+                .field_vec_names
+                .iter()
+                .zip(fields.field_vec_types_names.iter())
+                .zip(fields.field_vec_builder_names.iter())
+                .map(|((field, field_type), field_builder)| {
+                    f(
+                        FieldType::Vec,
+                        &field.attr,
+                        &field.ident,
+                        &field_type,
+                        &field_builder,
+                    )
+                })
+                .collect::<Vec<_>>()
+        
+    }
+}
+
+impl ToTokens for FieldBuilder {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.extend(self.staged.clone());
+    }
+}
+
+impl From<FieldBuilder> for Vec<TokenStream> {
+    fn from(builder: FieldBuilder) -> Self {
+        builder.staged
     }
 }

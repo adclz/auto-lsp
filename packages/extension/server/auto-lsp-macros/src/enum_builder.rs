@@ -57,7 +57,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
             .generate_edit_range()
             .to_token_stream();
 
-        let pending_symbol = &PATHS.symbol_builder_trait;
+        let pending_symbol = &PATHS.symbol_builder_trait.path;
         let dyn_symbol = &PATHS.dyn_symbol;
 
         let try_from_builder = &PATHS.try_from_builder;
@@ -218,7 +218,7 @@ impl<'a> BuildAstItem for EnumBuilder<'a> {
 
         VariantBuilder::new(&self)
             .dispatch(
-                &PATHS.symbol_trait,
+                &PATHS.symbol_trait.path,
                 vec![
                     (
                         &quote! { fn get_data(&self) -> &#symbol_data },

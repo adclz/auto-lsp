@@ -21,8 +21,50 @@ pub struct Paths {
 
     // traits
     pub queryable: Path,
-    pub symbol_trait: Path,
-    pub symbol_builder_trait: Path,
+    pub symbol_trait: TraitInfo<
+        Structx! {
+            get_data: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            get_mut_data: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+        },
+    >,
+    pub symbol_builder_trait: TraitInfo<
+        Structx! {
+            new: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            query_binder: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            add: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            try_to_dyn_symbol: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            get_url: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            get_range: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+            get_query_index: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+        },
+    >,
     pub try_into_builder: Path,
     pub try_from_builder: Path,
 
@@ -191,8 +233,74 @@ impl Default for Paths {
 
             // traits
             queryable: parse_quote!(auto_lsp::queryable::Queryable),
-            symbol_trait: parse_quote!(auto_lsp::symbol::AstSymbol),
-            symbol_builder_trait: parse_quote!(auto_lsp::pending_symbol::AstBuilder),
+            symbol_trait: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::AstSymbol),
+                methods: structx! {
+                    get_data: structx! {
+                        sig: quote! { fn get_data(&self) -> &auto_lsp::symbol::AstSymbolData },
+                        variant: quote! { get_data() },
+                    },
+                    get_mut_data: structx! {
+                        sig: quote! { fn get_mut_data(&mut self) -> &mut auto_lsp::symbol::AstSymbolData },
+                        variant: quote! { get_mut_data() },
+                    }
+                },
+            },
+            symbol_builder_trait: TraitInfo {
+                path: parse_quote!(auto_lsp::pending_symbol::AstBuilder),
+                methods: structx! {
+                    new: structx! {
+                        sig: quote! { fn new(
+                            url: std::sync::Arc<lsp_types::Url>,
+                            _query: &tree_sitter::Query,
+                            query_index: usize,
+                            range: tree_sitter::Range,
+                            start_position: tree_sitter::Point,
+                            end_position: tree_sitter::Point,
+                        ) -> Option<Self> },
+                        variant: quote! { new(url, _query, qury_index, range, start_position, end_position) },
+                    },
+                    query_binder: structx! {
+                        sig: quote! { fn query_binder(
+                            &self,
+                            url: std::sync::Arc<lsp_types::Url>,
+                            capture: &tree_sitter::QueryCapture,
+                            query: &tree_sitter::Query,
+                        ) -> auto_lsp::pending_symbol::MaybePendingSymbol },
+                        variant: quote! { get_data(url, capture, query) },
+                    },
+                    add: structx! {
+                        sig: quote! { fn add(
+                            &mut self,
+                            query: &tree_sitter::Query,
+                            node: auto_lsp::pending_symbol::PendingSymbol,
+                            source_code: &[u8],
+                            params: &mut auto_lsp::builders::BuilderParams,
+                        ) -> Result<(), lsp_types::Diagnostic> },
+                        variant: quote! { add(query, node, source_code, params) },
+                    },
+                    try_to_dyn_symbol: structx! {
+                        sig: quote! { fn try_to_dyn_symbol(
+                            &self,
+                            check: &mut auto_lsp::builders:: BuilderParams,
+                        ) -> Result<auto_lsp::symbol::DynSymbol, lsp_types::Diagnostic>
+                        },
+                        variant: quote! { try_to_dyn_symbol(check) }
+                    },
+                    get_url: structx! {
+                        sig: quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },
+                        variant: quote! { get_url() },
+                    },
+                    get_range: structx! {
+                        sig: quote! { fn get_range(&self) -> std::ops::Range<usize> },
+                        variant: quote! { get_range() },
+                    },
+                    get_query_index: structx! {
+                        sig: quote! { fn get_query_index(&self) -> usize },
+                        variant: quote! { get_query_index() },
+                    },
+                },
+            },
             try_into_builder: parse_quote!(auto_lsp::convert::TryIntoBuilder),
             try_from_builder: parse_quote!(auto_lsp::convert::TryFromBuilder),
 

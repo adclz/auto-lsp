@@ -51,11 +51,13 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                     let field_names = &self.fields.field_names.get_field_names();
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
                     let field_option_names = &self.fields.field_option_names.get_field_names();
+                    let queryable = &PATHS.queryable;
 
                     if opt.query.is_some() {
                         quote! {
                             impl #inlay_hint_path for #input_name {
                                 #sig {
+                                    use #queryable;
                                     let range = self.get_range();
                                     acc.push(lsp_types::InlayHint {
                                         position: self.get_start_position(doc),
