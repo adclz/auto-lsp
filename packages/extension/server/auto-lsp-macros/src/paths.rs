@@ -20,7 +20,20 @@ pub struct Paths {
     pub builder_params: Path,
 
     // traits
-    pub queryable: Path,
+    pub queryable: TraitInfo<
+        Structx! {
+                QUERY_NAMES: Structx! {
+                    sig: TokenStream,
+                },
+        },
+    >,
+    pub check_queryable: TraitInfo<
+        Structx! {
+                CHECK: Structx! {
+                    sig: TokenStream,
+                },
+        },
+    >,
     pub symbol_trait: TraitInfo<
         Structx! {
             get_data: Structx! {
@@ -232,7 +245,22 @@ impl Default for Paths {
             builder_params: parse_quote!(auto_lsp::builders::BuilderParams),
 
             // traits
-            queryable: parse_quote!(auto_lsp::queryable::Queryable),
+            queryable: TraitInfo {
+                path: parse_quote!(auto_lsp::queryable::Queryable),
+                methods: structx! {
+                    QUERY_NAMES: structx! {
+                        sig: quote! { const QUERY_NAMES: &'static [&'static str] },
+                    },
+                },
+            },
+            check_queryable: TraitInfo {
+                path: parse_quote!(auto_lsp::queryable::CheckQueryable),
+                methods: structx! {
+                    CHECK: structx! {
+                        sig: quote! { const CHECK: () },
+                    },
+                },
+            },
             symbol_trait: TraitInfo {
                 path: parse_quote!(auto_lsp::symbol::AstSymbol),
                 methods: structx! {

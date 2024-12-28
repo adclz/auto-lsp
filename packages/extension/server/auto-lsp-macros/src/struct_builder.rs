@@ -50,7 +50,6 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.impl_ast_symbol(&mut builder);
         self.impl_locator(&mut builder);
         self.impl_parent(&mut builder);
-        self.impl_queryable(&mut builder);
         self.impl_dynamic_swap(&mut builder);
         self.impl_edit_range(&mut builder);
 
@@ -81,6 +80,8 @@ impl<'a> ToTokens for StructBuilder<'a> {
         builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
 
         self.impl_try_from(&mut builder);
+
+        self.impl_queryable(&mut builder);
 
         tokens.extend(builder.to_token_stream());
     }
@@ -156,15 +157,48 @@ impl<'a> StructBuilder<'a> {
     }
 
     fn impl_queryable(&self, builder: &mut FieldBuilder) {
+        let queryable = &PATHS.queryable.path;
+        let check_queryable = &PATHS.check_queryable.path;
         let query_name = self.query_name;
 
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
-            .stage_trait(&self.input_name, &PATHS.queryable);
+            .stage_trait(&self.input_name, queryable);
 
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
-            .stage_trait(&self.input_builder_name, &PATHS.queryable);
+            .stage_trait(&self.input_builder_name, queryable);
+
+        let names = self
+            .fields
+            .get_field_names()
+            .iter()
+            .map(|name| quote! { stringify!(#name) })
+            .collect::<Vec<_>>();
+
+        let names = quote! { &[#(#names),*] };
+
+        let concat = self
+            .fields
+            .get_field_builder_names()
+            .iter()
+            .map(|name| quote! { #name::QUERY_NAMES })
+            .collect::<Vec<_>>();
+
+        let input_name = self.input_name;
+        
+        builder
+            .add(quote! { const CHECK: () = {
+                use #queryable;
+                use #check_queryable;
+                let queries = constcat::concat_slices!([&str]: #(#concat),*);
+                auto_lsp::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+            }; })
+            .stage_trait(&self.input_name, check_queryable);
+
+        builder
+            .add(quote! { const _: () = <#input_name as  #check_queryable>::CHECK; })
+            .stage();
     }
 
     fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {
@@ -263,7 +297,7 @@ impl<'a> StructBuilder<'a> {
     }
 
     fn fn_query_binder(&self, builder: &mut FieldBuilder) {
-        let queryable = &PATHS.queryable;
+        let queryable = &PATHS.queryable.path;
         let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
 
         builder.add_fn_iter(

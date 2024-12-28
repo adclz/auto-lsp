@@ -51,7 +51,7 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                     let field_names = &self.fields.field_names.get_field_names();
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
                     let field_option_names = &self.fields.field_option_names.get_field_names();
-                    let queryable = &PATHS.queryable;
+                    let queryable = &PATHS.queryable.path;
 
                     if opt.query.is_some() {
                         quote! {

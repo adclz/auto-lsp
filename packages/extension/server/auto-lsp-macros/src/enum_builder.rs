@@ -179,10 +179,12 @@ impl<'a> EnumBuilder<'a> {
     }
 
     fn impl_queryable(&self, builder: &mut VariantBuilder) {
-        let queryable = &PATHS.queryable;
+        let queryable = &PATHS.queryable.path;
+        let check_queryable = &PATHS.check_queryable.path;
+
         let concat: Vec<_> = self
             .fields
-            .variant_names
+            .variant_types_names
             .iter()
             .map(|name| quote! { #name::QUERY_NAMES })
             .collect();
@@ -202,6 +204,30 @@ impl<'a> EnumBuilder<'a> {
                 };
             })
             .stage_trait(&self.input_builder_name, queryable);
+
+        let names = self
+            .fields
+            .variant_names
+            .iter()
+            .map(|name| quote! { stringify!(#name) })
+            .collect::<Vec<_>>();
+
+        let names = quote! { &[#(#names),*] };
+
+        let input_name = self.input_name;
+
+        builder
+            .add(quote! { const CHECK: () = {
+                use #queryable;
+                use #check_queryable;
+                let queries = constcat::concat_slices!([&str]: #(#concat),*);
+                auto_lsp::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+            }; })
+            .stage_trait(&self.input_name, check_queryable);
+
+        builder
+            .add(quote! { const _: () = <#input_name as  #check_queryable>::CHECK; })
+            .stage();
     }
 
     fn impl_parent(&self, builder: &mut VariantBuilder) {
@@ -353,7 +379,7 @@ impl<'a> EnumBuilder<'a> {
     }
 
     fn fn_new(&self, builder: &mut VariantBuilder) {
-        let queryable = &PATHS.queryable;
+        let queryable = &PATHS.queryable.path;
         let pending_symbol = &PATHS.pending_symbol;
 
         let variant_types_names = &self.fields.variant_types_names;

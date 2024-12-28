@@ -10,3 +10,5 @@ lsp-textdocument = {workspace = true}
 downcast-rs = {workspace = true}
 streaming-iterator = {workspace = true}
 parking_lot = {workspace = true}
+const-str = "0.3.1"
+const_panic = "0.2.11"
