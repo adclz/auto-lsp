@@ -26,19 +26,6 @@ use crate::utilities::extract_fields::{match_enum_fields, match_struct_fields};
 
 use std::cell::LazyCell;
 
-trait BuildAstItem {
-    fn generate_fields(&self) -> Vec<proc_macro2::TokenStream>;
-    fn generate_symbol_methods(&self) -> proc_macro2::TokenStream;
-}
-
-trait BuildAstItemBuilder {
-    fn generate_builder_fields(&self) -> Vec<proc_macro2::TokenStream>;
-    fn generate_builder_new(&self) -> proc_macro2::TokenStream;
-    fn generate_query_binder(&self) -> proc_macro2::TokenStream;
-    fn generate_add(&self) -> proc_macro2::TokenStream;
-    fn generate_try_from(&self) -> proc_macro2::TokenStream;
-}
-
 const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 
 #[proc_macro_attribute]

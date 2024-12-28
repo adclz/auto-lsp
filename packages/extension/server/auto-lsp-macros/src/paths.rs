@@ -457,8 +457,8 @@ impl Default for Paths {
                         sig: quote! { fn dyn_swap<'a>(
                             &mut self,
                             offset: usize,
-                            builder_params: &'a mut BuilderParams,
-                        ) -> Result<(), Diagnostic> },
+                            builder_params: &'a mut auto_lsp::builders::BuilderParams,
+                        ) -> Result<(), lsp_types::Diagnostic> },
                         variant: quote! { dyn_swap(offset, builder_params) },
                     },
                 },
