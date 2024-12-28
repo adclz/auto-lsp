@@ -29,7 +29,7 @@ use std::cell::LazyCell;
 const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 
 #[proc_macro_attribute]
-pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
     // Parse args
 
     let attr_meta = match NestedMeta::parse_meta_list(args.into()) {
@@ -93,7 +93,7 @@ pub fn ast_struct(args: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn ast_enum(_args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn choice(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     let input_name = &input.ident;
