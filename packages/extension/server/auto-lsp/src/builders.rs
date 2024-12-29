@@ -1,14 +1,11 @@
 use crate::builder_error;
 use crate::convert::TryFromBuilder;
 use crate::pending_symbol::{AstBuilder, PendingSymbol, TryDownCast};
-use crate::symbol::{AstSymbol, DynSymbol, Locator, Symbol, SymbolData};
+use crate::symbol::{AstSymbol, DynSymbol, Locator, SymbolData};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
-use parking_lot::Mutex;
-use std::cell::RefCell;
 use std::ops::Range;
-use std::rc::Rc;
 use std::sync::Arc;
 use std::vec;
 use streaming_iterator::StreamingIterator;
@@ -214,12 +211,12 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
         let result = self.get_root_node()?;
         let result = result.get_rc().borrow();
 
-        let mut deferred: Vec<DynSymbol> = vec![];
+        let deferred: Vec<DynSymbol> = vec![];
         let item = result.try_to_dyn_symbol(self.params)?;
         item.write().inject_parent(item.to_weak());
 
         if item.read().is_accessor() {
-            match item.read().find(&self.params.doc, self.params.ctx) {
+            match item.read().find(&self.params.doc) {
                 Ok(a) => {
                     if let Some(a) = a {
                         // todo!
@@ -232,19 +229,21 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
             }
         }
 
-        if let Err(err) = item.write().find(&self.params.doc, self.params.ctx) {
+        if let Err(err) = item.write().find(&self.params.doc) {
             self.params.diagnostics.push(err);
         }
 
         let read = item.read();
 
         if read.must_check() {
-            read.check(self.params.doc, self.params.diagnostics);
+            if let Ok(_) = read.check(self.params.doc, self.params.diagnostics) {
+                //self.params.checks
+            }
         }
 
         for item in deferred {
             let acc = if item.read().is_accessor() {
-                match item.read().find(&self.params.doc, self.params.ctx) {
+                match item.read().find(&self.params.doc) {
                     Ok(a) => a,
                     Err(err) => {
                         self.params.diagnostics.push(err);
@@ -263,7 +262,7 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
             }
 
             if item.read().must_check() {
-                item.read().check(&self.params.doc, self.params.diagnostics);
+                if let Err(_) = item.read().check(&self.params.doc, self.params.diagnostics) {}
             }
         }
         drop(read);

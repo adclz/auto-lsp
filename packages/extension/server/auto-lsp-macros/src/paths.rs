@@ -173,12 +173,16 @@ pub struct Paths {
             },
         },
     >,
-    pub scope: TraitInfo<
+    pub is_scope: TraitInfo<
         Structx! {
             is_scope: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-            },
+            }
+        },
+    >,
+    pub scope: TraitInfo<
+        Structx! {
             get_scope_range: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
@@ -201,16 +205,20 @@ pub struct Paths {
             },
         },
     >,
-    pub check: TraitInfo<
+    pub is_check: TraitInfo<
         Structx! {
             must_check: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
-            },
-            check: Structx! {
-                sig: TokenStream,
-                variant: TokenStream,
-            },
+            }
+        },
+    >,
+    pub check: TraitInfo<
+        Structx! {
+        check: Structx! {
+            sig: TokenStream,
+            variant: TokenStream,
+        },
         },
     >,
     pub dynamic_swap: TraitInfo<
@@ -429,18 +437,23 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::symbol::Accessor),
                 methods: structx! {
                     find: structx! {
-                        sig: quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument, ctx: &dyn auto_lsp::workspace::WorkspaceContext) -> Result<Option<auto_lsp::symbol::DynSymbol>, lsp_types::Diagnostic> },
-                        variant: quote! { find(doc, ctx) },
+                        sig: quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument) -> Result<Option<auto_lsp::symbol::DynSymbol>, lsp_types::Diagnostic> },
+                        variant: quote! { find(doc) },
+                    },
+                },
+            },
+            is_scope: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::IsScope),
+                methods: structx! {
+                    is_scope: structx! {
+                        sig: quote! { fn is_scope(&self) -> bool },
+                        variant: quote! { is_scope() },
                     },
                 },
             },
             scope: TraitInfo {
                 path: parse_quote!(auto_lsp::symbol::Scope),
                 methods: structx! {
-                    is_scope: structx! {
-                        sig: quote! { fn is_scope(&self) -> bool },
-                        variant: quote! { is_scope() },
-                    },
                     get_scope_range: structx! {
                         sig: quote! { fn get_scope_range(&self) -> Vec<[usize; 2]> },
                         variant: quote! { get_scope_range() },
@@ -465,15 +478,20 @@ impl Default for Paths {
                     },
                 },
             },
-            check: TraitInfo {
-                path: parse_quote!(auto_lsp::symbol::Check),
+            is_check: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::IsCheck),
                 methods: structx! {
                     must_check: structx! {
                         sig: quote! { fn must_check(&self) -> bool },
                         variant: quote! { must_check() },
                     },
+                },
+            },
+            check: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::Check),
+                methods: structx! {
                     check: structx! {
-                        sig: quote! { fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) },
+                        sig: quote! { fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> Result<(), ()> },
                         variant: quote! { check(doc, diagnostics) },
                     },
                 },

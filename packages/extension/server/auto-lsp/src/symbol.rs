@@ -330,10 +330,13 @@ impl WeakSymbol {
     }
 }
 
-pub trait Scope {
+pub trait IsScope {
     fn is_scope(&self) -> bool {
         false
     }
+}
+
+pub trait Scope: IsScope {
     fn get_scope_range(&self) -> Vec<[usize; 2]> {
         Vec::new()
     }
@@ -422,11 +425,7 @@ pub trait IsAccessor {
 }
 
 pub trait Accessor: IsAccessor {
-    fn find(
-        &self,
-        _doc: &FullTextDocument,
-        _ctx: &dyn WorkspaceContext,
-    ) -> Result<Option<DynSymbol>, Diagnostic> {
+    fn find(&self, _doc: &FullTextDocument) -> Result<Option<DynSymbol>, Diagnostic> {
         Ok(None)
     }
 }
@@ -549,11 +548,16 @@ impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
     }
 }
 
-pub trait Check {
+pub trait IsCheck {
     fn must_check(&self) -> bool {
         false
     }
-    fn check(&self, _doc: &FullTextDocument, _diagnostics: &mut Vec<Diagnostic>) {}
+}
+
+pub trait Check: IsCheck {
+    fn check(&self, _doc: &FullTextDocument, _diagnostics: &mut Vec<Diagnostic>) -> Result<(), ()> {
+        Ok(())
+    }
 }
 
 pub trait DynamicSwap {

@@ -74,6 +74,7 @@ impl Session {
                 cst_parser,
                 document,
                 errors,
+                check: vec![],
                 cst,
                 ast,
             },

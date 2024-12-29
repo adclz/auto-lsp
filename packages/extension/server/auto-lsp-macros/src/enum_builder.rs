@@ -106,9 +106,12 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.check.methods.must_check.sig,
-                &PATHS.check.methods.must_check.variant,
+                &PATHS.is_check.methods.must_check.sig,
+                &PATHS.is_check.methods.must_check.variant,
             )
+            .stage_trait(&self.input_name, &PATHS.is_check.path);
+
+        builder
             .add_default_iter(
                 &self.fields,
                 &PATHS.check.methods.check.sig,
@@ -244,9 +247,12 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.scope.methods.is_scope.sig,
-                &PATHS.scope.methods.is_scope.variant,
+                &PATHS.is_scope.methods.is_scope.sig,
+                &PATHS.is_scope.methods.is_scope.variant,
             )
+            .stage_trait(&self.input_name, &PATHS.is_scope.path);
+
+        builder
             .add_default_iter(
                 &self.fields,
                 &PATHS.scope.methods.get_scope_range.sig,

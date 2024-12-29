@@ -34,15 +34,7 @@ impl<'a> AccessorBuilder<'a> {
 
 impl<'a> FeaturesCodeGen for AccessorBuilder<'a> {
     fn code_gen(&self, _params: &SymbolFeatures) -> impl quote::ToTokens {
-        let input_name = &self.input_name;
-        let is_accessor_path = &PATHS.is_accessor.path;
-        let accessor_path = &PATHS.accessor.path;
-
-        quote! {
-            impl #is_accessor_path for #input_name {}
-
-            impl #accessor_path for #input_name {}
-        }
+        self.default_impl()
     }
 
     fn code_gen_accessor(&self, _params: &AccessorFeatures) -> impl quote::ToTokens {
