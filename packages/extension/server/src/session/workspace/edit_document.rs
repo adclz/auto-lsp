@@ -79,6 +79,8 @@ impl Session {
         workspace.cst = cst;
         workspace.errors.extend(errors);
 
+        self.add_comments(uri)?;
+
         Ok(())
     }
 }

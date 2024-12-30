@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use auto_lsp::builders::BuilderParams;
+use auto_lsp::{builders::BuilderParams, workspace};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Url;
 
@@ -66,7 +66,6 @@ impl Session {
                 None
             }
         };
-
         self.workspaces.insert(
             uri.to_owned(),
             Workspace {
@@ -79,6 +78,9 @@ impl Session {
                 ast,
             },
         );
+
+        self.add_comments(uri)?;
+
         Ok(())
     }
 }

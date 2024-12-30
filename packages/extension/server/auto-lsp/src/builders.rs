@@ -346,6 +346,7 @@ impl<T: AstBuilder> Builder for T {
         builder.to_dyn_symbol()
     }
 }
+
 pub fn swap_ast<'a>(
     old_ast: Option<&DynSymbol>,
     edit_ranges: &Vec<TextDocumentContentChangeEvent>,

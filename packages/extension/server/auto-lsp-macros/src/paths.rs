@@ -173,6 +173,14 @@ pub struct Paths {
             },
         },
     >,
+    pub is_comment: TraitInfo<
+        Structx! {
+            is_comment: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+        },
+    >,
     pub is_scope: TraitInfo<
         Structx! {
             is_scope: Structx! {
@@ -439,6 +447,15 @@ impl Default for Paths {
                     find: structx! {
                         sig: quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument) -> Result<Option<auto_lsp::symbol::DynSymbol>, lsp_types::Diagnostic> },
                         variant: quote! { find(doc) },
+                    },
+                },
+            },
+            is_comment: TraitInfo {
+                path: parse_quote!(auto_lsp::symbol::IsComment),
+                methods: structx! {
+                    is_comment: structx! {
+                        sig: quote! { fn is_comment(&self) -> bool },
+                        variant: quote! { is_comment() },
                     },
                 },
             },

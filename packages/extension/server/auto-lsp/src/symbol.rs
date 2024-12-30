@@ -19,6 +19,7 @@ use super::workspace::WorkspaceContext;
 pub struct AstSymbolData {
     pub url: Arc<Url>,
     pub parent: Option<WeakSymbol>,
+    pub comment: Option<std::ops::Range<usize>>,
     pub referrers: Option<Referrers>,
     pub target: Option<WeakSymbol>,
     pub range: std::ops::Range<usize>,
@@ -29,6 +30,7 @@ impl AstSymbolData {
         Self {
             url,
             parent: None,
+            comment: None,
             referrers: None,
             target: None,
             range,
@@ -41,6 +43,8 @@ pub trait SymbolData {
     fn get_range(&self) -> std::ops::Range<usize>;
     fn get_parent(&self) -> Option<WeakSymbol>;
     fn set_parent(&mut self, parent: WeakSymbol);
+    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str>;
+    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>);
     fn get_target(&self) -> Option<&WeakSymbol>;
     fn set_target(&mut self, target: WeakSymbol);
     fn reset_target(&mut self);
@@ -108,6 +112,19 @@ impl SymbolData for AstSymbolData {
     fn get_mut_referrers(&mut self) -> &mut Referrers {
         self.referrers.get_or_insert_default()
     }
+
+    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
+        match self.comment {
+            Some(ref range) => {
+                Some(std::str::from_utf8(&source_code[range.start..range.end]).unwrap())
+            }
+            None => None,
+        }
+    }
+
+    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
+        self.comment = range;
+    }
 }
 
 pub trait AstSymbol:
@@ -122,6 +139,7 @@ pub trait AstSymbol:
     + CompletionItems
     + GoToDefinition
     + GoToDeclaration
+    + IsComment
     + Scope
     + Accessor
     + Locator
@@ -214,6 +232,14 @@ impl<T: AstSymbol + ?Sized> SymbolData for T {
 
     fn get_mut_referrers(&mut self) -> &mut Referrers {
         self.get_mut_data().get_mut_referrers()
+    }
+
+    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
+        self.get_data().get_comment(source_code)
+    }
+
+    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
+        self.get_mut_data().set_comment(range)
     }
 }
 
@@ -339,6 +365,12 @@ pub trait IsScope {
 pub trait Scope: IsScope {
     fn get_scope_range(&self) -> Vec<[usize; 2]> {
         Vec::new()
+    }
+}
+
+pub trait IsComment {
+    fn is_comment(&self) -> bool {
+        false
     }
 }
 

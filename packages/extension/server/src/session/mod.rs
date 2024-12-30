@@ -11,6 +11,7 @@ use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCursor};
 use workspace::Workspace;
 
+pub mod comment;
 pub mod cst_parser;
 pub mod dispatchers;
 pub mod init;

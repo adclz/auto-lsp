@@ -1,10 +1,11 @@
 use crate::{
     features::{
-        accessor::AccessorBuilder, check::CheckBuilder, lsp_code_lens::CodeLensBuilder,
-        lsp_completion_item::CompletionItemsBuilder, lsp_document_symbol::DocumentSymbolBuilder,
-        lsp_go_to_declaration::GoToDeclarationBuilder, lsp_go_to_definition::GotoDefinitionBuilder,
-        lsp_hover_info::HoverInfoBuilder, lsp_inlay_hint::InlayHintsBuilder,
-        lsp_semantic_token::SemanticTokensBuilder, scope::ScopeBuilder,
+        accessor::AccessorBuilder, check::CheckBuilder, comment::CommentBuilder,
+        lsp_code_lens::CodeLensBuilder, lsp_completion_item::CompletionItemsBuilder,
+        lsp_document_symbol::DocumentSymbolBuilder, lsp_go_to_declaration::GoToDeclarationBuilder,
+        lsp_go_to_definition::GotoDefinitionBuilder, lsp_hover_info::HoverInfoBuilder,
+        lsp_inlay_hint::InlayHintsBuilder, lsp_semantic_token::SemanticTokensBuilder,
+        scope::ScopeBuilder,
     },
     utilities::extract_fields::StructFields,
     AccessorFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures,
@@ -31,6 +32,7 @@ pub struct Features<'a> {
     pub scope: ScopeBuilder<'a>,
     pub accessor: AccessorBuilder<'a>,
     pub check: CheckBuilder<'a>,
+    pub comment: CommentBuilder<'a>,
 }
 
 impl<'a> Features<'a> {
@@ -53,6 +55,7 @@ impl<'a> Features<'a> {
             scope: ScopeBuilder::new(input_name, fields),
             accessor: AccessorBuilder::new(input_name, fields),
             check: CheckBuilder::new(input_name, helper_attributes, fields),
+            comment: CommentBuilder::new(input_name, fields),
         }
     }
 }
@@ -64,6 +67,7 @@ impl<'a> ToTokens for Features<'a> {
                 self.accessor.code_gen_accessor(reference).to_tokens(tokens);
                 self.scope.code_gen_accessor(reference).to_tokens(tokens);
                 self.check.code_gen_accessor(reference).to_tokens(tokens);
+                self.comment.code_gen_accessor(reference).to_tokens(tokens);
                 self.lsp_code_lens
                     .code_gen_accessor(reference)
                     .to_tokens(tokens);
@@ -93,6 +97,7 @@ impl<'a> ToTokens for Features<'a> {
                 self.accessor.code_gen(symbol).to_tokens(tokens);
                 self.scope.code_gen(symbol).to_tokens(tokens);
                 self.check.code_gen(symbol).to_tokens(tokens);
+                self.comment.code_gen(symbol).to_tokens(tokens);
                 self.lsp_code_lens.code_gen(symbol).to_tokens(tokens);
                 self.lsp_completion_items.code_gen(symbol).to_tokens(tokens);
                 self.lsp_document_symbols.code_gen(symbol).to_tokens(tokens);

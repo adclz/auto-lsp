@@ -2,7 +2,7 @@ use auto_lsp::symbol::Check;
 use syn::{Ident, Type};
 
 use crate::features::{
-    check::CheckFeature, lsp_code_lens::CodeLensFeature,
+    check::CheckFeature, comment::CommentFeature, lsp_code_lens::CodeLensFeature,
     lsp_completion_item::CompletionItemFeature, lsp_document_symbol::DocumentSymbolFeature,
     lsp_go_to_declaration::GoToDeclarationFeature, lsp_go_to_definition::GotoDefinitionFeature,
     lsp_hover_info::HoverFeature, lsp_inlay_hint::InlayHintFeature,
@@ -47,6 +47,7 @@ where
 pub struct SymbolFeatures {
     pub scope: Option<Feature<ScopeFeature>>,
     pub check: Option<Feature<CheckFeature>>,
+    pub comment: Option<Feature<CommentFeature>>,
     // LSP
     pub lsp_document_symbols: Option<Feature<DocumentSymbolFeature>>,
     pub lsp_hover_info: Option<Feature<HoverFeature>>,
@@ -68,6 +69,7 @@ pub enum ReferenceFeature {
 #[derive(Debug, FromMeta)]
 pub struct AccessorFeatures {
     pub check: Option<ReferenceFeature>,
+    pub comment: Option<ReferenceFeature>,
     pub lsp_document_symbols: Option<ReferenceFeature>,
     pub lsp_hover_info: Option<ReferenceFeature>,
     pub lsp_semantic_tokens: Option<ReferenceFeature>,

@@ -37,6 +37,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
+        self.impl_comment(&mut builder);
 
         self.impl_check(&mut builder);
         self.impl_accessor(&mut builder);
@@ -259,6 +260,16 @@ impl<'a> EnumBuilder<'a> {
                 &PATHS.scope.methods.get_scope_range.variant,
             )
             .stage_trait(&self.input_name, &PATHS.scope.path);
+    }
+
+    fn impl_comment(&self, builder: &mut VariantBuilder) {
+        builder
+            .add_default_iter(
+                &self.fields,
+                &PATHS.is_comment.methods.is_comment.sig,
+                &PATHS.is_comment.methods.is_comment.variant,
+            )
+            .stage_trait(&self.input_name, &PATHS.is_comment.path);
     }
 
     fn impl_code_lens(&self, builder: &mut VariantBuilder) {

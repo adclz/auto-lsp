@@ -1,5 +1,6 @@
 pub mod accessor;
 pub mod check;
+pub mod comment;
 pub mod lsp_code_lens;
 pub mod lsp_completion_item;
 pub mod lsp_document_symbol;
