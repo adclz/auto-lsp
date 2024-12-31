@@ -93,12 +93,6 @@ impl PendingSymbol {
     }
 }
 
-impl std::fmt::Debug for PendingSymbol {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "-")
-    }
-}
-
 #[derive(Clone)]
 pub struct MaybePendingSymbol(Option<PendingSymbol>);
 
@@ -129,12 +123,6 @@ impl MaybePendingSymbol {
 
     pub fn into_inner(self) -> Option<PendingSymbol> {
         self.0
-    }
-}
-
-impl std::fmt::Debug for MaybePendingSymbol {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "-")
     }
 }
 
