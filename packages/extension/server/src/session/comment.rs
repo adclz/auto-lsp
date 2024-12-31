@@ -26,6 +26,9 @@ impl Session {
         let mut cursor = tree_sitter::QueryCursor::new();
         let mut captures = cursor.captures(comments_query, cst.root_node(), source_code);
 
+        let range = workspace.ast.as_ref().unwrap().read().get_range();
+        eprintln!("WHOLE RANGE: {:?}", range);
+
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
             // Since a comment is not within a query, we look for the next named sibling
@@ -46,6 +49,7 @@ impl Session {
                         start: range.start_byte,
                         end: range.end_byte,
                     }));
+                    eprintln!("COMMENT SET");
                 }
             };
         }

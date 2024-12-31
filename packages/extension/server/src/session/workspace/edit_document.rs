@@ -73,9 +73,6 @@ impl Session {
             .get_mut(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let range = workspace.ast.as_ref().unwrap().read().get_range();
-        eprintln!("WHOLE RANGE: {:?}", range);
-
         workspace.cst = cst;
         workspace.errors.extend(errors);
 

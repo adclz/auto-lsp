@@ -1,11 +1,11 @@
 use crate::builder_error;
 use crate::convert::TryFromBuilder;
 use crate::pending_symbol::{AstBuilder, PendingSymbol, TryDownCast};
-use crate::symbol::{AstSymbol, DynSymbol, Locator, SymbolData};
+use crate::symbol::{AstSymbol, DynSymbol, EditRange, Locator, SymbolData};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
-use std::ops::Range;
+use std::ops::{ControlFlow, Range};
 use std::sync::Arc;
 use std::vec;
 use streaming_iterator::StreamingIterator;
@@ -372,48 +372,25 @@ pub fn swap_ast<'a>(
             continue;
         }
 
-        let is_ws = edit.text.trim().is_empty();
-
-        // Handle whitespace-only edits
-        if is_ws {
-            eprintln!(
-                "Whitespace edit: Shift at {:?} of {:?}",
-                start_byte,
-                (new_end_byte - old_end_byte) as isize,
-            );
-            root.write()
-                .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
-            continue;
-        }
-
-        // Handle non-whitespace edits
-        match root.find_at_offset(range_offset) {
-            Some(node) => {
-                eprintln!(
-                    "Edit: Shift at {:?} of {:?}",
-                    start_byte,
-                    (new_end_byte - old_end_byte) as isize,
-                );
-
-                let start_edit = node.read().get_range().start;
-
-                root.write()
-                    .edit_range(start_edit, (new_end_byte - old_end_byte) as isize);
-                if let Err(err) = node.write().dyn_swap(range_offset, builder_params) {
-                    builder_params.diagnostics.push(err);
-                }
-                eprintln!("Edited: Found node at offset: {:?}", range_offset);
+        let start_edit = match root.write().dyn_swap(
+            start_byte,
+            (new_end_byte - old_end_byte) as isize,
+            builder_params,
+        ) {
+            ControlFlow::Continue(()) => start_byte,
+            ControlFlow::Break(Ok(start_edit)) => start_edit,
+            ControlFlow::Break(Err(err)) => {
+                builder_params.diagnostics.push(err);
+                start_byte
             }
-            None => {
-                eprintln!(
-                    "Edit: Shift at {:?} of {:?}",
-                    start_byte,
-                    (new_end_byte - old_end_byte) as isize,
-                );
-                eprintln!("No node found at offset: {:?}", range_offset);
-                root.write()
-                    .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
-            }
-        }
+        };
+
+        root.edit_range(start_edit, (new_end_byte - old_end_byte) as isize);
+
+        eprintln!(
+            "Edit: Shift at {:?} of {:?}",
+            start_byte,
+            (new_end_byte - old_end_byte) as isize,
+        );
     }
 }

@@ -209,10 +209,10 @@ impl<'a> StructBuilder<'a> {
                 None,
                 |_, _, name, _, _| {
                     quote! {
-                        self.#name.to_swap(offset, builder_params)?;
+                        self.#name.to_swap(start, offset, builder_params)?;
                     }
                 },
-                Some(quote! { self.to_swap(offset, builder_params) }),
+                Some(quote! { self.to_swap(start, offset, builder_params) }),
             )
             .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
     }

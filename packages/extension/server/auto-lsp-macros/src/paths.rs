@@ -519,10 +519,11 @@ impl Default for Paths {
                     swap: structx! {
                         sig: quote! { fn dyn_swap<'a>(
                             &mut self,
-                            offset: usize,
+                            start: usize,
+                            offset: isize,
                             builder_params: &'a mut auto_lsp::builders::BuilderParams,
-                        ) -> Result<(), lsp_types::Diagnostic> },
-                        variant: quote! { dyn_swap(offset, builder_params) },
+                        ) -> std::ops::ControlFlow<Result<usize, lsp_types::Diagnostic>, ()> },
+                        variant: quote! { dyn_swap(start, offset, builder_params) },
                     },
                 },
             },
@@ -530,7 +531,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::symbol::EditRange),
                 methods: structx! {
                     edit_range: structx! {
-                        sig: quote! { fn edit_range(&mut self, start: usize, offset: isize) },
+                        sig: quote! { fn edit_range(&self, start: usize, offset: isize) },
                         variant: quote! { edit_range(start, offset) },
                     },
                 },

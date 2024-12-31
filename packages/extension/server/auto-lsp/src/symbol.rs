@@ -11,9 +11,10 @@ use lsp_types::{
     GotoDefinitionResponse, Position, Range, Url,
 };
 use parking_lot::RwLock;
-use std::sync::{Arc, Weak};
-
-use super::workspace::WorkspaceContext;
+use std::{
+    ops::ControlFlow,
+    sync::{Arc, Weak},
+};
 
 #[derive(Clone)]
 pub struct AstSymbolData {
@@ -501,24 +502,31 @@ impl<T: Locator> Locator for Vec<T> {
 }
 
 pub trait EditRange {
-    fn edit_range(&mut self, start: usize, offset: isize);
+    fn edit_range(&self, start: usize, offset: isize);
 }
 
 fn edit(data: &mut AstSymbolData, start: usize, offset: isize) {
     if data.range.start > start {
+        // Entire range is after the offset; shift both start and end
         data.range.start = (data.range.start as isize + offset) as usize;
         data.range.end = (data.range.end as isize + offset) as usize;
-    } else if data.range.end >= start {
+    } else if data.range.end > start {
+        // The offset occurs within the range; adjust only the end
         data.range.end = (data.range.end as isize + offset) as usize;
-        eprintln!(
-            "start: {}, RANGES: {} {}",
-            start, data.range.start, data.range.end
-        );
+    }
+}
+
+impl EditRange for DynSymbol {
+    fn edit_range(&self, start: usize, offset: isize) {
+        let mut write = self.write();
+        let data = write.get_mut_data();
+        edit(data, start, offset);
+        write.edit_range(start, offset);
     }
 }
 
 impl<T: AstSymbol> EditRange for Symbol<T> {
-    fn edit_range(&mut self, start: usize, offset: isize) {
+    fn edit_range(&self, start: usize, offset: isize) {
         let mut write = self.write();
         let data = write.get_mut_data();
         edit(data, start, offset);
@@ -527,8 +535,8 @@ impl<T: AstSymbol> EditRange for Symbol<T> {
 }
 
 impl<T: AstSymbol> EditRange for Option<Symbol<T>> {
-    fn edit_range(&mut self, start: usize, offset: isize) {
-        if let Some(symbol) = self.as_mut() {
+    fn edit_range(&self, start: usize, offset: isize) {
+        if let Some(symbol) = self.as_ref() {
             let mut write = symbol.write();
             let data = write.get_mut_data();
             edit(data, start, offset);
@@ -538,8 +546,8 @@ impl<T: AstSymbol> EditRange for Option<Symbol<T>> {
 }
 
 impl<T: AstSymbol> EditRange for Vec<Symbol<T>> {
-    fn edit_range(&mut self, start: usize, offset: isize) {
-        for symbol in self.iter_mut() {
+    fn edit_range(&self, start: usize, offset: isize) {
+        for symbol in self.iter() {
             let mut write = symbol.write();
             let data = write.get_mut_data();
             edit(data, start, offset);
@@ -595,9 +603,10 @@ pub trait Check: IsCheck {
 pub trait DynamicSwap {
     fn dyn_swap<'a>(
         &mut self,
-        offset: usize,
+        start: usize,
+        offset: isize,
         builder_params: &'a mut BuilderParams,
-    ) -> Result<(), Diagnostic>;
+    ) -> ControlFlow<Result<usize, Diagnostic>, ()>;
 }
 
 pub trait StaticSwap<T, Y>
@@ -609,9 +618,10 @@ where
 {
     fn to_swap<'a>(
         &mut self,
-        offset: usize,
+        start: usize,
+        offset: isize,
         builder_params: &'a mut BuilderParams,
-    ) -> Result<(), Diagnostic>;
+    ) -> ControlFlow<Result<usize, Diagnostic>, ()>;
 }
 
 impl<T, Y> StaticSwap<T, Y> for Y
@@ -623,18 +633,16 @@ where
 {
     fn to_swap<'a>(
         &mut self,
-        offset: usize,
+        start: usize,
+        offset: isize,
         builder_params: &'a mut BuilderParams,
-    ) -> Result<(), Diagnostic> {
+    ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
         eprintln!("swapping in symbol");
-        *self = Y::static_build(
-            builder_params,
-            Some(std::ops::Range {
-                start: offset,
-                end: offset,
-            }),
-        )?;
-        Ok(())
+        *self = match Y::static_build(builder_params, Some(std::ops::Range { start, end: start })) {
+            Ok(symbol) => symbol,
+            Err(err) => return ControlFlow::Break(Err(err)),
+        };
+        ControlFlow::Break(Ok(self.get_range().start))
     }
 }
 
@@ -647,18 +655,28 @@ where
 {
     fn to_swap<'a>(
         &mut self,
-        offset: usize,
+        start: usize,
+        offset: isize,
         builder_params: &'a mut BuilderParams,
-    ) -> Result<(), Diagnostic> {
-        eprintln!("swapping in symbol");
-        *self = Symbol::new(Y::static_build(
-            builder_params,
-            Some(std::ops::Range {
-                start: offset,
-                end: offset,
-            }),
-        )?);
-        Ok(())
+    ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
+        let read = self.read();
+        match read.is_inside_offset(start) {
+            true => {
+                drop(read);
+                self.write().dyn_swap(start, offset, builder_params)?;
+                *self = Symbol::new(
+                    match Y::static_build(
+                        builder_params,
+                        Some(std::ops::Range { start, end: start }),
+                    ) {
+                        Ok(symbol) => symbol,
+                        Err(err) => return ControlFlow::Break(Err(err)),
+                    },
+                );
+                ControlFlow::Break(Ok(self.read().get_range().start))
+            }
+            false => ControlFlow::Continue(()),
+        }
     }
 }
 
@@ -671,33 +689,54 @@ where
 {
     fn to_swap<'a>(
         &mut self,
-        offset: usize,
+        start: usize,
+        offset: isize,
         builder_params: &'a mut BuilderParams,
-    ) -> Result<(), Diagnostic> {
-        eprintln!("swapping in vec");
+    ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
+        eprintln!("Processing swap for start={}, offset={}", start, offset);
 
-        let symbol = Symbol::new(Y::static_build(
-            builder_params,
-            Some(std::ops::Range {
-                start: offset,
-                end: offset,
-            }),
-        )?);
+        // Identify affected ranges
+        let mut affected_indexes = vec![];
+        for (index, symbol) in self.iter().enumerate() {
+            let range = symbol.read().get_range();
 
-        for existing_symbol in self.iter_mut() {
-            if existing_symbol.write().is_inside_offset(offset) {
-                *existing_symbol = symbol;
-                return Ok(());
+            // Determine whether the offset affects this symbol
+            if (offset > 0 && range.start >= start) || (offset < 0 && range.end > start) {
+                affected_indexes.push(index);
             }
         }
 
-        let insert_index = match self.binary_search_by(|existing_symbol| {
-            existing_symbol.read().get_range().start.cmp(&offset)
-        }) {
-            Ok(index) | Err(index) => index,
-        };
-        self.insert(insert_index, symbol);
+        // Process affected symbols
+        for index in affected_indexes.iter().rev() {
+            let symbol = &mut self[*index];
+            let range = symbol.read().get_range();
 
-        Ok(())
+            if offset < 0 && range.start >= start && range.end <= start + offset.unsigned_abs() {
+                // Deletion: Range is entirely within the deleted region
+                eprintln!("Deleting symbol at index={}", index);
+                self.remove(*index);
+            }
+        }
+
+        // Handle insertion
+        if offset > 0 {
+            let insert_index =
+                match self.binary_search_by(|symbol| symbol.read().get_range().start.cmp(&start)) {
+                    Ok(index) | Err(index) => index,
+                };
+
+            let new_symbol = Symbol::new(
+                match Y::static_build(builder_params, Some(std::ops::Range { start, end: start })) {
+                    Ok(symbol) => symbol,
+                    Err(err) => return ControlFlow::Break(Err(err)),
+                },
+            );
+            eprintln!("Inserting new symbol at index={}", insert_index);
+            let start = new_symbol.read().get_range().start;
+            self.insert(insert_index, new_symbol);
+            return ControlFlow::Break(Ok(start));
+        }
+
+        ControlFlow::Continue(())
     }
 }
