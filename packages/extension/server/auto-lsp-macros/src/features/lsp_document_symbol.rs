@@ -84,8 +84,13 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                             #sig {
                                 let read = #name.read();
 
+                                let name = read.get_text(doc.get_content(None).as_bytes()).to_string();
+                                if name.is_empty() {
+                                    return None
+                                }
+
                                 Some(lsp_types::DocumentSymbol {
-                                    name: read.get_text(doc.get_content(None).as_bytes()).to_string(),
+                                    name,
                                     detail: None,
                                     kind: #kind,
                                     tags: None,
