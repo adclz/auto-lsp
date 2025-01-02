@@ -1,15 +1,12 @@
 use std::sync::Arc;
 
-use auto_lsp::{
-    builders::{swap_ast, BuilderParams},
-    symbol::SymbolData,
-};
-use lsp_types::DidChangeTextDocumentParams;
+use auto_lsp::builders::{swap_ast, BuilderParams};
+use lsp_types::{DidChangeTextDocumentParams, TextDocumentContentChangeEvent};
 
 use super::tree_sitter_extend::{
     tree_sitter_edit::edit_tree, tree_sitter_lexer::get_tree_sitter_errors,
 };
-use crate::{session::Session, CST_PARSERS};
+use crate::{Session, CST_PARSERS};
 
 impl Session {
     pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
@@ -36,14 +33,32 @@ impl Session {
             .get(extension)
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
+        let edits: Vec<(&TextDocumentContentChangeEvent, bool)> = params
+            .content_changes
+            .iter()
+            .map(|edit| {
+                (
+                    edit,
+                    match edit.text.trim().is_empty() {
+                        true => workspace.document.get_content(edit.range).trim().is_empty(),
+                        false => false,
+                    },
+                )
+            })
+            .collect();
+
         workspace
             .document
             .update(&params.content_changes[..], params.text_document.version);
 
+        workspace.errors.clear();
+
         let cst;
         let mut errors = vec![];
 
-        cst = edit_tree(workspace, &params)?;
+        let new_tree = edit_tree(workspace, &params)?;
+
+        cst = new_tree;
         errors.extend(get_tree_sitter_errors(
             &cst.root_node(),
             workspace.document.get_content(None).as_bytes(),
@@ -56,7 +71,7 @@ impl Session {
 
         swap_ast(
             workspace.ast.as_ref(),
-            &params.content_changes,
+            &edits,
             &mut BuilderParams {
                 ctx: self,
                 query: &cst_parser.queries.outline,

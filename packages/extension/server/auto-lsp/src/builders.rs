@@ -1,10 +1,12 @@
 use crate::builder_error;
-use crate::convert::TryFromBuilder;
-use crate::pending_symbol::{AstBuilder, PendingSymbol, TryDownCast};
-use crate::symbol::{AstSymbol, DynSymbol, EditRange, Locator, SymbolData};
+use crate::convert::{TryFromBuilder, TryIntoBuilder};
+use crate::pending_symbol::{AstBuilder, PendingSymbol};
+use crate::queryable::Queryable;
+use crate::symbol::{AstSymbol, DynSymbol, EditRange, SymbolData};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
+use std::marker::PhantomData;
 use std::ops::{ControlFlow, Range};
 use std::sync::Arc;
 use std::vec;
@@ -36,15 +38,22 @@ pub struct BuilderParams<'a> {
     pub checks: &'a mut Vec<DynSymbol>,
 }
 
-struct StackBuilder<'a, 'b> {
+struct StackBuilder<'a, 'b, T>
+where
+    T: AstBuilder + Queryable,
+{
+    _meta: PhantomData<T>,
     params: &'a mut BuilderParams<'b>,
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
     start_building: bool,
 }
 
-impl<'a, 'b> StackBuilder<'a, 'b> {
-    fn create_root_node<T: AstBuilder>(&mut self, capture: &QueryCapture, capture_index: usize) {
+impl<'a, 'b, T> StackBuilder<'a, 'b, T>
+where
+    T: AstBuilder + Queryable,
+{
+    fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
         let mut node = T::new(
             self.params.url.clone(),
             self.params.query,
@@ -52,6 +61,11 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
             capture.node.range(),
             capture.node.start_position(),
             capture.node.end_position(),
+        );
+
+        eprintln!(
+            "Creating root node {:?}",
+            self.params.query.capture_names()[capture.index as usize]
         );
 
         match node.take() {
@@ -109,6 +123,7 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
 
     pub fn new(builder_params: &'a mut BuilderParams<'b>) -> Self {
         Self {
+            _meta: PhantomData,
             params: builder_params,
             roots: vec![],
             stack: vec![],
@@ -116,7 +131,7 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
         }
     }
 
-    pub fn build<T: AstBuilder>(&mut self, range: Option<std::ops::Range<usize>>) {
+    pub fn build(&mut self, range: &Option<std::ops::Range<usize>>) -> &mut Self {
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let start_node = match &range {
@@ -152,19 +167,12 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
                 }
             }
 
-            if range.is_some() {
-                eprintln!(
-                    "captures: {:?}",
-                    self.params.query.capture_names()[capture_index]
-                );
-            }
-
             let mut parent = self.stack.pop();
 
             loop {
                 match &parent {
                     None => {
-                        self.create_root_node::<T>(&capture, capture_index);
+                        self.create_root_node(&capture, capture_index);
                         break;
                     }
                     Some(p) => {
@@ -186,29 +194,42 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
                 parent = self.stack.pop();
             }
         }
+        self
     }
 
-    fn get_root_node(&mut self) -> Result<PendingSymbol, Diagnostic> {
+    fn get_root_node(
+        &mut self,
+        range: &Option<std::ops::Range<usize>>,
+    ) -> Result<PendingSymbol, Diagnostic> {
         match self.roots.pop() {
             Some(node) => Ok(node),
-            None => Err(builder_error!(
-                lsp_types::Range {
-                    start: lsp_types::Position {
-                        line: 0,
-                        character: 0,
+            None => match range {
+                Some(range) => Err(builder_error!(
+                    lsp_types::Range {
+                        start: self.params.doc.position_at(range.start as u32),
+                        end: self.params.doc.position_at(range.end as u32),
                     },
-                    end: lsp_types::Position {
-                        line: self.params.doc.line_count() as u32,
-                        character: 0,
-                    },
-                },
-                "No root node found".to_string()
-            )),
+                    match T::QUERY_NAMES.len() {
+                        1 => format!("Expected {}", T::QUERY_NAMES[0]),
+                        _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),
+                    }
+                )),
+                None => Err(builder_error!(
+                    tree_sitter_range_to_lsp_range(&self.params.root_node.range()),
+                    match T::QUERY_NAMES.len() {
+                        1 => format!("Expected {}", T::QUERY_NAMES[0]),
+                        _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),
+                    }
+                )),
+            },
         }
     }
 
-    pub fn to_dyn_symbol(&mut self) -> Result<DynSymbol, Diagnostic> {
-        let result = self.get_root_node()?;
+    pub fn to_dyn_symbol(
+        &mut self,
+        range: &Option<std::ops::Range<usize>>,
+    ) -> Result<DynSymbol, Diagnostic> {
+        let result = self.get_root_node(range)?;
         let result = result.get_rc().borrow();
 
         let deferred: Vec<DynSymbol> = vec![];
@@ -237,7 +258,8 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
 
         if read.must_check() {
             if let Ok(_) = read.check(self.params.doc, self.params.diagnostics) {
-                //self.params.checks
+                //let index = self.params.checks.iter().position(|x| x.get_arc()item).unwrap();
+                //self.params.checks.remove(index);
             }
         }
 
@@ -268,52 +290,21 @@ impl<'a, 'b> StackBuilder<'a, 'b> {
         drop(read);
         Ok(item)
     }
-}
 
-pub type BuilderFn = for<'a> fn(
-    params: &'a mut BuilderParams<'a>,
-    range: Option<std::ops::Range<usize>>,
-) -> Result<DynSymbol, Diagnostic>;
+    pub fn to_static_symbol<Y>(
+        &mut self,
+        range: &Option<std::ops::Range<usize>>,
+    ) -> Result<Y, Diagnostic>
+    where
+        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
+    {
+        let result = self.get_root_node(range)?;
+        let result = result.get_rc().borrow();
 
-pub trait Builder {
-    fn builder<'a>(
-        params: &'a mut BuilderParams<'a>,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<DynSymbol, Diagnostic>;
-}
-
-pub trait StaticBuilder<
-    T: AstBuilder,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
->
-{
-    fn static_build<'a>(
-        params: &'a mut BuilderParams,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Y, Diagnostic>;
-}
-
-impl<T, Y> StaticBuilder<T, Y> for Y
-where
-    T: AstBuilder,
-    Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
-{
-    fn static_build<'a>(
-        builder_params: &'a mut BuilderParams,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Y, Diagnostic> {
-        let mut builder = StackBuilder::new(builder_params);
-        builder.build::<T>(range);
-
-        let root = &builder.roots[0];
-        let ds = root.try_downcast(
-            builder_params,
-            "field_name",
-            lsp_types::Range::default(),
-            "input_name",
-        );
-
-        ds
+        result
+            .downcast_ref::<T>()
+            .unwrap()
+            .try_into_builder(self.params)
     }
 }
 
@@ -336,20 +327,58 @@ fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Rang
     }
 }
 
-impl<T: AstBuilder> Builder for T {
+pub type BuilderFn = for<'a> fn(
+    params: &'a mut BuilderParams<'a>,
+    range: Option<std::ops::Range<usize>>,
+) -> Result<DynSymbol, Diagnostic>;
+
+pub trait Builder {
+    fn builder<'a>(
+        params: &'a mut BuilderParams<'a>,
+        range: Option<std::ops::Range<usize>>,
+    ) -> Result<DynSymbol, Diagnostic>;
+}
+
+pub trait StaticBuilder<
+    T: AstBuilder + Queryable,
+    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+>
+{
+    fn static_build<'a>(
+        params: &'a mut BuilderParams,
+        range: Option<std::ops::Range<usize>>,
+    ) -> Result<Y, Diagnostic>;
+}
+
+impl<T, Y> StaticBuilder<T, Y> for Y
+where
+    T: AstBuilder + Queryable,
+    Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
+{
+    fn static_build<'a>(
+        builder_params: &'a mut BuilderParams,
+        range: Option<std::ops::Range<usize>>,
+    ) -> Result<Y, Diagnostic> {
+        StackBuilder::<T>::new(builder_params)
+            .build(&range)
+            .to_static_symbol(&range)
+    }
+}
+
+impl<T: AstBuilder + Queryable> Builder for T {
     fn builder<'a>(
         params: &'a mut BuilderParams<'a>,
         range: Option<Range<usize>>,
     ) -> Result<DynSymbol, Diagnostic> {
-        let mut builder = StackBuilder::new(params);
-        builder.build::<T>(range);
-        builder.to_dyn_symbol()
+        StackBuilder::<T>::new(params)
+            .build(&range)
+            .to_dyn_symbol(&range)
     }
 }
 
 pub fn swap_ast<'a>(
     old_ast: Option<&DynSymbol>,
-    edit_ranges: &Vec<TextDocumentContentChangeEvent>,
+    edit_ranges: &Vec<(&TextDocumentContentChangeEvent, bool)>,
     builder_params: &'a mut BuilderParams<'a>,
 ) {
     let root = match old_ast.as_ref() {
@@ -359,7 +388,7 @@ pub fn swap_ast<'a>(
 
     let doc = builder_params.doc;
 
-    for edit in edit_ranges.iter() {
+    for (edit, is_ws) in edit_ranges.iter() {
         let edit_range = edit.range.unwrap();
 
         let range_offset = doc.offset_at(edit_range.start) as usize;
@@ -372,20 +401,17 @@ pub fn swap_ast<'a>(
             continue;
         }
 
-        let start_edit = match root.write().dyn_swap(
-            start_byte,
-            (new_end_byte - old_end_byte) as isize,
-            builder_params,
-        ) {
-            ControlFlow::Continue(()) => start_byte,
-            ControlFlow::Break(Ok(start_edit)) => start_edit,
-            ControlFlow::Break(Err(err)) => {
-                builder_params.diagnostics.push(err);
-                start_byte
-            }
-        };
+        root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
 
-        root.edit_range(start_edit, (new_end_byte - old_end_byte) as isize);
+        if !is_ws {
+            if let ControlFlow::Break(Err(err)) = root.write().dyn_swap(
+                start_byte,
+                (new_end_byte - old_end_byte) as isize,
+                builder_params,
+            ) {
+                builder_params.diagnostics.push(err);
+            };
+        }
 
         eprintln!(
             "Edit: Shift at {:?} of {:?}",

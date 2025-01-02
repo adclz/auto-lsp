@@ -2,6 +2,7 @@ use crate::{
     builders::{BuilderParams, StaticBuilder},
     convert::TryFromBuilder,
     pending_symbol::AstBuilder,
+    queryable::Queryable,
     semantic_tokens::SemanticTokensBuilder,
 };
 use downcast_rs::{impl_downcast, Downcast};
@@ -611,7 +612,7 @@ pub trait DynamicSwap {
 
 pub trait StaticSwap<T, Y>
 where
-    T: AstBuilder,
+    T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
         + StaticBuilder<T, Y>,
@@ -626,7 +627,7 @@ where
 
 impl<T, Y> StaticSwap<T, Y> for Y
 where
-    T: AstBuilder,
+    T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
         + StaticBuilder<T, Y>,
@@ -648,7 +649,7 @@ where
 
 impl<T, Y> StaticSwap<T, Y> for Symbol<Y>
 where
-    T: AstBuilder,
+    T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
         + StaticBuilder<T, Y>,
@@ -682,7 +683,7 @@ where
 
 impl<T, Y> StaticSwap<T, Y> for Vec<Symbol<Y>>
 where
-    T: AstBuilder,
+    T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
         + StaticBuilder<T, Y>,
@@ -693,9 +694,23 @@ where
         offset: isize,
         builder_params: &'a mut BuilderParams,
     ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
+        for symbol in self.iter_mut() {
+            match symbol.to_swap(start, offset, builder_params) {
+                ControlFlow::Break(result) => return ControlFlow::Break(result),
+                ControlFlow::Continue(()) => continue,
+            }
+        }
+
         eprintln!("Processing swap for start={}, offset={}", start, offset);
 
-        // Identify affected ranges
+        match Y::static_build(builder_params, Some(std::ops::Range { start, end: start })) {
+            Ok(symbol) => symbol,
+            Err(err) => return ControlFlow::Break(Err(err)),
+        };
+
+        ControlFlow::Continue(())
+
+        /*// Identify affected ranges
         let mut affected_indexes = vec![];
         for (index, symbol) in self.iter().enumerate() {
             let range = symbol.read().get_range();
@@ -735,8 +750,6 @@ where
             let start = new_symbol.read().get_range().start;
             self.insert(insert_index, new_symbol);
             return ControlFlow::Break(Ok(start));
-        }
-
-        ControlFlow::Continue(())
+        }*/
     }
 }
