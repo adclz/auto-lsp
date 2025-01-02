@@ -507,7 +507,7 @@ pub trait EditRange {
 }
 
 fn edit(data: &mut AstSymbolData, start: usize, offset: isize) {
-    if data.range.start > start {
+    if data.range.start >= start {
         // Entire range is after the offset; shift both start and end
         data.range.start = (data.range.start as isize + offset) as usize;
         data.range.end = (data.range.end as isize + offset) as usize;
@@ -701,55 +701,6 @@ where
             }
         }
 
-        eprintln!("Processing swap for start={}, offset={}", start, offset);
-
-        match Y::static_build(builder_params, Some(std::ops::Range { start, end: start })) {
-            Ok(symbol) => symbol,
-            Err(err) => return ControlFlow::Break(Err(err)),
-        };
-
         ControlFlow::Continue(())
-
-        /*// Identify affected ranges
-        let mut affected_indexes = vec![];
-        for (index, symbol) in self.iter().enumerate() {
-            let range = symbol.read().get_range();
-
-            // Determine whether the offset affects this symbol
-            if (offset > 0 && range.start >= start) || (offset < 0 && range.end > start) {
-                affected_indexes.push(index);
-            }
-        }
-
-        // Process affected symbols
-        for index in affected_indexes.iter().rev() {
-            let symbol = &mut self[*index];
-            let range = symbol.read().get_range();
-
-            if offset < 0 && range.start >= start && range.end <= start + offset.unsigned_abs() {
-                // Deletion: Range is entirely within the deleted region
-                eprintln!("Deleting symbol at index={}", index);
-                self.remove(*index);
-            }
-        }
-
-        // Handle insertion
-        if offset > 0 {
-            let insert_index =
-                match self.binary_search_by(|symbol| symbol.read().get_range().start.cmp(&start)) {
-                    Ok(index) | Err(index) => index,
-                };
-
-            let new_symbol = Symbol::new(
-                match Y::static_build(builder_params, Some(std::ops::Range { start, end: start })) {
-                    Ok(symbol) => symbol,
-                    Err(err) => return ControlFlow::Break(Err(err)),
-                },
-            );
-            eprintln!("Inserting new symbol at index={}", insert_index);
-            let start = new_symbol.read().get_range().start;
-            self.insert(insert_index, new_symbol);
-            return ControlFlow::Break(Ok(start));
-        }*/
     }
 }
