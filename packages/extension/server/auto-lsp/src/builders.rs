@@ -2,7 +2,7 @@ use crate::builder_error;
 use crate::convert::{TryFromBuilder, TryIntoBuilder};
 use crate::pending_symbol::{AstBuilder, PendingSymbol};
 use crate::queryable::Queryable;
-use crate::symbol::{AstSymbol, DynSymbol, EditRange, SymbolData};
+use crate::symbol::{AstSymbol, DynSymbol, EditRange, SymbolData, WeakSymbol};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
@@ -28,6 +28,21 @@ macro_rules! builder_error {
     };
 }
 
+#[macro_export]
+macro_rules! builder_warning {
+    ($range: expr, $text: expr) => {
+        lsp_types::Diagnostic::new(
+            $range,
+            Some(lsp_types::DiagnosticSeverity::WARNING),
+            None,
+            None,
+            $text.into(),
+            None,
+            None,
+        )
+    };
+}
+
 pub struct BuilderParams<'a> {
     pub ctx: &'a dyn WorkspaceContext,
     pub query: &'a tree_sitter::Query,
@@ -35,7 +50,94 @@ pub struct BuilderParams<'a> {
     pub doc: &'a FullTextDocument,
     pub url: Arc<Url>,
     pub diagnostics: &'a mut Vec<Diagnostic>,
-    pub checks: &'a mut Vec<DynSymbol>,
+    pub unsolved_checks: &'a mut Vec<WeakSymbol>,
+    pub unsolved_references: &'a mut Vec<WeakSymbol>,
+}
+
+impl<'a> BuilderParams<'a> {
+    pub fn resolve_references(&mut self) -> &mut Self {
+        self.unsolved_references.retain(|item| {
+            let item = match item.to_dyn() {
+                Some(read) => read,
+                None => return false,
+            };
+            let read = item.read();
+            match read.find(&self.doc) {
+                Ok(a) => {
+                    match a {
+                        Some(a) => {
+                            // todo!
+                            //a.write().get_mut_referrers().add_reference(item.to_weak());
+                            drop(read);
+                            item.write().set_target(a.to_weak());
+                            false
+                        }
+                        None => true,
+                    }
+                }
+                Err(err) => {
+                    self.diagnostics.push(err);
+                    true
+                }
+            }
+        });
+        self
+    }
+
+    pub fn resolve_checks(&mut self) -> &mut Self {
+        self.unsolved_checks.retain(|item| {
+            let item = match item.to_dyn() {
+                Some(read) => read,
+                None => return false,
+            };
+            let read = item.read();
+            match read.check(&self.doc, self.diagnostics) {
+                Ok(()) => false,
+                Err(()) => true,
+            }
+        });
+        self
+    }
+
+    pub fn swap_ast(
+        &'a mut self,
+        root: &DynSymbol,
+        edit_ranges: &Vec<(&TextDocumentContentChangeEvent, bool)>,
+    ) -> &'a mut BuilderParams<'a> {
+        let doc = self.doc;
+
+        for (edit, is_ws) in edit_ranges.iter() {
+            let edit_range = edit.range.unwrap();
+
+            let range_offset = doc.offset_at(edit_range.start) as usize;
+            let start_byte = range_offset;
+            let old_end_byte = range_offset + edit.range_length.unwrap() as usize;
+            let new_end_byte = range_offset + edit.text.len();
+
+            let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
+            if is_noop {
+                continue;
+            }
+
+            root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
+
+            if !is_ws {
+                if let ControlFlow::Break(Err(e)) =
+                    root.write()
+                        .dyn_swap(start_byte, (new_end_byte - old_end_byte) as isize, self)
+                {
+                    self.diagnostics.push(e);
+                };
+            }
+
+            /*eprintln!(
+                "Edit: Shift at {:?} of {:?}",
+                start_byte,
+                (new_end_byte - old_end_byte) as isize,
+            );*/
+        }
+        self
+    }
 }
 
 struct StackBuilder<'a, 'b, T>
@@ -63,10 +165,10 @@ where
             capture.node.end_position(),
         );
 
-        eprintln!(
+        /*eprintln!(
             "Creating root node {:?}",
             self.params.query.capture_names()[capture.index as usize]
-        );
+        );*/
 
         match node.take() {
             Some(builder) => {
@@ -74,11 +176,11 @@ where
                 self.roots.push(node.clone());
                 self.stack.push(node);
             }
-            None => self.params.diagnostics.push(builder_error!(
+            None => self.params.diagnostics.push(builder_warning!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
-                    "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
-                    self.params.query.capture_names()[capture_index as usize]
+                    "Unknown query {:?}",
+                    self.params.query.capture_names()[capture_index as usize],
                 )
             )),
         }
@@ -111,11 +213,11 @@ where
                 self.stack.push(parent.clone());
                 self.stack.push(node.clone());
             }
-            None => self.params.diagnostics.push(builder_error!(
+            None => self.params.diagnostics.push(builder_warning!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
-                    "Failed to create builder for query: {:?}, is the symbol declared in the AST ?",
-                    query.capture_names()[capture_index as usize],
+                    "Unknown query {:?}",
+                    self.params.query.capture_names()[capture_index as usize],
                 )
             )),
         };
@@ -134,38 +236,34 @@ where
     pub fn build(&mut self, range: &Option<std::ops::Range<usize>>) -> &mut Self {
         let mut cursor = tree_sitter::QueryCursor::new();
 
-        let start_node = match &range {
-            Some(range) => {
-                let node = self
-                    .params
-                    .root_node
-                    .descendant_for_byte_range(range.start, range.end)
-                    .unwrap();
-                cursor.set_byte_range(range.clone());
-                Some(node)
-            }
-            None => None,
-        };
-
         let mut captures = cursor.captures(
             &self.params.query,
             self.params.root_node,
             self.params.doc.get_content(None).as_bytes(),
         );
 
+        if let Some(range) = range {
+            captures.set_byte_range(range.clone());
+        }
+
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
             let capture_index = capture.index as usize;
 
             if !self.start_building {
-                if let Some(node) = start_node {
-                    if node.range() != capture.node.range() {
+                if let Some(range) = range {
+                    if capture.node.range().start_byte.lt(&range.start) {
                         continue;
                     } else {
                         self.start_building = true;
                     }
                 }
             }
+
+            /*eprintln!(
+                "captures {:?}",
+                self.params.query.capture_names()[capture.index as usize]
+            );*/
 
             let mut parent = self.stack.pop();
 
@@ -232,62 +330,8 @@ where
         let result = self.get_root_node(range)?;
         let result = result.get_rc().borrow();
 
-        let deferred: Vec<DynSymbol> = vec![];
         let item = result.try_to_dyn_symbol(self.params)?;
         item.write().inject_parent(item.to_weak());
-
-        if item.read().is_accessor() {
-            match item.read().find(&self.params.doc) {
-                Ok(a) => {
-                    if let Some(a) = a {
-                        // todo!
-                        a.write().get_mut_referrers().add_reference(item.to_weak());
-
-                        item.write().set_target(a.to_weak());
-                    };
-                }
-                Err(err) => self.params.diagnostics.push(err),
-            }
-        }
-
-        if let Err(err) = item.write().find(&self.params.doc) {
-            self.params.diagnostics.push(err);
-        }
-
-        let read = item.read();
-
-        if read.must_check() {
-            if let Ok(_) = read.check(self.params.doc, self.params.diagnostics) {
-                //let index = self.params.checks.iter().position(|x| x.get_arc()item).unwrap();
-                //self.params.checks.remove(index);
-            }
-        }
-
-        for item in deferred {
-            let acc = if item.read().is_accessor() {
-                match item.read().find(&self.params.doc) {
-                    Ok(a) => a,
-                    Err(err) => {
-                        self.params.diagnostics.push(err);
-                        None
-                    }
-                }
-            } else {
-                None
-            };
-
-            if let Some(a) = acc {
-                // todo!
-                a.write().get_mut_referrers().add_reference(item.to_weak());
-
-                item.write().set_target(a.to_weak());
-            }
-
-            if item.read().must_check() {
-                if let Err(_) = item.read().check(&self.params.doc, self.params.diagnostics) {}
-            }
-        }
-        drop(read);
         Ok(item)
     }
 
@@ -300,10 +344,12 @@ where
     {
         let result = self.get_root_node(range)?;
         let result = result.get_rc().borrow();
-
         result
             .downcast_ref::<T>()
-            .unwrap()
+            .ok_or(builder_error!(
+                result.get_lsp_range(self.params.doc),
+                format!("Invalid cast {:?}", T::QUERY_NAMES[0])
+            ))?
             .try_into_builder(self.params)
     }
 }
@@ -339,6 +385,17 @@ pub trait Builder {
     ) -> Result<DynSymbol, Diagnostic>;
 }
 
+impl<T: AstBuilder + Queryable> Builder for T {
+    fn builder<'a>(
+        params: &'a mut BuilderParams<'a>,
+        range: Option<Range<usize>>,
+    ) -> Result<DynSymbol, Diagnostic> {
+        StackBuilder::<T>::new(params)
+            .build(&range)
+            .to_dyn_symbol(&range)
+    }
+}
+
 pub trait StaticBuilder<
     T: AstBuilder + Queryable,
     Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
@@ -362,61 +419,5 @@ where
         StackBuilder::<T>::new(builder_params)
             .build(&range)
             .to_static_symbol(&range)
-    }
-}
-
-impl<T: AstBuilder + Queryable> Builder for T {
-    fn builder<'a>(
-        params: &'a mut BuilderParams<'a>,
-        range: Option<Range<usize>>,
-    ) -> Result<DynSymbol, Diagnostic> {
-        StackBuilder::<T>::new(params)
-            .build(&range)
-            .to_dyn_symbol(&range)
-    }
-}
-
-pub fn swap_ast<'a>(
-    old_ast: Option<&DynSymbol>,
-    edit_ranges: &Vec<(&TextDocumentContentChangeEvent, bool)>,
-    builder_params: &'a mut BuilderParams<'a>,
-) {
-    let root = match old_ast.as_ref() {
-        Some(ast) => ast,
-        None => return,
-    };
-
-    let doc = builder_params.doc;
-
-    for (edit, is_ws) in edit_ranges.iter() {
-        let edit_range = edit.range.unwrap();
-
-        let range_offset = doc.offset_at(edit_range.start) as usize;
-        let start_byte = range_offset;
-        let old_end_byte = range_offset + edit.range_length.unwrap() as usize;
-        let new_end_byte = range_offset + edit.text.len();
-
-        let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
-        if is_noop {
-            continue;
-        }
-
-        root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
-
-        if !is_ws {
-            if let ControlFlow::Break(Err(err)) = root.write().dyn_swap(
-                start_byte,
-                (new_end_byte - old_end_byte) as isize,
-                builder_params,
-            ) {
-                builder_params.diagnostics.push(err);
-            };
-        }
-
-        eprintln!(
-            "Edit: Shift at {:?} of {:?}",
-            start_byte,
-            (new_end_byte - old_end_byte) as isize,
-        );
     }
 }

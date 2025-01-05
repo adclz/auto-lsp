@@ -41,10 +41,13 @@ impl Session {
 
         let source_code = source_code.as_bytes();
 
-        cst = cst_parser.try_parse(&source_code, None).unwrap().clone();
+        cst = cst_parser.try_parse(&source_code, None).unwrap();
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
         let arc_uri = Arc::new(uri.clone());
+
+        let mut unsolved_checks = vec![];
+        let mut unsolved_references = vec![];
 
         let ast_build = ast_builder(
             &mut BuilderParams {
@@ -54,7 +57,8 @@ impl Session {
                 query: &cst_parser.queries.outline,
                 root_node: cst.root_node(),
                 url: arc_uri.clone(),
-                checks: &mut vec![],
+                unsolved_checks: &mut unsolved_checks,
+                unsolved_references: &mut unsolved_references,
             },
             None,
         );
@@ -66,6 +70,9 @@ impl Session {
                 None
             }
         };
+
+        eprintln!("checks remaining {:?}", unsolved_checks.len());
+        eprintln!("references remaining {:?}", unsolved_references.len());
         self.workspaces.insert(
             uri.to_owned(),
             Workspace {
@@ -73,7 +80,8 @@ impl Session {
                 cst_parser,
                 document,
                 errors,
-                check: vec![],
+                unsolved_checks,
+                unsolved_references,
                 cst,
                 ast,
             },

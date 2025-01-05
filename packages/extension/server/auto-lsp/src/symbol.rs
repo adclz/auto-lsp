@@ -118,7 +118,12 @@ impl SymbolData for AstSymbolData {
     fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
         match self.comment {
             Some(ref range) => {
-                Some(std::str::from_utf8(&source_code[range.start..range.end]).unwrap())
+                // Check if the range is within bounds and valid
+                if range.start <= range.end && range.end <= source_code.len() {
+                    std::str::from_utf8(&source_code[range.start..range.end]).ok()
+                } else {
+                    None
+                }
             }
             None => None,
         }
@@ -153,9 +158,14 @@ pub trait AstSymbol:
     fn get_data(&self) -> &AstSymbolData;
     fn get_mut_data(&mut self) -> &mut AstSymbolData;
 
-    fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
+    fn get_text<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
         let range = self.get_data().get_range();
-        std::str::from_utf8(&source_code[range.start..range.end]).unwrap()
+        // Check if the range is within bounds and valid
+        if range.start <= range.end && range.end <= source_code.len() {
+            std::str::from_utf8(&source_code[range.start..range.end]).ok()
+        } else {
+            None
+        }
     }
 
     fn get_parent_scope(&self) -> Option<DynSymbol> {
@@ -276,11 +286,14 @@ impl<T: AstSymbol> Symbol<T> {
         Self(Arc::new(RwLock::new(symbol)))
     }
 
-    pub fn new_and_check(symbol: T, check: &mut Vec<DynSymbol>) -> Self {
+    pub fn new_and_check(symbol: T, params: &mut BuilderParams) -> Self {
         let arc = Symbol::new(symbol);
         let read = arc.read();
-        if read.is_accessor() || read.must_check() {
-            check.push(arc.to_dyn());
+        if read.is_accessor() {
+            params.unsolved_references.push(arc.to_weak());
+        }
+        if read.must_check() {
+            params.unsolved_checks.push(arc.to_weak());
         }
         drop(read);
         arc.write().inject_parent(arc.to_weak());
@@ -639,7 +652,7 @@ where
         builder_params: &'a mut BuilderParams,
     ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
         eprintln!("swapping in symbol");
-        *self = match Y::static_build(builder_params, Some(std::ops::Range { start, end: start })) {
+        *self = match Y::static_build(builder_params, Some(self.get_range())) {
             Ok(symbol) => symbol,
             Err(err) => return ControlFlow::Break(Err(err)),
         };
@@ -663,16 +676,15 @@ where
         let read = self.read();
         match read.is_inside_offset(start) {
             true => {
+                let range = read.get_range();
                 drop(read);
-                self.write().dyn_swap(start, offset, builder_params)?;
-                *self = Symbol::new(
-                    match Y::static_build(
-                        builder_params,
-                        Some(std::ops::Range { start, end: start }),
-                    ) {
+                //self.write().dyn_swap(start, offset, builder_params)?;
+                *self = Symbol::new_and_check(
+                    match Y::static_build(builder_params, Some(range)) {
                         Ok(symbol) => symbol,
                         Err(err) => return ControlFlow::Break(Err(err)),
                     },
+                    builder_params,
                 );
                 ControlFlow::Break(Ok(self.read().get_range().start))
             }
@@ -700,7 +712,6 @@ where
                 ControlFlow::Continue(()) => continue,
             }
         }
-
         ControlFlow::Continue(())
     }
 }

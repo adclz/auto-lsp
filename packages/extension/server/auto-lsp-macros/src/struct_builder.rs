@@ -370,16 +370,16 @@ impl<'a> StructBuilder<'a> {
                         .ok_or(auto_lsp::builder_error!(
                             builder_range,
                             format!(
-                                "Could not cast field {:?} in {:?}",
+                                "Invalid {:?} for {:?}",
                                 stringify!(#name), stringify!(#input_name)
                             )
                         ))?
-                        .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?, params.checks);
+                        .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?, params);
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(params.checks);
+                            .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(params);
                     }
             })
             .stage()

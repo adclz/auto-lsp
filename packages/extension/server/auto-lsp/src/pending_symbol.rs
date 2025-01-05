@@ -160,10 +160,7 @@ where
             .downcast_ref::<T>()
             .ok_or(builder_error!(
                 field_range,
-                format!(
-                    "Could not cast field {:?} into {:?}",
-                    field_name, input_name
-                )
+                format!("Invalid {:?} for {:?}", field_name, input_name)
             ))?
             .try_into_builder(check)
     }
@@ -215,23 +212,23 @@ where
 pub trait Finalize<T: AstSymbol> {
     type Output;
 
-    fn finalize(self, checks: &mut Vec<DynSymbol>) -> Self::Output;
+    fn finalize(self, params: &mut BuilderParams) -> Self::Output;
 }
 
 impl<T: AstSymbol> Finalize<T> for T {
     type Output = Symbol<T>;
 
-    fn finalize(self, checks: &mut Vec<DynSymbol>) -> Self::Output {
-        Symbol::new_and_check(self, checks)
+    fn finalize(self, params: &mut BuilderParams) -> Self::Output {
+        Symbol::new_and_check(self, params)
     }
 }
 
 impl<T: AstSymbol> Finalize<T> for Vec<T> {
     type Output = Vec<Symbol<T>>;
 
-    fn finalize(self, checks: &mut Vec<DynSymbol>) -> Self::Output {
+    fn finalize(self, params: &mut BuilderParams) -> Self::Output {
         self.into_iter()
-            .map(|f| Symbol::new_and_check(f, checks))
+            .map(|f| Symbol::new_and_check(f, params))
             .collect()
     }
 }

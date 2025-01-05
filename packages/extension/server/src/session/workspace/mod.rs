@@ -1,4 +1,7 @@
-use auto_lsp::{builders::BuilderFn, symbol::DynSymbol};
+use auto_lsp::{
+    builders::BuilderFn,
+    symbol::{DynSymbol, WeakSymbol},
+};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Diagnostic;
 use tree_sitter::Tree;
@@ -14,8 +17,9 @@ pub struct Workspace {
     pub cst_parser: &'static CstParser,
     pub ast_builder: &'static BuilderFn,
     pub document: FullTextDocument,
-    pub check: Vec<DynSymbol>,
     pub errors: Vec<Diagnostic>,
     pub cst: Tree,
     pub ast: Option<DynSymbol>,
+    pub unsolved_checks: Vec<WeakSymbol>,
+    pub unsolved_references: Vec<WeakSymbol>,
 }
