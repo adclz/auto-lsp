@@ -693,6 +693,26 @@ where
     }
 }
 
+impl<T, Y> StaticSwap<T, Y> for Option<Symbol<Y>>
+where
+    T: AstBuilder + Queryable,
+    Y: AstSymbol
+        + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
+        + StaticBuilder<T, Y>,
+{
+    fn to_swap<'a>(
+        &mut self,
+        start: usize,
+        offset: isize,
+        builder_params: &'a mut BuilderParams,
+    ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
+        match self {
+            Some(symbol) => symbol.to_swap(start, offset, builder_params),
+            None => ControlFlow::Continue(()),
+        }
+    }
+}
+
 impl<T, Y> StaticSwap<T, Y> for Vec<Symbol<Y>>
 where
     T: AstBuilder + Queryable,

@@ -223,6 +223,17 @@ impl<T: AstSymbol> Finalize<T> for T {
     }
 }
 
+impl<T: AstSymbol> Finalize<T> for Option<T> {
+    type Output = Option<Symbol<T>>;
+
+    fn finalize(self, params: &mut BuilderParams) -> Self::Output {
+        match self {
+            Some(symbol) => Some(Symbol::new_and_check(symbol, params)),
+            None => None,
+        }
+    }
+}
+
 impl<T: AstSymbol> Finalize<T> for Vec<T> {
     type Output = Vec<Symbol<T>>;
 
