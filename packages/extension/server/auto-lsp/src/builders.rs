@@ -156,14 +156,7 @@ where
     T: AstBuilder + Queryable,
 {
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
-        let mut node = T::new(
-            self.params.url.clone(),
-            self.params.query,
-            capture_index,
-            capture.node.range(),
-            capture.node.start_position(),
-            capture.node.end_position(),
-        );
+        let mut node = T::new(self.params.url.clone(), &self.params.query, &capture);
 
         /*eprintln!(
             "Creating root node {:?}",

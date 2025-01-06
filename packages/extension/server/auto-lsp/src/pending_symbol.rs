@@ -17,11 +17,8 @@ use super::symbol::{AstSymbol, DynSymbol, Symbol};
 pub trait AstBuilder: Downcast {
     fn new(
         url: Arc<Url>,
-        _query: &tree_sitter::Query,
-        query_index: usize,
-        range: tree_sitter::Range,
-        start_position: tree_sitter::Point,
-        end_position: tree_sitter::Point,
+        query: &tree_sitter::Query,
+        capture: &tree_sitter::QueryCapture,
     ) -> Option<Self>
     where
         Self: Sized;
@@ -248,14 +245,11 @@ pub trait Constructor<T: AstBuilder + Queryable> {
     fn new(
         url: Arc<Url>,
         query: &tree_sitter::Query,
-        query_index: usize,
-        range: tree_sitter::Range,
-        start_position: tree_sitter::Point,
-        end_position: tree_sitter::Point,
+        capture: &tree_sitter::QueryCapture,
     ) -> Option<T> {
-        let query_name = query.capture_names()[query_index];
+        let query_name = query.capture_names()[capture.index as usize];
         if T::QUERY_NAMES.contains(&query_name) {
-            T::new(url, query, query_index, range, start_position, end_position)
+            T::new(url, query, capture)
         } else {
             None
         }

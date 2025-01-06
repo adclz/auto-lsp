@@ -296,13 +296,10 @@ impl Default for Paths {
                     new: structx! {
                         sig: quote! { fn new(
                             url: std::sync::Arc<lsp_types::Url>,
-                            _query: &tree_sitter::Query,
-                            query_index: usize,
-                            range: tree_sitter::Range,
-                            start_position: tree_sitter::Point,
-                            end_position: tree_sitter::Point,
+                            query: &tree_sitter::Query,
+                            capture: &tree_sitter::QueryCapture,
                         ) -> Option<Self> },
-                        variant: quote! { new(url, _query, qury_index, range, start_position, end_position) },
+                        variant: quote! { new(url, query, capture) },
                     },
                     query_binder: structx! {
                         sig: quote! { fn query_binder(

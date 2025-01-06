@@ -241,8 +241,6 @@ impl<'a> StructBuilder<'a> {
             .add(quote! { url: std::sync::Arc<lsp_types::Url> })
             .add(quote! { query_index: usize })
             .add(quote! { range: std::ops::Range<usize> })
-            .add(quote! { start_position: tree_sitter::Point })
-            .add(quote! { end_position: tree_sitter::Point })
             .add_iter(&self.fields, |ty, _, name, _, _| match ty {
                 FieldType::Vec => quote! { #name: Vec<#pending_symbol> },
                 _ => quote! { #name: #maybe_pending_symbol },
@@ -265,15 +263,14 @@ impl<'a> StructBuilder<'a> {
 
         builder.add(quote! {
           #sig {
+            let range = capture.node.range();
             Some(Self {
                 url,
-                query_index,
+                query_index: capture.index as usize,
                 range: std::ops::Range {
                     start: range.start_byte,
                     end: range.end_byte,
                 },
-                start_position,
-                end_position,
                 #fields
             })
           }
@@ -310,7 +307,7 @@ impl<'a> StructBuilder<'a> {
             |_, _, _, _type, builder| {
                 quote! {
                     if #_type::QUERY_NAMES.contains(&query_name)  {
-                        match #builder::new(url, query, capture.index as usize, capture.node.range(), capture.node.start_position(), capture.node.end_position()) {
+                        match #builder::new(url, query, capture) {
                             Some(builder) => return #maybe_pending_symbol::new(builder),
                             None => return #maybe_pending_symbol::none()
                         }

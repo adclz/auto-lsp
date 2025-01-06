@@ -402,13 +402,16 @@ impl<'a> EnumBuilder<'a> {
         let variant_types_names = &self.fields.variant_types_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
+        let sig = &PATHS.symbol_builder_trait.methods.new.sig;
+        let variant = &PATHS.symbol_builder_trait.methods.new.variant;
+
         builder.add(quote! {
-            fn new(url: std::sync::Arc<lsp_types::Url>, query: &tree_sitter::Query, query_index: usize, range: tree_sitter::Range, start_position: tree_sitter::Point, end_position: tree_sitter::Point) -> Option<Self> {
+            #sig {
                 use #queryable;
-                let query_name = query.capture_names()[query_index as usize];
+                let query_name = query.capture_names()[capture.index as usize];
                 #(
                     if #variant_types_names::QUERY_NAMES.contains(&query_name) {
-                        match #variant_builder_names::new(url, query, query_index, range, start_position, end_position) {
+                        match #variant_builder_names::#variant {
                             Some(builder) => return Some(Self {
                                 unique_field: #pending_symbol::new(builder),
                             }),
