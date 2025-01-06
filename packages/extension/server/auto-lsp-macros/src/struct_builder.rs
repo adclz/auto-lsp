@@ -329,12 +329,11 @@ impl<'a> StructBuilder<'a> {
             &PATHS.symbol_builder_trait.methods.add.sig,
             Some(quote! {
                 let query_name = query.capture_names()[node.get_query_index()];
-                let range = self.get_lsp_range(params.doc);
                 let mut node = node;
              }),
             |_, _, name, field_type, _| {
                 quote! {
-                    node = match self.#name.add::<#field_type>(query_name, node, range, stringify!(#input_name), stringify!(#field_type))? {
+                    node = match self.#name.add::<#field_type>(query_name, node, params, stringify!(#input_name), stringify!(#field_type))? {
                         Some(a) => a,
                         None => return Ok(()),
                     };

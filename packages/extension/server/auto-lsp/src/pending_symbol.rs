@@ -267,7 +267,7 @@ pub trait AddSymbol {
         &mut self,
         query_name: &str,
         node: PendingSymbol,
-        range: lsp_types::Range,
+        params: &mut BuilderParams,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
@@ -278,7 +278,7 @@ impl AddSymbol for MaybePendingSymbol {
         &mut self,
         query_name: &str,
         node: PendingSymbol,
-        range: lsp_types::Range,
+        params: &mut BuilderParams,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
@@ -286,11 +286,8 @@ impl AddSymbol for MaybePendingSymbol {
             match self.0 {
                 Some(_) => {
                     return Err(builder_error!(
-                        range,
-                        format!(
-                            "Field {:?} already set in {:?} for {:?}",
-                            field_name, parent_name, query_name
-                        )
+                        node.get_rc().borrow().get_lsp_range(params.doc),
+                        format!("{:?} already set in {:?}", field_name, parent_name)
                     ))
                 }
                 None => {
@@ -308,7 +305,7 @@ impl AddSymbol for Vec<PendingSymbol> {
         &mut self,
         query_name: &str,
         node: PendingSymbol,
-        _range: lsp_types::Range,
+        _params: &mut BuilderParams,
         _parent_name: &str,
         _field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
