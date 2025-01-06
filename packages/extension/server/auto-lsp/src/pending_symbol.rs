@@ -5,10 +5,9 @@ use std::cell::RefCell;
 use std::fmt::Formatter;
 use std::rc::Rc;
 use std::sync::Arc;
-use tree_sitter::Query;
 
 use crate::builder_error;
-use crate::builders::BuilderParams;
+use crate::builders::{tree_sitter_range_to_lsp_range, BuilderParams};
 
 use super::convert::{TryFromBuilder, TryIntoBuilder};
 use super::queryable::Queryable;
@@ -23,20 +22,11 @@ pub trait AstBuilder: Downcast {
     where
         Self: Sized;
 
-    fn query_binder(
-        &self,
-        url: Arc<Url>,
-        capture: &tree_sitter::QueryCapture,
-        query: &tree_sitter::Query,
-    ) -> MaybePendingSymbol;
-
     fn add(
         &mut self,
-        query: &Query,
-        node: PendingSymbol,
-        source_code: &[u8],
+        capture: &tree_sitter::QueryCapture,
         params: &mut BuilderParams,
-    ) -> Result<(), Diagnostic>;
+    ) -> Result<Option<PendingSymbol>, Diagnostic>;
 
     fn try_to_dyn_symbol(
         &self,
@@ -257,56 +247,103 @@ pub trait Constructor<T: AstBuilder + Queryable> {
 }
 
 pub trait AddSymbol {
-    fn add<Y: Queryable>(
+    fn add<Y: AstBuilder + Queryable>(
         &mut self,
-        query_name: &str,
-        node: PendingSymbol,
+        capture: &tree_sitter::QueryCapture,
         params: &mut BuilderParams,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
 }
 
-impl AddSymbol for MaybePendingSymbol {
-    fn add<Y: Queryable>(
+impl AddSymbol for PendingSymbol {
+    fn add<Y: AstBuilder + Queryable>(
         &mut self,
-        query_name: &str,
-        node: PendingSymbol,
+        capture: &tree_sitter::QueryCapture,
         params: &mut BuilderParams,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
-        if Y::QUERY_NAMES.contains(&query_name) {
-            match self.0 {
-                Some(_) => {
-                    return Err(builder_error!(
-                        node.get_rc().borrow().get_lsp_range(params.doc),
-                        format!("{:?} already set in {:?}", field_name, parent_name)
-                    ))
+        let name = params.query.capture_names()[capture.index as usize];
+        if Y::QUERY_NAMES.contains(&name) {
+            match Y::new(params.url.clone(), params.query, capture) {
+                Some(node) => {
+                    let node = PendingSymbol::new(node);
+                    *self = node.clone();
+                    return Ok(None);
                 }
                 None => {
-                    self.0 = Some(node);
-                    return Ok(None);
+                    return Err(builder_error!(
+                        tree_sitter_range_to_lsp_range(&capture.node.range()),
+                        format!("Invalid {:?} for {:?}", field_name, parent_name)
+                    ))
                 }
             }
         }
-        Ok(Some(node))
+        Ok(None)
+    }
+}
+
+impl AddSymbol for MaybePendingSymbol {
+    fn add<Y: AstBuilder + Queryable>(
+        &mut self,
+        capture: &tree_sitter::QueryCapture,
+        params: &mut BuilderParams,
+        parent_name: &str,
+        field_name: &str,
+    ) -> Result<Option<PendingSymbol>, Diagnostic> {
+        let name = params.query.capture_names()[capture.index as usize];
+        if Y::QUERY_NAMES.contains(&name) {
+            match self.0 {
+                Some(_) => {
+                    return Err(builder_error!(
+                        tree_sitter_range_to_lsp_range(&capture.node.range()),
+                        format!("{:?} already set in {:?}", field_name, parent_name)
+                    ));
+                }
+                None => match Y::new(params.url.clone(), params.query, capture) {
+                    Some(node) => {
+                        self.0 = Some(PendingSymbol::new(node));
+                        return Ok(self.0.clone());
+                    }
+                    None => {
+                        return Err(builder_error!(
+                            tree_sitter_range_to_lsp_range(&capture.node.range()),
+                            format!("Invalid {:?} for {:?}", field_name, parent_name)
+                        ))
+                    }
+                },
+            }
+        }
+        Ok(None)
     }
 }
 
 impl AddSymbol for Vec<PendingSymbol> {
-    fn add<Y: Queryable>(
+    fn add<Y: AstBuilder + Queryable>(
         &mut self,
-        query_name: &str,
-        node: PendingSymbol,
-        _params: &mut BuilderParams,
-        _parent_name: &str,
-        _field_name: &str,
+        capture: &tree_sitter::QueryCapture,
+        params: &mut BuilderParams,
+        parent_name: &str,
+        field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
-        if Y::QUERY_NAMES.contains(&query_name) {
-            self.push(node);
-            return Ok(None);
+        let name = params.query.capture_names()[capture.index as usize];
+
+        if Y::QUERY_NAMES.contains(&name) {
+            match Y::new(params.url.clone(), params.query, capture) {
+                Some(node) => {
+                    let node = PendingSymbol::new(node);
+                    self.push(node.clone());
+                    return Ok(Some(node));
+                }
+                None => {
+                    return Err(builder_error!(
+                        tree_sitter_range_to_lsp_range(&capture.node.range()),
+                        format!("Invalid {:?} for {:?}", field_name, parent_name)
+                    ))
+                }
+            }
         }
-        Ok(Some(node))
+        Ok(None)
     }
 }

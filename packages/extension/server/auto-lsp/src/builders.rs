@@ -11,7 +11,7 @@ use std::ops::{ControlFlow, Range};
 use std::sync::Arc;
 use std::vec;
 use streaming_iterator::StreamingIterator;
-use tree_sitter::{Query, QueryCapture};
+use tree_sitter::QueryCapture;
 
 #[macro_export]
 macro_rules! builder_error {
@@ -179,40 +179,22 @@ where
         }
     }
 
-    fn create_child_node(
-        &mut self,
-        parent: &PendingSymbol,
-        url: Arc<Url>,
-        query: &Query,
-        capture: &QueryCapture,
-        capture_index: usize,
-    ) {
-        let node = parent
-            .get_rc()
-            .borrow()
-            .query_binder(url.clone(), &capture, &query);
-
-        match node.as_ref() {
-            Some(node) => {
-                if let Err(e) = parent.get_rc().borrow_mut().add(
-                    &query,
-                    node.clone(),
-                    self.params.doc.get_content(None).as_bytes(),
-                    self.params,
-                ) {
-                    self.params.diagnostics.push(e);
-                    return;
-                };
-                self.stack.push(parent.clone());
-                self.stack.push(node.clone());
+    fn create_child_node(&mut self, parent: &PendingSymbol, capture: &QueryCapture) {
+        match parent.get_rc().borrow_mut().add(&capture, self.params) {
+            Err(e) => {
+                self.params.diagnostics.push(e);
             }
-            None => self.params.diagnostics.push(builder_warning!(
+            Ok(None) => self.params.diagnostics.push(builder_warning!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
                     "Unknown query {:?}",
-                    self.params.query.capture_names()[capture_index as usize],
+                    self.params.query.capture_names()[capture.index as usize],
                 )
             )),
+            Ok(Some(node)) => {
+                self.stack.push(parent.clone());
+                self.stack.push(node.clone());
+            }
         };
     }
 
@@ -271,13 +253,7 @@ where
                             &p.get_rc().borrow().get_range(),
                             &capture.node.range(),
                         ) {
-                            self.create_child_node(
-                                p,
-                                self.params.url.clone(),
-                                &self.params.query,
-                                &capture,
-                                capture_index,
-                            );
+                            self.create_child_node(p, &capture);
                             break;
                         }
                     }
@@ -351,7 +327,7 @@ fn intersecting_ranges(range1: &std::ops::Range<usize>, range2: &tree_sitter::Ra
     range1.start <= range2.start_byte && range1.end >= range2.end_byte
 }
 
-fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Range {
+pub fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::Range {
     let start = range.start_point;
     let end = range.end_point;
     lsp_types::Range {

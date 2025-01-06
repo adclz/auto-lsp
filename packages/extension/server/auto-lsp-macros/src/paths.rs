@@ -52,10 +52,6 @@ pub struct Paths {
                 sig: TokenStream,
                 variant: TokenStream,
             },
-            query_binder: Structx! {
-                sig: TokenStream,
-                variant: TokenStream,
-            },
             add: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
@@ -301,24 +297,13 @@ impl Default for Paths {
                         ) -> Option<Self> },
                         variant: quote! { new(url, query, capture) },
                     },
-                    query_binder: structx! {
-                        sig: quote! { fn query_binder(
-                            &self,
-                            url: std::sync::Arc<lsp_types::Url>,
-                            capture: &tree_sitter::QueryCapture,
-                            query: &tree_sitter::Query,
-                        ) -> auto_lsp::pending_symbol::MaybePendingSymbol },
-                        variant: quote! { get_data(url, capture, query) },
-                    },
                     add: structx! {
                         sig: quote! { fn add(
                             &mut self,
-                            query: &tree_sitter::Query,
-                            node: auto_lsp::pending_symbol::PendingSymbol,
-                            source_code: &[u8],
+                            capture: &tree_sitter::QueryCapture,
                             params: &mut auto_lsp::builders::BuilderParams,
-                        ) -> Result<(), lsp_types::Diagnostic> },
-                        variant: quote! { add(query, node, source_code, params) },
+                        ) -> Result<Option<auto_lsp::pending_symbol::PendingSymbol>, lsp_types::Diagnostic> },
+                        variant: quote! { add(capture, params) },
                     },
                     try_to_dyn_symbol: structx! {
                         sig: quote! { fn try_to_dyn_symbol(

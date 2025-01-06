@@ -1,6 +1,6 @@
 use crate::{
-    utilities::extract_fields::StructFields,
-    Features, ReferenceOrSymbolFeatures, StructHelpers, PATHS,
+    utilities::extract_fields::StructFields, Features, ReferenceOrSymbolFeatures, StructHelpers,
+    PATHS,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
@@ -75,7 +75,6 @@ impl<'a> ToTokens for StructBuilder<'a> {
         });
         self.fn_try_to_dyn_symbol(&mut builder);
         self.fn_new(&mut builder);
-        self.fn_query_binder(&mut builder);
         self.fn_add(&mut builder);
         builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
 
@@ -93,7 +92,7 @@ impl<'a> StructBuilder<'a> {
         let symbol_data = &PATHS.symbol_data;
 
         builder
-            .add(quote! { pub _data: #symbol_data } )
+            .add(quote! { pub _data: #symbol_data })
             .add_iter(&self.fields, |ty, _, name, field_type, _| match ty {
                 FieldType::Normal => quote! {
                     pub #name: #symbol<#field_type>
@@ -186,7 +185,7 @@ impl<'a> StructBuilder<'a> {
             .collect::<Vec<_>>();
 
         let input_name = self.input_name;
-        
+
         builder
             .add(quote! { const CHECK: () = {
                 use #queryable;
@@ -293,55 +292,22 @@ impl<'a> StructBuilder<'a> {
         });
     }
 
-    fn fn_query_binder(&self, builder: &mut FieldBuilder) {
-        let queryable = &PATHS.queryable.path;
-        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
-
-        builder.add_fn_iter(
-            &self.fields,
-            &PATHS.symbol_builder_trait.methods.query_binder.sig,
-            Some(quote! { 
-                use #queryable;
-                let query_name = query.capture_names()[capture.index as usize];
-            }),
-            |_, _, _, _type, builder| {
-                quote! {
-                    if #_type::QUERY_NAMES.contains(&query_name)  {
-                        match #builder::new(url, query, capture) {
-                            Some(builder) => return #maybe_pending_symbol::new(builder),
-                            None => return #maybe_pending_symbol::none()
-                        }
-                    };
-                }
-            },
-            Some(quote! { #maybe_pending_symbol::none() }),
-        );
-    }
-
     fn fn_add(&self, builder: &mut FieldBuilder) {
         let input_name = &self.input_name;
-        
+
         builder.add_fn_iter(
             &self.fields,
             &PATHS.symbol_builder_trait.methods.add.sig,
             Some(quote! {
-                let query_name = query.capture_names()[node.get_query_index()];
-                let mut node = node;
              }),
-            |_, _, name, field_type, _| {
+            |_, _, name, field_type, builder| {
                 quote! {
-                    node = match self.#name.add::<#field_type>(query_name, node, params, stringify!(#input_name), stringify!(#field_type))? {
-                        Some(a) => a,
-                        None => return Ok(()),
+                    if let Some(node) =  self.#name.add::<#builder>(capture, params, stringify!(#input_name), stringify!(#field_type))? {
+                       return Ok(Some(node))
                     };
-
                 }
             },
-            Some(quote! { 
-                Err(auto_lsp::builder_error!(self.get_lsp_range(params.doc), 
-                    format!("Invalid query {:?} in {:?}", query_name, stringify!(#input_name)
-                )))
-            }),
+            Some(quote! { Ok(None) }),
         );
     }
 
@@ -401,11 +367,10 @@ impl<'a> StructBuilder<'a> {
     }
 }
 
-
 #[derive(Default)]
 pub struct FieldBuilder {
     staged: Vec<TokenStream>,
-    unstaged: Vec<TokenStream>
+    unstaged: Vec<TokenStream>,
 }
 
 pub enum FieldType {
@@ -496,7 +461,6 @@ impl FieldBuilder {
         self
     }
 
-
     pub fn stage_trait(&mut self, input_name: &Ident, trait_path: &Path) -> &mut Self {
         let drain = self.drain();
         let result = quote! {
@@ -524,64 +488,63 @@ impl FieldBuilder {
     where
         F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
     {
-            fields
-                .field_names
-                .iter()
-                .zip(fields.field_types_names.iter())
-                .zip(fields.field_builder_names.iter())
-                .map(|((field, field_type), field_builder)| {
-                    f(
-                        FieldType::Normal,
-                        &field.attr,
-                        &field.ident,
-                        &field_type,
-                        &field_builder,
-                    )
-                })
-                .collect::<Vec<_>>()
+        fields
+            .field_names
+            .iter()
+            .zip(fields.field_types_names.iter())
+            .zip(fields.field_builder_names.iter())
+            .map(|((field, field_type), field_builder)| {
+                f(
+                    FieldType::Normal,
+                    &field.attr,
+                    &field.ident,
+                    &field_type,
+                    &field_builder,
+                )
+            })
+            .collect::<Vec<_>>()
     }
 
     fn apply_opt<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
     where
         F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
     {
-            fields
-                .field_option_names
-                .iter()
-                .zip(fields.field_option_types_names.iter())
-                .zip(fields.field_option_builder_names.iter())
-                .map(|((field, field_type), field_builder)| {
-                    f(
-                        FieldType::Option,
-                        &field.attr,
-                        &field.ident,
-                        &field_type,
-                        &field_builder,
-                    )
-                })
-                .collect::<Vec<_>>()
+        fields
+            .field_option_names
+            .iter()
+            .zip(fields.field_option_types_names.iter())
+            .zip(fields.field_option_builder_names.iter())
+            .map(|((field, field_type), field_builder)| {
+                f(
+                    FieldType::Option,
+                    &field.attr,
+                    &field.ident,
+                    &field_type,
+                    &field_builder,
+                )
+            })
+            .collect::<Vec<_>>()
     }
 
     fn apply_vec<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
     where
         F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
     {
-            fields
-                .field_vec_names
-                .iter()
-                .zip(fields.field_vec_types_names.iter())
-                .zip(fields.field_vec_builder_names.iter())
-                .map(|((field, field_type), field_builder)| {
-                    f(
-                        FieldType::Vec,
-                        &field.attr,
-                        &field.ident,
-                        &field_type,
-                        &field_builder,
-                    )
-                })
-                .collect::<Vec<_>>()
-        
+        fields
+            .field_vec_names
+            .iter()
+            .zip(fields.field_vec_types_names.iter())
+            .zip(fields.field_vec_builder_names.iter())
+            .map(|((field, field_type), field_builder)| {
+                f(
+                    FieldType::Vec,
+                    &field.attr,
+                    &field.ident,
+                    &field_type,
+                    &field_builder,
+                )
+            })
+            .collect::<Vec<_>>()
     }
 }
 

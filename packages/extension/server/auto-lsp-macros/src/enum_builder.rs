@@ -69,7 +69,6 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         });
         self.fn_try_to_dyn_symbol(&mut builder);
         self.fn_new(&mut builder);
-        self.fn_query_binder(&mut builder);
         self.fn_add(&mut builder);
         builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
 
@@ -424,24 +423,13 @@ impl<'a> EnumBuilder<'a> {
         });
     }
 
-    fn fn_query_binder(&self, builder: &mut VariantBuilder) {
-        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
-
-        builder.add(quote! {
-            fn query_binder(&self, url: std::sync::Arc<lsp_types::Url>, capture: &tree_sitter::QueryCapture, query: &tree_sitter::Query) -> #maybe_pending_symbol {
-                self.unique_field.get_rc().borrow().query_binder(url, capture, query)
-            }
-        });
-    }
-
     fn fn_add(&self, builder: &mut VariantBuilder) {
-        let pending_symbol = &PATHS.pending_symbol;
-        let params = &PATHS.builder_params;
+        let sig = &PATHS.symbol_builder_trait.methods.add.sig;
+        let variant = &PATHS.symbol_builder_trait.methods.add.variant;
 
         builder.add(quote! {
-            fn add(&mut self, query: &tree_sitter::Query, node: #pending_symbol, source_code: &[u8], params: &mut #params) ->
-                Result<(), lsp_types::Diagnostic> {
-                    self.unique_field.get_rc().borrow_mut().add(query, node, source_code, params)
+            #sig {
+                self.unique_field.get_rc().borrow_mut().#variant
             }
         });
     }
