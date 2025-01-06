@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use auto_lsp::{builders::BuilderParams, workspace};
+use auto_lsp_core::{builders::BuilderParams, workspace};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Url;
 

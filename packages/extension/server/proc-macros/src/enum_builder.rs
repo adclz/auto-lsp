@@ -224,7 +224,7 @@ impl<'a> EnumBuilder<'a> {
                 use #queryable;
                 use #check_queryable;
                 let queries = constcat::concat_slices!([&str]: #(#concat),*);
-                auto_lsp::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+                auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
             }; })
             .stage_trait(&self.input_name, check_queryable);
 
@@ -458,7 +458,7 @@ impl<'a> EnumBuilder<'a> {
                             return Ok(Self::#variant_names(variant.try_into_builder(params)?));
                         };
                     )*
-                    Err(auto_lsp::builder_error!(
+                    Err(auto_lsp_core::builder_error!(
                         builder.unique_field.get_rc().borrow().get_lsp_range(params.doc),
                         format!("Failed to downcast builder to enum: {}", stringify!(#name))
                     ))

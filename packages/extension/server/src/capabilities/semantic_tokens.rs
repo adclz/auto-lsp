@@ -1,4 +1,4 @@
-use auto_lsp::{symbol::SemanticTokens, semantic_tokens::SemanticTokensBuilder};
+use auto_lsp_core::{symbol::SemanticTokens, semantic_tokens::SemanticTokensBuilder};
 
 use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 

@@ -1,4 +1,4 @@
-use auto_lsp::symbol::{AstSymbol, DocumentSymbols};
+use auto_lsp_core::symbol::{AstSymbol, DocumentSymbols};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
 use crate::session::Session;

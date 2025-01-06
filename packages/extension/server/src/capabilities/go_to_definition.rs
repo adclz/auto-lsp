@@ -1,6 +1,6 @@
 use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams};
 
-use auto_lsp::symbol::AstSymbol;
+use auto_lsp_core::symbol::AstSymbol;
 
 use crate::session::Session;
 

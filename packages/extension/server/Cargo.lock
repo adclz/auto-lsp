@@ -18,7 +18,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c042108f3ed77fd83760a5fd79b53be043192bb3b9dba91d8c574c0ada7850c8"
 
 [[package]]
-name = "auto-lsp"
+name = "auto-lsp-core"
 version = "0.1.0"
 dependencies = [
  "const-str",
@@ -35,7 +35,7 @@ dependencies = [
 name = "auto-lsp-macros"
 version = "0.1.0"
 dependencies = [
- "auto-lsp",
+ "auto-lsp-core",
  "constcat",
  "darling",
  "inwelling",
@@ -579,7 +579,7 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "auto-lsp",
+ "auto-lsp-core",
  "auto-lsp-macros",
  "constcat",
  "crossbeam-channel",

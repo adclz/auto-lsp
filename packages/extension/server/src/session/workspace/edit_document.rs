@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use auto_lsp::{builders::BuilderParams, symbol::SymbolData};
+use auto_lsp_core::{builders::BuilderParams, symbol::SymbolData};
 use lsp_types::{DidChangeTextDocumentParams, TextDocumentContentChangeEvent};
 
 use super::tree_sitter_extend::{

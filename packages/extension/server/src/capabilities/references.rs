@@ -1,4 +1,4 @@
-use auto_lsp::symbol::SymbolData;
+use auto_lsp_core::symbol::SymbolData;
 use lsp_types::{Location, ReferenceParams};
 
 use crate::session::Session;

@@ -1,6 +1,6 @@
 use lsp_types::{Hover, HoverParams};
 
-use auto_lsp::symbol::AstSymbol;
+use auto_lsp_core::symbol::AstSymbol;
 
 use crate::session::Session;
 

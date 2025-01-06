@@ -3,7 +3,7 @@ use std::error::Error;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
-use auto_lsp::builders::{Builder, BuilderFn};
+use auto_lsp_core::builders::{Builder, BuilderFn};
 use lsp_types::notification::DidOpenTextDocument;
 use lsp_types::request::{
     CodeLensRequest, Completion, DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest,

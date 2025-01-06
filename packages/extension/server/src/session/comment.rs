@@ -1,4 +1,4 @@
-use auto_lsp::{
+use auto_lsp_core::{
     symbol::{Locator, SymbolData},
     workspace,
 };

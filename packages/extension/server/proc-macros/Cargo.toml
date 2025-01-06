@@ -10,7 +10,7 @@ quote = "1.0"
 proc-macro2 = "1.0"
 paste = "1.0"
 structx = "0.1.11"
-auto-lsp = { path = "../auto-lsp" }
+auto-lsp-core = { path = "../core" }
 constcat = {workspace = true}
 
 [lib]

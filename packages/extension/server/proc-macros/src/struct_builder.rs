@@ -191,7 +191,7 @@ impl<'a> StructBuilder<'a> {
                 use #queryable;
                 use #check_queryable;
                 let queries = constcat::concat_slices!([&str]: #(#concat),*);
-                auto_lsp::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+                auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
             }; })
             .stage_trait(&self.input_name, check_queryable);
 
@@ -329,7 +329,7 @@ impl<'a> StructBuilder<'a> {
                     let #name = Symbol::new_and_check(builder
                         .#name
                         .as_ref()
-                        .ok_or(auto_lsp::builder_error!(
+                        .ok_or(auto_lsp_core::builder_error!(
                             builder_range,
                             format!(
                                 "Invalid {:?} for {:?}",
