@@ -1,11 +1,11 @@
 use std::error::Error;
 
-use server::session::InitOptions;
-use server::{
+use auto_lsp::session::InitOptions;
+use auto_lsp::{
     configure_parsers, create_session, define_semantic_token_modifiers, define_semantic_token_types,
 };
 
-use server::symbols::symbols::SourceFile;
+use auto_lsp::symbols::symbols::SourceFile;
 
 // List of semantic token types
 define_semantic_token_types![standard {

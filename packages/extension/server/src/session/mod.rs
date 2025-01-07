@@ -52,10 +52,10 @@ macro_rules! create_parser {
             .set_language(&LANGUAGE.into())
             .expect(&format!("Error loading {} parser", stringify!($parser)));
         let lang = parser.language().unwrap();
-        server::session::cst_parser::CstParser {
+        auto_lsp::session::cst_parser::CstParser {
             parser: RwLock::new(parser),
             language: lang.clone(),
-            queries: server::session::cst_parser::Queries {
+            queries: auto_lsp::session::cst_parser::Queries {
                 comments: tree_sitter::Query::new(&lang, COMMENTS_QUERY).unwrap(),
                 fold: tree_sitter::Query::new(&lang, FOLD_QUERY).unwrap(),
                 highlights: tree_sitter::Query::new(&lang, HIGHLIGHTS_QUERY).unwrap(),
@@ -68,12 +68,12 @@ macro_rules! create_parser {
 #[macro_export]
 macro_rules! configure_parsers {
     ($($extension: expr => { $language:ident, $builder:ident }),*) => {
-        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, server::session::Parsers>> =
+        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, auto_lsp::session::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
                 map.insert(
-                    $($extension, server::session::Parsers {
-                        cst_parser: server::create_parser!($language),
+                    $($extension, auto_lsp::session::Parsers {
+                        cst_parser: auto_lsp::create_parser!($language),
                         ast_parser: |params: &mut auto_lsp_core::builders::BuilderParams<'_>, range: Option<std::ops::Range<usize>>| {
                             use auto_lsp_core::builders::StaticBuilder;
                             Ok::<auto_lsp_core::symbol::DynSymbol, lsp_types::Diagnostic>(
