@@ -51,7 +51,7 @@ macro_rules! create_parser {
         parser
             .set_language(&LANGUAGE.into())
             .expect(&format!("Error loading {} parser", stringify!($parser)));
-        let lang = parser.language().unwrap();
+        let lang = tree_sitter::Language::new(LANGUAGE);
         auto_lsp::session::cst_parser::CstParser {
             parser: RwLock::new(parser),
             language: lang.clone(),

@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 auto-lsp-core = { path = "./core" }
 auto-lsp-macros = { path = "./proc-macros" }
-tree-sitter = "0.24.3"
+tree-sitter = "0.24.6"
 tree-sitter-iec61131-3-2 = { path = "./test/parser-iec-61131-3-2" }
 rayon = "1.10"
 lsp-server = "0.7.6"
