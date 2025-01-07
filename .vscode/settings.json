@@ -7,4 +7,8 @@
 	"git.branchProtection": [
 		"main"
 	],
+	"rust-analyzer.linkedProjects": [
+		"Cargo.toml",
+		"test/vscode-wasi-lsp/server/Cargo.toml"
+	],
 }

@@ -7,8 +7,5 @@
 			"label": "npm: build",
 			"path": "test/vscode-wasi-lsp"
 		}
-	],
-	"rust-analyzer.linkedProjects": [
-		"packages/extension/server/Cargo.toml"
-	],
+	]
 }

@@ -32,6 +32,7 @@ members = [
     "core",
     "proc-macros"
 ]
+exclude = ["test/vscode-wasi-lsp/server"]
 
 [workspace.dependencies]
 lsp-types = "0.94.1"
