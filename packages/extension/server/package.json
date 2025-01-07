@@ -6,7 +6,7 @@
 	"author": "Microsoft Corporation",
 	"license": "MIT",
 	"scripts": {
-		"build": "RUSTFLAGS=\"-C target-feature=+atomics\" CFLAGS=\"-Wno-implicit-function-declaration\" cargo +nightly rustc --release --target wasm32-wasip1-threads -Zbuild-std=panic_abort,std -- -Clink-arg=--initial-memory=10485760 -Clink-arg=--max-memory=10485760",
+		"build": "RUSTFLAGS=\"-C target-feature=+atomics\" CFLAGS=\"-Wno-implicit-function-declaration\" cargo +nightly rustc --bin server --release --target wasm32-wasip1-threads -Zbuild-std=panic_abort,std -- -Clink-arg=--initial-memory=10485760 -Clink-arg=--max-memory=10485760",
 		"test:wasm": "node ./bin/send.js | wasmtime --wasm-features=threads --wasi-modules=experimental-wasi-threads target/wasm32-wasi-preview1-threads/release/server.wasm"
 	}
 }

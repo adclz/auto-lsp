@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use auto_lsp_core::{builders::BuilderParams, workspace};
+use auto_lsp_core::builders::BuilderParams;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Url;
 
 use super::{tree_sitter_extend::tree_sitter_lexer::get_tree_sitter_errors, Workspace};
-use crate::{session::Session, AST_BUILDERS, CST_PARSERS};
+use crate::session::Session;
 
 impl Session {
     /// Add a new document to session workspaces
@@ -26,14 +26,14 @@ impl Session {
             }
         };
 
-        let cst_parser = CST_PARSERS
-            .get(extension)
+        let parsers = self
+            .init_options
+            .parsers
+            .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
-        let ast_builder = AST_BUILDERS.get(extension).ok_or(anyhow::format_err!(
-            "No AST builder available for {}",
-            extension
-        ))?;
+        let cst_parser = &parsers.cst_parser;
+        let ast_parser = parsers.ast_parser;
 
         let cst;
         let ast;
@@ -49,7 +49,7 @@ impl Session {
         let mut unsolved_checks = vec![];
         let mut unsolved_references = vec![];
 
-        let ast_build = ast_builder(
+        let ast_build = ast_parser(
             &mut BuilderParams {
                 doc: &document,
                 diagnostics: &mut errors,
@@ -76,8 +76,7 @@ impl Session {
         self.workspaces.insert(
             uri.to_owned(),
             Workspace {
-                ast_builder,
-                cst_parser,
+                parsers,
                 document,
                 errors,
                 unsolved_checks,

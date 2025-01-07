@@ -12,7 +12,7 @@ impl Session {
         let workspace = self.workspaces.get(uri).unwrap();
         let root_node = workspace.cst.root_node();
         let source = workspace.document.get_content(None);
-        let query = &workspace.cst_parser.queries.fold;
+        let query = &workspace.parsers.cst_parser.queries.fold;
 
         let mut query_cursor = tree_sitter::QueryCursor::new();
         let mut captures = query_cursor.captures(query, root_node, source.as_bytes());

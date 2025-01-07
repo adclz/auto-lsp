@@ -39,7 +39,7 @@ impl Session {
                     let word = &source_code[start..end];
 
                     let query = Query::new(
-                        &workspace.cst_parser.language,
+                        &workspace.parsers.cst_parser.language,
                         &format!("((identifier) @id (#match? @id \"^{}+\"))", word),
                     )
                     .unwrap();

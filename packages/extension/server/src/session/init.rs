@@ -4,8 +4,6 @@ use lsp_types::{InitializeParams, Url, WorkspaceFolder};
 use serde::Deserialize;
 use walkdir::WalkDir;
 
-use crate::CST_PARSERS;
-
 use super::Session;
 
 #[allow(non_snake_case, reason = "JSON")]
@@ -33,7 +31,7 @@ impl Session {
         // Check if extensions provided by clients are valid
 
         for (file_extension, parser) in &options.perFileParser {
-            if let false = CST_PARSERS.contains_key(parser.as_str()) {
+            if let false = self.init_options.parsers.contains_key(parser.as_str()) {
                 return Err(anyhow::format_err!(
                     "Error: Parser {} not found for file extension {}",
                     parser,
@@ -83,27 +81,4 @@ fn convert_workspace_folders_to_urls(
         });
     }
     roots
-}
-
-#[macro_export]
-macro_rules! create_parser {
-    ($parser: ident) => {{
-        use std::sync::RwLock;
-        use $parser::{COMMENTS_QUERY, FOLD_QUERY, HIGHLIGHTS_QUERY, LANGUAGE, OUTLINE_QUERY};
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&LANGUAGE.into())
-            .expect(&format!("Error loading {} parser", stringify!($parser)));
-        let lang = parser.language().unwrap();
-        crate::session::cst_parser::CstParser {
-            parser: RwLock::new(parser),
-            language: lang.clone(),
-            queries: crate::session::cst_parser::Queries {
-                comments: tree_sitter::Query::new(&lang, COMMENTS_QUERY).unwrap(),
-                fold: tree_sitter::Query::new(&lang, FOLD_QUERY).unwrap(),
-                highlights: tree_sitter::Query::new(&lang, HIGHLIGHTS_QUERY).unwrap(),
-                outline: tree_sitter::Query::new(&lang, OUTLINE_QUERY).unwrap(),
-            },
-        }
-    }};
 }

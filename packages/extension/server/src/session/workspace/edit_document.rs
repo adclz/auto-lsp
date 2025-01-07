@@ -6,7 +6,7 @@ use lsp_types::{DidChangeTextDocumentParams, TextDocumentContentChangeEvent};
 use super::tree_sitter_extend::{
     tree_sitter_edit::edit_tree, tree_sitter_lexer::get_tree_sitter_errors,
 };
-use crate::{Session, CST_PARSERS};
+use crate::Session;
 
 impl Session {
     pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
@@ -29,9 +29,13 @@ impl Session {
 
         let arc_uri = Arc::new(uri.clone());
 
-        let cst_parser = CST_PARSERS
-            .get(extension)
+        let parsers = self
+            .init_options
+            .parsers
+            .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
+
+        let cst_parser = &parsers.cst_parser;
 
         let edits: Vec<(&TextDocumentContentChangeEvent, bool)> = params
             .content_changes
@@ -125,8 +129,8 @@ impl Session {
             eprintln!("checks remaining {:?}", unsolved_checks.len());
             eprintln!("references remaining {:?}", unsolved_references.len());
         } else {
-            let b = workspace.ast_builder;
-            let ast_build = b(&mut builder_params, None);
+            let ast_parser = &workspace.parsers.ast_parser;
+            let ast_build = ast_parser(&mut builder_params, None);
 
             let workspace = self
                 .workspaces

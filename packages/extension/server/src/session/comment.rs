@@ -14,7 +14,7 @@ impl Session {
             .get(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let comments_query = &workspace.cst_parser.queries.comments;
+        let comments_query = &workspace.parsers.cst_parser.queries.comments;
 
         let source_code = workspace.document.get_content(None).as_bytes();
         let cst = &workspace.cst;
