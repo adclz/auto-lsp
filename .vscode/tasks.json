@@ -5,7 +5,10 @@
 			"type": "npm",
 			"script": "build",
 			"label": "npm: build",
-			"path": "packages/extension"
+			"path": "test/vscode-wasi-lsp"
 		}
-	]
+	],
+	"rust-analyzer.linkedProjects": [
+		"packages/extension/server/Cargo.toml"
+	],
 }

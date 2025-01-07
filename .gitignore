@@ -1,9 +1,10 @@
 .pnpm-store
 .idea
 v8-compile-cache-*
-pnpm-lock.yaml
+package-lock.json
 node_modules
 build
 out
 dist
+target
 .vscode-test-web

@@ -10,8 +10,8 @@
 
 ; Variables
 
-(function_var_decls) @variables.var
-(var_declarations) @variables.constant
+;(function_var_decls) @variables.var
+;(var_declarations) @variables.constant
 
 (input_declarations
     (input_declaration) @variable.input
@@ -24,6 +24,15 @@
 (var1_list
  (variable_name)
 ) @name
+
+
+; Accessors
+
+(symbolic_variable) @variable.symbolic
+
+; ST
+
+(assignment_statement) @stmt.assign
 
 ; Elementary Types
 

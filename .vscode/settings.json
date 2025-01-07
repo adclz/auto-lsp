@@ -7,7 +7,4 @@
 	"git.branchProtection": [
 		"main"
 	],
-	"rust-analyzer.linkedProjects": [
-		"packages/extension/server/Cargo.toml"
-	],
 }
