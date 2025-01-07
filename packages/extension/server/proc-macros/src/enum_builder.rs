@@ -67,7 +67,6 @@ impl<'a> ToTokens for EnumBuilder<'a> {
                 self.unique_field.get_rc().borrow().get_query_index()
             }
         });
-        self.fn_try_to_dyn_symbol(&mut builder);
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
         builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
@@ -376,22 +375,6 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add(quote! { pub unique_field: #pending_symbol })
             .stage_struct(&self.input_builder_name);
-    }
-
-    fn fn_try_to_dyn_symbol(&self, builder: &mut VariantBuilder) {
-        let dyn_symbol = &PATHS.dyn_symbol;
-        let sig = &PATHS.symbol_builder_trait.methods.try_to_dyn_symbol.sig;
-        let input_name = &self.input_name;
-        let try_from_builder = &PATHS.try_from_builder;
-
-        builder.add(quote! {
-            #sig {
-                use #try_from_builder;
-
-                let item = #input_name::try_from_builder(self, check)?;
-                Ok(#dyn_symbol::new(item))
-            }
-        });
     }
 
     fn fn_new(&self, builder: &mut VariantBuilder) {

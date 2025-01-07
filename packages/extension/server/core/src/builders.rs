@@ -292,18 +292,6 @@ where
         }
     }
 
-    pub fn to_dyn_symbol(
-        &mut self,
-        range: &Option<std::ops::Range<usize>>,
-    ) -> Result<DynSymbol, Diagnostic> {
-        let result = self.get_root_node(range)?;
-        let result = result.get_rc().borrow();
-
-        let item = result.try_to_dyn_symbol(self.params)?;
-        item.write().inject_parent(item.to_weak());
-        Ok(item)
-    }
-
     pub fn to_static_symbol<Y>(
         &mut self,
         range: &Option<std::ops::Range<usize>>,
@@ -339,29 +327,6 @@ pub fn tree_sitter_range_to_lsp_range(range: &tree_sitter::Range) -> lsp_types::
             line: end.row as u32,
             character: end.column as u32,
         },
-    }
-}
-
-pub type BuilderFn = for<'a> fn(
-    params: &'a mut BuilderParams<'a>,
-    range: Option<std::ops::Range<usize>>,
-) -> Result<DynSymbol, Diagnostic>;
-
-pub trait Builder {
-    fn builder<'a>(
-        params: &'a mut BuilderParams<'a>,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<DynSymbol, Diagnostic>;
-}
-
-impl<T: AstBuilder + Queryable> Builder for T {
-    fn builder<'a>(
-        params: &'a mut BuilderParams<'a>,
-        range: Option<Range<usize>>,
-    ) -> Result<DynSymbol, Diagnostic> {
-        StackBuilder::<T>::new(params)
-            .build(&range)
-            .to_dyn_symbol(&range)
     }
 }
 

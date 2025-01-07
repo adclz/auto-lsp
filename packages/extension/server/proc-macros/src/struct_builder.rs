@@ -73,7 +73,6 @@ impl<'a> ToTokens for StructBuilder<'a> {
                 self.query_index
             }
         });
-        self.fn_try_to_dyn_symbol(&mut builder);
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
         builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
@@ -273,22 +272,6 @@ impl<'a> StructBuilder<'a> {
                 #fields
             })
           }
-        });
-    }
-
-    fn fn_try_to_dyn_symbol(&self, builder: &mut FieldBuilder) {
-        let dyn_symbol = &PATHS.dyn_symbol;
-        let sig = &PATHS.symbol_builder_trait.methods.try_to_dyn_symbol.sig;
-        let input_name = &self.input_name;
-        let try_from_builder = &PATHS.try_from_builder;
-
-        builder.add(quote! {
-            #sig {
-                use #try_from_builder;
-
-                let item = #input_name::try_from_builder(self, check)?;
-                Ok(#dyn_symbol::new(item))
-            }
         });
     }
 

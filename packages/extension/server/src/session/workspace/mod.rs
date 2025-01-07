@@ -1,12 +1,9 @@
-use auto_lsp_core::{
-    builders::BuilderFn,
-    symbol::{DynSymbol, WeakSymbol},
-};
+use auto_lsp_core::symbol::{DynSymbol, WeakSymbol};
 use lsp_textdocument::FullTextDocument;
 use lsp_types::Diagnostic;
 use tree_sitter::Tree;
 
-use super::{cst_parser::CstParser, Parsers};
+use super::Parsers;
 
 pub mod add_document;
 pub mod delete_document;

@@ -5,7 +5,7 @@ use std::{
 
 use crate::session::dispatchers::{NotificationDispatcher, RequestDispatcher};
 use auto_lsp_core::{
-    builders::{BuilderFn, BuilderParams},
+    builders::BuilderParams,
     symbol::{AstSymbol, DynSymbol},
     workspace::WorkspaceContext,
 };

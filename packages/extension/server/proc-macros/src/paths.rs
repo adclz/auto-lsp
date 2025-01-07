@@ -56,10 +56,6 @@ pub struct Paths {
                 sig: TokenStream,
                 variant: TokenStream,
             },
-            try_to_dyn_symbol: Structx! {
-                sig: TokenStream,
-                variant: TokenStream,
-            },
             get_url: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
@@ -304,14 +300,6 @@ impl Default for Paths {
                             params: &mut auto_lsp_core::builders::BuilderParams,
                         ) -> Result<Option<auto_lsp_core::pending_symbol::PendingSymbol>, lsp_types::Diagnostic> },
                         variant: quote! { add(capture, params) },
-                    },
-                    try_to_dyn_symbol: structx! {
-                        sig: quote! { fn try_to_dyn_symbol(
-                            &self,
-                            check: &mut auto_lsp_core::builders:: BuilderParams,
-                        ) -> Result<auto_lsp_core::symbol::DynSymbol, lsp_types::Diagnostic>
-                        },
-                        variant: quote! { try_to_dyn_symbol(check) }
                     },
                     get_url: structx! {
                         sig: quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },

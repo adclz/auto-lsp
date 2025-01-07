@@ -11,7 +11,7 @@ use crate::builders::{tree_sitter_range_to_lsp_range, BuilderParams};
 
 use super::convert::{TryFromBuilder, TryIntoBuilder};
 use super::queryable::Queryable;
-use super::symbol::{AstSymbol, DynSymbol, Symbol};
+use super::symbol::{AstSymbol, Symbol};
 
 pub trait AstBuilder: Downcast {
     fn new(
@@ -27,11 +27,6 @@ pub trait AstBuilder: Downcast {
         capture: &tree_sitter::QueryCapture,
         params: &mut BuilderParams,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
-
-    fn try_to_dyn_symbol(
-        &self,
-        check: &mut BuilderParams,
-    ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
     fn get_url(&self) -> Arc<Url>;
 
