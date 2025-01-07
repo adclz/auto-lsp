@@ -50,12 +50,6 @@ pub trait AstBuilder: Downcast {
     }
 }
 
-impl std::fmt::Debug for dyn AstBuilder {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "At - {:?}", self.get_range())
-    }
-}
-
 impl_downcast!(AstBuilder);
 
 #[derive(Clone)]
