@@ -1,15 +1,15 @@
 use super::super::common::name::{Name, NameBuilder};
-use auto_lsp_core::symbol::*;
-use auto_lsp_core::pending_symbol::*;
-use auto_lsp_core::find::Finder;
-use auto_lsp_macros::seq;
-use lsp_types::Diagnostic;
+use auto_lsp::auto_lsp_core::symbol::*;
+use auto_lsp::auto_lsp_core::pending_symbol::*;
+use auto_lsp::auto_lsp_core::find::Finder;
+use auto_lsp::auto_lsp_macros::seq;
+use auto_lsp::lsp_types::Diagnostic;
 
 #[seq(query_name = "function", kind(symbol(
     lsp_document_symbols( 
         code_gen(
             name = self::name,
-            kind = lsp_types::SymbolKind::FUNCTION,
+            kind = auto_lsp::lsp_types::SymbolKind::FUNCTION,
             childrens(self::input_variables, self::output_variables)
         )
     ),
@@ -35,7 +35,7 @@ impl Scope for Function {
     lsp_document_symbols(
         code_gen(
             name = self::name,
-            kind = lsp_types::SymbolKind::VARIABLE,
+            kind = auto_lsp::lsp_types::SymbolKind::VARIABLE,
         )
     ),
     lsp_inlay_hints(code_gen(query = true)),
@@ -48,7 +48,7 @@ pub struct InputVariable {
     lsp_document_symbols(
         code_gen(
             name = self::name,
-            kind = lsp_types::SymbolKind::VARIABLE,
+            kind = auto_lsp::lsp_types::SymbolKind::VARIABLE,
         )
     ),
     lsp_inlay_hints(code_gen(query = true)),
@@ -75,7 +75,7 @@ pub struct VariableAccess {}
 impl Accessor for VariableAccess {
     fn find(
         &self,
-        doc: &lsp_textdocument::FullTextDocument,
+        doc: &auto_lsp::lsp_textdocument::FullTextDocument,
     ) -> Result<Option<DynSymbol>, Diagnostic> {
         if let Some(node) = self.find_in_file(doc) {
             return Ok(Some(node))

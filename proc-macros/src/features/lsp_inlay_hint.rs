@@ -59,10 +59,10 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                                 #sig {
                                     use #queryable;
                                     let range = self.get_range();
-                                    acc.push(lsp_types::InlayHint {
+                                    acc.push(auto_lsp::lsp_types::InlayHint {
                                         position: self.get_start_position(doc),
-                                        kind: Some(lsp_types::InlayHintKind::TYPE),
-                                        label: lsp_types::InlayHintLabel::String(
+                                        kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
+                                        label: auto_lsp::lsp_types::InlayHintLabel::String(
                                             format!("{}[{}-{}] {}", if self.is_comment() { "C" } else { "" }, range.start, range.end, Self::QUERY_NAMES[0].to_string())
                                         ),
                                         text_edits: None,

@@ -78,12 +78,12 @@ impl<'a> FeaturesCodeGen for SemanticTokensBuilder<'a> {
                                 let range = #range.get_range();
                                 match #token_types.get_index(#token_index) {
                                     Some(index) => builder.push(
-                                        lsp_types::Range::new(
-                                            lsp_types::Position::new(
+                                        auto_lsp::lsp_types::Range::new(
+                                            auto_lsp::lsp_types::Position::new(
                                                 range.start_point.row as u32,
                                                 range.start_point.column as u32,
                                             ),
-                                            lsp_types::Position::new(range.end_point.row as u32, range.end_point.column as u32),
+                                            auto_lsp::lsp_types::Position::new(range.end_point.row as u32, range.end_point.column as u32),
                                         ),
                                         index as u32,
                                         #modifiers,

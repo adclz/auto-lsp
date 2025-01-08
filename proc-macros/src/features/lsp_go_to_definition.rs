@@ -64,9 +64,9 @@ impl<'a> FeaturesCodeGen for GotoDefinitionBuilder<'a> {
                                 if let Some(accessor) = &self.get_target() {
                                     if let Some(accessor) = accessor.to_dyn() {
                                         let read = accessor.read();
-                                        return Some(lsp_types::GotoDefinitionResponse::Scalar(lsp_types::Location {
+                                        return Some(auto_lsp::lsp_types::GotoDefinitionResponse::Scalar(auto_lsp::lsp_types::Location {
                                             uri: (*read.get_url()).clone(),
-                                            range: lsp_types::Range {
+                                            range: auto_lsp::lsp_types::Range {
                                                 start: read.get_start_position(doc),
                                                 end: read.get_end_position(doc),
                                             },

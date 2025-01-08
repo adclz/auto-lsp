@@ -8,3 +8,4 @@ out
 dist
 target
 .vscode-test-web
+/Cargo.lock

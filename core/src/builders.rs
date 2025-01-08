@@ -26,6 +26,17 @@ macro_rules! builder_error {
             None,
         )
     };
+    ($path: ident, $range: expr, $text: expr) => {
+        $path::lsp_types::Diagnostic::new(
+            $range,
+            Some($path::lsp_types::DiagnosticSeverity::ERROR),
+            None,
+            None,
+            $text.into(),
+            None,
+            None,
+        )
+    };
 }
 
 #[macro_export]
@@ -34,6 +45,17 @@ macro_rules! builder_warning {
         lsp_types::Diagnostic::new(
             $range,
             Some(lsp_types::DiagnosticSeverity::WARNING),
+            None,
+            None,
+            $text.into(),
+            None,
+            None,
+        )
+    };
+    ($path: ident, $range: expr, $text: expr) => {
+        $path::lsp_types::Diagnostic::new(
+            $range,
+            Some($path::lsp_types::DiagnosticSeverity::WARNING),
             None,
             None,
             $text.into(),

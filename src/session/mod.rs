@@ -32,7 +32,7 @@ pub mod init;
 pub mod senders;
 pub mod workspace;
 
-pub type StaticBuilderFn = fn(
+type StaticBuilderFn = fn(
     &mut BuilderParams,
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
@@ -47,19 +47,19 @@ macro_rules! create_parser {
     ($parser: ident) => {{
         use std::sync::RwLock;
         use $parser::{COMMENTS_QUERY, FOLD_QUERY, HIGHLIGHTS_QUERY, LANGUAGE, OUTLINE_QUERY};
-        let mut parser = tree_sitter::Parser::new();
+        let mut parser = $crate::tree_sitter::Parser::new();
         parser
             .set_language(&LANGUAGE.into())
             .expect(&format!("Error loading {} parser", stringify!($parser)));
-        let lang = tree_sitter::Language::new(LANGUAGE);
+        let lang = $crate::tree_sitter::Language::new(LANGUAGE);
         auto_lsp::session::cst_parser::CstParser {
             parser: RwLock::new(parser),
             language: lang.clone(),
             queries: auto_lsp::session::cst_parser::Queries {
-                comments: tree_sitter::Query::new(&lang, COMMENTS_QUERY).unwrap(),
-                fold: tree_sitter::Query::new(&lang, FOLD_QUERY).unwrap(),
-                highlights: tree_sitter::Query::new(&lang, HIGHLIGHTS_QUERY).unwrap(),
-                outline: tree_sitter::Query::new(&lang, OUTLINE_QUERY).unwrap(),
+                comments: $crate::tree_sitter::Query::new(&lang, COMMENTS_QUERY).unwrap(),
+                fold: $crate::tree_sitter::Query::new(&lang, FOLD_QUERY).unwrap(),
+                highlights: $crate::tree_sitter::Query::new(&lang, HIGHLIGHTS_QUERY).unwrap(),
+                outline: $crate::tree_sitter::Query::new(&lang, OUTLINE_QUERY).unwrap(),
             },
         }
     }};
@@ -68,16 +68,19 @@ macro_rules! create_parser {
 #[macro_export]
 macro_rules! configure_parsers {
     ($($extension: expr => { $language:ident, $builder:ident }),*) => {
-        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, auto_lsp::session::Parsers>> =
+        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::session::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
                 map.insert(
-                    $($extension, auto_lsp::session::Parsers {
-                        cst_parser: auto_lsp::create_parser!($language),
-                        ast_parser: |params: &mut auto_lsp_core::builders::BuilderParams<'_>, range: Option<std::ops::Range<usize>>| {
-                            use auto_lsp_core::builders::StaticBuilder;
-                            Ok::<auto_lsp_core::symbol::DynSymbol, lsp_types::Diagnostic>(
-                                auto_lsp_core::symbol::Symbol::new_and_check($builder::static_build(params, range)?, params).to_dyn(),
+                    $($extension, $crate::session::Parsers {
+                        cst_parser: $crate::create_parser!($language),
+                        ast_parser: |params: &mut $crate::auto_lsp_core::builders::BuilderParams<'_>, range: Option<std::ops::Range<usize>>| {
+                            use $crate::auto_lsp_core::builders::*;
+                            use $crate::auto_lsp_core::symbol::*;
+                            use $crate::auto_lsp_core::pending_symbol::*;
+
+                            Ok::<$crate::auto_lsp_core::symbol::DynSymbol, $crate::lsp_types::Diagnostic>(
+                                $crate::auto_lsp_core::symbol::Symbol::new_and_check($builder::static_build(params, range)?, params).to_dyn(),
                             )
                         },
                     }),*

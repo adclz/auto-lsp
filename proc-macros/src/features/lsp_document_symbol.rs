@@ -89,7 +89,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                                     return None
                                 }
 
-                                Some(lsp_types::DocumentSymbol {
+                                Some(auto_lsp::lsp_types::DocumentSymbol {
                                     name,
                                     detail: None,
                                     kind: #kind,

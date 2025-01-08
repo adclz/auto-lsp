@@ -55,7 +55,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         self.struct_input_builder(&mut builder);
 
         builder.add(quote! {
-            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
+            fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> {
                 self.unique_field.get_rc().borrow().get_url()
             }
 
@@ -194,7 +194,7 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = {
                     use #queryable;
-                    constcat::concat_slices!([&'static str]: #(#concat),*)
+                    auto_lsp::constcat::concat_slices!([&'static str]: #(#concat),*)
                 };
             })
             .stage_trait(&self.input_name, queryable);
@@ -202,7 +202,7 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = {
                     use #queryable;
-                    constcat::concat_slices!([&'static str]: #(#concat),*)
+                    auto_lsp::constcat::concat_slices!([&'static str]: #(#concat),*)
                 };
             })
             .stage_trait(&self.input_builder_name, queryable);
@@ -222,8 +222,8 @@ impl<'a> EnumBuilder<'a> {
             .add(quote! { const CHECK: () = {
                 use #queryable;
                 use #check_queryable;
-                let queries = constcat::concat_slices!([&str]: #(#concat),*);
-                auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+                let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
+                auto_lsp::auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
             }; })
             .stage_trait(&self.input_name, check_queryable);
 
@@ -431,7 +431,7 @@ impl<'a> EnumBuilder<'a> {
 
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #name {
-                type Error = lsp_types::Diagnostic;
+                type Error = auto_lsp::lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, params: &mut #params) -> Result<Self, Self::Error> {
                     use #try_into_builder;
@@ -441,7 +441,8 @@ impl<'a> EnumBuilder<'a> {
                             return Ok(Self::#variant_names(variant.try_into_builder(params)?));
                         };
                     )*
-                    Err(auto_lsp_core::builder_error!(
+                    Err(auto_lsp::auto_lsp_core::builder_error!(
+                        auto_lsp,
                         builder.unique_field.get_rc().borrow().get_lsp_range(params.doc),
                         format!("Failed to downcast builder to enum: {}", stringify!(#name))
                     ))

@@ -61,7 +61,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.struct_input_builder(&mut builder);
 
         builder.add(quote! {
-            fn get_url(&self) -> std::sync::Arc<lsp_types::Url> {
+            fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> {
                 self.url.clone()
             }
 
@@ -189,8 +189,8 @@ impl<'a> StructBuilder<'a> {
             .add(quote! { const CHECK: () = {
                 use #queryable;
                 use #check_queryable;
-                let queries = constcat::concat_slices!([&str]: #(#concat),*);
-                auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+                let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
+                auto_lsp::auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
             }; })
             .stage_trait(&self.input_name, check_queryable);
 
@@ -236,7 +236,7 @@ impl<'a> StructBuilder<'a> {
         let pending_symbol = &PATHS.pending_symbol;
 
         builder
-            .add(quote! { url: std::sync::Arc<lsp_types::Url> })
+            .add(quote! { url: std::sync::Arc<auto_lsp::lsp_types::Url> })
             .add(quote! { query_index: usize })
             .add(quote! { range: std::ops::Range<usize> })
             .add_iter(&self.fields, |ty, _, name, _, _| match ty {
@@ -312,7 +312,8 @@ impl<'a> StructBuilder<'a> {
                     let #name = Symbol::new_and_check(builder
                         .#name
                         .as_ref()
-                        .ok_or(auto_lsp_core::builder_error!(
+                        .ok_or(auto_lsp::auto_lsp_core::builder_error!(
+                            auto_lsp,
                             builder_range,
                             format!(
                                 "Invalid {:?} for {:?}",
@@ -332,7 +333,7 @@ impl<'a> StructBuilder<'a> {
 
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #input_name {
-                type Error = lsp_types::Diagnostic;
+                type Error = auto_lsp::lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, params: &mut #builder_params) -> Result<Self, Self::Error> {
                     let builder_range = builder.get_lsp_range(params.doc);

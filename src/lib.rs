@@ -14,6 +14,14 @@ use lsp_types::{DiagnosticOptions, DiagnosticServerCapabilities, OneOf, ServerCa
 pub mod capabilities;
 pub mod session;
 
+pub extern crate auto_lsp_core;
+pub extern crate auto_lsp_macros;
+pub extern crate constcat;
+pub extern crate lsp_textdocument;
+pub extern crate lsp_types;
+pub extern crate self as auto_lsp;
+pub extern crate tree_sitter;
+
 pub fn create_session(init_options: InitOptions) -> anyhow::Result<InitResult> {
     // Note that  we must have our logging only write out to stderr since the communication with the client
     // is done via stdin/stdout. If we write to stdout, we will corrupt the communication.

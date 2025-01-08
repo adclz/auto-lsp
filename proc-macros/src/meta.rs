@@ -1,4 +1,3 @@
-use auto_lsp_core::symbol::Check;
 use syn::{Ident, Type};
 
 use crate::features::{

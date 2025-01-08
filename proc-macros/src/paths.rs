@@ -243,18 +243,20 @@ impl Default for Paths {
     fn default() -> Self {
         Self {
             // new types idioms
-            symbol: parse_quote!(auto_lsp_core::symbol::Symbol),
-            dyn_symbol: parse_quote!(auto_lsp_core::symbol::DynSymbol),
-            weak_symbol: parse_quote!(auto_lsp_core::symbol::WeakSymbol),
-            symbol_data: parse_quote!(auto_lsp_core::symbol::AstSymbolData),
-            referrers: parse_quote!(auto_lsp_core::symbol::Referrers),
-            pending_symbol: parse_quote!(auto_lsp_core::pending_symbol::PendingSymbol),
-            maybe_pending_symbol: parse_quote!(auto_lsp_core::pending_symbol::MaybePendingSymbol),
-            builder_params: parse_quote!(auto_lsp_core::builders::BuilderParams),
+            symbol: parse_quote!(auto_lsp::auto_lsp_core::symbol::Symbol),
+            dyn_symbol: parse_quote!(auto_lsp::auto_lsp_core::symbol::DynSymbol),
+            weak_symbol: parse_quote!(auto_lsp::auto_lsp_core::symbol::WeakSymbol),
+            symbol_data: parse_quote!(auto_lsp::auto_lsp_core::symbol::AstSymbolData),
+            referrers: parse_quote!(auto_lsp::auto_lsp_core::symbol::Referrers),
+            pending_symbol: parse_quote!(auto_lsp::auto_lsp_core::pending_symbol::PendingSymbol),
+            maybe_pending_symbol: parse_quote!(
+                auto_lsp::auto_lsp_core::pending_symbol::MaybePendingSymbol
+            ),
+            builder_params: parse_quote!(auto_lsp::auto_lsp_core::builders::BuilderParams),
 
             // traits
             queryable: TraitInfo {
-                path: parse_quote!(auto_lsp_core::queryable::Queryable),
+                path: parse_quote!(auto_lsp::auto_lsp_core::queryable::Queryable),
                 methods: structx! {
                     QUERY_NAMES: structx! {
                         sig: quote! { const QUERY_NAMES: &'static [&'static str] },
@@ -262,7 +264,7 @@ impl Default for Paths {
                 },
             },
             check_queryable: TraitInfo {
-                path: parse_quote!(auto_lsp_core::queryable::CheckQueryable),
+                path: parse_quote!(auto_lsp::auto_lsp_core::queryable::CheckQueryable),
                 methods: structx! {
                     CHECK: structx! {
                         sig: quote! { const CHECK: () },
@@ -270,39 +272,39 @@ impl Default for Paths {
                 },
             },
             symbol_trait: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::AstSymbol),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::AstSymbol),
                 methods: structx! {
                     get_data: structx! {
-                        sig: quote! { fn get_data(&self) -> &auto_lsp_core::symbol::AstSymbolData },
+                        sig: quote! { fn get_data(&self) -> &auto_lsp::auto_lsp_core::symbol::AstSymbolData },
                         variant: quote! { get_data() },
                     },
                     get_mut_data: structx! {
-                        sig: quote! { fn get_mut_data(&mut self) -> &mut auto_lsp_core::symbol::AstSymbolData },
+                        sig: quote! { fn get_mut_data(&mut self) -> &mut auto_lsp::auto_lsp_core::symbol::AstSymbolData },
                         variant: quote! { get_mut_data() },
                     }
                 },
             },
             symbol_builder_trait: TraitInfo {
-                path: parse_quote!(auto_lsp_core::pending_symbol::AstBuilder),
+                path: parse_quote!(auto_lsp::auto_lsp_core::pending_symbol::AstBuilder),
                 methods: structx! {
                     new: structx! {
                         sig: quote! { fn new(
-                            url: std::sync::Arc<lsp_types::Url>,
-                            query: &tree_sitter::Query,
-                            capture: &tree_sitter::QueryCapture,
+                            url: std::sync::Arc<auto_lsp::lsp_types::Url>,
+                            query: &auto_lsp::tree_sitter::Query,
+                            capture: &auto_lsp::tree_sitter::QueryCapture,
                         ) -> Option<Self> },
                         variant: quote! { new(url, query, capture) },
                     },
                     add: structx! {
                         sig: quote! { fn add(
                             &mut self,
-                            capture: &tree_sitter::QueryCapture,
-                            params: &mut auto_lsp_core::builders::BuilderParams,
-                        ) -> Result<Option<auto_lsp_core::pending_symbol::PendingSymbol>, lsp_types::Diagnostic> },
+                            capture: &auto_lsp::tree_sitter::QueryCapture,
+                            params: &mut auto_lsp::auto_lsp_core::builders::BuilderParams,
+                        ) -> Result<Option<auto_lsp::auto_lsp_core::pending_symbol::PendingSymbol>, auto_lsp::lsp_types::Diagnostic> },
                         variant: quote! { add(capture, params) },
                     },
                     get_url: structx! {
-                        sig: quote! { fn get_url(&self) -> std::sync::Arc<lsp_types::Url> },
+                        sig: quote! { fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> },
                         variant: quote! { get_url() },
                     },
                     get_range: structx! {
@@ -315,94 +317,94 @@ impl Default for Paths {
                     },
                 },
             },
-            try_into_builder: parse_quote!(auto_lsp_core::convert::TryIntoBuilder),
-            try_from_builder: parse_quote!(auto_lsp_core::convert::TryFromBuilder),
+            try_into_builder: parse_quote!(auto_lsp::auto_lsp_core::convert::TryIntoBuilder),
+            try_from_builder: parse_quote!(auto_lsp::auto_lsp_core::convert::TryFromBuilder),
 
             lsp_code_lens: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::CodeLens),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::CodeLens),
                 methods: structx! {
                     build_code_lens: structx! {
-                        sig: quote! { fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) },
+                        sig: quote! { fn build_code_lens(&self, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
                         variant: quote! { build_code_lens(acc) },
                     }
                 },
             },
             lsp_completion_items: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::CompletionItems),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::CompletionItems),
                 methods: structx! {
                     build_completion_items: structx! {
-                        sig: quote! { fn build_completion_items(&self, acc: &mut Vec<lsp_types::CompletionItem>, doc: &lsp_textdocument::FullTextDocument) },
+                        sig: quote! { fn build_completion_items(&self, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>, doc: &auto_lsp::lsp_textdocument::FullTextDocument) },
                         variant: quote! { build_completion_items(acc, doc) },
                     }
                 },
             },
             lsp_document_symbols: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::DocumentSymbols),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::DocumentSymbols),
                 methods: structx! {
                     get_document_symbols: structx! {
-                        sig: quote! { fn get_document_symbols(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::DocumentSymbol> },
+                        sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::DocumentSymbol> },
                         variant: quote! { get_document_symbols(doc) },
                     }
                 },
             },
             lsp_go_to_definition: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::GoToDefinition),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::GoToDefinition),
                 methods: structx! {
                     go_to_definition: structx! {
-                        sig: quote! { fn go_to_definition(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::GotoDefinitionResponse> },
+                        sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::GotoDefinitionResponse> },
                         variant: quote! { go_to_definition(doc) },
                     }
                 },
             },
             lsp_go_to_declaration: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::GoToDeclaration),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::GoToDeclaration),
                 methods: structx! {
                     go_to_declaration: structx! {
-                        sig: quote! { fn go_to_declaration(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::request::GotoDeclarationResponse> },
+                        sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::request::GotoDeclarationResponse> },
                         variant: quote! { go_to_declaration(doc) },
                     }
                 },
             },
             lsp_hover_info: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::HoverInfo),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::HoverInfo),
                 methods: structx! {
                     get_hover: structx! {
-                        sig: quote! { fn get_hover(&self, doc: &lsp_textdocument::FullTextDocument) -> Option<lsp_types::Hover> },
+                        sig: quote! { fn get_hover(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::Hover> },
                         variant: quote! { get_hover(doc) },
                     }
                 },
             },
             lsp_inlay_hint: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::InlayHints),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::InlayHints),
                 methods: structx! {
                     build_inlay_hint: structx! {
-                        sig: quote! { fn build_inlay_hint(&self, doc: &lsp_textdocument::FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>) },
+                        sig: quote! { fn build_inlay_hint(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
                         variant: quote! { build_inlay_hint(doc, acc) },
                     }
                 },
             },
             lsp_semantic_token: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::SemanticTokens),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::SemanticTokens),
                 methods: structx! {
                     build_semantic_tokens: structx! {
-                        sig: quote! { fn build_semantic_tokens(&self, builder: &mut auto_lsp_core::semantic_tokens::SemanticTokensBuilder) },
+                        sig: quote! { fn build_semantic_tokens(&self, builder: &mut auto_lsp::auto_lsp_core::semantic_tokens::SemanticTokensBuilder) },
                         variant: quote! { build_semantic_tokens(builder) },
                     }
                 },
             },
             is_accessor: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::IsAccessor),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::IsAccessor),
                 methods: structx! {
                     is_accessor: structx! {
                         sig: quote! { fn is_accessor(&self) -> bool},
                         variant: quote! { is_accessor() },
                     },
                     set_accessor: structx! {
-                        sig: quote! { fn set_accessor(&mut self, accessor: auto_lsp_core::symbol::WeakSymbol) },
+                        sig: quote! { fn set_accessor(&mut self, accessor: auto_lsp::auto_lsp_core::symbol::WeakSymbol) },
                         variant: quote! { set_accessor(accessor) },
                     },
                     get_accessor: structx! {
-                        sig: quote! { fn get_accessor(&self) -> Option<&auto_lsp_core::symbol::WeakSymbol>  },
+                        sig: quote! { fn get_accessor(&self) -> Option<&auto_lsp::auto_lsp_core::symbol::WeakSymbol>  },
                         variant: quote! { get_accessor() },
                     },
                     reset_accessor: structx! {
@@ -412,16 +414,16 @@ impl Default for Paths {
                 },
             },
             accessor: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::Accessor),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::Accessor),
                 methods: structx! {
                     find: structx! {
-                        sig: quote! { fn find(&self, doc: &lsp_textdocument::FullTextDocument) -> Result<Option<auto_lsp_core::symbol::DynSymbol>, lsp_types::Diagnostic> },
+                        sig: quote! { fn find(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Result<Option<auto_lsp::auto_lsp_core::symbol::DynSymbol>, auto_lsp::lsp_types::Diagnostic> },
                         variant: quote! { find(doc) },
                     },
                 },
             },
             is_comment: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::IsComment),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::IsComment),
                 methods: structx! {
                     is_comment: structx! {
                         sig: quote! { fn is_comment(&self) -> bool },
@@ -430,7 +432,7 @@ impl Default for Paths {
                 },
             },
             is_scope: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::IsScope),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::IsScope),
                 methods: structx! {
                     is_scope: structx! {
                         sig: quote! { fn is_scope(&self) -> bool },
@@ -439,7 +441,7 @@ impl Default for Paths {
                 },
             },
             scope: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::Scope),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::Scope),
                 methods: structx! {
                     get_scope_range: structx! {
                         sig: quote! { fn get_scope_range(&self) -> Vec<[usize; 2]> },
@@ -448,25 +450,25 @@ impl Default for Paths {
                 },
             },
             locator: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::Locator),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::Locator),
                 methods: structx! {
                     find_at_offset: structx! {
-                        sig: quote! { fn find_at_offset(&self, offset: usize) -> Option<auto_lsp_core::symbol::DynSymbol> },
+                        sig: quote! { fn find_at_offset(&self, offset: usize) -> Option<auto_lsp::auto_lsp_core::symbol::DynSymbol> },
                         variant: quote! { find_at_offset(offset) },
                     },
                 },
             },
             parent: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::Parent),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::Parent),
                 methods: structx! {
                     inject_parent: structx! {
-                        sig: quote! { fn inject_parent(&mut self, parent: auto_lsp_core::symbol::WeakSymbol) },
+                        sig: quote! { fn inject_parent(&mut self, parent: auto_lsp::auto_lsp_core::symbol::WeakSymbol) },
                         variant: quote! { inject_parent(parent) },
                     },
                 },
             },
             is_check: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::IsCheck),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::IsCheck),
                 methods: structx! {
                     must_check: structx! {
                         sig: quote! { fn must_check(&self) -> bool },
@@ -475,30 +477,30 @@ impl Default for Paths {
                 },
             },
             check: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::Check),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::Check),
                 methods: structx! {
                     check: structx! {
-                        sig: quote! { fn check(&self, doc: &lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> Result<(), ()> },
+                        sig: quote! { fn check(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> Result<(), ()> },
                         variant: quote! { check(doc, diagnostics) },
                     },
                 },
             },
             dynamic_swap: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::DynamicSwap),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::DynamicSwap),
                 methods: structx! {
                     swap: structx! {
                         sig: quote! { fn dyn_swap<'a>(
                             &mut self,
                             start: usize,
                             offset: isize,
-                            builder_params: &'a mut auto_lsp_core::builders::BuilderParams,
-                        ) -> std::ops::ControlFlow<Result<usize, lsp_types::Diagnostic>, ()> },
+                            builder_params: &'a mut auto_lsp::auto_lsp_core::builders::BuilderParams,
+                        ) -> std::ops::ControlFlow<Result<usize, auto_lsp::lsp_types::Diagnostic>, ()> },
                         variant: quote! { dyn_swap(start, offset, builder_params) },
                     },
                 },
             },
             edit_range: TraitInfo {
-                path: parse_quote!(auto_lsp_core::symbol::EditRange),
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::EditRange),
                 methods: structx! {
                     edit_range: structx! {
                         sig: quote! { fn edit_range(&self, start: usize, offset: isize) },

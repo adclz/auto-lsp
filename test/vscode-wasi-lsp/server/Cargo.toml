@@ -5,11 +5,6 @@ edition = "2021"
 
 [dependencies]
 auto-lsp = { path = "../../../" }
-auto-lsp-core = { path = "../../../core" }
-auto-lsp-macros = { path = "../../../proc-macros" }
-tree-sitter-iec61131-3-2 = { path = "../../parser-iec-61131-3-2" }
 phf = { version = "0.11", features = ["macros"] }
-tree-sitter = { version = "0.24.6" }
-lsp-types = "0.94.1"
-constcat = "0.5.1"
-lsp-textdocument = "0.3.2"
+tree-sitter-iec61131-3-2 = { path = "../../parser-iec-61131-3-2" }
+

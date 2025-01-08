@@ -67,7 +67,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
                             #sig {
                                 let read = #label.read();
 
-                                acc.push(lsp_types::CompletionItem {
+                                acc.push(auto_lsp::lsp_types::CompletionItem {
                                     label: read.get_text(doc.get_content(None).as_bytes()).to_string(),
                                     kind: Some(#kind),
                                     detail: None,

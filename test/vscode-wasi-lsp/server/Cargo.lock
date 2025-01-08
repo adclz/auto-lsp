@@ -27,7 +27,6 @@ dependencies = [
  "constcat",
  "crossbeam-channel",
  "downcast-rs",
- "lazy_static",
  "lsp-server",
  "lsp-textdocument",
  "lsp-types",
@@ -39,7 +38,6 @@ dependencies = [
  "serde_json",
  "streaming-iterator",
  "tree-sitter",
- "tree-sitter-iec61131-3-2",
  "walkdir",
 ]
 
@@ -61,11 +59,8 @@ dependencies = [
 name = "auto-lsp-macros"
 version = "0.1.0"
 dependencies = [
- "auto-lsp-core",
- "constcat",
  "darling",
  "inwelling",
- "paste",
  "proc-macro2",
  "quote",
  "structx",
@@ -431,12 +426,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d75a2a4b1b190afb6f5425f10f6a8f959d2ea0b9c2b1d79553551850539e4674"
 
 [[package]]
-name = "lazy_static"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
-
-[[package]]
 name = "libc"
 version = "0.2.169"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -528,12 +517,6 @@ dependencies = [
  "smallvec",
  "windows-targets",
 ]
-
-[[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "percent-encoding"
@@ -752,13 +735,7 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "auto-lsp",
- "auto-lsp-core",
- "auto-lsp-macros",
- "constcat",
- "lsp-textdocument",
- "lsp-types",
  "phf",
- "tree-sitter",
  "tree-sitter-iec61131-3-2",
 ]
 
