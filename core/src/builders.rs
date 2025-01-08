@@ -7,7 +7,7 @@ use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
 use std::marker::PhantomData;
-use std::ops::{ControlFlow, Range};
+use std::ops::ControlFlow;
 use std::sync::Arc;
 use std::vec;
 use streaming_iterator::StreamingIterator;

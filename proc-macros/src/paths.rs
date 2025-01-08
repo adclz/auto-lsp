@@ -143,18 +143,6 @@ pub struct Paths {
                 sig: TokenStream,
                 variant: TokenStream,
             },
-            set_accessor: Structx! {
-                sig: TokenStream,
-                variant: TokenStream,
-            },
-            get_accessor: Structx! {
-                sig: TokenStream,
-                variant: TokenStream,
-            },
-            reset_accessor: Structx! {
-                sig: TokenStream,
-                variant: TokenStream,
-            },
         },
     >,
     pub accessor: TraitInfo<
@@ -232,6 +220,14 @@ pub struct Paths {
     pub edit_range: TraitInfo<
         Structx! {
             edit_range: Structx! {
+                sig: TokenStream,
+                variant: TokenStream,
+            },
+        },
+    >,
+    pub collect_references: TraitInfo<
+        Structx! {
+            collect_references: Structx! {
                 sig: TokenStream,
                 variant: TokenStream,
             },
@@ -399,18 +395,6 @@ impl Default for Paths {
                         sig: quote! { fn is_accessor(&self) -> bool},
                         variant: quote! { is_accessor() },
                     },
-                    set_accessor: structx! {
-                        sig: quote! { fn set_accessor(&mut self, accessor: auto_lsp::auto_lsp_core::symbol::WeakSymbol) },
-                        variant: quote! { set_accessor(accessor) },
-                    },
-                    get_accessor: structx! {
-                        sig: quote! { fn get_accessor(&self) -> Option<&auto_lsp::auto_lsp_core::symbol::WeakSymbol>  },
-                        variant: quote! { get_accessor() },
-                    },
-                    reset_accessor: structx! {
-                        sig: quote! { fn reset_accessor(&mut self) },
-                        variant: quote! { reset_accessor() },
-                    },
                 },
             },
             accessor: TraitInfo {
@@ -505,6 +489,15 @@ impl Default for Paths {
                     edit_range: structx! {
                         sig: quote! { fn edit_range(&self, start: usize, offset: isize) },
                         variant: quote! { edit_range(start, offset) },
+                    },
+                },
+            },
+            collect_references: TraitInfo {
+                path: parse_quote!(auto_lsp::auto_lsp_core::symbol::CollectReferences),
+                methods: structx! {
+                    collect_references: structx! {
+                        sig: quote! { fn collect_references(&self, builder_params: & mut auto_lsp::auto_lsp_core::builders::BuilderParams) },
+                        variant: quote! { collect_references(builder_params) },
                     },
                 },
             },

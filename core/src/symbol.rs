@@ -14,6 +14,7 @@ use lsp_types::{
 use parking_lot::RwLock;
 use std::{
     ops::ControlFlow,
+    path::Iter,
     sync::{Arc, Weak},
 };
 
@@ -40,6 +41,57 @@ impl AstSymbolData {
     }
 }
 
+/// List of weak symbols that refer to this symbol
+#[derive(Default, Clone)]
+pub struct Referrers(Vec<WeakSymbol>);
+
+/// Trait for managing [`Referrers`]
+pub trait ReferrersTrait {
+    /// Add a referrer to the symbol list
+    fn add_referrer(&mut self, symbol: WeakSymbol);
+
+    /// Clean up any null referrers
+    fn clean_null_referrers(&mut self);
+
+    /// Drop any referrers that have an accessor
+    ///
+    /// If the referrer was not dropped, add it to the unsolved checks field of [`BuilderParams`]
+    fn drop_referrers(&mut self, params: &mut BuilderParams);
+}
+
+impl<'a> IntoIterator for &'a Referrers {
+    type Item = &'a WeakSymbol;
+    type IntoIter = std::slice::Iter<'a, WeakSymbol>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+impl<T: AstSymbol> ReferrersTrait for T {
+    fn add_referrer(&mut self, symbol: WeakSymbol) {
+        self.get_mut_referrers().0.push(symbol);
+    }
+
+    fn clean_null_referrers(&mut self) {
+        self.get_mut_referrers().0.retain(|r| r.0.weak_count() > 0);
+    }
+
+    fn drop_referrers(&mut self, params: &mut BuilderParams) {
+        self.get_mut_referrers().0.retain(|r| {
+            if let Some(symbol) = r.to_dyn() {
+                let read = symbol.read();
+                if read.get_target().is_some() {
+                    drop(read);
+                    symbol.write().reset_target();
+                    params.unsolved_references.push(r.clone());
+                }
+            }
+            false
+        });
+    }
+}
+
 pub trait SymbolData {
     fn get_url(&self) -> Arc<Url>;
     fn get_range(&self) -> std::ops::Range<usize>;
@@ -52,30 +104,6 @@ pub trait SymbolData {
     fn reset_target(&mut self);
     fn get_referrers(&self) -> &Option<Referrers>;
     fn get_mut_referrers(&mut self) -> &mut Referrers;
-    fn drop_referrers(&self) {
-        self.get_referrers().as_ref().map(|r| {
-            r.0.iter().for_each(|r| {
-                r.to_dyn().map(|r| {
-                    r.write().reset_accessor();
-                });
-            });
-        });
-    }
-}
-
-impl<T: AstSymbol> Drop for Symbol<T> {
-    fn drop(&mut self) {
-        let write = self.write();
-        write.drop_referrers();
-
-        if write.is_accessor() {
-            write.get_accessor().map(|a| {
-                a.to_dyn().map(|a| {
-                    a.write().get_mut_referrers().remove_empty_references();
-                })
-            });
-        }
-    }
 }
 
 impl SymbolData for AstSymbolData {
@@ -154,6 +182,7 @@ pub trait AstSymbol:
     + Check
     + DynamicSwap
     + EditRange
+    + CollectReferences
 {
     fn get_data(&self) -> &AstSymbolData;
     fn get_mut_data(&mut self) -> &mut AstSymbolData;
@@ -252,29 +281,6 @@ impl<T: AstSymbol + ?Sized> SymbolData for T {
 
     fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
         self.get_mut_data().set_comment(range)
-    }
-}
-
-#[derive(Clone)]
-pub struct Referrers(Vec<WeakSymbol>);
-
-impl Default for Referrers {
-    fn default() -> Self {
-        Self(Vec::new())
-    }
-}
-
-impl Referrers {
-    pub fn add_reference(&mut self, symbol: WeakSymbol) {
-        self.0.push(symbol);
-    }
-
-    pub fn remove_empty_references(&mut self) {
-        self.0.retain(|f| f.0.weak_count() > 0);
-    }
-
-    pub fn get_references(&self) -> &Vec<WeakSymbol> {
-        &self.0
     }
 }
 
@@ -460,15 +466,10 @@ impl_build!(InlayHints, build_inlay_hint(&self, doc: &FullTextDocument, acc: &mu
 impl_build!(CodeLens, build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &FullTextDocument));
 
-pub trait IsAccessor {
+pub trait IsAccessor: SymbolData {
     fn is_accessor(&self) -> bool {
         false
     }
-    fn get_accessor(&self) -> Option<&WeakSymbol> {
-        None
-    }
-    fn set_accessor(&mut self, _accessor: WeakSymbol) {}
-    fn reset_accessor(&mut self) {}
 }
 
 pub trait Accessor: IsAccessor {
@@ -570,6 +571,34 @@ impl<T: AstSymbol> EditRange for Vec<Symbol<T>> {
     }
 }
 
+pub trait CollectReferences {
+    fn collect_references(&self, params: &mut BuilderParams);
+}
+
+impl<T: AstSymbol> CollectReferences for Symbol<T> {
+    fn collect_references(&self, params: &mut BuilderParams) {
+        if let Some(target) = &self.read().get_data().target {
+            params.unsolved_references.push(target.clone());
+        }
+    }
+}
+
+impl<T: AstSymbol> CollectReferences for Option<Symbol<T>> {
+    fn collect_references(&self, params: &mut BuilderParams) {
+        if let Some(symbol) = self.as_ref() {
+            symbol.collect_references(params);
+        }
+    }
+}
+
+impl<T: AstSymbol> CollectReferences for Vec<Symbol<T>> {
+    fn collect_references(&self, params: &mut BuilderParams) {
+        for symbol in self.iter() {
+            symbol.collect_references(params);
+        }
+    }
+}
+
 pub trait Parent {
     fn inject_parent(&mut self, parent: WeakSymbol);
 }
@@ -626,9 +655,7 @@ pub trait DynamicSwap {
 pub trait StaticSwap<T, Y>
 where
     T: AstBuilder + Queryable,
-    Y: AstSymbol
-        + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuilder<T, Y>,
+    Y: AstSymbol,
 {
     fn to_swap<'a>(
         &mut self,
@@ -643,7 +670,8 @@ where
     T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuilder<T, Y>,
+        + StaticBuilder<T, Y>
+        + CollectReferences,
 {
     fn to_swap<'a>(
         &mut self,
@@ -652,6 +680,7 @@ where
         builder_params: &'a mut BuilderParams,
     ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
         eprintln!("swapping in symbol");
+        self.collect_references(builder_params);
         *self = match Y::static_build(builder_params, Some(self.get_range())) {
             Ok(symbol) => symbol,
             Err(err) => return ControlFlow::Break(Err(err)),
@@ -665,7 +694,8 @@ where
     T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuilder<T, Y>,
+        + StaticBuilder<T, Y>
+        + CollectReferences,
 {
     fn to_swap<'a>(
         &mut self,
@@ -678,7 +708,7 @@ where
             true => {
                 let range = read.get_range();
                 drop(read);
-                //self.write().dyn_swap(start, offset, builder_params)?;
+                self.collect_references(builder_params);
                 *self = Symbol::new_and_check(
                     match Y::static_build(builder_params, Some(range)) {
                         Ok(symbol) => symbol,
@@ -698,7 +728,8 @@ where
     T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuilder<T, Y>,
+        + StaticBuilder<T, Y>
+        + CollectReferences,
 {
     fn to_swap<'a>(
         &mut self,
@@ -718,7 +749,8 @@ where
     T: AstBuilder + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuilder<T, Y>,
+        + StaticBuilder<T, Y>
+        + CollectReferences,
 {
     fn to_swap<'a>(
         &mut self,

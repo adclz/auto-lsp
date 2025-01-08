@@ -34,6 +34,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         self.impl_locator(&mut builder);
         self.impl_dynamic_swap(&mut builder);
         self.impl_edit_range(&mut builder);
+        self.impl_collect_references(&mut builder);
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
@@ -126,21 +127,6 @@ impl<'a> EnumBuilder<'a> {
                 &PATHS.is_accessor.methods.is_accessor.sig,
                 &PATHS.is_accessor.methods.is_accessor.variant,
             )
-            .add_default_iter(
-                &self.fields,
-                &PATHS.is_accessor.methods.set_accessor.sig,
-                &PATHS.is_accessor.methods.set_accessor.variant,
-            )
-            .add_default_iter(
-                &self.fields,
-                &PATHS.is_accessor.methods.reset_accessor.sig,
-                &PATHS.is_accessor.methods.reset_accessor.variant,
-            )
-            .add_default_iter(
-                &self.fields,
-                &PATHS.is_accessor.methods.get_accessor.sig,
-                &PATHS.is_accessor.methods.get_accessor.variant,
-            )
             .stage_trait(&self.input_name, &PATHS.is_accessor.path)
             .add_default_iter(
                 &self.fields,
@@ -178,6 +164,16 @@ impl<'a> EnumBuilder<'a> {
                 &PATHS.edit_range.methods.edit_range.variant,
             )
             .stage_trait(&self.input_name, &PATHS.edit_range.path);
+    }
+
+    fn impl_collect_references(&self, builder: &mut VariantBuilder) {
+        builder
+            .add_default_iter(
+                &self.fields,
+                &PATHS.collect_references.methods.collect_references.sig,
+                &PATHS.collect_references.methods.collect_references.variant,
+            )
+            .stage_trait(&self.input_name, &PATHS.collect_references.path);
     }
 
     fn impl_queryable(&self, builder: &mut VariantBuilder) {

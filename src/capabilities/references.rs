@@ -1,4 +1,3 @@
-use auto_lsp_core::symbol::SymbolData;
 use lsp_types::{Location, ReferenceParams};
 
 use crate::session::Session;
@@ -22,8 +21,7 @@ impl Session {
         match item {
             Some(item) => match item.read().get_referrers().as_ref() {
                 Some(item) => Ok(Some(
-                    item.get_references()
-                        .iter()
+                    item.into_iter()
                         .filter_map(|reference| {
                             let reference = reference.to_dyn()?;
                             let reference = reference.read();

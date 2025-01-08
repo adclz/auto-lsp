@@ -52,6 +52,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.impl_parent(&mut builder);
         self.impl_dynamic_swap(&mut builder);
         self.impl_edit_range(&mut builder);
+        self.impl_collect_references(&mut builder);
 
         builder.add(self.features.to_token_stream());
         builder.stage();
@@ -229,6 +230,22 @@ impl<'a> StructBuilder<'a> {
                 None,
             )
             .stage_trait(&self.input_name, &PATHS.edit_range.path);
+    }
+
+    fn impl_collect_references(&self, builder: &mut FieldBuilder) {
+        builder
+            .add_fn_iter(
+                &self.fields,
+                &PATHS.collect_references.methods.collect_references.sig,
+                None,
+                |_, _, name, _, _| {
+                    quote! {
+                        self.#name.collect_references(builder_params);
+                    }
+                },
+                None,
+            )
+            .stage_trait(&self.input_name, &PATHS.collect_references.path);
     }
 
     fn struct_input_builder(&self, builder: &mut FieldBuilder) {
