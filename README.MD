@@ -3,10 +3,10 @@
   <p>
     <strong>AST generator based on tree sitter queries</strong>
   </p>
-  <p>
 
 A rust crate to facilitate the creation of [Language Servers](https://microsoft.github.io/language-server-protocol/) for [tree sitter](https://tree-sitter.github.io/tree-sitter/) grammars using [tree-sitter queries](https://tree-sitter.github.io/tree-sitter/using-parsers/queries/1-syntax.html).
-</div>
+
+ </div> 
 
 ## Features
 
