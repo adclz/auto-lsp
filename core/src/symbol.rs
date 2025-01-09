@@ -14,7 +14,6 @@ use lsp_types::{
 use parking_lot::RwLock;
 use std::{
     ops::ControlFlow,
-    path::Iter,
     sync::{Arc, Weak},
 };
 
@@ -68,7 +67,7 @@ impl<'a> IntoIterator for &'a Referrers {
     }
 }
 
-impl<T: AstSymbol> ReferrersTrait for T {
+impl<T: AstSymbol + ?Sized> ReferrersTrait for T {
     fn add_referrer(&mut self, symbol: WeakSymbol) {
         self.get_mut_referrers().0.push(symbol);
     }
@@ -510,7 +509,7 @@ impl<T: AstSymbol> Locator for Option<Symbol<T>> {
     }
 }
 
-impl<T: Locator> Locator for Vec<T> {
+impl<T: AstSymbol> Locator for Vec<Symbol<T>> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         self.iter().find_map(|symbol| symbol.find_at_offset(offset))
     }
@@ -665,30 +664,6 @@ where
     ) -> ControlFlow<Result<usize, Diagnostic>, ()>;
 }
 
-impl<T, Y> StaticSwap<T, Y> for Y
-where
-    T: AstBuilder + Queryable,
-    Y: AstSymbol
-        + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuilder<T, Y>
-        + CollectReferences,
-{
-    fn to_swap<'a>(
-        &mut self,
-        start: usize,
-        offset: isize,
-        builder_params: &'a mut BuilderParams,
-    ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
-        eprintln!("swapping in symbol");
-        self.collect_references(builder_params);
-        *self = match Y::static_build(builder_params, Some(self.get_range())) {
-            Ok(symbol) => symbol,
-            Err(err) => return ControlFlow::Break(Err(err)),
-        };
-        ControlFlow::Break(Ok(self.get_range().start))
-    }
-}
-
 impl<T, Y> StaticSwap<T, Y> for Symbol<Y>
 where
     T: AstBuilder + Queryable,
@@ -706,16 +681,22 @@ where
         let read = self.read();
         match read.is_inside_offset(start) {
             true => {
-                let range = read.get_range();
                 drop(read);
-                self.collect_references(builder_params);
-                *self = Symbol::new_and_check(
+                //self.write().dyn_swap(start, offset, builder_params)?;
+                let parent = self.read().get_parent();
+                let range = self.read().get_range();
+                let symbol = Symbol::new_and_check(
                     match Y::static_build(builder_params, Some(range)) {
                         Ok(symbol) => symbol,
                         Err(err) => return ControlFlow::Break(Err(err)),
                     },
                     builder_params,
                 );
+                self.collect_references(builder_params);
+                if let Some(parent) = parent {
+                    symbol.write().set_parent(parent);
+                }
+                *self = symbol;
                 ControlFlow::Break(Ok(self.read().get_range().start))
             }
             false => ControlFlow::Continue(()),

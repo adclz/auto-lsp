@@ -49,22 +49,24 @@ impl Session {
         let mut unsolved_checks = vec![];
         let mut unsolved_references = vec![];
 
-        let ast_build = ast_parser(
-            &mut BuilderParams {
-                doc: &document,
-                diagnostics: &mut errors,
-                ctx: self,
-                query: &cst_parser.queries.outline,
-                root_node: cst.root_node(),
-                url: arc_uri.clone(),
-                unsolved_checks: &mut unsolved_checks,
-                unsolved_references: &mut unsolved_references,
-            },
-            None,
-        );
+        let params = &mut BuilderParams {
+            doc: &document,
+            diagnostics: &mut errors,
+            ctx: self,
+            query: &cst_parser.queries.outline,
+            root_node: cst.root_node(),
+            url: arc_uri.clone(),
+            unsolved_checks: &mut unsolved_checks,
+            unsolved_references: &mut unsolved_references,
+        };
+        let ast_build = ast_parser(params, None);
 
         ast = match ast_build {
-            Ok(item) => Some(item),
+            Ok(item) => {
+                params.resolve_references();
+                params.resolve_checks();
+                Some(item)
+            }
             Err(e) => {
                 errors.push(e);
                 None

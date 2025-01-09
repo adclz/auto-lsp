@@ -211,7 +211,7 @@ impl<'a> StructBuilder<'a> {
                         self.#name.to_swap(start, offset, builder_params)?;
                     }
                 },
-                Some(quote! { self.to_swap(start, offset, builder_params) }),
+                Some(quote! { std::ops::ControlFlow::Continue(()) }),
             )
             .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
     }

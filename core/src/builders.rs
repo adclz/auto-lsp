@@ -2,7 +2,7 @@ use crate::builder_error;
 use crate::convert::{TryFromBuilder, TryIntoBuilder};
 use crate::pending_symbol::{AstBuilder, PendingSymbol};
 use crate::queryable::Queryable;
-use crate::symbol::{AstSymbol, DynSymbol, EditRange, SymbolData, WeakSymbol};
+use crate::symbol::{AstSymbol, DynSymbol, EditRange, ReferrersTrait, SymbolData, WeakSymbol};
 use crate::workspace::WorkspaceContext;
 use lsp_textdocument::FullTextDocument;
 use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
@@ -85,18 +85,13 @@ impl<'a> BuilderParams<'a> {
             };
             let read = item.read();
             match read.find(&self.doc) {
-                Ok(a) => {
-                    match a {
-                        Some(a) => {
-                            // todo!
-                            //a.write().get_mut_referrers().add_reference(item.to_weak());
-                            drop(read);
-                            item.write().set_target(a.to_weak());
-                            false
-                        }
-                        None => true,
-                    }
+                Ok(Some(target)) => {
+                    target.write().add_referrer(item.to_weak());
+                    drop(read);
+                    item.write().set_target(target.to_weak());
+                    false
                 }
+                Ok(None) => true,
                 Err(err) => {
                     self.diagnostics.push(err);
                     true
@@ -257,10 +252,7 @@ where
                 }
             }
 
-            /*eprintln!(
-                "captures {:?}",
-                self.params.query.capture_names()[capture.index as usize]
-            );*/
+            eprintln!("\x1b[2J\x1b[1;1H captures {:?}", capture);
 
             let mut parent = self.stack.pop();
 
