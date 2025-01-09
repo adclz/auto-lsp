@@ -5,7 +5,7 @@ use auto_lsp_core::{
 use lsp_types::Url;
 use streaming_iterator::StreamingIterator;
 
-use super::{workspace::Workspace, Session};
+use super::Session;
 
 impl Session {
     pub fn add_comments(&self, uri: &Url) -> anyhow::Result<()> {
@@ -27,7 +27,6 @@ impl Session {
         let mut captures = cursor.captures(comments_query, cst.root_node(), source_code);
 
         let range = workspace.ast.as_ref().unwrap().read().get_range();
-        eprintln!("WHOLE RANGE: {:?}", range);
 
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
@@ -49,7 +48,21 @@ impl Session {
                         start: range.start_byte,
                         end: range.end_byte,
                     }));
-                    eprintln!("COMMENT SET");
+                } else {
+                    match node.read().get_parent() {
+                        Some(parent) => {
+                            let parent = parent.to_dyn().unwrap();
+                            if parent.read().get_range().start == node.read().get_range().start {
+                                if parent.read().is_comment() {
+                                    parent.write().set_comment(Some(std::ops::Range {
+                                        start: range.start_byte,
+                                        end: range.end_byte,
+                                    }));
+                                }
+                            }
+                        }
+                        None => {}
+                    }
                 }
             };
         }
