@@ -23,14 +23,22 @@ pub extern crate self as auto_lsp;
 pub extern crate tree_sitter;
 
 pub fn create_session(init_options: InitOptions) -> anyhow::Result<InitResult> {
-    // Note that  we must have our logging only write out to stderr since the communication with the client
-    // is done via stdin/stdout. If we write to stdout, we will corrupt the communication.
-    eprintln!("Starting WASM based LSP server");
-
     // This is a workaround for a deadlock issue in WASI libc.
     // See https://github.com/WebAssembly/wasi-libc/pull/491
     #[cfg(target_arch = "wasm32")]
     fs::metadata("/workspace").unwrap();
+
+    // Note that  we must have our logging only write out to stderr since the communication with the client
+    // is done via stdin/stdout. If we write to stdout, we will corrupt the communication.
+    stderrlog::new()
+        .modules(vec![module_path!(), "auto_lsp_core"])
+        .timestamp(stderrlog::Timestamp::Second)
+        .verbosity(3)
+        .init()
+        .unwrap();
+
+    log::info!("Starting LSP server");
+    log::info!("");
 
     // Create the transport. Includes the stdio (stdin and stdout) versions but this could
     // also be implemented to use sockets or HTTP.

@@ -16,7 +16,7 @@ interface InitializationOptions {
 export async function activate(context: ExtensionContext) {
 	const wasm: Wasm = await Wasm.load();
 
-	const channel = window.createOutputChannel('LSP WASM Server');
+	const channel = window.createOutputChannel('LSP WASM Server', "log");
 	const serverOptions: ServerOptions = async () => {
 		const options: ProcessOptions = {
 			stdio: createStdioOptions(),

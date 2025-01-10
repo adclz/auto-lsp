@@ -88,11 +88,7 @@ impl Session {
                 let new_end_byte = range_offset + edit.text.len();
 
                 let range = ast.read().get_range();
-
-                eprintln!("range.start {} range.end {}", range.start, range.end);
-                eprintln!("start_byte {} new_end_byte {}", start_byte, new_end_byte);
                 if start_byte <= range.start && (new_end_byte - old_end_byte) >= range.end {
-                    eprintln!("ROOT NODE GOT DELETED");
                     true
                 } else {
                     false
@@ -125,9 +121,6 @@ impl Session {
                 .swap_ast(&ast, &edits)
                 .resolve_references()
                 .resolve_checks();
-
-            eprintln!("checks remaining {:?}", unsolved_checks.len());
-            eprintln!("references remaining {:?}", unsolved_references.len());
         } else {
             let ast_parser = &workspace.parsers.ast_parser;
             let ast_build = ast_parser(&mut builder_params, None);
@@ -144,6 +137,16 @@ impl Session {
                     None
                 }
             };
+        }
+
+        if !unsolved_checks.is_empty() {
+            log::info!("");
+            log::warn!("Unsolved checks: {:?}", unsolved_checks.len());
+        }
+
+        if !unsolved_references.is_empty() {
+            log::info!("");
+            log::warn!("Unsolved references: {:?}", unsolved_references.len());
         }
 
         let workspace = self

@@ -89,7 +89,7 @@ impl<'a> FeaturesCodeGen for SemanticTokensBuilder<'a> {
                                         #modifiers,
                                     ),
                                     None => {
-                                        eprintln!("Warning: Token type not found {:?}", #token_index);
+                                        log::warning!("Warning: Token type not found {:?}", #token_index);
                                         return
                                     },
                                 }

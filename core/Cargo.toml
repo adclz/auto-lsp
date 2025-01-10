@@ -7,8 +7,9 @@ edition = "2021"
 lsp-types = {workspace = true}
 tree-sitter = {workspace = true}
 lsp-textdocument = {workspace = true}
-downcast-rs = {workspace = true}
-streaming-iterator = {workspace = true}
-parking_lot = {workspace = true}
+downcast-rs = { workspace = true }
+streaming-iterator = { workspace = true }
+parking_lot = { workspace = true }
+log = { workspace = true }
 const-str = "0.3.1"
 const_panic = "0.2.11"

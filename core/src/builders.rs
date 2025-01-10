@@ -137,6 +137,10 @@ impl<'a> BuilderParams<'a> {
             }
 
             root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
+            if *is_ws {
+                log::info!("");
+                log::info!("Whitespace edit, only update ranges");
+            }
 
             if !is_ws {
                 if let ControlFlow::Break(Err(e)) =
@@ -146,12 +150,6 @@ impl<'a> BuilderParams<'a> {
                     self.diagnostics.push(e);
                 };
             }
-
-            /*eprintln!(
-                "Edit: Shift at {:?} of {:?}",
-                start_byte,
-                (new_end_byte - old_end_byte) as isize,
-            );*/
         }
         self
     }
@@ -175,10 +173,10 @@ where
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
         let mut node = T::new(self.params.url.clone(), &self.params.query, &capture);
 
-        /*eprintln!(
-            "Creating root node {:?}",
+        log::debug!(
+            " ├── {:?} [root]",
             self.params.query.capture_names()[capture.index as usize]
-        );*/
+        );
 
         match node.take() {
             Some(builder) => {
@@ -197,7 +195,8 @@ where
     }
 
     fn create_child_node(&mut self, parent: &PendingSymbol, capture: &QueryCapture) {
-        match parent.get_rc().borrow_mut().add(&capture, self.params) {
+        let add = parent.get_rc().borrow_mut().add(&capture, self.params);
+        match add {
             Err(e) => {
                 self.params.diagnostics.push(e);
             }
@@ -211,6 +210,19 @@ where
             Ok(Some(node)) => {
                 self.stack.push(parent.clone());
                 self.stack.push(node.clone());
+                let r1 = parent
+                    .get_rc()
+                    .borrow()
+                    .get_lsp_range(&self.params.doc)
+                    .start
+                    .character;
+                let r1 = " ".repeat(r1 as usize);
+
+                log::debug!(
+                    "{}└── {:?}",
+                    r1,
+                    self.params.query.capture_names()[capture.index as usize],
+                );
             }
         };
     }
@@ -251,8 +263,6 @@ where
                     }
                 }
             }
-
-            eprintln!("\x1b[2J\x1b[1;1H captures {:?}", capture);
 
             let mut parent = self.stack.pop();
 

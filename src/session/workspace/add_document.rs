@@ -73,8 +73,16 @@ impl Session {
             }
         };
 
-        eprintln!("checks remaining {:?}", unsolved_checks.len());
-        eprintln!("references remaining {:?}", unsolved_references.len());
+        if !unsolved_checks.is_empty() {
+            log::info!("");
+            log::warn!("Unsolved checks: {:?}", unsolved_checks.len());
+        }
+
+        if !unsolved_references.is_empty() {
+            log::info!("");
+            log::warn!("Unsolved references: {:?}", unsolved_references.len());
+        }
+
         self.workspaces.insert(
             uri.to_owned(),
             Workspace {

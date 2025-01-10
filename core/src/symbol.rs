@@ -682,9 +682,11 @@ where
         match read.is_inside_offset(start) {
             true => {
                 drop(read);
-                //self.write().dyn_swap(start, offset, builder_params)?;
                 let parent = self.read().get_parent();
                 let range = self.read().get_range();
+                log::info!("");
+                log::info!("Symbol will be swapped at {:?}", range);
+                log::info!("");
                 let symbol = Symbol::new_and_check(
                     match Y::static_build(builder_params, Some(range)) {
                         Ok(symbol) => symbol,
