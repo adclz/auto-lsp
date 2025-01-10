@@ -210,17 +210,26 @@ where
             Ok(Some(node)) => {
                 self.stack.push(parent.clone());
                 self.stack.push(node.clone());
-                let r1 = parent
+                let parent_char_start = parent
                     .get_rc()
                     .borrow()
                     .get_lsp_range(&self.params.doc)
                     .start
-                    .character;
-                let r1 = " ".repeat(r1 as usize);
+                    .character as usize;
+
+                let node_char_start = tree_sitter_range_to_lsp_range(&capture.node.range())
+                    .start
+                    .character as usize;
 
                 log::debug!(
-                    "{}└── {:?}",
-                    r1,
+                    "{}└──{}{:?}",
+                    " ".repeat(parent_char_start as usize),
+                    "─".repeat(
+                        node_char_start
+                            .checked_sub(parent_char_start + 3)
+                            .or(Some(0))
+                            .unwrap(),
+                    ),
                     self.params.query.capture_names()[capture.index as usize],
                 );
             }
