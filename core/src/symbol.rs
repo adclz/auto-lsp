@@ -354,6 +354,10 @@ impl DynSymbol {
         WeakSymbol::new(self)
     }
 
+    pub fn swap(&mut self, other: &mut Self) {
+        std::mem::swap(&mut self.0, &mut other.0);
+    }
+
     pub fn downcast<T: AstSymbol + Clone>(&self) -> Option<Symbol<T>> {
         Some(Symbol::new(self.0.read().downcast_ref::<T>().cloned()?))
     }
@@ -685,7 +689,7 @@ where
                 let parent = self.read().get_parent();
                 let range = self.read().get_range();
                 log::info!("");
-                log::info!("Symbol will be swapped at {:?}", range);
+                log::info!("Incremental update at {:?}", range);
                 log::info!("");
                 let symbol = Symbol::new_and_check(
                     match Y::static_build(builder_params, Some(range)) {

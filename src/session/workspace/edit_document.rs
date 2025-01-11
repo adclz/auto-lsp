@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use auto_lsp_core::{builders::BuilderParams, symbol::SymbolData};
+use auto_lsp_core::builders::BuilderParams;
 use lsp_types::{DidChangeTextDocumentParams, TextDocumentContentChangeEvent};
 
 use super::tree_sitter_extend::{
@@ -103,11 +103,10 @@ impl Session {
 
         let workspace = self
             .workspaces
-            .get(&uri)
+            .get_mut(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let mut builder_params = BuilderParams {
-            ctx: self,
             query: &cst_parser.queries.outline,
             root_node: cst.root_node(),
             doc: &workspace.document,
@@ -116,9 +115,9 @@ impl Session {
             unsolved_checks: &mut unsolved_checks,
             unsolved_references: &mut unsolved_references,
         };
-        if let Some(ast) = &workspace.ast {
+        if let Some(ast) = &mut workspace.ast {
             builder_params
-                .swap_ast(&ast, &edits)
+                .swap_ast(ast, &edits, &parsers.ast_parser)
                 .resolve_references()
                 .resolve_checks();
         } else {

@@ -66,7 +66,6 @@ macro_rules! builder_warning {
 }
 
 pub struct BuilderParams<'a> {
-    pub ctx: &'a dyn WorkspaceContext,
     pub query: &'a tree_sitter::Query,
     pub root_node: tree_sitter::Node<'a>,
     pub doc: &'a FullTextDocument,
@@ -118,8 +117,12 @@ impl<'a> BuilderParams<'a> {
 
     pub fn swap_ast(
         &'a mut self,
-        root: &DynSymbol,
+        root: &mut DynSymbol,
         edit_ranges: &Vec<(&TextDocumentContentChangeEvent, bool)>,
+        ast_parser: &fn(
+            &mut BuilderParams,
+            Option<std::ops::Range<usize>>,
+        ) -> Result<DynSymbol, lsp_types::Diagnostic>,
     ) -> &'a mut BuilderParams<'a> {
         let doc = self.doc;
 
@@ -143,11 +146,28 @@ impl<'a> BuilderParams<'a> {
             }
 
             if !is_ws {
-                if let ControlFlow::Break(Err(e)) =
+                let result =
                     root.write()
-                        .dyn_swap(start_byte, (new_end_byte - old_end_byte) as isize, self)
-                {
-                    self.diagnostics.push(e);
+                        .dyn_swap(start_byte, (new_end_byte - old_end_byte) as isize, self);
+                match result {
+                    ControlFlow::Break(Err(e)) => {
+                        self.diagnostics.push(e);
+                    }
+                    ControlFlow::Continue(()) => {
+                        log::info!("");
+                        log::info!("No incremental update available, root node will be reparsed");
+                        log::info!("");
+                        let mut ast_builder = ast_parser(self, None);
+                        match ast_builder {
+                            Ok(ref mut new_root) => {
+                                root.swap(new_root);
+                            }
+                            Err(e) => {
+                                self.diagnostics.push(e);
+                            }
+                        }
+                    }
+                    ControlFlow::Break(Ok(_)) => {}
                 };
             }
         }
@@ -173,8 +193,13 @@ where
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
         let mut node = T::new(self.params.url.clone(), &self.params.query, &capture);
 
+        let node_char_start = tree_sitter_range_to_lsp_range(&capture.node.range())
+            .start
+            .character as usize;
+
         log::debug!(
-            " ├── {:?} [root]",
+            "{}├── {:?} [root]",
+            " ".repeat(node_char_start as usize),
             self.params.query.capture_names()[capture.index as usize]
         );
 

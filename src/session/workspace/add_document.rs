@@ -52,7 +52,6 @@ impl Session {
         let params = &mut BuilderParams {
             doc: &document,
             diagnostics: &mut errors,
-            ctx: self,
             query: &cst_parser.queries.outline,
             root_node: cst.root_node(),
             url: arc_uri.clone(),
