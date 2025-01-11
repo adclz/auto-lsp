@@ -1,9 +1,8 @@
 use std::error::Error;
 
-use auto_lsp::session::InitOptions;
-use auto_lsp::{
-    configure_parsers, create_session, define_semantic_token_modifiers, define_semantic_token_types,
-};
+use auto_lsp::capabilities::document_symbols;
+use auto_lsp::session::{InitOptions, LspOptions, Session};
+use auto_lsp::{configure_parsers, define_semantic_token_modifiers, define_semantic_token_types};
 
 mod symbols;
 
@@ -27,19 +26,32 @@ define_semantic_token_modifiers![standard {
 }];
 
 configure_parsers!(
-    "iec-61131-2" => { tree_sitter_iec61131_3_2, SourceFile }
+    "iec-61131-2" => {
+        tree_sitter_iec61131_3_2,
+        tree_sitter_iec61131_3_2::COMMENTS_QUERY,
+        tree_sitter_iec61131_3_2::FOLD_QUERY,
+        tree_sitter_iec61131_3_2::HIGHLIGHTS_QUERY,
+        tree_sitter_iec61131_3_2::OUTLINE_QUERY,
+        SourceFile
+    }
 );
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
-    let mut result = create_session(InitOptions {
+    let mut session = Session::create(InitOptions {
         parsers: &PARSERS,
-        semantic_token_modifiers: &SUPPORTED_MODIFIERS,
-        semantic_token_types: &SUPPORTED_TYPES,
+        semantic_token_modifiers: Some(&SUPPORTED_MODIFIERS),
+        semantic_token_types: Some(&SUPPORTED_TYPES),
+        lsp_options: LspOptions {
+            document_symbols: true,
+            diagnostics: true,
+            inlay_hints: true,
+            ..Default::default()
+        },
     })?;
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
-    result.session.main_loop()?;
-    result.io_threads.join()?;
+    session.main_loop()?;
+    session.io_threads.join()?;
 
     // Shut down gracefully.
     eprintln!("Shutting down server");
