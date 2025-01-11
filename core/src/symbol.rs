@@ -338,10 +338,6 @@ impl DynSymbol {
         Self(symbol.0.clone())
     }
 
-    pub fn get_arc(&self) -> &Arc<RwLock<dyn AstSymbol>> {
-        &self.0
-    }
-
     pub fn read(&self) -> parking_lot::RwLockReadGuard<dyn AstSymbol> {
         self.0.read()
     }
@@ -356,10 +352,6 @@ impl DynSymbol {
 
     pub fn swap(&mut self, other: &mut Self) {
         std::mem::swap(&mut self.0, &mut other.0);
-    }
-
-    pub fn downcast<T: AstSymbol + Clone>(&self) -> Option<Symbol<T>> {
-        Some(Symbol::new(self.0.read().downcast_ref::<T>().cloned()?))
     }
 }
 
@@ -440,12 +432,6 @@ pub trait CompletionItems {
 
 macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
-        impl $trait for DynSymbol {
-            fn $fn_name(&self, $($param_name: $param_type),*) {
-                self.read().$fn_name($($param_name),*)
-            }
-        }
-
         impl<T: AstSymbol> $trait for Option<Symbol<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) {
                 if let Some(node) = self.as_ref() {
@@ -485,16 +471,6 @@ pub trait Locator {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol>;
 }
 
-impl Locator for DynSymbol {
-    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        let symbol = self.read();
-        match symbol.is_inside_offset(offset) {
-            true => symbol.find_at_offset(offset).or_else(|| Some(self.clone())),
-            false => None,
-        }
-    }
-}
-
 impl<T: AstSymbol> Locator for Symbol<T> {
     fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
@@ -531,15 +507,6 @@ fn edit(data: &mut AstSymbolData, start: usize, offset: isize) {
     } else if data.range.end > start {
         // The offset occurs within the range; adjust only the end
         data.range.end = (data.range.end as isize + offset) as usize;
-    }
-}
-
-impl EditRange for DynSymbol {
-    fn edit_range(&self, start: usize, offset: isize) {
-        let mut write = self.write();
-        let data = write.get_mut_data();
-        edit(data, start, offset);
-        write.edit_range(start, offset);
     }
 }
 
@@ -607,12 +574,6 @@ pub trait Parent {
 }
 
 impl<T: AstSymbol> Parent for Symbol<T> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        self.write().set_parent(parent);
-    }
-}
-
-impl Parent for DynSymbol {
     fn inject_parent(&mut self, parent: WeakSymbol) {
         self.write().set_parent(parent);
     }

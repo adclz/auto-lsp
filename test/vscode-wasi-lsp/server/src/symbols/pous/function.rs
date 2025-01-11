@@ -21,7 +21,7 @@ pub struct Function {
     name: Name,
     input_variables: Vec<InputVariable>,
     output_variables: Vec<OutputVariable>,
-    body: Option<Assignment>,
+    body: Vec<Assignment>,
 }
 
 impl Scope for Function {
@@ -39,6 +39,7 @@ impl Scope for Function {
         )
     ),
     lsp_inlay_hints(code_gen(query = true)),
+    comment(user)
 )))]
 pub struct InputVariable {
     name: Name,
@@ -87,7 +88,7 @@ impl Accessor for VariableAccess {
                 None,
                 format!(
                     "Could not find variable {:?}",
-                    self.get_text(doc.get_content(None).as_bytes())
+                    self.get_text(doc.get_content(None).as_bytes()).unwrap()
                 ),
                 None,
                 None,

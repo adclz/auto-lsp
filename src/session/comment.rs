@@ -26,8 +26,6 @@ impl Session {
         let mut cursor = tree_sitter::QueryCursor::new();
         let mut captures = cursor.captures(comments_query, cst.root_node(), source_code);
 
-        let range = workspace.ast.as_ref().unwrap().read().get_range();
-
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
             // Since a comment is not within a query, we look for the next named sibling
@@ -39,7 +37,7 @@ impl Session {
 
             // We then look if this next sibling exists in the ast
 
-            let node = ast.find_at_offset(next_named_sibling.start_byte());
+            let node = ast.read().find_at_offset(next_named_sibling.start_byte());
 
             if let Some(node) = node {
                 let range = capture.node.range();

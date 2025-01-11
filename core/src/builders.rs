@@ -139,7 +139,8 @@ impl<'a> BuilderParams<'a> {
                 continue;
             }
 
-            root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
+            root.write()
+                .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
             if *is_ws {
                 log::info!("");
                 log::info!("Whitespace edit, only update ranges");
