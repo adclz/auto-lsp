@@ -15,6 +15,12 @@ use lsp_types::{
 use lsp_types::{DiagnosticOptions, DiagnosticServerCapabilities};
 
 #[derive(Default)]
+pub struct SemanticTokensList {
+    pub semantic_token_types: Option<&'static [lsp_types::SemanticTokenType]>,
+    pub semantic_token_modifiers: Option<&'static [lsp_types::SemanticTokenModifier]>,
+}
+
+#[derive(Default)]
 pub struct LspOptions {
     pub completions: bool,
     pub diagnostics: bool,
@@ -25,7 +31,7 @@ pub struct LspOptions {
     pub folding_ranges: bool,
     pub hover_info: bool,
     pub references: bool,
-    pub semantic_tokens: bool,
+    pub semantic_tokens: Option<SemanticTokensList>,
     pub selection_ranges: bool,
     pub workspace_symbols: bool,
     pub inlay_hints: bool,
@@ -34,8 +40,6 @@ pub struct LspOptions {
 
 pub struct InitOptions {
     pub parsers: &'static HashMap<&'static str, Parsers>,
-    pub semantic_token_types: Option<&'static [lsp_types::SemanticTokenType]>,
-    pub semantic_token_modifiers: Option<&'static [lsp_types::SemanticTokenModifier]>,
     pub lsp_options: LspOptions,
 }
 
@@ -138,16 +142,16 @@ impl Session {
                     true => Some(lsp_types::FoldingRangeProviderCapability::Simple(true)),
                     false => None,
                 },
-                semantic_tokens_provider: match init_options.lsp_options.semantic_tokens {
-                    true => Some(
+                semantic_tokens_provider: match &init_options.lsp_options.semantic_tokens {
+                    Some(options) => Some(
                         lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
                             SemanticTokensOptions {
                                 legend: SemanticTokensLegend {
-                                    token_types: init_options
+                                    token_types: options
                                         .semantic_token_types
                                         .map(|types| types.to_vec())
                                         .unwrap_or_default(),
-                                    token_modifiers: init_options
+                                    token_modifiers: options
                                         .semantic_token_modifiers
                                         .map(|types| types.to_vec())
                                         .unwrap_or_default(),
@@ -158,7 +162,7 @@ impl Session {
                             },
                         ),
                     ),
-                    false => None,
+                    None => None,
                 },
                 hover_provider: match init_options.lsp_options.hover_info {
                     true => Some(lsp_types::HoverProviderCapability::Simple(true)),

@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use auto_lsp::session::{
-    init::{InitOptions, LspOptions},
+    init::{InitOptions, LspOptions, SemanticTokensList},
     Session,
 };
 use auto_lsp::{configure_parsers, define_semantic_token_modifiers, define_semantic_token_types};
@@ -41,11 +41,13 @@ configure_parsers!(
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut session = Session::create(InitOptions {
         parsers: &PARSERS,
-        semantic_token_modifiers: Some(&SUPPORTED_MODIFIERS),
-        semantic_token_types: Some(&SUPPORTED_TYPES),
         lsp_options: LspOptions {
             document_symbols: true,
             diagnostics: true,
+            semantic_tokens: Some(SemanticTokensList {
+                semantic_token_modifiers: Some(&SUPPORTED_MODIFIERS),
+                semantic_token_types: Some(&SUPPORTED_TYPES),
+            }),
             inlay_hints: true,
             ..Default::default()
         },
