@@ -1,7 +1,9 @@
 use std::error::Error;
 
-use auto_lsp::capabilities::document_symbols;
-use auto_lsp::session::{InitOptions, LspOptions, Session};
+use auto_lsp::session::{
+    init::{InitOptions, LspOptions},
+    Session,
+};
 use auto_lsp::{configure_parsers, define_semantic_token_modifiers, define_semantic_token_types};
 
 mod symbols;
