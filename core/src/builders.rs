@@ -3,15 +3,14 @@ use crate::convert::{TryFromBuilder, TryIntoBuilder};
 use crate::pending_symbol::{AstBuilder, PendingSymbol};
 use crate::queryable::Queryable;
 use crate::symbol::{AstSymbol, DynSymbol, EditRange, ReferrersTrait, SymbolData, WeakSymbol};
-use crate::workspace::WorkspaceContext;
-use lsp_textdocument::FullTextDocument;
-use lsp_types::{Diagnostic, TextDocumentContentChangeEvent, Url};
+use crate::workspace::{Document, Workspace};
+use lsp_types::{Diagnostic, Position, TextDocumentContentChangeEvent, Url};
 use std::marker::PhantomData;
 use std::ops::ControlFlow;
 use std::sync::Arc;
 use std::vec;
 use streaming_iterator::StreamingIterator;
-use tree_sitter::QueryCapture;
+use tree_sitter::{InputEdit, QueryCapture};
 
 #[macro_export]
 macro_rules! builder_error {
@@ -67,8 +66,7 @@ macro_rules! builder_warning {
 
 pub struct BuilderParams<'a> {
     pub query: &'a tree_sitter::Query,
-    pub root_node: tree_sitter::Node<'a>,
-    pub doc: &'a FullTextDocument,
+    pub document: &'a Document,
     pub url: Arc<Url>,
     pub diagnostics: &'a mut Vec<Diagnostic>,
     pub unsolved_checks: &'a mut Vec<WeakSymbol>,
@@ -83,7 +81,7 @@ impl<'a> BuilderParams<'a> {
                 None => return false,
             };
             let read = item.read();
-            match read.find(&self.doc) {
+            match read.find(&self.document) {
                 Ok(Some(target)) => {
                     target.write().add_referrer(item.to_weak());
                     drop(read);
@@ -107,7 +105,7 @@ impl<'a> BuilderParams<'a> {
                 None => return false,
             };
             let read = item.read();
-            match read.check(&self.doc, self.diagnostics) {
+            match read.check(&self.document, self.diagnostics) {
                 Ok(()) => false,
                 Err(()) => true,
             }
@@ -118,30 +116,28 @@ impl<'a> BuilderParams<'a> {
     pub fn swap_ast(
         &'a mut self,
         root: &mut DynSymbol,
-        edit_ranges: &Vec<(&TextDocumentContentChangeEvent, bool)>,
+        edit_ranges: &Vec<InputEdit>,
         ast_parser: &fn(
             &mut BuilderParams,
             Option<std::ops::Range<usize>>,
         ) -> Result<DynSymbol, lsp_types::Diagnostic>,
     ) -> &'a mut BuilderParams<'a> {
-        let doc = self.doc;
+        let doc = &self.document.document;
 
-        for (edit, is_ws) in edit_ranges.iter() {
-            let edit_range = edit.range.unwrap();
-
-            let range_offset = doc.offset_at(edit_range.start) as usize;
-            let start_byte = range_offset;
-            let old_end_byte = range_offset + edit.range_length.unwrap() as usize;
-            let new_end_byte = range_offset + edit.text.len();
+        for edit in edit_ranges.iter() {
+            let start_byte = edit.start_byte;
+            let old_end_byte = edit.old_end_byte;
+            let new_end_byte = edit.new_end_byte;
 
             let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
             if is_noop {
                 continue;
             }
 
-            root.write()
-                .edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
-            if *is_ws {
+            let is_ws = false;
+
+            root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
+            if is_ws {
                 log::info!("");
                 log::info!("Whitespace edit, only update ranges");
             }
@@ -199,7 +195,7 @@ where
             .character as usize;
 
         log::debug!(
-            "{}├── {:?} [root]",
+            "{}├──{:?} [root]",
             " ".repeat(node_char_start as usize),
             self.params.query.capture_names()[capture.index as usize]
         );
@@ -226,32 +222,52 @@ where
             Err(e) => {
                 self.params.diagnostics.push(e);
             }
-            Ok(None) => self.params.diagnostics.push(builder_warning!(
-                tree_sitter_range_to_lsp_range(&capture.node.range()),
-                format!(
-                    "Unknown query {:?}",
+            Ok(None) => {
+                self.params.diagnostics.push(builder_warning!(
+                    tree_sitter_range_to_lsp_range(&capture.node.range()),
+                    format!(
+                        "Unknown query {:?}",
+                        self.params.query.capture_names()[capture.index as usize],
+                    )
+                ));
+                let parent_char_start = parent
+                    .get_rc()
+                    .borrow()
+                    .get_lsp_range(&self.params.document)
+                    .start
+                    .character as usize;
+
+                let node_char_start = capture.node.start_position().column;
+
+                log::warn!(
+                    " {}└──{}{:?} [unknown]",
+                    " ".repeat(parent_char_start as usize),
+                    "─".repeat(
+                        (node_char_start)
+                            .checked_sub(parent_char_start + 3)
+                            .or(Some(0))
+                            .unwrap(),
+                    ),
                     self.params.query.capture_names()[capture.index as usize],
-                )
-            )),
+                );
+            }
             Ok(Some(node)) => {
                 self.stack.push(parent.clone());
                 self.stack.push(node.clone());
                 let parent_char_start = parent
                     .get_rc()
                     .borrow()
-                    .get_lsp_range(&self.params.doc)
+                    .get_lsp_range(&self.params.document)
                     .start
                     .character as usize;
 
-                let node_char_start = tree_sitter_range_to_lsp_range(&capture.node.range())
-                    .start
-                    .character as usize;
+                let node_char_start = capture.node.start_position().column;
 
                 log::debug!(
                     "{}└──{}{:?}",
                     " ".repeat(parent_char_start as usize),
                     "─".repeat(
-                        node_char_start
+                        (node_char_start)
                             .checked_sub(parent_char_start + 3)
                             .or(Some(0))
                             .unwrap(),
@@ -277,8 +293,8 @@ where
 
         let mut captures = cursor.captures(
             &self.params.query,
-            self.params.root_node,
-            self.params.doc.get_content(None).as_bytes(),
+            self.params.document.cst.root_node(),
+            self.params.document.document.text.as_bytes(),
         );
 
         if let Some(range) = range {
@@ -330,18 +346,34 @@ where
         match self.roots.pop() {
             Some(node) => Ok(node),
             None => match range {
-                Some(range) => Err(builder_error!(
-                    lsp_types::Range {
-                        start: self.params.doc.position_at(range.start as u32),
-                        end: self.params.doc.position_at(range.end as u32),
-                    },
-                    match T::QUERY_NAMES.len() {
-                        1 => format!("Expected {}", T::QUERY_NAMES[0]),
-                        _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),
-                    }
-                )),
+                Some(range) => {
+                    let node = self
+                        .params
+                        .document
+                        .cst
+                        .root_node()
+                        .descendant_for_byte_range(range.start, range.end)
+                        .unwrap();
+
+                    Err(builder_error!(
+                        lsp_types::Range {
+                            start: Position {
+                                line: node.start_position().row as u32,
+                                character: node.start_position().column as u32,
+                            },
+                            end: Position {
+                                line: node.end_position().row as u32,
+                                character: node.end_position().column as u32,
+                            },
+                        },
+                        match T::QUERY_NAMES.len() {
+                            1 => format!("Expected {}", T::QUERY_NAMES[0]),
+                            _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),
+                        }
+                    ))
+                }
                 None => Err(builder_error!(
-                    tree_sitter_range_to_lsp_range(&self.params.root_node.range()),
+                    tree_sitter_range_to_lsp_range(&self.params.document.cst.root_node().range()),
                     match T::QUERY_NAMES.len() {
                         1 => format!("Expected {}", T::QUERY_NAMES[0]),
                         _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),
@@ -363,7 +395,7 @@ where
         result
             .downcast_ref::<T>()
             .ok_or(builder_error!(
-                result.get_lsp_range(self.params.doc),
+                result.get_lsp_range(self.params.document),
                 format!("Invalid cast {:?}", T::QUERY_NAMES[0])
             ))?
             .try_into_builder(self.params)

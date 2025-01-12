@@ -13,7 +13,6 @@ tree-sitter = "0.24.6"
 rayon = "1.10"
 lsp-server = "0.7.6"
 lsp-types = "0.94.1"
-lsp-textdocument = "0.3.2"
 walkdir = "2"
 serde = "1.0.189"
 serde_json = "1.0.107"
@@ -26,6 +25,7 @@ crossbeam-channel = "0.5.13"
 parking_lot = "0.12.3"
 stderrlog = "0.6.0"
 log = "0.4.22"
+texter = "0.1.2"
 
 [workspace]
 members = [
@@ -37,9 +37,9 @@ exclude = ["test/vscode-wasi-lsp/server"]
 [workspace.dependencies]
 lsp-types = "0.94.1"
 tree-sitter = "0.24.3"
-lsp-textdocument = "0.3.2"
 downcast-rs = "1.2.1"
 constcat = "0.5.1"
 streaming-iterator = "0.1.9"
 parking_lot = "0.12.3"
 log = "0.4.22"
+texter = "0.1.2"

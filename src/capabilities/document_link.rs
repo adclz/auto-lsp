@@ -13,8 +13,8 @@ impl Session {
     ) -> anyhow::Result<Vec<DocumentLink>> {
         let uri = &params.text_document.uri;
         let workspace = self.workspaces.get(uri).unwrap();
-        let root_node = workspace.cst.root_node();
-        let source = workspace.document.get_content(None);
+        let root_node = workspace.document.cst.root_node();
+        let source = workspace.document.document.text.as_str();
         let query = &workspace.parsers.cst_parser.queries.comments;
         let re = Regex::new(r"\s+source:(\w+\.\w+):(\d+)").unwrap();
 
@@ -33,15 +33,24 @@ impl Session {
 
                 let url = _match.as_str().split(":").collect::<Vec<&str>>();
 
+                let start = match workspace
+                    .document
+                    .position_at(capture.node.start_byte() + link_start)
+                {
+                    Some(start) => start,
+                    None => continue,
+                };
+
+                let end = match workspace
+                    .document
+                    .position_at(capture.node.start_byte() + link_end)
+                {
+                    Some(end) => end,
+                    None => continue,
+                };
+
                 results.push(DocumentLink {
-                    range: Range {
-                        start: workspace
-                            .document
-                            .position_at((capture.node.start_byte() + link_start) as u32),
-                        end: workspace
-                            .document
-                            .position_at((capture.node.start_byte() + link_end) as u32),
-                    },
+                    range: Range { start, end },
                     target: Some(
                         Url::from_str(&format!("file:///workspace/{}#L{}", url[1], url[2]))
                             .unwrap(),

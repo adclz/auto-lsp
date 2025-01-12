@@ -353,7 +353,7 @@ impl<'a> StructBuilder<'a> {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, params: &mut #builder_params) -> Result<Self, Self::Error> {
-                    let builder_range = builder.get_lsp_range(params.doc);
+                    let builder_range = builder.get_lsp_range(params.document);
 
                     #_builder
 

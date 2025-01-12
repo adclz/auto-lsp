@@ -1,5 +1,4 @@
-use auto_lsp_core::symbol::{AstSymbol, CompletionItems};
-use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind, Position, Range};
+use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCursor};
 
@@ -16,10 +15,13 @@ impl Session {
             Some(context) => match context.trigger_kind {
                 CompletionTriggerKind::INVOKED => {
                     let workspace = self.workspaces.get(uri).unwrap();
-                    let position = params.text_document_position.position;
-                    let offset = workspace.document.offset_at(position) as usize;
+                    let offset = workspace
+                        .document
+                        .descendant_at_position(params.text_document_position.position)
+                        .unwrap()
+                        .start_byte();
 
-                    let source_code = workspace.document.get_content(None);
+                    let source_code = workspace.document.document.text.as_str();
                     let content_bytes = source_code.as_bytes();
 
                     // Find the start of the word at the position
@@ -47,8 +49,8 @@ impl Session {
                     let mut cursor = QueryCursor::new();
                     let mut captures = cursor.captures(
                         &query,
-                        workspace.cst.root_node(),
-                        workspace.document.get_content(None).as_bytes(),
+                        workspace.document.cst.root_node(),
+                        workspace.document.document.text.as_bytes(),
                     );
 
                     while let Some((m, capture_index)) = captures.next() {

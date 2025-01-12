@@ -4,9 +4,9 @@ use crate::{
     pending_symbol::AstBuilder,
     queryable::Queryable,
     semantic_tokens::SemanticTokensBuilder,
+    workspace::Document,
 };
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_textdocument::FullTextDocument;
 use lsp_types::{
     request::GotoDeclarationResponse, CompletionItem, Diagnostic, DocumentSymbol,
     GotoDefinitionResponse, Position, Range, Url,
@@ -220,18 +220,52 @@ pub trait AstSymbol:
     }
     // LSP
 
-    fn get_start_position(&self, doc: &FullTextDocument) -> Position {
-        doc.position_at(self.get_data().get_range().start as u32)
+    fn get_start_position(&self, workspace: &Document) -> Position {
+        let range = self.get_data().get_range();
+        let node = workspace
+            .cst
+            .root_node()
+            .descendant_for_byte_range(range.start, range.start)
+            .unwrap();
+
+        Position {
+            line: node.start_position().row as u32,
+            character: node.start_position().column as u32,
+        }
     }
 
-    fn get_end_position(&self, doc: &FullTextDocument) -> Position {
-        doc.position_at(self.get_data().get_range().end as u32)
+    fn get_end_position(&self, workspace: &Document) -> Position {
+        let range = self.get_data().get_range();
+        let node = workspace
+            .cst
+            .root_node()
+            .descendant_for_byte_range(range.end, range.end)
+            .unwrap();
+
+        Position {
+            line: node.start_position().row as u32,
+            character: node.start_position().column as u32,
+        }
     }
 
-    fn get_lsp_range(&self, doc: &FullTextDocument) -> Range {
-        let start = self.get_start_position(doc);
-        let end = self.get_end_position(doc);
-        lsp_types::Range { start, end }
+    fn get_lsp_range(&self, workspace: &Document) -> Range {
+        let range = self.get_data().get_range();
+        let node = workspace
+            .cst
+            .root_node()
+            .descendant_for_byte_range(range.start, range.end)
+            .unwrap();
+
+        lsp_types::Range {
+            start: Position {
+                line: node.start_position().row as u32,
+                character: node.start_position().column as u32,
+            },
+            end: Position {
+                line: node.end_position().row as u32,
+                character: node.end_position().column as u32,
+            },
+        }
     }
 }
 
@@ -391,25 +425,25 @@ pub trait IsComment {
 }
 
 pub trait DocumentSymbols {
-    fn get_document_symbols(&self, _doc: &FullTextDocument) -> Option<DocumentSymbol> {
+    fn get_document_symbols(&self, _doc: &Document) -> Option<DocumentSymbol> {
         None
     }
 }
 
 pub trait HoverInfo {
-    fn get_hover(&self, _doc: &FullTextDocument) -> Option<lsp_types::Hover> {
+    fn get_hover(&self, _doc: &Document) -> Option<lsp_types::Hover> {
         None
     }
 }
 
 pub trait GoToDefinition {
-    fn go_to_definition(&self, _doc: &FullTextDocument) -> Option<GotoDefinitionResponse> {
+    fn go_to_definition(&self, _doc: &Document) -> Option<GotoDefinitionResponse> {
         None
     }
 }
 
 pub trait GoToDeclaration {
-    fn go_to_declaration(&self, _doc: &FullTextDocument) -> Option<GotoDeclarationResponse> {
+    fn go_to_declaration(&self, _doc: &Document) -> Option<GotoDeclarationResponse> {
         None
     }
 }
@@ -419,7 +453,7 @@ pub trait SemanticTokens {
 }
 
 pub trait InlayHints {
-    fn build_inlay_hint(&self, _doc: &FullTextDocument, _acc: &mut Vec<lsp_types::InlayHint>) {}
+    fn build_inlay_hint(&self, _doc: &Document, _acc: &mut Vec<lsp_types::InlayHint>) {}
 }
 
 pub trait CodeLens {
@@ -427,7 +461,7 @@ pub trait CodeLens {
 }
 
 pub trait CompletionItems {
-    fn build_completion_items(&self, _acc: &mut Vec<CompletionItem>, _doc: &FullTextDocument) {}
+    fn build_completion_items(&self, _acc: &mut Vec<CompletionItem>, _doc: &Document) {}
 }
 
 macro_rules! impl_build {
@@ -451,9 +485,9 @@ macro_rules! impl_build {
 }
 
 impl_build!(SemanticTokens, build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder));
-impl_build!(InlayHints, build_inlay_hint(&self, doc: &FullTextDocument, acc: &mut Vec<lsp_types::InlayHint>));
+impl_build!(InlayHints, build_inlay_hint(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_build!(CodeLens, build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>));
-impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &FullTextDocument));
+impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document));
 
 pub trait IsAccessor: SymbolData {
     fn is_accessor(&self) -> bool {
@@ -462,7 +496,7 @@ pub trait IsAccessor: SymbolData {
 }
 
 pub trait Accessor: IsAccessor {
-    fn find(&self, _doc: &FullTextDocument) -> Result<Option<DynSymbol>, Diagnostic> {
+    fn find(&self, _doc: &Document) -> Result<Option<DynSymbol>, Diagnostic> {
         Ok(None)
     }
 }
@@ -504,9 +538,18 @@ fn edit(data: &mut AstSymbolData, start: usize, offset: isize) {
         // Entire range is after the offset; shift both start and end
         data.range.start = (data.range.start as isize + offset) as usize;
         data.range.end = (data.range.end as isize + offset) as usize;
-    } else if data.range.end > start {
+    } else if data.range.end >= start {
         // The offset occurs within the range; adjust only the end
         data.range.end = (data.range.end as isize + offset) as usize;
+    }
+}
+
+impl EditRange for DynSymbol {
+    fn edit_range(&self, start: usize, offset: isize) {
+        let mut write = self.write();
+        let data = write.get_mut_data();
+        edit(data, start, offset);
+        write.edit_range(start, offset);
     }
 }
 
@@ -602,7 +645,7 @@ pub trait IsCheck {
 }
 
 pub trait Check: IsCheck {
-    fn check(&self, _doc: &FullTextDocument, _diagnostics: &mut Vec<Diagnostic>) -> Result<(), ()> {
+    fn check(&self, _doc: &Document, _diagnostics: &mut Vec<Diagnostic>) -> Result<(), ()> {
         Ok(())
     }
 }
@@ -640,7 +683,7 @@ where
     fn to_swap<'a>(
         &mut self,
         start: usize,
-        offset: isize,
+        _offset: isize,
         builder_params: &'a mut BuilderParams,
     ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
         let read = self.read();

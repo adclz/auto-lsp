@@ -2,11 +2,11 @@ use session::Session;
 
 pub mod capabilities;
 pub mod session;
+pub mod texter_impl;
 
-pub extern crate auto_lsp_core;
-pub extern crate auto_lsp_macros;
-pub extern crate constcat;
-pub extern crate lsp_textdocument;
-pub extern crate lsp_types;
-pub extern crate self as auto_lsp;
-pub extern crate tree_sitter;
+pub use auto_lsp_core;
+pub use auto_lsp_macros;
+pub use constcat;
+pub use lsp_types;
+pub use texter;
+pub use tree_sitter;

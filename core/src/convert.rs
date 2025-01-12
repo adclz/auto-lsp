@@ -1,6 +1,5 @@
 use crate::builders::BuilderParams;
 
-use super::symbol::DynSymbol;
 pub trait TryFromBuilder<T>: Sized
 where
     T: Sized,

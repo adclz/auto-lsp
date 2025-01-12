@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
 use auto_lsp_core::builders::BuilderParams;
-use lsp_types::{DidChangeTextDocumentParams, TextDocumentContentChangeEvent};
+use lsp_types::DidChangeTextDocumentParams;
 
-use super::tree_sitter_extend::{
-    tree_sitter_edit::edit_tree, tree_sitter_lexer::get_tree_sitter_errors,
+use crate::{
+    session::lexer::get_tree_sitter_errors,
+    texter_impl::{change::NewChange, updateable::NewTree},
+    Session,
 };
-use crate::Session;
 
 impl Session {
     pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
@@ -16,7 +17,9 @@ impl Session {
             .get_mut(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let language_id = workspace.document.language_id();
+        let extension = uri.to_file_path().unwrap();
+        let language_id = extension.extension().unwrap().to_str().unwrap();
+
         let extension = match self.extensions.get(language_id) {
             Some(extension) => extension,
             None => {
@@ -37,35 +40,44 @@ impl Session {
 
         let cst_parser = &parsers.cst_parser;
 
-        let edits: Vec<(&TextDocumentContentChangeEvent, bool)> = params
-            .content_changes
-            .iter()
-            .map(|edit| {
-                (
-                    edit,
-                    match edit.text.trim().is_empty() {
-                        true => workspace.document.get_content(edit.range).trim().is_empty(),
-                        false => false,
-                    },
-                )
-            })
-            .collect();
-
-        workspace
-            .document
-            .update(&params.content_changes[..], params.text_document.version);
+        let mut new_tree = NewTree::from(&mut workspace.document.cst);
+        for ch in params.content_changes {
+            workspace
+                .document
+                .document
+                .update(NewChange::from(&ch).change, &mut new_tree)?;
+        }
+        let edits = new_tree.get_edits();
 
         workspace.errors.clear();
 
         let cst;
         let mut errors = vec![];
 
-        let new_tree = edit_tree(workspace, &params)?;
+        let new_tree = workspace
+            .parsers
+            .cst_parser
+            .parser
+            .write()
+            .map_err(|_| {
+                anyhow::format_err!(
+                    "Parser lock is poisoned while editing cst of document {}",
+                    uri
+                )
+            })?
+            .parse(
+                workspace.document.document.text.as_bytes(),
+                Some(&workspace.document.cst),
+            )
+            .ok_or(anyhow::format_err!(
+                "Tree sitter failed to edit cst of document {}",
+                uri
+            ))?;
 
         cst = new_tree;
         errors.extend(get_tree_sitter_errors(
             &cst.root_node(),
-            workspace.document.get_content(None).as_bytes(),
+            workspace.document.document.text.as_bytes(),
         ));
 
         let mut unsolved_checks = vec![];
@@ -78,38 +90,9 @@ impl Session {
             .get_mut(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        if let Some(ref mut ast) = workspace.ast {
-            if params.content_changes.iter().any(|edit| {
-                let edit_range = edit.range.unwrap();
-
-                let range_offset = workspace.document.offset_at(edit_range.start) as usize;
-                let start_byte = range_offset;
-                let old_end_byte = range_offset + edit.range_length.unwrap() as usize;
-                let new_end_byte = range_offset + edit.text.len();
-
-                let range = ast.read().get_range();
-                if start_byte <= range.start && (new_end_byte - old_end_byte) >= range.end {
-                    true
-                } else {
-                    false
-                }
-            }) {
-                workspace.ast = None;
-                workspace.unsolved_checks.clear();
-                workspace.unsolved_references.clear();
-                workspace.errors.clear();
-            }
-        }
-
-        let workspace = self
-            .workspaces
-            .get_mut(&uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
-
         let mut builder_params = BuilderParams {
+            document: &workspace.document,
             query: &cst_parser.queries.outline,
-            root_node: cst.root_node(),
-            doc: &workspace.document,
             url: arc_uri.clone(),
             diagnostics: &mut errors,
             unsolved_checks: &mut unsolved_checks,
@@ -153,7 +136,6 @@ impl Session {
             .get_mut(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        workspace.cst = cst;
         workspace.unsolved_checks = unsolved_checks;
         workspace.unsolved_references = unsolved_references;
         workspace.errors.extend(errors);

@@ -1,26 +1,19 @@
-use std::{
-    collections::HashMap,
-    sync::{RwLock, Weak},
-};
+use std::collections::HashMap;
 
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
 use crate::session::dispatchers::{NotificationDispatcher, RequestDispatcher};
-use auto_lsp_core::{
-    builders::BuilderParams,
-    symbol::{AstSymbol, DynSymbol},
-    workspace::WorkspaceContext,
-};
+use auto_lsp_core::workspace::{Parsers, Workspace};
 use crossbeam_channel::select;
-use cst_parser::CstParser;
 use lsp_server::{Connection, IoThreads, Message};
 use lsp_types::{
     notification::{DidChangeTextDocument, DidChangeWatchedFiles, DidOpenTextDocument},
     request::DocumentDiagnosticRequest,
-    CodeLensOptions, DocumentLinkOptions, SelectionRangeProviderCapability,
-    SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions, ServerCapabilities,
-    WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
+    CodeLensOptions, DocumentLinkOptions, InitializeParams, InitializeResult, PositionEncodingKind,
+    SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
+    SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
+    WorkspaceServerCapabilities,
 };
 use lsp_types::{
     request::{
@@ -32,24 +25,13 @@ use lsp_types::{
     DiagnosticOptions, DiagnosticServerCapabilities,
 };
 use lsp_types::{OneOf, Url};
-use workspace::Workspace;
 
 pub mod comment;
-pub mod cst_parser;
 pub mod dispatchers;
 pub mod init;
+pub mod lexer;
 pub mod senders;
 pub mod workspace;
-
-type StaticBuilderFn = fn(
-    &mut BuilderParams,
-    Option<std::ops::Range<usize>>,
-) -> Result<DynSymbol, lsp_types::Diagnostic>;
-
-pub struct Parsers {
-    pub cst_parser: CstParser,
-    pub ast_parser: StaticBuilderFn,
-}
 
 #[macro_export]
 macro_rules! configure_parsers {
@@ -61,11 +43,11 @@ macro_rules! configure_parsers {
             $outline_query_path: path,
             $builder: ident
         }),*) => {
-        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::session::Parsers>> =
+        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::auto_lsp_core::workspace::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
                 map.insert(
-                    $($extension, $crate::session::Parsers {
+                    $($extension, $crate::auto_lsp_core::workspace::Parsers {
                         cst_parser: $crate::create_parser!($language, $comment_query_path, $fold_query_path, $highlights_query_path, $outline_query_path),
                         ast_parser: |params: &mut $crate::auto_lsp_core::builders::BuilderParams<'_>, range: Option<std::ops::Range<usize>>| {
                             use $crate::auto_lsp_core::builders::StaticBuilder;
@@ -92,10 +74,10 @@ macro_rules! create_parser {
             .set_language(&LANGUAGE.into())
             .expect(&format!("Error loading {} parser", stringify!($parser)));
         let lang = $crate::tree_sitter::Language::new(LANGUAGE);
-        auto_lsp::session::cst_parser::CstParser {
+        $crate::auto_lsp_core::workspace::CstParser {
             parser: RwLock::new(parser),
             language: lang.clone(),
-            queries: auto_lsp::session::cst_parser::Queries {
+            queries: $crate::auto_lsp_core::workspace::Queries {
                 comments: $crate::tree_sitter::Query::new(&lang, $comment_query_path).unwrap(),
                 fold: $crate::tree_sitter::Query::new(&lang, $fold_query_path).unwrap(),
                 highlights: $crate::tree_sitter::Query::new(&lang, $highlights_query_path).unwrap(),
@@ -139,16 +121,44 @@ pub struct Session {
     pub init_options: InitOptions,
     pub connection: Connection,
     pub io_threads: IoThreads,
+    pub text_fn: TextFn,
     pub extensions: HashMap<String, String>,
     pub workspaces: HashMap<Url, Workspace>,
 }
 
+use texter::core::text::Text;
+
+pub type TextFn = fn(String) -> Text;
+
+fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEncodingKind) {
+    const DEFAULT: (TextFn, PositionEncodingKind) = (Text::new_utf16, PositionEncodingKind::UTF16);
+    let Some(encs) = encs else {
+        return DEFAULT;
+    };
+
+    for enc in encs {
+        if *enc == PositionEncodingKind::UTF16 {
+            return (Text::new_utf16, enc.clone());
+        } else if *enc == PositionEncodingKind::UTF8 {
+            return (Text::new, enc.clone());
+        }
+    }
+
+    DEFAULT
+}
+
 impl Session {
-    fn new(init_options: InitOptions, connection: Connection, io_threads: IoThreads) -> Self {
+    fn new(
+        init_options: InitOptions,
+        connection: Connection,
+        io_threads: IoThreads,
+        text_fn: TextFn,
+    ) -> Self {
         Self {
             init_options,
             connection,
             io_threads,
+            text_fn,
             extensions: HashMap::new(),
             workspaces: HashMap::new(),
         }
@@ -175,116 +185,130 @@ impl Session {
         // Create the transport. Includes the stdio (stdin and stdout) versions but this could
         // also be implemented to use sockets or HTTP.
         let (connection, io_threads) = Connection::stdio();
+        let (id, resp) = connection.initialize_start()?;
+        let params: InitializeParams = serde_json::from_value(resp)?;
 
-        let server_capabilities = serde_json::to_value(&ServerCapabilities {
-            text_document_sync: Some(lsp_types::TextDocumentSyncCapability::Kind(
-                lsp_types::TextDocumentSyncKind::INCREMENTAL,
-            )),
-            diagnostic_provider: match init_options.lsp_options.diagnostics {
-                true => Some(DiagnosticServerCapabilities::Options(DiagnosticOptions {
-                    inter_file_dependencies: true,
-                    workspace_diagnostics: true,
-                    ..Default::default()
-                })),
-                false => None,
-            },
-            document_symbol_provider: match init_options.lsp_options.document_symbols {
-                true => Some(OneOf::Left(true)),
-                false => None,
-            },
-            folding_range_provider: match init_options.lsp_options.folding_ranges {
-                true => Some(lsp_types::FoldingRangeProviderCapability::Simple(true)),
-                false => None,
-            },
-            semantic_tokens_provider: match init_options.lsp_options.semantic_tokens {
-                true => Some(
-                    lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
-                        SemanticTokensOptions {
-                            legend: SemanticTokensLegend {
-                                token_types: init_options
-                                    .semantic_token_types
-                                    .map(|types| types.to_vec())
-                                    .unwrap_or_default(),
-                                token_modifiers: init_options
-                                    .semantic_token_modifiers
-                                    .map(|types| types.to_vec())
-                                    .unwrap_or_default(),
+        let pos_encoding = params
+            .capabilities
+            .general
+            .as_ref()
+            .and_then(|g| g.position_encodings.as_deref());
+
+        let (t_fn, enc) = decide_encoding(pos_encoding);
+
+        let server_capabilities = serde_json::to_value(&InitializeResult {
+            capabilities: ServerCapabilities {
+                position_encoding: Some(enc),
+                text_document_sync: Some(lsp_types::TextDocumentSyncCapability::Kind(
+                    lsp_types::TextDocumentSyncKind::INCREMENTAL,
+                )),
+                diagnostic_provider: match init_options.lsp_options.diagnostics {
+                    true => Some(DiagnosticServerCapabilities::Options(DiagnosticOptions {
+                        inter_file_dependencies: true,
+                        workspace_diagnostics: true,
+                        ..Default::default()
+                    })),
+                    false => None,
+                },
+                document_symbol_provider: match init_options.lsp_options.document_symbols {
+                    true => Some(OneOf::Left(true)),
+                    false => None,
+                },
+                folding_range_provider: match init_options.lsp_options.folding_ranges {
+                    true => Some(lsp_types::FoldingRangeProviderCapability::Simple(true)),
+                    false => None,
+                },
+                semantic_tokens_provider: match init_options.lsp_options.semantic_tokens {
+                    true => Some(
+                        lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
+                            SemanticTokensOptions {
+                                legend: SemanticTokensLegend {
+                                    token_types: init_options
+                                        .semantic_token_types
+                                        .map(|types| types.to_vec())
+                                        .unwrap_or_default(),
+                                    token_modifiers: init_options
+                                        .semantic_token_modifiers
+                                        .map(|types| types.to_vec())
+                                        .unwrap_or_default(),
+                                },
+                                range: Some(true),
+                                full: Some(SemanticTokensFullOptions::Bool(true)),
+                                ..Default::default()
                             },
-                            range: Some(true),
-                            full: Some(SemanticTokensFullOptions::Bool(true)),
-                            ..Default::default()
-                        },
+                        ),
                     ),
-                ),
-                false => None,
-            },
-            hover_provider: match init_options.lsp_options.hover_info {
-                true => Some(lsp_types::HoverProviderCapability::Simple(true)),
-                false => None,
-            },
-            workspace_symbol_provider: match init_options.lsp_options.workspace_symbols {
-                true => Some(OneOf::Left(true)),
-                false => None,
-            },
-            document_link_provider: match init_options.lsp_options.document_links {
-                true => Some(DocumentLinkOptions {
-                    resolve_provider: Some(false),
-                    work_done_progress_options: Default::default(),
-                }),
-                false => None,
-            },
-            selection_range_provider: match init_options.lsp_options.selection_ranges {
-                true => Some(SelectionRangeProviderCapability::Simple(true)),
-                false => None,
-            },
-            workspace: Some(WorkspaceServerCapabilities {
-                workspace_folders: Some(WorkspaceFoldersServerCapabilities {
-                    supported: Some(true),
-                    change_notifications: Some(OneOf::Left(true)),
-                }),
-                ..Default::default()
-            }),
-            inlay_hint_provider: match init_options.lsp_options.inlay_hints {
-                true => Some(OneOf::Left(true)),
-                false => None,
-            },
-            code_lens_provider: match init_options.lsp_options.code_lens {
-                true => Some(CodeLensOptions {
-                    resolve_provider: Some(false),
-                }),
-                false => None,
-            },
-            completion_provider: match init_options.lsp_options.completions {
-                true => Some(lsp_types::CompletionOptions {
-                    trigger_characters: None,
-                    resolve_provider: Some(false),
+                    false => None,
+                },
+                hover_provider: match init_options.lsp_options.hover_info {
+                    true => Some(lsp_types::HoverProviderCapability::Simple(true)),
+                    false => None,
+                },
+                workspace_symbol_provider: match init_options.lsp_options.workspace_symbols {
+                    true => Some(OneOf::Left(true)),
+                    false => None,
+                },
+                document_link_provider: match init_options.lsp_options.document_links {
+                    true => Some(DocumentLinkOptions {
+                        resolve_provider: Some(false),
+                        work_done_progress_options: Default::default(),
+                    }),
+                    false => None,
+                },
+                selection_range_provider: match init_options.lsp_options.selection_ranges {
+                    true => Some(SelectionRangeProviderCapability::Simple(true)),
+                    false => None,
+                },
+                workspace: Some(WorkspaceServerCapabilities {
+                    workspace_folders: Some(WorkspaceFoldersServerCapabilities {
+                        supported: Some(true),
+                        change_notifications: Some(OneOf::Left(true)),
+                    }),
                     ..Default::default()
                 }),
-                false => None,
+                inlay_hint_provider: match init_options.lsp_options.inlay_hints {
+                    true => Some(OneOf::Left(true)),
+                    false => None,
+                },
+                code_lens_provider: match init_options.lsp_options.code_lens {
+                    true => Some(CodeLensOptions {
+                        resolve_provider: Some(false),
+                    }),
+                    false => None,
+                },
+                completion_provider: match init_options.lsp_options.completions {
+                    true => Some(lsp_types::CompletionOptions {
+                        trigger_characters: None,
+                        resolve_provider: Some(false),
+                        ..Default::default()
+                    }),
+                    false => None,
+                },
+                definition_provider: match init_options.lsp_options.definition_provider {
+                    true => Some(OneOf::Left(true)),
+                    false => None,
+                },
+                declaration_provider: match init_options.lsp_options.declaration_provider {
+                    true => Some(lsp_types::DeclarationCapability::Simple(true)),
+                    false => None,
+                },
+                references_provider: match init_options.lsp_options.references {
+                    true => Some(OneOf::Left(true)),
+                    false => None,
+                },
+                ..Default::default()
             },
-            definition_provider: match init_options.lsp_options.definition_provider {
-                true => Some(OneOf::Left(true)),
-                false => None,
-            },
-            declaration_provider: match init_options.lsp_options.declaration_provider {
-                true => Some(lsp_types::DeclarationCapability::Simple(true)),
-                false => None,
-            },
-            references_provider: match init_options.lsp_options.references {
-                true => Some(OneOf::Left(true)),
-                false => None,
-            },
-            ..Default::default()
+            server_info: None,
         })
         .unwrap();
 
-        let initialization_params = connection.initialize(server_capabilities)?;
+        connection.initialize_finish(id, server_capabilities)?;
 
-        let mut session = Session::new(init_options, connection, io_threads);
+        let mut session = Session::new(init_options, connection, io_threads, t_fn);
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.
-        session.init(initialization_params)?;
+        session.init(params)?;
 
         Ok(session)
     }
@@ -329,11 +353,5 @@ impl Session {
                 }
             }
         }
-    }
-}
-
-impl WorkspaceContext for Session {
-    fn find(&self, node: &dyn AstSymbol) -> Option<Weak<RwLock<dyn AstSymbol>>> {
-        todo!()
     }
 }

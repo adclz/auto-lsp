@@ -10,8 +10,8 @@ impl Session {
     ) -> anyhow::Result<Vec<FoldingRange>> {
         let uri = &params.text_document.uri;
         let workspace = self.workspaces.get(uri).unwrap();
-        let root_node = workspace.cst.root_node();
-        let source = workspace.document.get_content(None);
+        let root_node = workspace.document.cst.root_node();
+        let source = workspace.document.document.text.as_str();
         let query = &workspace.parsers.cst_parser.queries.fold;
 
         let mut query_cursor = tree_sitter::QueryCursor::new();

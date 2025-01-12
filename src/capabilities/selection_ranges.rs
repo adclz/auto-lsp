@@ -9,15 +9,15 @@ impl Session {
     ) -> anyhow::Result<Vec<SelectionRange>> {
         let uri = &params.text_document.uri;
         let workspace = self.workspaces.get(uri).unwrap();
-        let root_node = workspace.cst.root_node();
+        let root_node = workspace.document.cst.root_node();
 
-        let mut query_cursor = workspace.cst.walk();
+        let mut query_cursor = workspace.document.cst.walk();
 
         let mut results = vec![];
 
         for position in params.positions.iter() {
             let mut stack: Vec<tree_sitter::Node> = vec![];
-            let offset = workspace.document.offset_at(*position) as usize;
+            let offset = workspace.document.offset_at(*position).unwrap();
 
             let mut node = root_node;
             loop {
@@ -37,12 +37,13 @@ impl Session {
             }
 
             let mut parent: Option<SelectionRange> = None;
-            for node in stack {
+            for _node in stack {
+                let range = match workspace.document.range_at(offset) {
+                    Some(range) => range,
+                    None => continue,
+                };
                 let range = SelectionRange {
-                    range: Range {
-                        start: workspace.document.position_at(node.start_byte() as u32),
-                        end: workspace.document.position_at(node.end_byte() as u32),
-                    },
+                    range,
                     parent: parent.map(|p| Box::new(p)),
                 };
                 parent = Some(range);

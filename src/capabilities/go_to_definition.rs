@@ -14,7 +14,7 @@ impl Session {
         let position = params.text_document_position_params.position;
         let doc = &workspace.document;
 
-        let offset = doc.offset_at(position) as usize;
+        let offset = doc.offset_at(position).unwrap();
         let item = workspace
             .ast
             .iter()

@@ -439,7 +439,7 @@ impl<'a> EnumBuilder<'a> {
                     )*
                     Err(auto_lsp::auto_lsp_core::builder_error!(
                         auto_lsp,
-                        builder.unique_field.get_rc().borrow().get_lsp_range(params.doc),
+                        builder.unique_field.get_rc().borrow().get_lsp_range(params.document),
                         format!("Failed to downcast builder to enum: {}", stringify!(#name))
                     ))
                 }

@@ -1,7 +1,3 @@
-use auto_lsp_core::{
-    symbol::{Locator, SymbolData},
-    workspace,
-};
 use lsp_types::Url;
 use streaming_iterator::StreamingIterator;
 
@@ -16,8 +12,8 @@ impl Session {
 
         let comments_query = &workspace.parsers.cst_parser.queries.comments;
 
-        let source_code = workspace.document.get_content(None).as_bytes();
-        let cst = &workspace.cst;
+        let source_code = workspace.document.document.text.as_bytes();
+        let cst = &workspace.document.cst;
         let ast = match workspace.ast.as_ref() {
             Some(ast) => ast,
             None => return Ok(()),

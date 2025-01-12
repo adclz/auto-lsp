@@ -1,13 +1,12 @@
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_textdocument::FullTextDocument;
-use lsp_types::{Diagnostic, Url};
+use lsp_types::{Diagnostic, Position, Url};
 use std::cell::RefCell;
-use std::fmt::Formatter;
 use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::builder_error;
 use crate::builders::{tree_sitter_range_to_lsp_range, BuilderParams};
+use crate::workspace::Document;
 
 use super::convert::{TryFromBuilder, TryIntoBuilder};
 use super::queryable::Queryable;
@@ -33,14 +32,23 @@ pub trait AstBuilder: Downcast {
     fn get_range(&self) -> std::ops::Range<usize>;
 
     fn get_query_index(&self) -> usize;
-
-    fn get_lsp_range(&self, doc: &FullTextDocument) -> lsp_types::Range {
+    fn get_lsp_range(&self, workspace: &Document) -> lsp_types::Range {
         let range = self.get_range();
-        let start = range.start;
-        let end = range.start;
+        let node = workspace
+            .cst
+            .root_node()
+            .descendant_for_byte_range(range.start, range.end)
+            .unwrap();
+
         lsp_types::Range {
-            start: doc.position_at(start as u32).into(),
-            end: doc.position_at(end as u32).into(),
+            start: Position {
+                line: node.start_position().row as u32,
+                character: node.start_position().column as u32,
+            },
+            end: Position {
+                line: node.end_position().row as u32,
+                character: node.end_position().column as u32,
+            },
         }
     }
 

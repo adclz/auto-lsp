@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
-use auto_lsp_core::builders::BuilderParams;
-use lsp_textdocument::FullTextDocument;
+use auto_lsp_core::{
+    builders::BuilderParams,
+    workspace::{Document, Workspace},
+};
 use lsp_types::Url;
 
-use super::{tree_sitter_extend::tree_sitter_lexer::get_tree_sitter_errors, Workspace};
-use crate::session::Session;
+use crate::session::{lexer::get_tree_sitter_errors, Session};
 
 impl Session {
     /// Add a new document to session workspaces
@@ -15,7 +16,7 @@ impl Session {
         language_id: &str,
         source_code: &str,
     ) -> anyhow::Result<()> {
-        let document = FullTextDocument::new(language_id.to_owned(), 0, source_code.to_string());
+        let document = (self.text_fn)(source_code.to_string());
         let extension = match self.extensions.get(language_id) {
             Some(extension) => extension,
             None => {
@@ -41,8 +42,16 @@ impl Session {
 
         let source_code = source_code.as_bytes();
 
-        cst = cst_parser.try_parse(&source_code, None).unwrap();
+        cst = cst_parser
+            .parser
+            .write()
+            .unwrap()
+            .parse(&source_code, None)
+            .unwrap();
+
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
+
+        let doc = Document { document, cst };
 
         let arc_uri = Arc::new(uri.clone());
 
@@ -50,10 +59,9 @@ impl Session {
         let mut unsolved_references = vec![];
 
         let params = &mut BuilderParams {
-            doc: &document,
+            document: &doc,
             diagnostics: &mut errors,
             query: &cst_parser.queries.outline,
-            root_node: cst.root_node(),
             url: arc_uri.clone(),
             unsolved_checks: &mut unsolved_checks,
             unsolved_references: &mut unsolved_references,
@@ -86,11 +94,10 @@ impl Session {
             uri.to_owned(),
             Workspace {
                 parsers,
-                document,
+                document: doc,
                 errors,
                 unsolved_checks,
                 unsolved_references,
-                cst,
                 ast,
             },
         );

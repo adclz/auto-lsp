@@ -329,7 +329,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::CompletionItems),
                 methods: structx! {
                     build_completion_items: structx! {
-                        sig: quote! { fn build_completion_items(&self, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>, doc: &auto_lsp::lsp_textdocument::FullTextDocument) },
+                        sig: quote! { fn build_completion_items(&self, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>, doc: &auto_lsp::auto_lsp_core::workspace::Document) },
                         variant: quote! { build_completion_items(acc, doc) },
                     }
                 },
@@ -338,7 +338,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::DocumentSymbols),
                 methods: structx! {
                     get_document_symbols: structx! {
-                        sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::DocumentSymbol> },
+                        sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document) -> Option<auto_lsp::lsp_types::DocumentSymbol> },
                         variant: quote! { get_document_symbols(doc) },
                     }
                 },
@@ -347,7 +347,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::GoToDefinition),
                 methods: structx! {
                     go_to_definition: structx! {
-                        sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::GotoDefinitionResponse> },
+                        sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document) -> Option<auto_lsp::lsp_types::GotoDefinitionResponse> },
                         variant: quote! { go_to_definition(doc) },
                     }
                 },
@@ -356,7 +356,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::GoToDeclaration),
                 methods: structx! {
                     go_to_declaration: structx! {
-                        sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::request::GotoDeclarationResponse> },
+                        sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document) -> Option<auto_lsp::lsp_types::request::GotoDeclarationResponse> },
                         variant: quote! { go_to_declaration(doc) },
                     }
                 },
@@ -365,7 +365,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::HoverInfo),
                 methods: structx! {
                     get_hover: structx! {
-                        sig: quote! { fn get_hover(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Option<auto_lsp::lsp_types::Hover> },
+                        sig: quote! { fn get_hover(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document) -> Option<auto_lsp::lsp_types::Hover> },
                         variant: quote! { get_hover(doc) },
                     }
                 },
@@ -374,7 +374,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::InlayHints),
                 methods: structx! {
                     build_inlay_hint: structx! {
-                        sig: quote! { fn build_inlay_hint(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
+                        sig: quote! { fn build_inlay_hint(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
                         variant: quote! { build_inlay_hint(doc, acc) },
                     }
                 },
@@ -401,7 +401,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::Accessor),
                 methods: structx! {
                     find: structx! {
-                        sig: quote! { fn find(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument) -> Result<Option<auto_lsp::auto_lsp_core::symbol::DynSymbol>, auto_lsp::lsp_types::Diagnostic> },
+                        sig: quote! { fn find(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document) -> Result<Option<auto_lsp::auto_lsp_core::symbol::DynSymbol>, auto_lsp::lsp_types::Diagnostic> },
                         variant: quote! { find(doc) },
                     },
                 },
@@ -464,7 +464,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::Check),
                 methods: structx! {
                     check: structx! {
-                        sig: quote! { fn check(&self, doc: &auto_lsp::lsp_textdocument::FullTextDocument, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> Result<(), ()> },
+                        sig: quote! { fn check(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> Result<(), ()> },
                         variant: quote! { check(doc, diagnostics) },
                     },
                 },
