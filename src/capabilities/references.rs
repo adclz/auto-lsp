@@ -1,6 +1,6 @@
 use lsp_types::{Location, ReferenceParams};
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn get_references(
@@ -8,7 +8,11 @@ impl Session {
         params: ReferenceParams,
     ) -> anyhow::Result<Option<Vec<Location>>> {
         let uri = &params.text_document_position.text_document.uri;
-        let workspace = self.workspaces.get(uri).unwrap();
+        let workspace = WORKSPACES.lock();
+
+        let workspace = workspace
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
         let position = params.text_document_position.position;
         let doc = &workspace.document;
 

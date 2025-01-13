@@ -1,5 +1,3 @@
-use std::any;
-
 use lsp_types::DidChangeTextDocumentParams;
 
 use crate::session::Session;

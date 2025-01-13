@@ -1,7 +1,7 @@
 use auto_lsp_core::symbol::{AstSymbol, DocumentSymbols};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn get_document_symbols(
@@ -9,7 +9,12 @@ impl Session {
         params: DocumentSymbolParams,
     ) -> anyhow::Result<Option<DocumentSymbolResponse>> {
         let uri = &params.text_document.uri;
-        let workspace = self.workspaces.get(uri).unwrap();
+        let workspace = WORKSPACES.lock();
+
+        let workspace = workspace
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
         let source = &workspace.document;
 
         let symbols = workspace

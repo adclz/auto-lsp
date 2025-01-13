@@ -1,8 +1,6 @@
 use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams};
 
-use auto_lsp_core::symbol::AstSymbol;
-
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn go_to_definition(
@@ -10,7 +8,12 @@ impl Session {
         params: GotoDefinitionParams,
     ) -> anyhow::Result<Option<GotoDefinitionResponse>> {
         let uri = &params.text_document_position_params.text_document.uri;
-        let workspace = self.workspaces.get(uri).unwrap();
+        let workspace = WORKSPACES.lock();
+
+        let workspace = workspace
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
         let position = params.text_document_position_params.position;
         let doc = &workspace.document;
 

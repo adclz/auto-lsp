@@ -84,7 +84,6 @@ impl Session {
             io_threads,
             text_fn,
             extensions: HashMap::new(),
-            workspaces: HashMap::new(),
         }
     }
 

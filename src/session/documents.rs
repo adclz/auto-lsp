@@ -1,15 +1,23 @@
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    sync::{Arc, LazyLock},
+};
 
 use auto_lsp_core::{
     builders::BuilderParams,
     workspace::{Document, Workspace},
 };
 use lsp_types::{DidChangeTextDocumentParams, Url};
+use parking_lot::Mutex;
 
 use crate::{
     session::{lexer::get_tree_sitter_errors, Session},
     texter_impl::{change::NewChange, updateable::NewTree},
 };
+
+use super::WORKSPACES;
+
+pub static DOCUMENTS: LazyLock<Mutex<HashMap<Url, Workspace>>> = LazyLock::new(Mutex::default);
 
 impl Session {
     /// Add a new document to session workspaces
@@ -19,7 +27,7 @@ impl Session {
         language_id: &str,
         source_code: &str,
     ) -> anyhow::Result<()> {
-        let document = (self.text_fn)(source_code.to_string());
+        let text = (self.text_fn)(source_code.to_string());
         let extension = match self.extensions.get(language_id) {
             Some(extension) => extension,
             None => {
@@ -54,7 +62,10 @@ impl Session {
 
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
-        let doc = Document { document, cst };
+        let document = Document {
+            document: text,
+            cst,
+        };
 
         let arc_uri = Arc::new(uri.clone());
 
@@ -62,7 +73,7 @@ impl Session {
         let mut unsolved_references = vec![];
 
         let params = &mut BuilderParams {
-            document: &doc,
+            document: &document,
             diagnostics: &mut errors,
             query: &cst_parser.queries.outline,
             url: arc_uri.clone(),
@@ -93,28 +104,30 @@ impl Session {
             log::warn!("Unsolved references: {:?}", unsolved_references.len());
         }
 
-        self.workspaces.insert(
-            uri.to_owned(),
-            Workspace {
-                parsers,
-                document: doc,
-                errors,
-                unsolved_checks,
-                unsolved_references,
-                ast,
-            },
-        );
+        let mut workspaces = WORKSPACES.lock();
+        let workspace = Workspace {
+            parsers,
+            document,
+            errors,
+            unsolved_checks,
+            unsolved_references,
+            ast,
+        };
 
-        self.add_comments(uri)?;
+        self.add_comments(&workspace)?;
+
+        workspaces.insert(uri.to_owned(), workspace);
 
         Ok(())
     }
 
     pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
         let uri = &params.text_document.uri;
-        let workspace = self
-            .workspaces
-            .get_mut(&uri)
+
+        let mut workspaces = WORKSPACES.lock();
+
+        let workspace = workspaces
+            .get_mut(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let extension = uri.to_file_path().unwrap();
@@ -149,11 +162,6 @@ impl Session {
         }
         let edits = new_tree.get_edits();
 
-        workspace.errors.clear();
-
-        let cst;
-        let mut errors = vec![];
-
         let new_tree = workspace
             .parsers
             .cst_parser
@@ -174,29 +182,21 @@ impl Session {
                 uri
             ))?;
 
-        cst = new_tree;
-        errors.extend(get_tree_sitter_errors(
-            &cst.root_node(),
+        workspace.document.cst = new_tree;
+
+        workspace.errors.clear();
+        workspace.errors.extend(get_tree_sitter_errors(
+            &workspace.document.cst.root_node(),
             workspace.document.document.text.as_bytes(),
         ));
-
-        let mut unsolved_checks = vec![];
-        unsolved_checks.extend(workspace.unsolved_checks.clone());
-        let mut unsolved_references = vec![];
-        unsolved_references.extend(workspace.unsolved_references.clone());
-
-        let workspace = self
-            .workspaces
-            .get_mut(&uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let mut builder_params = BuilderParams {
             document: &workspace.document,
             query: &cst_parser.queries.outline,
             url: arc_uri.clone(),
-            diagnostics: &mut errors,
-            unsolved_checks: &mut unsolved_checks,
-            unsolved_references: &mut unsolved_references,
+            diagnostics: &mut workspace.errors,
+            unsolved_checks: &mut workspace.unsolved_checks,
+            unsolved_references: &mut workspace.unsolved_references,
         };
         if let Some(ast) = &mut workspace.ast {
             builder_params
@@ -207,46 +207,36 @@ impl Session {
             let ast_parser = &workspace.parsers.ast_parser;
             let ast_build = ast_parser(&mut builder_params, None);
 
-            let workspace = self
-                .workspaces
-                .get_mut(&uri)
-                .ok_or(anyhow::anyhow!("Workspace not found"))?;
-
             workspace.ast = match ast_build {
                 Ok(item) => Some(item),
                 Err(e) => {
-                    errors.push(e);
+                    workspace.errors.push(e);
                     None
                 }
             };
         }
 
-        if !unsolved_checks.is_empty() {
+        if !workspace.unsolved_checks.is_empty() {
             log::info!("");
-            log::warn!("Unsolved checks: {:?}", unsolved_checks.len());
+            log::warn!("Unsolved checks: {:?}", workspace.unsolved_checks.len());
         }
 
-        if !unsolved_references.is_empty() {
+        if !workspace.unsolved_references.is_empty() {
             log::info!("");
-            log::warn!("Unsolved references: {:?}", unsolved_references.len());
+            log::warn!(
+                "Unsolved references: {:?}",
+                workspace.unsolved_references.len()
+            );
         }
 
-        let workspace = self
-            .workspaces
-            .get_mut(&uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
-
-        workspace.unsolved_checks = unsolved_checks;
-        workspace.unsolved_references = unsolved_references;
-        workspace.errors.extend(errors);
-
-        self.add_comments(uri)?;
+        self.add_comments(&workspace)?;
 
         Ok(())
     }
 
     pub fn delete_document(&mut self, uri: &Url) -> anyhow::Result<()> {
-        self.workspaces
+        let mut workspaces = WORKSPACES.lock();
+        workspaces
             .remove(uri)
             .ok_or_else(|| anyhow::format_err!("Workspace not found"))?;
         Ok(())

@@ -1,6 +1,6 @@
 use lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse};
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn go_to_declaration(
@@ -8,7 +8,12 @@ impl Session {
         params: GotoDeclarationParams,
     ) -> anyhow::Result<Option<GotoDeclarationResponse>> {
         let uri = &params.text_document_position_params.text_document.uri;
-        let workspace = self.workspaces.get(uri).unwrap();
+        let workspace = WORKSPACES.lock();
+
+        let workspace = workspace
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
         let position = params.text_document_position_params.position;
         let doc = &workspace.document;
 

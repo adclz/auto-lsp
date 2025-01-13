@@ -1,15 +1,11 @@
+use auto_lsp_core::workspace::{self, Workspace};
 use lsp_types::Url;
 use streaming_iterator::StreamingIterator;
 
-use super::Session;
+use super::{Session, WORKSPACES};
 
 impl Session {
-    pub fn add_comments(&self, uri: &Url) -> anyhow::Result<()> {
-        let workspace = self
-            .workspaces
-            .get(uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
-
+    pub fn add_comments(&self, workspace: &Workspace) -> anyhow::Result<()> {
         let comments_query = &workspace.parsers.cst_parser.queries.comments;
 
         let source_code = workspace.document.document.text.as_bytes();

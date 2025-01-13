@@ -2,7 +2,7 @@ use auto_lsp_core::semantic_tokens::SemanticTokensBuilder;
 
 use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn get_semantic_tokens_full(
@@ -10,7 +10,11 @@ impl Session {
         params: SemanticTokensParams,
     ) -> anyhow::Result<SemanticTokensResult> {
         let uri = &params.text_document.uri;
-        let workspace = self.workspaces.get(uri).unwrap();
+        let workspace = WORKSPACES.lock();
+
+        let workspace = workspace
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
 
@@ -27,7 +31,11 @@ impl Session {
         params: SemanticTokensRangeParams,
     ) -> anyhow::Result<SemanticTokensResult> {
         let uri = &params.text_document.uri;
-        let workspace = self.workspaces.get(uri).unwrap();
+        let workspace = WORKSPACES.lock();
+
+        let workspace = workspace
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
 

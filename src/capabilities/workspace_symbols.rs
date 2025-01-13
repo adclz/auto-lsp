@@ -1,7 +1,6 @@
-use auto_lsp_core::symbol::DocumentSymbols;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn get_workspace_symbols(
@@ -14,7 +13,9 @@ impl Session {
 
         let mut symbols = vec![];
 
-        self.workspaces.iter().for_each(|(uri, v)| {
+        let workspaces = WORKSPACES.lock();
+
+        workspaces.iter().for_each(|(uri, v)| {
             let ast = &v.ast;
 
             symbols.extend(

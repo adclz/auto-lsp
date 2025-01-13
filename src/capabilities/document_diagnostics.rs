@@ -3,7 +3,7 @@ use lsp_types::{
     FullDocumentDiagnosticReport, RelatedFullDocumentDiagnosticReport,
 };
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn get_diagnostics(
@@ -11,11 +11,11 @@ impl Session {
         params: DocumentDiagnosticParams,
     ) -> anyhow::Result<DocumentDiagnosticReportResult> {
         let uri = params.text_document.uri;
-        let workspace = self
-            .workspaces
-            .get_mut(&uri)
-            .ok_or(anyhow::format_err!("Workspace not found"))?;
+        let workspace = WORKSPACES.lock();
 
+        let workspace = workspace
+            .get(&uri)
+            .ok_or(anyhow::anyhow!("Workspace not found"))?;
         Ok(DocumentDiagnosticReportResult::Report(
             DocumentDiagnosticReport::Full(RelatedFullDocumentDiagnosticReport {
                 related_documents: None,

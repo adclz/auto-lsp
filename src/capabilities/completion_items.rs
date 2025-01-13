@@ -2,7 +2,7 @@ use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCursor};
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     pub fn get_completion_items(
@@ -14,7 +14,12 @@ impl Session {
         match params.context {
             Some(context) => match context.trigger_kind {
                 CompletionTriggerKind::INVOKED => {
-                    let workspace = self.workspaces.get(uri).unwrap();
+                    let workspace = WORKSPACES.lock();
+
+                    let workspace = workspace
+                        .get(uri)
+                        .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
                     let offset = workspace
                         .document
                         .descendant_at_position(params.text_document_position.position)

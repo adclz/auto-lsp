@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
-use crate::session::Session;
+use crate::session::{Session, WORKSPACES};
 
 impl Session {
     /// Handle the watched files change notification.
@@ -18,7 +18,9 @@ impl Session {
         params.changes.iter().try_for_each(|file| match file.typ {
             FileChangeType::CREATED => {
                 let uri = &file.uri;
-                if self.workspaces.contains_key(&uri) {
+                let workspace = WORKSPACES.lock();
+
+                if workspace.contains_key(&uri) {
                     // The file is already in the workspace
                     // We can ignore this change
                     return Ok(());
