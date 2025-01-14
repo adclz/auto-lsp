@@ -55,6 +55,7 @@ dependencies = [
  "streaming-iterator",
  "texter",
  "tree-sitter",
+ "tree-sitter-language",
  "walkdir",
 ]
 
