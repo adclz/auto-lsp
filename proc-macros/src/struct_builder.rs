@@ -118,11 +118,13 @@ impl<'a> StructBuilder<'a> {
     }
 
     fn impl_locator(&self, builder: &mut FieldBuilder) {
+        let symbol_trait = &PATHS.symbol_trait.path;
         builder
             .add_fn_iter(
                 &self.fields,
                 &PATHS.locator.methods.find_at_offset.sig,
                 Some(quote! {
+                    use #symbol_trait;
                     if (!self.is_inside_offset(offset)) {
                         return None;
                     }
@@ -294,14 +296,14 @@ impl<'a> StructBuilder<'a> {
 
     fn fn_add(&self, builder: &mut FieldBuilder) {
         let input_name = &self.input_name;
-
+        let add_symbol_trait = &PATHS.add_symbol_trait;
         builder.add_fn_iter(
             &self.fields,
             &PATHS.symbol_builder_trait.methods.add.sig,
-            Some(quote! {
-             }),
+            Some(quote! { use #add_symbol_trait; }),
             |_, _, name, field_type, builder| {
                 quote! {
+                    
                     if let Some(node) =  self.#name.add::<#builder>(capture, params, stringify!(#input_name), stringify!(#field_type))? {
                        return Ok(Some(node))
                     };
@@ -321,8 +323,14 @@ impl<'a> StructBuilder<'a> {
 
         let symbol_data = &PATHS.symbol_data;
         let builder_params = &PATHS.builder_params;
+        let try_downcast = &PATHS.try_downcast_trait;
+        let finalize = &PATHS.finalize_trait;
 
         let _builder = FieldBuilder::default()
+            .add(quote! {
+                use #try_downcast;
+                use #finalize;
+            })
             .add_iter(&self.fields,
                 |ty, _, name, field_type, _| match ty  {
                 FieldType::Normal  => quote! {
@@ -348,11 +356,14 @@ impl<'a> StructBuilder<'a> {
             .stage()
             .to_token_stream();
 
+        let builder_trait = &PATHS.symbol_builder_trait.path;
+
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #input_name {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, params: &mut #builder_params) -> Result<Self, Self::Error> {
+                    use #builder_trait;
                     let builder_range = builder.get_lsp_range(params.document);
 
                     #_builder

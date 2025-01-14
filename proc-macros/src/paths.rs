@@ -73,6 +73,10 @@ pub struct Paths {
     pub try_into_builder: Path,
     pub try_from_builder: Path,
 
+    pub add_symbol_trait: Path,
+    pub try_downcast_trait: Path,
+    pub finalize_trait: Path,
+
     pub lsp_code_lens: TraitInfo<
         Structx! {
             build_code_lens: Structx! {
@@ -315,6 +319,9 @@ impl Default for Paths {
             },
             try_into_builder: parse_quote!(auto_lsp::auto_lsp_core::convert::TryIntoBuilder),
             try_from_builder: parse_quote!(auto_lsp::auto_lsp_core::convert::TryFromBuilder),
+            add_symbol_trait: parse_quote!(auto_lsp::auto_lsp_core::pending_symbol::AddSymbol),
+            try_downcast_trait: parse_quote!(auto_lsp::auto_lsp_core::pending_symbol::TryDownCast),
+            finalize_trait: parse_quote!(auto_lsp::auto_lsp_core::pending_symbol::Finalize),
 
             lsp_code_lens: TraitInfo {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::CodeLens),
