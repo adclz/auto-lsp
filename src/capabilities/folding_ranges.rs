@@ -14,9 +14,14 @@ impl Session {
         let workspace = workspace
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
+
+        let query = match workspace.parsers.cst_parser.queries.fold {
+            Some(ref query) => query,
+            None => return Ok(vec![]),
+        };
+
         let root_node = workspace.document.cst.root_node();
         let source = workspace.document.document.text.as_str();
-        let query = &workspace.parsers.cst_parser.queries.fold;
 
         let mut query_cursor = tree_sitter::QueryCursor::new();
         let mut captures = query_cursor.captures(query, root_node, source.as_bytes());

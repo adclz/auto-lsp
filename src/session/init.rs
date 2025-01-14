@@ -3,7 +3,7 @@ use std::collections::HashMap;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
-use auto_lsp_core::workspace::Parsers;
+use auto_lsp_core::workspace::{CstParser, Parsers};
 use lsp_server::{Connection, IoThreads};
 use lsp_types::OneOf;
 use lsp_types::{
@@ -240,24 +240,24 @@ impl Session {
 #[macro_export]
 macro_rules! configure_parsers {
     ($($extension: expr => {
-            $language:ident,
-            $comment_query_path: path,
-            $fold_query_path: path,
-            $highlights_query_path: path,
-            $outline_query_path: path,
-            $builder: ident
+            language: $language: path,
+            ast_root: $root: ident,
+            core: $core: path,
+            comment: $comment: expr,
+            fold: $fold: expr,
+            highlights: $highlights: expr
         }),*) => {
         static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::auto_lsp_core::workspace::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
                 map.insert(
                     $($extension, $crate::auto_lsp_core::workspace::Parsers {
-                        cst_parser: $crate::create_parser!($language, $comment_query_path, $fold_query_path, $highlights_query_path, $outline_query_path),
+                        cst_parser: $crate::session::init::create_parser($language, $core, $comment, $fold, $highlights),
                         ast_parser: |params: &mut $crate::auto_lsp_core::builders::BuilderParams<'_>, range: Option<std::ops::Range<usize>>| {
                             use $crate::auto_lsp_core::builders::StaticBuilder;
 
                             Ok::<$crate::auto_lsp_core::symbol::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::auto_lsp_core::symbol::Symbol::new_and_check($builder::static_build(params, range)?, params).to_dyn(),
+                                $crate::auto_lsp_core::symbol::Symbol::new_and_check($root::static_build(params, range)?, params).to_dyn(),
                             )
                         },
                     }),*
@@ -267,26 +267,31 @@ macro_rules! configure_parsers {
     };
 }
 
-#[macro_export]
-macro_rules! create_parser {
-    ($parser: ident, $comment_query_path: path, $fold_query_path: path, $highlights_query_path: path, $outline_query_path: path) => {{
-        use $parser::LANGUAGE;
+pub fn create_parser(
+    language: tree_sitter_language::LanguageFn,
+    core: &'static str,
+    comments: Option<&'static str>,
+    fold: Option<&'static str>,
+    highlights: Option<&'static str>,
+) -> CstParser {
+    let mut parser = crate::tree_sitter::Parser::new();
+    parser.set_language(&language.into()).unwrap();
 
-        use std::sync::RwLock;
-        let mut parser = $crate::tree_sitter::Parser::new();
-        parser
-            .set_language(&LANGUAGE.into())
-            .expect(&format!("Error loading {} parser", stringify!($parser)));
-        let lang = $crate::tree_sitter::Language::new(LANGUAGE);
-        $crate::auto_lsp_core::workspace::CstParser {
-            parser: RwLock::new(parser),
-            language: lang.clone(),
-            queries: $crate::auto_lsp_core::workspace::Queries {
-                comments: $crate::tree_sitter::Query::new(&lang, $comment_query_path).unwrap(),
-                fold: $crate::tree_sitter::Query::new(&lang, $fold_query_path).unwrap(),
-                highlights: $crate::tree_sitter::Query::new(&lang, $highlights_query_path).unwrap(),
-                outline: $crate::tree_sitter::Query::new(&lang, $outline_query_path).unwrap(),
-            },
-        }
-    }};
+    let language = crate::tree_sitter::Language::new(language);
+
+    let core = crate::tree_sitter::Query::new(&language, core).unwrap();
+    let comments = comments.map(|path| crate::tree_sitter::Query::new(&language, path).unwrap());
+    let fold = fold.map(|path| crate::tree_sitter::Query::new(&language, path).unwrap());
+    let highlights =
+        highlights.map(|path| crate::tree_sitter::Query::new(&language, path).unwrap());
+    CstParser {
+        parser: crate::parking_lot::RwLock::new(parser),
+        language,
+        queries: crate::auto_lsp_core::workspace::Queries {
+            comments,
+            fold,
+            highlights,
+            core,
+        },
+    }
 }

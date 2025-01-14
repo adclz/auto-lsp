@@ -18,9 +18,13 @@ impl Session {
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
+        let query = match workspace.parsers.cst_parser.queries.comments {
+            Some(ref query) => query,
+            None => return Ok(vec![]),
+        };
+
         let root_node = workspace.document.cst.root_node();
         let source = workspace.document.document.text.as_str();
-        let query = &workspace.parsers.cst_parser.queries.comments;
         let re = Regex::new(r"\s+source:(\w+\.\w+):(\d+)").unwrap();
 
         let mut query_cursor = tree_sitter::QueryCursor::new();

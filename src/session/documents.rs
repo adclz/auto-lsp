@@ -53,12 +53,7 @@ impl Session {
 
         let source_code = source_code.as_bytes();
 
-        cst = cst_parser
-            .parser
-            .write()
-            .unwrap()
-            .parse(&source_code, None)
-            .unwrap();
+        cst = cst_parser.parser.write().parse(&source_code, None).unwrap();
 
         errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
 
@@ -75,7 +70,7 @@ impl Session {
         let params = &mut BuilderParams {
             document: &document,
             diagnostics: &mut errors,
-            query: &cst_parser.queries.outline,
+            query: &cst_parser.queries.core,
             url: arc_uri.clone(),
             unsolved_checks: &mut unsolved_checks,
             unsolved_references: &mut unsolved_references,
@@ -167,12 +162,6 @@ impl Session {
             .cst_parser
             .parser
             .write()
-            .map_err(|_| {
-                anyhow::format_err!(
-                    "Parser lock is poisoned while editing cst of document {}",
-                    uri
-                )
-            })?
             .parse(
                 workspace.document.document.text.as_bytes(),
                 Some(&workspace.document.cst),
@@ -192,7 +181,7 @@ impl Session {
 
         let mut builder_params = BuilderParams {
             document: &workspace.document,
-            query: &cst_parser.queries.outline,
+            query: &cst_parser.queries.core,
             url: arc_uri.clone(),
             diagnostics: &mut workspace.errors,
             unsolved_checks: &mut workspace.unsolved_checks,

@@ -29,12 +29,12 @@ define_semantic_token_modifiers![standard {
 
 configure_parsers!(
     "iec-61131-2" => {
-        tree_sitter_iec61131_3_2,
-        tree_sitter_iec61131_3_2::COMMENTS_QUERY,
-        tree_sitter_iec61131_3_2::FOLD_QUERY,
-        tree_sitter_iec61131_3_2::HIGHLIGHTS_QUERY,
-        tree_sitter_iec61131_3_2::OUTLINE_QUERY,
-        SourceFile
+        language: tree_sitter_iec61131_3_2::LANGUAGE,
+        ast_root: SourceFile,
+        core: tree_sitter_iec61131_3_2::OUTLINE_QUERY,
+        comment: Some(tree_sitter_iec61131_3_2::COMMENTS_QUERY),
+        fold: Some(tree_sitter_iec61131_3_2::FOLD_QUERY),
+        highlights: Some(tree_sitter_iec61131_3_2::HIGHLIGHTS_QUERY)
     }
 );
 

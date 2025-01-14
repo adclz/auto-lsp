@@ -10,6 +10,7 @@ auto-lsp-core = { path = "./core" }
 auto-lsp-macros = { path = "./proc-macros" }
 phf = { version = "0.11", features = ["macros"] }
 tree-sitter = "0.24.6"
+tree-sitter-language = "0.1.3"
 rayon = "1.10"
 lsp-server = "0.7.6"
 lsp-types = "0.94.1"
@@ -26,6 +27,9 @@ parking_lot = "0.12.3"
 stderrlog = "0.6.0"
 log = "0.4.22"
 texter = "0.1.2"
+
+[dev-dependencies]
+tree-sitter-python = "0.23.6"
 
 [workspace]
 members = [

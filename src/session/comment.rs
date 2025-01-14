@@ -6,7 +6,10 @@ use super::{Session, WORKSPACES};
 
 impl Session {
     pub fn add_comments(&self, workspace: &Workspace) -> anyhow::Result<()> {
-        let comments_query = &workspace.parsers.cst_parser.queries.comments;
+        let comments_query = match workspace.parsers.cst_parser.queries.comments {
+            Some(ref query) => query,
+            None => return Ok(()),
+        };
 
         let source_code = workspace.document.document.text.as_bytes();
         let cst = &workspace.document.cst;

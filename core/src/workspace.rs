@@ -1,16 +1,16 @@
 use crate::symbol::{DynSymbol, WeakSymbol};
 use lsp_types::Diagnostic;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use texter::core::text::Text;
 use tree_sitter::{Language, Parser, Point, Query, Tree};
 
 use crate::builders::BuilderParams;
 
 pub struct Queries {
-    pub comments: Query,
-    pub fold: Query,
-    pub highlights: Query,
-    pub outline: Query,
+    pub core: Query,
+    pub comments: Option<Query>,
+    pub fold: Option<Query>,
+    pub highlights: Option<Query>,
 }
 
 pub struct CstParser {
