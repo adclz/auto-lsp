@@ -424,9 +424,41 @@ pub trait IsComment {
     }
 }
 
+pub enum VecOrSymbol {
+    Vec(Vec<DocumentSymbol>),
+    Symbol(DocumentSymbol),
+}
+
 pub trait DocumentSymbols {
-    fn get_document_symbols(&self, _doc: &Document) -> Option<DocumentSymbol> {
+    fn get_document_symbols(&self, _doc: &Document) -> Option<VecOrSymbol> {
         None
+    }
+}
+
+impl<T: AstSymbol> DocumentSymbols for Vec<Symbol<T>> {
+    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
+        let mut symbols = vec![];
+        for symbol in self.iter() {
+            match symbol.read().get_document_symbols(doc) {
+                Some(VecOrSymbol::Symbol(s)) => symbols.push(s),
+                Some(VecOrSymbol::Vec(v)) => symbols.extend(v),
+                None => continue,
+            }
+        }
+        if symbols.is_empty() {
+            None
+        } else {
+            Some(VecOrSymbol::Vec(symbols))
+        }
+    }
+}
+
+impl From<VecOrSymbol> for Vec<DocumentSymbol> {
+    fn from(item: VecOrSymbol) -> Self {
+        match item {
+            VecOrSymbol::Vec(v) => v,
+            VecOrSymbol::Symbol(s) => vec![s],
+        }
     }
 }
 

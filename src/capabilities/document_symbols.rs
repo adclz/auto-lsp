@@ -1,4 +1,4 @@
-use auto_lsp_core::symbol::{AstSymbol, DocumentSymbols};
+use auto_lsp_core::symbol::{AstSymbol, DocumentSymbols, VecOrSymbol};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
 use crate::session::{Session, WORKSPACES};
@@ -23,6 +23,14 @@ impl Session {
             .filter_map(|p| p.read().get_document_symbols(source))
             .collect::<Vec<_>>();
 
-        Ok(Some(DocumentSymbolResponse::Nested(symbols)))
+        Ok(Some(DocumentSymbolResponse::Nested(
+            symbols
+                .into_iter()
+                .flat_map(|s| match s {
+                    VecOrSymbol::Symbol(s) => vec![s],
+                    VecOrSymbol::Vec(v) => v,
+                })
+                .collect(),
+        )))
     }
 }

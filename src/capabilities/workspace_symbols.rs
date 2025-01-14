@@ -1,3 +1,4 @@
+use auto_lsp_core::symbol::VecOrSymbol;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
 use crate::session::{Session, WORKSPACES};
@@ -21,16 +22,32 @@ impl Session {
             symbols.extend(
                 ast.iter()
                     .filter_map(|p| p.read().get_document_symbols(&v.document))
-                    .map(|p| WorkspaceSymbol {
-                        name: p.name,
-                        kind: p.kind,
-                        tags: None,
-                        container_name: None,
-                        location: OneOf::Left(Location {
-                            uri: uri.to_owned(),
-                            range: p.range,
-                        }),
-                        data: None,
+                    .flat_map(|p| match p {
+                        VecOrSymbol::Symbol(s) => vec![WorkspaceSymbol {
+                            name: s.name,
+                            kind: s.kind,
+                            tags: None,
+                            container_name: None,
+                            location: OneOf::Left(Location {
+                                uri: uri.to_owned(),
+                                range: s.range,
+                            }),
+                            data: None,
+                        }],
+                        VecOrSymbol::Vec(v) => v
+                            .into_iter()
+                            .map(|s| WorkspaceSymbol {
+                                name: s.name,
+                                kind: s.kind,
+                                tags: None,
+                                container_name: None,
+                                location: OneOf::Left(Location {
+                                    uri: uri.to_owned(),
+                                    range: s.range,
+                                }),
+                                data: None,
+                            })
+                            .collect::<Vec<_>>(),
                     })
                     .collect::<Vec<_>>(),
             );

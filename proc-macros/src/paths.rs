@@ -338,7 +338,7 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::symbol::DocumentSymbols),
                 methods: structx! {
                     get_document_symbols: structx! {
-                        sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document) -> Option<auto_lsp::lsp_types::DocumentSymbol> },
+                        sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document) -> Option<auto_lsp::auto_lsp_core::symbol::VecOrSymbol> },
                         variant: quote! { get_document_symbols(doc) },
                     }
                 },

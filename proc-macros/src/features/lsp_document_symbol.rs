@@ -52,27 +52,28 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                     let kind = &strategy.kind;
                     let name = path_to_dot_tokens(&strategy.name, None);
 
-                    let children_tokens =
-                        strategy.childrens.as_ref().map(|vec| {
-                            vec.iter().map(|path| {
-                            let path_tokens = path_to_dot_tokens(path, None);
-                            quote! {
-                                #path_tokens
-                                    .iter()
-                                    .filter_map(|child| child.read().get_document_symbols(doc))
-                                    .collect::<Vec<_>>()
-                            }
-                        }).collect::<Vec<_>>()
-                        });
+                    let children_tokens = strategy.childrens.as_ref().map(|vec| {
+                        vec.iter()
+                            .map(|path| {
+                                let path_tokens = path_to_dot_tokens(path, None);
+                                quote! { #path_tokens.get_document_symbols(doc) }
+                            })
+                            .collect::<Vec<_>>()
+                    });
 
                     let children = if let Some(tokens) = children_tokens {
                         quote! {
-                            Some(
-                                vec![#(#tokens),*]
-                                    .into_iter()
-                                    .flatten()
-                                    .collect::<Vec<_>>()
-                            )
+                            let children = vec![#(#tokens),*]
+                                .into_iter()
+                                .filter_map(|f| f)
+                                .collect::<Vec<VecOrSymbol>>();
+
+                            let children = children
+                                .into_iter()
+                                .map(|f| f.into())
+                                .collect::<Vec<Vec<_>>>();
+
+                            let children = children.into_iter().flatten().collect::<Vec<_>>();
                         }
                     } else {
                         quote! { None }
@@ -89,7 +90,9 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                                     return None
                                 }
 
-                                Some(auto_lsp::lsp_types::DocumentSymbol {
+                                #children
+
+                                Some(auto_lsp::auto_lsp_core::symbol::VecOrSymbol::Symbol(auto_lsp::lsp_types::DocumentSymbol {
                                     name,
                                     detail: None,
                                     kind: #kind,
@@ -97,8 +100,8 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                                     deprecated: None,
                                     range: self.get_lsp_range(doc),
                                     selection_range: read.get_lsp_range(doc),
-                                    children: #children
-                                })
+                                    children: Some(children)
+                                }))
                             }
                         }
                     }
