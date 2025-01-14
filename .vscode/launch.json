@@ -7,13 +7,14 @@
 		{
 			"type": "extensionHost",
 			"request": "launch",
-			"name": "Run WASI Lsp",
-			"runtimeExecutable": "${execPath}/test/vscode-wasi-lsp",
+			"name": "Run Python WASI LSP",
+			"runtimeExecutable": "${execPath}/extensions/vscode-python-wasi-lsp",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}/test/vscode-wasi-lsp"
+				"--extensionDevelopmentPath=${workspaceFolder}/extensions/vscode-python-wasi-lsp",
+				"${workspaceFolder}/extensions/vscode-python-wasi-lsp/test"
 			],
 			"outFiles": [
-				"${workspaceFolder}/test/vscode-wasi-lsp/client/out/**/*.js"
+				"${workspaceFolder}/extensions/vscode-python-wasi-lsp/client/out/**/*.js"
 			],
 			"autoAttachChildProcesses": true,
 			"preLaunchTask": "npm: build"

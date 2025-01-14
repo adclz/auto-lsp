@@ -5,7 +5,7 @@
 			"type": "npm",
 			"script": "build",
 			"label": "npm: build",
-			"path": "test/vscode-wasi-lsp"
+			"path": "extensions/vscode-python-wasi-lsp"
 		}
 	]
 }
