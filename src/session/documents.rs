@@ -12,7 +12,7 @@ use parking_lot::Mutex;
 
 use crate::{
     session::{lexer::get_tree_sitter_errors, Session},
-    texter_impl::{change::NewChange, updateable::NewTree},
+    texter_impl::{change::WrapChange, updateable::WrapTree},
 };
 
 use super::WORKSPACES;
@@ -148,12 +148,12 @@ impl Session {
 
         let cst_parser = &parsers.cst_parser;
 
-        let mut new_tree = NewTree::from(&mut workspace.document.cst);
+        let mut new_tree = WrapTree::from(&mut workspace.document.cst);
         for ch in params.content_changes {
             workspace
                 .document
                 .document
-                .update(NewChange::from(&ch).change, &mut new_tree)?;
+                .update(WrapChange::from(&ch).change, &mut new_tree)?;
         }
         let edits = new_tree.get_edits();
 

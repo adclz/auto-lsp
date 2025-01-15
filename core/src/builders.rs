@@ -116,15 +116,13 @@ impl<'a> BuilderParams<'a> {
     pub fn swap_ast(
         &'a mut self,
         root: &mut DynSymbol,
-        edit_ranges: &Vec<InputEdit>,
+        edit_ranges: &Vec<(InputEdit, bool)>,
         ast_parser: &fn(
             &mut BuilderParams,
             Option<std::ops::Range<usize>>,
         ) -> Result<DynSymbol, lsp_types::Diagnostic>,
     ) -> &'a mut BuilderParams<'a> {
-        let doc = &self.document.document;
-
-        for edit in edit_ranges.iter() {
+        for (edit, is_ws) in edit_ranges.iter() {
             let start_byte = edit.start_byte;
             let old_end_byte = edit.old_end_byte;
             let new_end_byte = edit.new_end_byte;
@@ -134,39 +132,58 @@ impl<'a> BuilderParams<'a> {
                 continue;
             }
 
-            let is_ws = false;
-
             root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
-            if is_ws {
+
+            let node = self
+                .document
+                .cst
+                .root_node()
+                .descendant_for_byte_range(edit.start_byte, edit.new_end_byte);
+
+            if let Some(node) = node {
+                if let Some(node) = node.parent() {
+                    if node.is_error() {
+                        log::warn!("");
+                        log::warn!("Node has an invalid syntax, aborting incremental update");
+                        continue;
+                    }
+                }
+                if node.is_extra() {
+                    log::info!("");
+                    log::info!("Node is extra, only update ranges");
+                    continue;
+                }
+            }
+
+            if *is_ws {
                 log::info!("");
                 log::info!("Whitespace edit, only update ranges");
+                continue;
             }
 
-            if !is_ws {
-                let result =
-                    root.write()
-                        .dyn_swap(start_byte, (new_end_byte - old_end_byte) as isize, self);
-                match result {
-                    ControlFlow::Break(Err(e)) => {
-                        self.diagnostics.push(e);
-                    }
-                    ControlFlow::Continue(()) => {
-                        log::info!("");
-                        log::info!("No incremental update available, root node will be reparsed");
-                        log::info!("");
-                        let mut ast_builder = ast_parser(self, None);
-                        match ast_builder {
-                            Ok(ref mut new_root) => {
-                                root.swap(new_root);
-                            }
-                            Err(e) => {
-                                self.diagnostics.push(e);
-                            }
+            let result =
+                root.write()
+                    .dyn_swap(start_byte, (new_end_byte - old_end_byte) as isize, self);
+            match result {
+                ControlFlow::Break(Err(e)) => {
+                    self.diagnostics.push(e);
+                }
+                ControlFlow::Continue(()) => {
+                    log::info!("");
+                    log::info!("No incremental update available, root node will be reparsed");
+                    log::info!("");
+                    let mut ast_builder = ast_parser(self, None);
+                    match ast_builder {
+                        Ok(ref mut new_root) => {
+                            root.swap(new_root);
+                        }
+                        Err(e) => {
+                            self.diagnostics.push(e);
                         }
                     }
-                    ControlFlow::Break(Ok(_)) => {}
-                };
-            }
+                }
+                ControlFlow::Break(Ok(_)) => {}
+            };
         }
         self
     }
@@ -307,7 +324,10 @@ where
 
             if !self.start_building {
                 if let Some(range) = range {
-                    if capture.node.range().start_byte.lt(&range.start) {
+                    if capture.node.range().start_byte <= range.start
+                        && self.params.query.capture_names()[capture_index as usize]
+                            != T::QUERY_NAMES[0]
+                    {
                         continue;
                     } else {
                         self.start_building = true;

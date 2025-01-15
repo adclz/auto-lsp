@@ -715,13 +715,14 @@ where
     fn to_swap<'a>(
         &mut self,
         start: usize,
-        _offset: isize,
+        offset: isize,
         builder_params: &'a mut BuilderParams,
     ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
         let read = self.read();
         match read.is_inside_offset(start) {
             true => {
                 drop(read);
+                self.write().dyn_swap(start, offset, builder_params)?;
                 let parent = self.read().get_parent();
                 let range = self.read().get_range();
                 log::info!("");
