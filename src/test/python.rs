@@ -109,8 +109,7 @@ fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
 static TEST_FILE: LazyLock<Workspace> = LazyLock::new(|| {
     create_python_workspace(
         Url::parse("file:///test.py").unwrap(),
-        r#"
-# This is a comment
+r#"# This is a comment
 def foo():
     pass
 

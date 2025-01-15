@@ -30,6 +30,7 @@ texter = "0.1.2"
 
 [dev-dependencies]
 tree-sitter-python = "0.23.6"
+tree-sitter-html = "0.23.2"
 
 [workspace]
 members = [
