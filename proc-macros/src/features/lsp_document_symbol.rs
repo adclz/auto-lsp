@@ -63,7 +63,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
 
                     let children = if let Some(tokens) = children_tokens {
                         quote! {
-                            let children = vec![#(#tokens),*]
+                            {let children = vec![#(#tokens),*]
                                 .into_iter()
                                 .filter_map(|f| f)
                                 .collect::<Vec<VecOrSymbol>>();
@@ -73,7 +73,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                                 .map(|f| f.into())
                                 .collect::<Vec<Vec<_>>>();
 
-                            let children = children.into_iter().flatten().collect::<Vec<_>>();
+                            Some(children.into_iter().flatten().collect::<Vec<_>>())}
                         }
                     } else {
                         quote! { None }
@@ -90,8 +90,6 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                                     return None
                                 }
 
-                                #children
-
                                 Some(auto_lsp::auto_lsp_core::symbol::VecOrSymbol::Symbol(auto_lsp::lsp_types::DocumentSymbol {
                                     name,
                                     detail: None,
@@ -100,7 +98,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                                     deprecated: None,
                                     range: self.get_lsp_range(doc),
                                     selection_range: read.get_lsp_range(doc),
-                                    children: Some(children)
+                                    children: #children
                                 }))
                             }
                         }

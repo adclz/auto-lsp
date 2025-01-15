@@ -109,7 +109,7 @@ impl Session {
             ast,
         };
 
-        self.add_comments(&workspace)?;
+        Self::add_comments(&workspace)?;
 
         workspaces.insert(uri.to_owned(), workspace);
 
@@ -218,7 +218,7 @@ impl Session {
             );
         }
 
-        self.add_comments(&workspace)?;
+        Self::add_comments(&workspace)?;
 
         Ok(())
     }

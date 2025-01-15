@@ -5,7 +5,7 @@ use streaming_iterator::StreamingIterator;
 use super::{Session, WORKSPACES};
 
 impl Session {
-    pub fn add_comments(&self, workspace: &Workspace) -> anyhow::Result<()> {
+    pub fn add_comments(workspace: &Workspace) -> anyhow::Result<()> {
         let comments_query = match workspace.parsers.cst_parser.queries.comments {
             Some(ref query) => query,
             None => return Ok(()),
