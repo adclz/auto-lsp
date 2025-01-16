@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    AccessorFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    FeaturesCodeGen, ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS,
 };
 use darling::{util::PathList, FromMeta};
 use proc_macro2::TokenStream;
@@ -43,7 +43,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
         let input_name = &self.input_name;
         let document_symbols_path = &PATHS.lsp_document_symbols.path;
         let sig = &PATHS.lsp_document_symbols.methods.get_document_symbols.sig;
-
+        let vec_or_symbol = &PATHS.vec_or_symbol;
         match &params.lsp_document_symbols {
             None => self.default_impl(),
             Some(params) => match params {
@@ -90,7 +90,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                                     return None
                                 }
 
-                                Some(auto_lsp::auto_lsp_core::symbol::VecOrSymbol::Symbol(auto_lsp::lsp_types::DocumentSymbol {
+                                Some(#vec_or_symbol::Symbol(auto_lsp::lsp_types::DocumentSymbol {
                                     name,
                                     detail: None,
                                     kind: #kind,
@@ -108,7 +108,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let document_symbols_path = &PATHS.lsp_document_symbols.path;
         let sig = &PATHS.lsp_document_symbols.methods.get_document_symbols.sig;

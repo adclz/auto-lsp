@@ -1,5 +1,5 @@
-use auto_lsp_core::builders::BuilderParams;
-use auto_lsp_core::symbol::{DocumentSymbols, IsComment, SymbolData, VecOrSymbol};
+use auto_lsp_core::build::MainBuilder;
+use auto_lsp_core::ast::{DocumentSymbols, StaticUpdate, IsComment, VecOrSymbol, GetSymbolData, AstSymbol, Symbol};
 use auto_lsp_core::workspace::{Document, Workspace};
 use auto_lsp_macros::seq;
 use lsp_types::Url;
@@ -8,7 +8,6 @@ use texter::core::text::Text;
 
 use crate::session::Session;
 use crate as auto_lsp;
-use crate::auto_lsp_core::symbol::{AstSymbol, StaticSwap, Symbol};
 
 use crate::configure_parsers;
 
@@ -80,7 +79,7 @@ fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
     let mut unsolved_checks = vec![];
     let mut unsolved_references = vec![];
 
-    let mut params = BuilderParams {
+    let mut params = MainBuilder {
         query: &parse.cst_parser.queries.core,
         document: &document,
         url: Arc::new(uri),

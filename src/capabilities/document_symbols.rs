@@ -1,4 +1,4 @@
-use auto_lsp_core::symbol::{AstSymbol, DocumentSymbols, VecOrSymbol};
+use auto_lsp_core::ast::{AstSymbol, DocumentSymbols, VecOrSymbol};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
 use crate::session::{Session, WORKSPACES};

@@ -10,7 +10,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    AccessorFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -82,7 +82,7 @@ impl<'a> FeaturesCodeGen for CodeLensBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let code_lens_path = &PATHS.lsp_code_lens.path;
         let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;

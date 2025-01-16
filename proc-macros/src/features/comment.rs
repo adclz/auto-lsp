@@ -6,7 +6,7 @@ use quote::quote;
 use syn::{Ident, Path};
 
 use crate::{
-    utilities::extract_fields::StructFields, AccessorFeatures, Feature, FeaturesCodeGen,
+    utilities::extract_fields::StructFields, ReferenceFeatures, Feature, FeaturesCodeGen,
     ReferenceFeature, StructHelpers, SymbolFeatures, PATHS,
 };
 
@@ -55,7 +55,7 @@ impl<'a> FeaturesCodeGen for CommentBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let is_comment = &PATHS.is_comment.path;
 

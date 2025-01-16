@@ -10,7 +10,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    AccessorFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -114,7 +114,7 @@ impl<'a> FeaturesCodeGen for SemanticTokensBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let semantic_tokens_path = &PATHS.lsp_semantic_token.path;
         let sig = &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig;

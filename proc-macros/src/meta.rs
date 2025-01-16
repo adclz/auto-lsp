@@ -29,7 +29,7 @@ pub struct StructHelpers {
 
 #[derive(Debug, FromMeta)]
 pub enum AstStructKind {
-    Accessor(AccessorFeatures),
+    Reference(ReferenceFeatures),
     Symbol(SymbolFeatures),
 }
 
@@ -66,7 +66,7 @@ pub enum ReferenceFeature {
 }
 
 #[derive(Debug, FromMeta)]
-pub struct AccessorFeatures {
+pub struct ReferenceFeatures {
     pub check: Option<ReferenceFeature>,
     pub comment: Option<ReferenceFeature>,
     pub lsp_document_symbols: Option<ReferenceFeature>,
@@ -80,6 +80,6 @@ pub struct AccessorFeatures {
 }
 
 pub enum ReferenceOrSymbolFeatures<'a> {
-    Reference(&'a AccessorFeatures),
+    Reference(&'a ReferenceFeatures),
     Symbol(&'a SymbolFeatures),
 }

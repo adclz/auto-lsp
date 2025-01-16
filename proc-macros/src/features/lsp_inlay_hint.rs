@@ -7,7 +7,7 @@ use syn::Ident;
 
 use crate::{
     utilities::extract_fields::{FieldInfoExtract, StructFields},
-    AccessorFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -95,7 +95,7 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let hover_info_path = &PATHS.lsp_hover_info.path;
         let sig = &PATHS.lsp_hover_info.methods.get_hover.sig;

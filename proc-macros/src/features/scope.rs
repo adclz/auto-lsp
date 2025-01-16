@@ -7,7 +7,7 @@ use syn::{Ident, Path};
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    AccessorFeatures, FeaturesCodeGen, SymbolFeatures, PATHS,
+    FeaturesCodeGen, ReferenceFeatures, SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -92,7 +92,7 @@ impl<'a> FeaturesCodeGen for ScopeBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, _params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, _params: &ReferenceFeatures) -> impl quote::ToTokens {
         self.default_impl()
     }
 }

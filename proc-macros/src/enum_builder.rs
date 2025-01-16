@@ -124,10 +124,10 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.is_accessor.methods.is_accessor.sig,
-                &PATHS.is_accessor.methods.is_accessor.variant,
+                &PATHS.is_reference.methods.is_reference.sig,
+                &PATHS.is_reference.methods.is_reference.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.is_accessor.path)
+            .stage_trait(&self.input_name, &PATHS.is_reference.path)
             .add_default_iter(
                 &self.fields,
                 &PATHS.accessor.methods.find.sig,
@@ -213,13 +213,14 @@ impl<'a> EnumBuilder<'a> {
         let names = quote! { &[#(#names),*] };
 
         let input_name = self.input_name;
+        let check_conflicts = &PATHS.check_conflicts;
 
         builder
             .add(quote! { const CHECK: () = {
                 use #queryable;
                 use #check_queryable;
                 let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
-                auto_lsp::auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+                #check_conflicts(stringify!(#input_name), #names, queries);
             }; })
             .stage_trait(&self.input_name, check_queryable);
 

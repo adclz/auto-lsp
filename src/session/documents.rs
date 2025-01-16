@@ -4,7 +4,7 @@ use std::{
 };
 
 use auto_lsp_core::{
-    builders::BuilderParams,
+    build::MainBuilder,
     workspace::{Document, Workspace},
 };
 use lsp_types::{DidChangeTextDocumentParams, Url};
@@ -67,7 +67,7 @@ impl Session {
         let mut unsolved_checks = vec![];
         let mut unsolved_references = vec![];
 
-        let params = &mut BuilderParams {
+        let params = &mut MainBuilder {
             document: &document,
             diagnostics: &mut errors,
             query: &cst_parser.queries.core,
@@ -179,7 +179,7 @@ impl Session {
             workspace.document.document.text.as_bytes(),
         ));
 
-        let mut builder_params = BuilderParams {
+        let mut builder_params = MainBuilder {
             document: &workspace.document,
             query: &cst_parser.queries.core,
             url: arc_uri.clone(),

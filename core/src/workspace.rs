@@ -1,10 +1,11 @@
-use crate::symbol::{DynSymbol, WeakSymbol};
+use crate::{
+    core_ast::symbol::{DynSymbol, WeakSymbol},
+    core_build::main_builder::MainBuilder,
+};
 use lsp_types::Diagnostic;
 use parking_lot::RwLock;
 use texter::core::text::Text;
 use tree_sitter::{Language, Parser, Point, Query, Tree};
-
-use crate::builders::BuilderParams;
 
 pub struct Queries {
     pub core: Query,
@@ -19,14 +20,14 @@ pub struct CstParser {
     pub queries: Queries,
 }
 
-pub type StaticBuilderFn = fn(
-    &mut BuilderParams,
+pub type StaticBuildableFn = fn(
+    &mut MainBuilder,
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
 pub struct Parsers {
     pub cst_parser: CstParser,
-    pub ast_parser: StaticBuilderFn,
+    pub ast_parser: StaticBuildableFn,
 }
 
 pub struct Document {
@@ -39,6 +40,7 @@ impl Document {
         Self { document, cst }
     }
 
+    /// Get the smallest node within the root node that spans the given range.
     pub fn descendant_at_position(
         &self,
         position: lsp_types::Position,
@@ -53,6 +55,7 @@ impl Document {
             .descendant_for_point_range(position, position)
     }
 
+    /// Get the smallest node within root node that spans the given range.
     pub fn position_at(&self, offset: usize) -> Option<lsp_types::Position> {
         self.cst
             .root_node()
@@ -63,6 +66,7 @@ impl Document {
             })
     }
 
+    /// Get the smallest node's range within root node that spans the given range.
     pub fn range_at(&self, offset: usize) -> Option<lsp_types::Range> {
         self.cst
             .root_node()
@@ -79,6 +83,7 @@ impl Document {
             })
     }
 
+    /// Get the byte offset of the given position.
     pub fn offset_at(&self, position: lsp_types::Position) -> Option<usize> {
         match self.cst.root_node().descendant_for_point_range(
             Point {

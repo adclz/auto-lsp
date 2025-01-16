@@ -1,14 +1,14 @@
 use crate::{
     features::{
-        accessor::AccessorBuilder, check::CheckBuilder, comment::CommentBuilder,
-        lsp_code_lens::CodeLensBuilder, lsp_completion_item::CompletionItemsBuilder,
-        lsp_document_symbol::DocumentSymbolBuilder, lsp_go_to_declaration::GoToDeclarationBuilder,
-        lsp_go_to_definition::GotoDefinitionBuilder, lsp_hover_info::HoverInfoBuilder,
-        lsp_inlay_hint::InlayHintsBuilder, lsp_semantic_token::SemanticTokensBuilder,
+        check::CheckBuilder, comment::CommentBuilder, lsp_code_lens::CodeLensBuilder,
+        lsp_completion_item::CompletionItemsBuilder, lsp_document_symbol::DocumentSymbolBuilder,
+        lsp_go_to_declaration::GoToDeclarationBuilder, lsp_go_to_definition::GotoDefinitionBuilder,
+        lsp_hover_info::HoverInfoBuilder, lsp_inlay_hint::InlayHintsBuilder,
+        lsp_semantic_token::SemanticTokensBuilder, reference::ReferenceBuilder,
         scope::ScopeBuilder,
     },
     utilities::extract_fields::StructFields,
-    AccessorFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures,
+    ReferenceFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures,
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
@@ -16,7 +16,7 @@ use quote::ToTokens;
 
 pub trait FeaturesCodeGen {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens;
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens;
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens;
 }
 
 pub struct Features<'a> {
@@ -30,7 +30,7 @@ pub struct Features<'a> {
     pub lsp_go_to_definition: GotoDefinitionBuilder<'a>,
     pub lsp_go_to_declaration: GoToDeclarationBuilder<'a>,
     pub scope: ScopeBuilder<'a>,
-    pub accessor: AccessorBuilder<'a>,
+    pub accessor: ReferenceBuilder<'a>,
     pub check: CheckBuilder<'a>,
     pub comment: CommentBuilder<'a>,
 }
@@ -53,7 +53,7 @@ impl<'a> Features<'a> {
             lsp_go_to_definition: GotoDefinitionBuilder::new(input_name, fields),
             lsp_go_to_declaration: GoToDeclarationBuilder::new(input_name, fields),
             scope: ScopeBuilder::new(input_name, fields),
-            accessor: AccessorBuilder::new(input_name, fields),
+            accessor: ReferenceBuilder::new(input_name, fields),
             check: CheckBuilder::new(input_name, helper_attributes, fields),
             comment: CommentBuilder::new(input_name, fields),
         }

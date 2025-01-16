@@ -253,11 +253,11 @@ macro_rules! configure_parsers {
                 map.insert(
                     $($extension, $crate::auto_lsp_core::workspace::Parsers {
                         cst_parser: $crate::session::init::create_parser($language, $core, $comment, $fold, $highlights),
-                        ast_parser: |params: &mut $crate::auto_lsp_core::builders::BuilderParams<'_>, range: Option<std::ops::Range<usize>>| {
-                            use $crate::auto_lsp_core::builders::StaticBuilder;
+                        ast_parser: |params: &mut $crate::auto_lsp_core::build::MainBuilder<'_>, range: Option<std::ops::Range<usize>>| {
+                            use $crate::auto_lsp_core::build::StaticBuildable;
 
-                            Ok::<$crate::auto_lsp_core::symbol::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::auto_lsp_core::symbol::Symbol::new_and_check($root::static_build(params, range)?, params).to_dyn(),
+                            Ok::<$crate::auto_lsp_core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
+                                $crate::auto_lsp_core::ast::Symbol::new_and_check($root::static_build(params, range)?, params).to_dyn(),
                             )
                         },
                     }),*

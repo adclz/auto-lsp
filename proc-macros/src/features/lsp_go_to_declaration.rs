@@ -7,7 +7,7 @@ use syn::Ident;
 
 use crate::Feature;
 use crate::{
-    utilities::extract_fields::StructFields, AccessorFeatures, FeaturesCodeGen, ReferenceFeature,
+    utilities::extract_fields::StructFields, ReferenceFeatures, FeaturesCodeGen, ReferenceFeature,
     SymbolFeatures, PATHS,
 };
 
@@ -47,7 +47,7 @@ impl<'a> FeaturesCodeGen for GoToDeclarationBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let go_to_declarations_path = &PATHS.lsp_go_to_declaration.path;
         let sig = &PATHS.lsp_go_to_declaration.methods.go_to_declaration.sig;

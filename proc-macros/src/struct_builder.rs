@@ -187,13 +187,14 @@ impl<'a> StructBuilder<'a> {
             .collect::<Vec<_>>();
 
         let input_name = self.input_name;
+        let check_conflicts = &PATHS.check_conflicts;
 
         builder
             .add(quote! { const CHECK: () = {
                 use #queryable;
                 use #check_queryable;
                 let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
-                auto_lsp::auto_lsp_core::queryable::check_conflicts(stringify!(#input_name), #names, queries);
+                #check_conflicts(stringify!(#input_name), #names, queries);
             }; })
             .stage_trait(&self.input_name, check_queryable);
 

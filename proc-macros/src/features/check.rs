@@ -6,7 +6,7 @@ use quote::quote;
 use syn::{Ident, Path};
 
 use crate::{
-    utilities::extract_fields::StructFields, AccessorFeatures, Feature, FeaturesCodeGen,
+    utilities::extract_fields::StructFields, ReferenceFeatures, Feature, FeaturesCodeGen,
     StructHelpers, SymbolFeatures, PATHS,
 };
 
@@ -67,7 +67,7 @@ impl<'a> FeaturesCodeGen for CheckBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, _params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, _params: &ReferenceFeatures) -> impl quote::ToTokens {
         self.default_impl()
     }
 }

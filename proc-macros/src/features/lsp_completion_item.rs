@@ -7,7 +7,7 @@ use syn::{Ident, Path};
 
 use crate::{
     utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    AccessorFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -81,7 +81,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &AccessorFeatures) -> impl quote::ToTokens {
+    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let completion_items_path = &PATHS.lsp_completion_items.path;
         let sig = &PATHS

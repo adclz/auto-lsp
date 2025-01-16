@@ -1,4 +1,4 @@
-use auto_lsp_core::symbol::VecOrSymbol;
+use auto_lsp_core::ast::VecOrSymbol;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
 use crate::session::{Session, WORKSPACES};
