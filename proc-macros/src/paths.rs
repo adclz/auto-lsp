@@ -392,8 +392,8 @@ impl Default for Paths {
                 path: parse_quote!(auto_lsp::auto_lsp_core::ast::SemanticTokens),
                 methods: structx! {
                     build_semantic_tokens: structx! {
-                        sig: quote! { fn build_semantic_tokens(&self, builder: &mut auto_lsp::auto_lsp_core::semantic_tokens::SemanticTokensBuilder) },
-                        variant: quote! { build_semantic_tokens(builder) },
+                        sig: quote! { fn build_semantic_tokens(&self, doc: &auto_lsp::auto_lsp_core::workspace::Document, builder: &mut auto_lsp::auto_lsp_core::semantic_tokens::SemanticTokensBuilder) },
+                        variant: quote! { build_semantic_tokens(doc, builder) },
                     }
                 },
             },

@@ -10,7 +10,7 @@ use crate::{
         extract_fields::{FieldInfoExtract, StructFields},
         format_tokens::path_to_dot_tokens,
     },
-    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    FeaturesCodeGen, ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -75,35 +75,29 @@ impl<'a> FeaturesCodeGen for SemanticTokensBuilder<'a> {
                     quote! {
                         impl #semantic_tokens_path for #input_name {
                             #sig {
-                                let range = #range.get_range();
+                                let range = #range.get_lsp_range(doc);
                                 match #token_types.get_index(#token_index) {
                                     Some(index) => builder.push(
-                                        auto_lsp::lsp_types::Range::new(
-                                            auto_lsp::lsp_types::Position::new(
-                                                range.start_point.row as u32,
-                                                range.start_point.column as u32,
-                                            ),
-                                            auto_lsp::lsp_types::Position::new(range.end_point.row as u32, range.end_point.column as u32),
-                                        ),
+                                        range,
                                         index as u32,
                                         #modifiers,
                                     ),
                                     None => {
-                                        log::warning!("Warning: Token type not found {:?}", #token_index);
+                                        log::warn!("Warning: Token type not found {:?}", #token_index);
                                         return
                                     },
                                 }
                                 #(
-                                    self.#field_names.read().build_semantic_tokens(builder);
+                                    self.#field_names.read().build_semantic_tokens(doc, builder);
                                 )*
                                 #(
                                     if let Some(field) = self.#field_option_names.as_ref() {
-                                        field.read().build_semantic_tokens(builder);
+                                        field.read().build_semantic_tokens(doc, builder);
                                     };
                                 )*
                                 #(
                                     for field in self.#field_vec_names.iter() {
-                                        field.read().build_semantic_tokens(builder);
+                                        field.read().build_semantic_tokens(doc, builder);
                                     };
                                 )*
                             }

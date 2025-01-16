@@ -105,7 +105,7 @@ pub trait SemanticTokens {
     /// [LSP SemanticTokens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens)
     ///
     /// Use [SemanticTokensBuilder] to build the semantic tokens
-    fn build_semantic_tokens(&self, _builder: &mut SemanticTokensBuilder) {}
+    fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {}
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide inlay hints
@@ -158,7 +158,7 @@ macro_rules! impl_build {
     };
 }
 
-impl_build!(SemanticTokens, build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder));
+impl_build!(SemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
 impl_build!(InlayHints, build_inlay_hint(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_build!(CodeLens, build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document));

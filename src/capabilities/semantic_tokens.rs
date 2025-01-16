@@ -18,10 +18,10 @@ impl Session {
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
 
-        workspace
-            .ast
-            .iter()
-            .for_each(|p| p.read().build_semantic_tokens(&mut builder));
+        workspace.ast.iter().for_each(|p| {
+            p.read()
+                .build_semantic_tokens(&workspace.document, &mut builder)
+        });
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }
@@ -39,10 +39,10 @@ impl Session {
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
 
-        workspace
-            .ast
-            .iter()
-            .for_each(|p| p.read().build_semantic_tokens(&mut builder));
+        workspace.ast.iter().for_each(|p| {
+            p.read()
+                .build_semantic_tokens(&workspace.document, &mut builder)
+        });
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }

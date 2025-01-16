@@ -1,5 +1,5 @@
 use auto_lsp_core::build::MainBuilder;
-use auto_lsp_core::ast::{DocumentSymbols, StaticUpdate, IsComment, VecOrSymbol, GetSymbolData, AstSymbol, Symbol};
+use auto_lsp_core::ast::{AstSymbol, DocumentSymbols, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
 use auto_lsp_core::workspace::{Document, Workspace};
 use auto_lsp_macros::seq;
 use lsp_types::Url;
@@ -7,7 +7,7 @@ use std::sync::{Arc, LazyLock};
 use texter::core::text::Text;
 
 use crate::session::Session;
-use crate as auto_lsp;
+use crate::{self as auto_lsp, define_semantic_token_types};
 
 use crate::configure_parsers;
 
@@ -33,7 +33,11 @@ configure_parsers!(
     }
 );
 
-#[seq(query_name = "module", kind(symbol(lsp_document_symbols(user))))]
+define_semantic_token_types!(standard {
+    "Function" => FUNCTION,
+});
+
+#[seq(query_name = "module", kind(symbol(lsp_document_symbols(user), lsp_semantic_tokens(user))))]
 struct Module {
     functions: Vec<Function>,
 }
@@ -44,6 +48,14 @@ impl DocumentSymbols for Module {
     }
 }
 
+impl SemanticTokens for Module {
+    fn build_semantic_tokens(&self, doc: &Document, builder: &mut auto_lsp_core::semantic_tokens::SemanticTokensBuilder) {
+        for function in &self.functions {
+            function.read().build_semantic_tokens(doc, builder);
+        }
+    }
+}
+
 #[seq(query_name = "function", kind(symbol(
     lsp_document_symbols( 
         code_gen(
@@ -51,12 +63,18 @@ impl DocumentSymbols for Module {
             kind = auto_lsp::lsp_types::SymbolKind::FUNCTION,
         )
     ),
+    lsp_semantic_tokens(
+        code_gen(
+            range = self::name,
+            token_types = TOKEN_TYPES,
+            token_type_index = "Function"
+        )
+    ),
     comment(user)
 )))]
 struct Function {
     name: FunctionName,
 }
-
 #[seq(query_name = "function.name", kind(symbol()))]
 struct FunctionName {}
 
@@ -200,4 +218,32 @@ fn check_document_symbols() {
     } else {
         panic!("Expected VecOrSymbol::Vec");
     }
+}
+
+#[test]
+fn check_semantic_tokens() {
+    let test_file = &TEST_FILE;
+    let ast = test_file.ast.as_ref().unwrap();
+
+    let mut builder = auto_lsp_core::semantic_tokens::SemanticTokensBuilder::new("".into());
+    ast.read().build_semantic_tokens(&test_file.document, &mut builder);
+
+    let tokens = builder.build().data;
+
+    // Tokens should be a Vec (boo and far)
+    assert_eq!(tokens.len(), 2);
+
+    assert_eq!(tokens[0].token_type, TOKEN_TYPES.get_index("Function").unwrap() as u32);
+    // foo is at line 1
+    assert_eq!(tokens[0].delta_line, 1);
+    // char 4
+    assert_eq!(tokens[0].delta_start, 4);
+    assert_eq!(tokens[0].length, 3); // def
+
+    assert_eq!(tokens[1].token_type, TOKEN_TYPES.get_index("Function").unwrap() as u32);
+    // bar is at line 3
+    assert_eq!(tokens[1].delta_line, 3);
+    // char 4
+    assert_eq!(tokens[1].delta_start, 4);
+    assert_eq!(tokens[1].length, 3); // def
 }
