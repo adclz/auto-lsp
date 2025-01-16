@@ -338,7 +338,7 @@ impl<'a> StructBuilder<'a> {
                     let #name = Symbol::new_and_check(builder
                         .#name
                         .as_ref()
-                        .ok_or(auto_lsp::auto_lsp_core::builder_error!(
+                        .ok_or(auto_lsp::core::builder_error!(
                             auto_lsp,
                             builder_range,
                             format!(

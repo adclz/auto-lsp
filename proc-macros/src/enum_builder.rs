@@ -438,7 +438,7 @@ impl<'a> EnumBuilder<'a> {
                             return Ok(Self::#variant_names(variant.try_into_builder(params)?));
                         };
                     )*
-                    Err(auto_lsp::auto_lsp_core::builder_error!(
+                    Err(auto_lsp::core::builder_error!(
                         auto_lsp,
                         builder.unique_field.get_rc().borrow().get_lsp_range(params.document),
                         format!("Failed to downcast builder to enum: {}", stringify!(#name))

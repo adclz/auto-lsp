@@ -96,7 +96,7 @@ impl Session {
         // Note that  we must have our logging only write out to stderr since the communication with the client
         // is done via stdin/stdout. If we write to stdout, we will corrupt the communication.
         stderrlog::new()
-            .modules(vec![module_path!(), "auto_lsp_core"])
+            .modules(vec![module_path!(), "core"])
             .timestamp(stderrlog::Timestamp::Second)
             .verbosity(3)
             .init()
@@ -247,17 +247,17 @@ macro_rules! configure_parsers {
             fold: $fold: expr,
             highlights: $highlights: expr
         }),*) => {
-        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::auto_lsp_core::workspace::Parsers>> =
+        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::workspace::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
                 map.insert(
-                    $($extension, $crate::auto_lsp_core::workspace::Parsers {
+                    $($extension, $crate::core::workspace::Parsers {
                         cst_parser: $crate::session::init::create_parser($language, $core, $comment, $fold, $highlights),
-                        ast_parser: |params: &mut $crate::auto_lsp_core::build::MainBuilder<'_>, range: Option<std::ops::Range<usize>>| {
-                            use $crate::auto_lsp_core::build::StaticBuildable;
+                        ast_parser: |params: &mut $crate::core::build::MainBuilder<'_>, range: Option<std::ops::Range<usize>>| {
+                            use $crate::core::build::StaticBuildable;
 
-                            Ok::<$crate::auto_lsp_core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::auto_lsp_core::ast::Symbol::new_and_check($root::static_build(params, range)?, params).to_dyn(),
+                            Ok::<$crate::core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
+                                $crate::core::ast::Symbol::new_and_check($root::static_build(params, range)?, params).to_dyn(),
                             )
                         },
                     }),*
@@ -287,7 +287,7 @@ pub fn create_parser(
     CstParser {
         parser: crate::parking_lot::RwLock::new(parser),
         language,
-        queries: crate::auto_lsp_core::workspace::Queries {
+        queries: crate::core::workspace::Queries {
             comments,
             fold,
             highlights,

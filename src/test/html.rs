@@ -1,7 +1,7 @@
-use auto_lsp_core::ast::{AstSymbol, StaticUpdate, Symbol};
-use auto_lsp_core::build::MainBuilder;
-use auto_lsp_core::workspace::{Document, Workspace};
-use auto_lsp_macros::{choice, seq};
+use crate::core::ast::{AstSymbol, StaticUpdate, Symbol};
+use crate::core::build::MainBuilder;
+use crate::core::workspace::{Document, Workspace};
+use crate::macros::{choice, seq};
 use lsp_types::Url;
 use std::sync::{Arc, LazyLock};
 use texter::core::text::Text;

@@ -1,7 +1,7 @@
-use auto_lsp_core::build::MainBuilder;
-use auto_lsp_core::ast::{AstSymbol, DocumentSymbols, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
-use auto_lsp_core::workspace::{Document, Workspace};
-use auto_lsp_macros::seq;
+use crate::core::build::MainBuilder;
+use crate::core::ast::{AstSymbol, DocumentSymbols, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
+use crate::core::workspace::{Document, Workspace};
+use crate::macros::seq;
 use lsp_types::Url;
 use std::sync::{Arc, LazyLock};
 use texter::core::text::Text;
