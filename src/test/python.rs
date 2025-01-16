@@ -2,6 +2,7 @@ use crate::core::build::MainBuilder;
 use crate::core::ast::{AstSymbol, DocumentSymbols, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::seq;
+use auto_lsp_core::ast::HoverInfo;
 use lsp_types::Url;
 use std::sync::{Arc, LazyLock};
 use texter::core::text::Text;
@@ -75,8 +76,22 @@ impl SemanticTokens for Module {
 struct Function {
     name: FunctionName,
 }
-#[seq(query_name = "function.name", kind(symbol()))]
+#[seq(query_name = "function.name", kind(symbol(
+    lsp_hover_info(user)
+)))]
 struct FunctionName {}
+
+impl HoverInfo for FunctionName {
+    fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
+        Some(lsp_types::Hover {
+            contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+                kind: lsp_types::MarkupKind::PlainText,
+                value: format!("hover {}", self.get_text(doc.document.text.as_bytes()).unwrap()).into(),
+            }),
+            range: None,
+        })
+    }
+}
 
 fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
     let parse = PARSERS.get("python").unwrap();
@@ -246,4 +261,39 @@ fn check_semantic_tokens() {
     // char 4
     assert_eq!(tokens[1].delta_start, 4);
     assert_eq!(tokens[1].length, 3); // def
+}
+
+#[test]
+fn check_hover() {
+    let test_file = &TEST_FILE;
+    let ast = test_file.ast.as_ref().unwrap();
+
+    let module = ast.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    let foo = module.functions[0].read();
+    let foo_name = foo.name.read();
+
+    let foo_hover = foo_name.get_hover(&test_file.document).unwrap();
+
+    assert_eq!(
+        foo_hover.contents,
+        lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+            kind: lsp_types::MarkupKind::PlainText,
+            value: "hover foo".into(),
+        })
+    );
+
+    let bar = module.functions[1].read();
+    let bar_name = bar.name.read();
+
+    let bar_hover = bar_name.get_hover(&test_file.document).unwrap();
+
+    assert_eq!(
+        bar_hover.contents,
+        lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+            kind: lsp_types::MarkupKind::PlainText,
+            value: "hover bar".into(),
+        })
+    );
 }

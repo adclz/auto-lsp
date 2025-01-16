@@ -11,34 +11,12 @@ use crate as auto_lsp;
 use crate::configure_parsers;
 
 static CORE_QUERY: &'static str = "
-(document) @document
-
-(element
-    (start_tag
-    	(tag_name) @tag_name
-	)
-    (end_tag)
-) @element
-
-(element
-	(self_closing_tag
-		(tag_name) @tag_name
-	)
-) @element
-
-(script_element
-    (start_tag
-    	(tag_name) @tag_name
-	)
-    (end_tag)
-) @script_tag
-
-(style_element
-    (start_tag
-    	(tag_name) @tag_name
-	)
-    (end_tag)
-) @style_tag
+(document (doctype) @doctype) @document
+    
+(element (start_tag (tag_name) @tag_name) (end_tag)) @element
+(element (self_closing_tag (tag_name) @tag_name)) @element
+(script_element (start_tag (tag_name) @tag_name) (end_tag)) @script_tag
+(style_element (start_tag (tag_name) @tag_name) (end_tag)) @style_tag
 ";
 
 configure_parsers!(
@@ -54,8 +32,12 @@ configure_parsers!(
 
 #[seq(query_name = "document", kind(symbol()))]
 pub struct HtmlDocument {
+    doctype: Option<DocType>,
     tags: Vec<Node>,
 }
+
+#[seq(query_name = "doctype", kind(symbol()))]
+pub struct DocType {}
 
 #[choice]
 pub enum Node {
@@ -125,7 +107,7 @@ fn create_html_workspace(uri: Url, source_code: String) -> Workspace {
 static TEST_FILE: LazyLock<Workspace> = LazyLock::new(|| {
     create_html_workspace(
         Url::parse("file:///test.html").unwrap(),
-        r#" 
+        r#"<!DOCTYPE html>
 <script></script>
 <style></style>
 <div>
