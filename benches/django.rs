@@ -1,14 +1,14 @@
 use auto_lsp::core::ast::{
-    AstSymbol, BuildDocumentSymbols, GetSymbolData, IsComment, BuildSemanticTokens, StaticUpdate, Symbol,
+    AstSymbol, BuildDocumentSymbols, BuildSemanticTokens, StaticUpdate, Symbol,
     VecOrSymbol,
 };
 use auto_lsp::core::build::MainBuilder;
 use auto_lsp::core::workspace::{Document, Workspace};
 use auto_lsp::macros::seq;
 use auto_lsp_core::ast::GetHoverInfo;
-use criterion::{criterion_group, BatchSize, Criterion};
+use criterion::{criterion_group, Criterion};
 use lsp_types::Url;
-use std::sync::{Arc, LazyLock};
+use std::sync::Arc;
 use texter::core::text::Text;
 
 use auto_lsp::session::Session;

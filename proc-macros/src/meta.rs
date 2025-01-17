@@ -1,3 +1,4 @@
+#![allow(unused)]
 use syn::{Ident, Type};
 
 use crate::features::{

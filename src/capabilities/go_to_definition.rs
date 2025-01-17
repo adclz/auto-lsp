@@ -1,4 +1,4 @@
-use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams};
+use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
 
 use crate::session::{Session, WORKSPACES};
 

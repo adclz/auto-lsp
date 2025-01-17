@@ -1,3 +1,4 @@
+#![allow(unused)]
 use crate::{
     utilities::extract_fields::StructFields, Features, ReferenceOrSymbolFeatures, StructHelpers,
     PATHS,

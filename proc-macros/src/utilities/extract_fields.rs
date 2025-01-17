@@ -1,10 +1,10 @@
-use crate::{enum_builder, EnumBuilder, Paths, StructBuilder, StructHelpers};
+use crate::StructHelpers;
 
 use super::super::utilities::filter::{get_raw_type_name, is_option, is_vec};
 use darling::{ast, util};
-use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote, ToTokens};
-use syn::{Attribute, Path};
+use proc_macro2::Ident;
+use quote::format_ident;
+use syn::Attribute;
 
 pub struct FieldInfo {
     pub ident: Ident,

@@ -1,4 +1,4 @@
-use lsp_types::{Range, SelectionRange, SelectionRangeParams};
+use lsp_types::{SelectionRange, SelectionRangeParams};
 
 use crate::session::{Session, WORKSPACES};
 

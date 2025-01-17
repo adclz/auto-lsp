@@ -3,10 +3,10 @@ extern crate proc_macro;
 use darling::{ast, util, FromMeta};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Ident, Path};
+use syn::Ident;
 
 use crate::{
-    utilities::extract_fields::StructFields, ReferenceFeatures, Feature, FeaturesCodeGen,
+    utilities::extract_fields::StructFields, Feature, FeaturesCodeGen, ReferenceFeatures,
     StructHelpers, SymbolFeatures, PATHS,
 };
 

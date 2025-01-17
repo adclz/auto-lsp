@@ -1,8 +1,7 @@
-use auto_lsp_core::workspace::{self, Workspace};
-use lsp_types::Url;
+use auto_lsp_core::workspace::{Workspace};
 use streaming_iterator::StreamingIterator;
 
-use super::{Session, WORKSPACES};
+use super::Session;
 
 impl Session {
     pub fn add_comments(workspace: &Workspace) -> anyhow::Result<()> {

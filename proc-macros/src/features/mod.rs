@@ -1,3 +1,4 @@
+#![allow(unused)]
 pub mod check;
 pub mod comment;
 pub mod lsp_code_lens;
