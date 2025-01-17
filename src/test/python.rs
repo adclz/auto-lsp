@@ -1,8 +1,8 @@
 use crate::core::build::MainBuilder;
-use crate::core::ast::{AstSymbol, DocumentSymbols, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
+use crate::core::ast::{AstSymbol, DocumentSymbols, InlayHints, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::seq;
-use auto_lsp_core::ast::HoverInfo;
+use auto_lsp_core::ast::{CodeLens, HoverInfo};
 use lsp_types::Url;
 use std::sync::{Arc, LazyLock};
 use texter::core::text::Text;
@@ -38,9 +38,30 @@ define_semantic_token_types!(standard {
     "Function" => FUNCTION,
 });
 
-#[seq(query_name = "module", kind(symbol(lsp_document_symbols(user), lsp_semantic_tokens(user))))]
+#[seq(query_name = "module", kind(symbol(
+    lsp_document_symbols(user), 
+    lsp_semantic_tokens(user),
+    lsp_inlay_hints(user),
+    lsp_code_lens(user)
+)))]
 struct Module {
     functions: Vec<Function>,
+}
+
+impl CodeLens for Module {
+    fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+        for function in &self.functions {
+            function.read().build_code_lens(doc, acc);
+        }
+    }
+}
+
+impl InlayHints for Module {
+    fn build_inlay_hint(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
+        for function in &self.functions {
+            function.read().build_inlay_hint(doc, acc);
+        }
+    }
 }
 
 impl DocumentSymbols for Module {
@@ -71,11 +92,43 @@ impl SemanticTokens for Module {
             token_type_index = "Function"
         )
     ),
+    lsp_inlay_hints(user),
+    lsp_code_lens(user),
     comment(user)
 )))]
 struct Function {
     name: FunctionName,
 }
+
+impl InlayHints for Function {
+    fn build_inlay_hint(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
+        let read = self.name.read();
+        acc.push(auto_lsp::lsp_types::InlayHint {
+            kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
+            label: auto_lsp::lsp_types::InlayHintLabel::String(
+                read.get_text(doc.document.text.as_bytes()).unwrap().into()
+            ),
+            position: read.get_start_position(doc),
+            tooltip: None,
+            text_edits: None,
+            padding_left: None,
+            padding_right: None,
+            data: None
+        });
+    }
+}
+
+impl CodeLens for Function {
+    fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+        let read = self.name.read();
+        acc.push(lsp_types::CodeLens {
+            range: read.get_lsp_range(&doc),
+            command: None,
+            data: None,
+        })
+    }
+}
+
 #[seq(query_name = "function.name", kind(symbol(
     lsp_hover_info(user)
 )))]
@@ -296,4 +349,45 @@ fn check_hover() {
             value: "hover bar".into(),
         })
     );
+}
+
+#[test]
+fn check_inlay_hints() {
+    let test_file = &TEST_FILE;
+    let ast = test_file.ast.as_ref().unwrap();
+
+    let module = ast.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    let mut hints = vec![];
+    module.build_inlay_hint(&test_file.document, &mut hints);
+
+    assert_eq!(hints.len(), 2);
+
+    assert_eq!(hints[0].kind, Some(lsp_types::InlayHintKind::TYPE));
+    assert_eq!(hints[1].kind, Some(lsp_types::InlayHintKind::TYPE));
+}
+
+#[test]
+fn check_code_lens() {
+    let test_file = &TEST_FILE;
+    let ast = test_file.ast.as_ref().unwrap();
+
+    let module = ast.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    let mut code_lens = vec![];
+    module.build_code_lens(&test_file.document, &mut code_lens);
+
+    assert_eq!(code_lens.len(), 2);
+
+    assert_eq!(code_lens[0].range.start.line, 1);
+    assert_eq!(code_lens[0].range.start.character, 4);
+    assert_eq!(code_lens[0].range.end.line, 1);
+    assert_eq!(code_lens[0].range.end.character, 7);
+
+    assert_eq!(code_lens[1].range.start.line, 4);
+    assert_eq!(code_lens[1].range.start.character, 4);
+    assert_eq!(code_lens[1].range.end.line, 4);
+    assert_eq!(code_lens[1].range.end.character, 7);
 }

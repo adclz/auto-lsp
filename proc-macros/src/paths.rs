@@ -342,8 +342,8 @@ impl Default for Paths {
                 path: core_ast(parse_quote!(CodeLens)),
                 methods: structx! {
                     build_code_lens: structx! {
-                        sig: quote! { fn build_code_lens(&self, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
-                        variant: quote! { build_code_lens(acc) },
+                        sig: quote! { fn build_code_lens(&self, doc: &auto_lsp::core::workspace::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
+                        variant: quote! { build_code_lens(doc, acc) },
                     }
                 },
             },

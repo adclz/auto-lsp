@@ -17,7 +17,8 @@ impl Session {
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         workspace.ast.iter().for_each(|ast| {
-            ast.read().build_code_lens(&mut results);
+            ast.read()
+                .build_code_lens(&workspace.document, &mut results);
         });
 
         Ok(Some(results))

@@ -125,7 +125,7 @@ pub trait CodeLens {
     /// [LSP CodeLens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
     ///
     /// Push code lens to the accumulator
-    fn build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>) {}
+    fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide completion items
@@ -160,7 +160,7 @@ macro_rules! impl_build {
 
 impl_build!(SemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
 impl_build!(InlayHints, build_inlay_hint(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
-impl_build!(CodeLens, build_code_lens(&self, acc: &mut Vec<lsp_types::CodeLens>));
+impl_build!(CodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document));
 
 /// Special capabilities
