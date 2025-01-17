@@ -28,6 +28,8 @@ texter = "0.1.2"
 
 [features]
 log = []
+wasm = ["parking_lot/nightly"]
+deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }

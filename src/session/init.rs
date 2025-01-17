@@ -106,6 +106,20 @@ impl Session {
         log::info!("Starting LSP server");
         log::info!("");
 
+        #[cfg(feature = "deadlock_detection")]
+        std::thread::spawn(move || loop {
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            for deadlock in parking_lot::deadlock::check_deadlock() {
+                for deadlock in deadlock {
+                    println!(
+                        "Found a deadlock! {}:\n{:?}",
+                        deadlock.thread_id(),
+                        deadlock.backtrace()
+                    );
+                }
+            }
+        });
+
         // Create the transport. Includes the stdio (stdin and stdout) versions but this could
         // also be implemented to use sockets or HTTP.
         let (connection, io_threads) = Connection::stdio();
