@@ -262,7 +262,7 @@ macro_rules! configure_parsers {
             fold: $fold: expr,
             highlights: $highlights: expr
         }),*) => {
-        static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::workspace::Parsers>> =
+        pub static PARSERS: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::workspace::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
                 map.insert(

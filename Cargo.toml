@@ -25,11 +25,13 @@ parking_lot = "0.12.3"
 stderrlog = "0.6.0"
 log =  "0.4.22"
 texter = "0.1.2"
+tree-sitter-python = { version = "0.23.6", optional = true }
 
 [features]
 log = []
 wasm = ["parking_lot/nightly"]
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
+python_test = ["dep:tree-sitter-python"]
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
@@ -56,3 +58,4 @@ texter = "0.1.2"
 [[bench]]
 name = "main"
 harness = false
+required-features = ["python_test"]
