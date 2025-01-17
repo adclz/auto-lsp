@@ -6,7 +6,7 @@ use quote::quote;
 use syn::Ident;
 
 use crate::{
-    utilities::extract_fields::StructFields, ReferenceFeatures, FeaturesCodeGen, ReferenceFeature,
+    utilities::extract_fields::StructFields, FeaturesCodeGen, ReferenceFeature, ReferenceFeatures,
     SymbolFeatures, PATHS,
 };
 
@@ -42,7 +42,7 @@ impl<'a> FeaturesCodeGen for GotoDefinitionBuilder<'a> {
             Some(params) => match params {
                 Feature::User => quote! {},
                 Feature::CodeGen(_) => {
-                    panic!("Go to Definition does not provide code generation, instead implement the trait GoToDefinition manually");
+                    panic!("Go to Definition does not provide code generation, instead implement the trait GetGoToDefinition manually");
                 }
             },
         }

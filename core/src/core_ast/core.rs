@@ -21,14 +21,15 @@ pub trait AstSymbol:
     + Send
     + Sync
     // capabilities.rs
-    + DocumentSymbols
-    + HoverInfo
-    + SemanticTokens
-    + InlayHints
-    + CodeLens
-    + CompletionItems
-    + GoToDefinition
-    + GoToDeclaration
+    + BuildDocumentSymbols
+    + BuildSemanticTokens
+    + BuildInlayHints
+    + BuildCodeLens
+    + BuildCompletionItems
+    + GetHoverInfo
+    + GetGoToDefinition
+    + GetGoToDeclaration
+    // special
     + IsComment
     + Scope
     + Reference

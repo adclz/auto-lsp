@@ -24,7 +24,7 @@ pub enum VecOrSymbol {
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide document symbols
-pub trait DocumentSymbols {
+pub trait BuildDocumentSymbols {
     /// Either return an optional single symbol or a vector of symbols, see [VecOrSymbol]
     ///
     /// [LSP DocumentSymbol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
@@ -35,7 +35,7 @@ pub trait DocumentSymbols {
     }
 }
 
-impl<T: AstSymbol> DocumentSymbols for Vec<Symbol<T>> {
+impl<T: AstSymbol> BuildDocumentSymbols for Vec<Symbol<T>> {
     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
         let mut symbols = vec![];
         for symbol in self.iter() {
@@ -63,7 +63,7 @@ impl From<VecOrSymbol> for Vec<DocumentSymbol> {
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide hover information
-pub trait HoverInfo {
+pub trait GetHoverInfo {
     /// Return hover information
     ///
     /// [LSP Hover](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover)
@@ -75,7 +75,7 @@ pub trait HoverInfo {
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide goto definition information
-pub trait GoToDefinition {
+pub trait GetGoToDefinition {
     /// Return a goto definition information
     ///
     /// [LSP GotoDefinitionResponse](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_definition)
@@ -87,7 +87,7 @@ pub trait GoToDefinition {
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide goto declaration information
-pub trait GoToDeclaration {
+pub trait GetGoToDeclaration {
     /// Return a goto declaration information
     ///
     /// [LSP GotoDeclarationResponse](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_declaration)
@@ -99,17 +99,17 @@ pub trait GoToDeclaration {
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide goto type definition information
-pub trait SemanticTokens {
+pub trait BuildSemanticTokens {
     /// Semantic tokens builder
     ///
-    /// [LSP SemanticTokens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens)
+    /// [LSP BuildSemanticTokens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens)
     ///
     /// Use [SemanticTokensBuilder] to build the semantic tokens
     fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {}
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide inlay hints
-pub trait InlayHints {
+pub trait BuildInlayHints {
     /// Inlay hints builder
     ///
     /// [LSP InlayHint](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_inlayHints)
@@ -119,17 +119,17 @@ pub trait InlayHints {
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide code lens
-pub trait CodeLens {
+pub trait BuildCodeLens {
     /// Code lens builder
     ///
-    /// [LSP CodeLens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
+    /// [LSP BuildCodeLens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
     ///
     /// Push code lens to the accumulator
     fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide completion items
-pub trait CompletionItems {
+pub trait BuildCompletionItems {
     /// Completion items builder
     ///
     /// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
@@ -158,10 +158,10 @@ macro_rules! impl_build {
     };
 }
 
-impl_build!(SemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
-impl_build!(InlayHints, build_inlay_hint(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
-impl_build!(CodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
-impl_build!(CompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document));
+impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
+impl_build!(BuildInlayHints, build_inlay_hint(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
+impl_build!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
+impl_build!(BuildCompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document));
 
 /// Special capabilities
 

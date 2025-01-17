@@ -339,7 +339,7 @@ impl Default for Paths {
             finalize_trait: core_build(parse_quote!(Finalize)),
 
             lsp_code_lens: TraitInfo {
-                path: core_ast(parse_quote!(CodeLens)),
+                path: core_ast(parse_quote!(BuildCodeLens)),
                 methods: structx! {
                     build_code_lens: structx! {
                         sig: quote! { fn build_code_lens(&self, doc: &auto_lsp::core::workspace::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
@@ -348,7 +348,7 @@ impl Default for Paths {
                 },
             },
             lsp_completion_items: TraitInfo {
-                path: core_ast(parse_quote!(CompletionItems)),
+                path: core_ast(parse_quote!(BuildCompletionItems)),
                 methods: structx! {
                     build_completion_items: structx! {
                         sig: quote! { fn build_completion_items(&self, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>, doc: &auto_lsp::core::workspace::Document) },
@@ -357,7 +357,7 @@ impl Default for Paths {
                 },
             },
             lsp_document_symbols: TraitInfo {
-                path: core_ast(parse_quote!(DocumentSymbols)),
+                path: core_ast(parse_quote!(BuildDocumentSymbols)),
                 methods: structx! {
                     get_document_symbols: structx! {
                         sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::core::ast::VecOrSymbol> },
@@ -366,7 +366,7 @@ impl Default for Paths {
                 },
             },
             lsp_go_to_definition: TraitInfo {
-                path: core_ast(parse_quote!(GoToDefinition)),
+                path: core_ast(parse_quote!(GetGoToDefinition)),
                 methods: structx! {
                     go_to_definition: structx! {
                         sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::lsp_types::GotoDefinitionResponse> },
@@ -375,7 +375,7 @@ impl Default for Paths {
                 },
             },
             lsp_go_to_declaration: TraitInfo {
-                path: core_ast(parse_quote!(GoToDeclaration)),
+                path: core_ast(parse_quote!(GetGoToDeclaration)),
                 methods: structx! {
                     go_to_declaration: structx! {
                         sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::lsp_types::request::GotoDeclarationResponse> },
@@ -384,7 +384,7 @@ impl Default for Paths {
                 },
             },
             lsp_hover_info: TraitInfo {
-                path: core_ast(parse_quote!(HoverInfo)),
+                path: core_ast(parse_quote!(GetHoverInfo)),
                 methods: structx! {
                     get_hover: structx! {
                         sig: quote! { fn get_hover(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::lsp_types::Hover> },
@@ -393,7 +393,7 @@ impl Default for Paths {
                 },
             },
             lsp_inlay_hint: TraitInfo {
-                path: core_ast(parse_quote!(InlayHints)),
+                path: core_ast(parse_quote!(BuildInlayHints)),
                 methods: structx! {
                     build_inlay_hint: structx! {
                         sig: quote! { fn build_inlay_hint(&self, doc: &auto_lsp::core::workspace::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
@@ -402,7 +402,7 @@ impl Default for Paths {
                 },
             },
             lsp_semantic_token: TraitInfo {
-                path: core_ast(parse_quote!(SemanticTokens)),
+                path: core_ast(parse_quote!(BuildSemanticTokens)),
                 methods: structx! {
                     build_semantic_tokens: structx! {
                         sig: quote! { fn build_semantic_tokens(&self, doc: &auto_lsp::core::workspace::Document, builder: &mut auto_lsp::core::semantic_tokens::SemanticTokensBuilder) },

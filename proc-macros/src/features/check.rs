@@ -61,7 +61,7 @@ impl<'a> FeaturesCodeGen for CheckBuilder<'a> {
                     }
                 },
                 Feature::CodeGen(_) => {
-                    panic!("Check does not provide code generation, instead implement the trait GoToDefinition manually");
+                    panic!("Check does not provide code generation, instead implement the trait GetGoToDefinition manually");
                 }
             },
         }

@@ -1,11 +1,11 @@
 use auto_lsp::core::ast::{
-    AstSymbol, DocumentSymbols, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol,
+    AstSymbol, BuildDocumentSymbols, GetSymbolData, IsComment, BuildSemanticTokens, StaticUpdate, Symbol,
     VecOrSymbol,
 };
 use auto_lsp::core::build::MainBuilder;
 use auto_lsp::core::workspace::{Document, Workspace};
 use auto_lsp::macros::seq;
-use auto_lsp_core::ast::HoverInfo;
+use auto_lsp_core::ast::GetHoverInfo;
 use criterion::{criterion_group, BatchSize, Criterion};
 use lsp_types::Url;
 use std::sync::{Arc, LazyLock};
@@ -47,13 +47,13 @@ struct Module {
     functions: Vec<Function>,
 }
 
-impl DocumentSymbols for Module {
+impl BuildDocumentSymbols for Module {
     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
         self.functions.get_document_symbols(doc)
     }
 }
 
-impl SemanticTokens for Module {
+impl BuildSemanticTokens for Module {
     fn build_semantic_tokens(&self, doc: &Document, builder: &mut auto_lsp_core::semantic_tokens::SemanticTokensBuilder) {
         for function in &self.functions {
             function.read().build_semantic_tokens(doc, builder);
@@ -85,7 +85,7 @@ struct Function {
 )))]
 struct FunctionName {}
 
-impl HoverInfo for FunctionName {
+impl GetHoverInfo for FunctionName {
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {

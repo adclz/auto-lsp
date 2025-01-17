@@ -1,8 +1,8 @@
 use crate::core::build::MainBuilder;
-use crate::core::ast::{AstSymbol, DocumentSymbols, InlayHints, GetSymbolData, IsComment, SemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
+use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, GetSymbolData, IsComment, BuildSemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::seq;
-use auto_lsp_core::ast::{CodeLens, HoverInfo};
+use auto_lsp_core::ast::{BuildCodeLens, GetHoverInfo};
 use lsp_types::Url;
 use std::sync::{Arc, LazyLock};
 use texter::core::text::Text;
@@ -48,7 +48,7 @@ struct Module {
     functions: Vec<Function>,
 }
 
-impl CodeLens for Module {
+impl BuildCodeLens for Module {
     fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
         for function in &self.functions {
             function.read().build_code_lens(doc, acc);
@@ -56,7 +56,7 @@ impl CodeLens for Module {
     }
 }
 
-impl InlayHints for Module {
+impl BuildInlayHints for Module {
     fn build_inlay_hint(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
         for function in &self.functions {
             function.read().build_inlay_hint(doc, acc);
@@ -64,13 +64,13 @@ impl InlayHints for Module {
     }
 }
 
-impl DocumentSymbols for Module {
+impl BuildDocumentSymbols for Module {
     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
         self.functions.get_document_symbols(doc)
     }
 }
 
-impl SemanticTokens for Module {
+impl BuildSemanticTokens for Module {
     fn build_semantic_tokens(&self, doc: &Document, builder: &mut auto_lsp_core::semantic_tokens::SemanticTokensBuilder) {
         for function in &self.functions {
             function.read().build_semantic_tokens(doc, builder);
@@ -100,7 +100,7 @@ struct Function {
     name: FunctionName,
 }
 
-impl InlayHints for Function {
+impl BuildInlayHints for Function {
     fn build_inlay_hint(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
         let read = self.name.read();
         acc.push(auto_lsp::lsp_types::InlayHint {
@@ -118,7 +118,7 @@ impl InlayHints for Function {
     }
 }
 
-impl CodeLens for Function {
+impl BuildCodeLens for Function {
     fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
         let read = self.name.read();
         acc.push(lsp_types::CodeLens {
@@ -134,7 +134,7 @@ impl CodeLens for Function {
 )))]
 struct FunctionName {}
 
-impl HoverInfo for FunctionName {
+impl GetHoverInfo for FunctionName {
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
