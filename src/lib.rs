@@ -4,7 +4,18 @@ pub mod session;
 pub mod test;
 pub mod texter_impl;
 
-pub use auto_lsp_core as core;
+pub mod core {
+    // Not public API. Referenced by macro-generated code.
+    #[doc(hidden)]
+    pub mod build {
+        pub use auto_lsp_core::build::*;
+    }
+
+    pub use auto_lsp_core::ast;
+    pub use auto_lsp_core::semantic_tokens;
+    pub use auto_lsp_core::workspace;
+    pub use auto_lsp_core::{builder_error, builder_warning};
+}
 pub use auto_lsp_macros as macros;
 
 pub use constcat;
