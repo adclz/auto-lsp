@@ -56,6 +56,7 @@ dependencies = [
  "texter",
  "tree-sitter",
  "tree-sitter-language",
+ "tree-sitter-python",
  "walkdir",
 ]
 

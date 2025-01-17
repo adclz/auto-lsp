@@ -1,5 +1,9 @@
-def foo():
+# dfgdfgdfgdfgdfgv  dddd kk
+def fpkkkkkkkllllpko():
     pass
 
-def bar():
-    pass    
+def ajjdpkdkmmmaa(
+    jnljkn: int,
+    k: int) 
+    -> int:
+    pass  

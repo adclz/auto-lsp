@@ -21,21 +21,25 @@
 	"contributes": {
 		"languages": [
 			{
-				"id": "st",
+				"id": "python",
 				"aliases": [
-					"Structured Text",
-					"St"
+					"Python",
+					"Py"
 				],
 				"extensions": [
-					".st"
+					".py"
 				]
 			}
 		],
-		"commands": [
+		"grammars": [
 			{
-				"command": "vscode-samples.wasm-language-server.countFiles",
-				"category": "Samples",
-				"title": "Count Files"
+				"language": "python",
+				"scopeName": "source.python",
+				"path": "./syntaxes/MagicPython.tmLanguage.json"
+			},
+			{
+				"scopeName": "source.regexp.python",
+				"path": "./syntaxes/MagicRegExp.tmLanguage.json"
 			}
 		]
 	},
