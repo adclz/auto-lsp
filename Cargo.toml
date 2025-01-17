@@ -3,8 +3,6 @@ name = "auto-lsp"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 auto-lsp-core = { path = "./core" }
 auto-lsp-macros = { path = "./proc-macros" }
@@ -25,10 +23,14 @@ anyhow = "1.0.91"
 crossbeam-channel = "0.5.13"
 parking_lot = "0.12.3"
 stderrlog = "0.6.0"
-log = "0.4.22"
+log =  "0.4.22"
 texter = "0.1.2"
 
+[features]
+log = []
+
 [dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
 tree-sitter-python = "0.23.6"
 tree-sitter-html = "0.23.2"
 
@@ -48,3 +50,7 @@ streaming-iterator = "0.1.9"
 parking_lot = "0.12.3"
 log = "0.4.22"
 texter = "0.1.2"
+
+[[bench]]
+name = "main"
+harness = false
