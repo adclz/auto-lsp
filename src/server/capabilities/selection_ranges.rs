@@ -1,8 +1,11 @@
 use lsp_types::{SelectionRange, SelectionRangeParams};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Request for selection ranges
+    ///
+    /// This is a port of [vscode anycode](https://github.com/microsoft/vscode-anycode/blob/main/anycode/server/src/common/features/selectionRanges.ts)
     pub fn get_selection_ranges(
         &mut self,
         params: SelectionRangeParams,

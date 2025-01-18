@@ -26,7 +26,7 @@ pub trait AstSymbol:
     + BuildInlayHints
     + BuildCodeLens
     + BuildCompletionItems
-    + GetHoverInfo
+    + GetHover
     + GetGoToDefinition
     + GetGoToDeclaration
     // special

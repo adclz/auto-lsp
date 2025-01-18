@@ -3,9 +3,10 @@ use lsp_types::{
     WorkspaceDocumentDiagnosticReport, WorkspaceFullDocumentDiagnosticReport,
 };
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Get diagnostics for all documents.
     pub fn get_workspace_diagnostics(
         &mut self,
         _params: WorkspaceDiagnosticParams,

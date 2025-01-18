@@ -9,7 +9,7 @@ use parking_lot::RwLock;
 ///
 /// Provides methods to read and write to the underlying [AstSymbol]
 ///
-/// [Symbol<T>] also provides methods to convert to [DynSymbol] and [WeakSymbol]
+/// [`Symbol<T>`] also provides methods to convert to [DynSymbol] and [WeakSymbol]
 #[derive(Clone)]
 pub struct Symbol<T: AstSymbol>(Arc<RwLock<T>>);
 
@@ -36,9 +36,9 @@ impl<T: AstSymbol> Symbol<T> {
     ///
     /// Inject itself as the parent of the symbol
     ///
-    /// If the symbol is an accessor ([Reference]), add it to the unsolved references list
+    /// If the symbol is a reference ([`super::capabilities::Reference`]), add it to the unsolved references list
     ///
-    /// If the symbol requires checking ([Check]), add it to the unsolved checks list
+    /// If the symbol requires checking ([`super::capabilities::Check`]), add it to the unsolved checks list
     pub fn new_and_check(symbol: T, params: &mut MainBuilder) -> Self {
         let arc = Symbol::new(symbol);
         let read = arc.read();

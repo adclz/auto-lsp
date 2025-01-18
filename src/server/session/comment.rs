@@ -1,10 +1,13 @@
-use auto_lsp_core::workspace::{Workspace};
+use auto_lsp_core::workspace::Workspace;
 use streaming_iterator::StreamingIterator;
 
 use super::Session;
 
 impl Session {
-    pub fn add_comments(workspace: &Workspace) -> anyhow::Result<()> {
+    /// Find all comments in the document and add them to the ast using the comment [`tree_sitter::Query`]
+    ///
+    /// TODO: Add support for incremental updates
+    pub(crate) fn add_comments(workspace: &Workspace) -> anyhow::Result<()> {
         let comments_query = match workspace.parsers.cst_parser.queries.comments {
             Some(ref query) => query,
             None => return Ok(()),

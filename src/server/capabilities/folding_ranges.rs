@@ -1,9 +1,12 @@
 use lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 use streaming_iterator::StreamingIterator;
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Request for folding ranges
+    ///
+    /// Uses the folding_range [`tree_sitter::Query`] if orovided in the initilization options.
     pub fn get_folding_ranges(
         &mut self,
         params: FoldingRangeParams,

@@ -2,9 +2,12 @@ use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryCursor};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Get completion items for a document.
+    ///
+    /// TODO: Incomplete implementation
     pub fn get_completion_items(
         &mut self,
         params: CompletionParams,

@@ -1,6 +1,6 @@
 use crate::core::ast::{AstSymbol, BuildInlayHints, GetSymbolData, IsComment, VecOrSymbol};
 use crate::core::workspace::Workspace;
-use auto_lsp_core::ast::{BuildCodeLens, GetHoverInfo};
+use auto_lsp_core::ast::{BuildCodeLens, GetHover};
 use lsp_types::Url;
 use std::sync::LazyLock;
 

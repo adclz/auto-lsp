@@ -1,9 +1,12 @@
 use auto_lsp_core::ast::VecOrSymbol;
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Request to get document symbols for a file
+    ///
+    /// This function will recursively traverse the ast and return all symbols found.
     pub fn get_document_symbols(
         &mut self,
         params: DocumentSymbolParams,

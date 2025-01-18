@@ -1,12 +1,13 @@
-use lsp_types::{CodeLens, CodeLensParams};
+use lsp_types::{InlayHint, InlayHintParams};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
-    pub fn get_code_lens(
+    /// Get inlay hints for a document.
+    pub fn get_inlay_hints(
         &mut self,
-        params: CodeLensParams,
-    ) -> anyhow::Result<Option<Vec<CodeLens>>> {
+        params: InlayHintParams,
+    ) -> anyhow::Result<Option<Vec<InlayHint>>> {
         let mut results = vec![];
 
         let uri = params.text_document.uri;
@@ -18,7 +19,7 @@ impl Session {
 
         workspace.ast.iter().for_each(|ast| {
             ast.read()
-                .build_code_lens(&workspace.document, &mut results);
+                .build_inlay_hint(&workspace.document, &mut results);
         });
 
         Ok(Some(results))

@@ -19,7 +19,7 @@ pub fn get_extension(url: &Url) -> Option<String> {
 }
 
 impl Session {
-    pub fn init(&mut self, params: InitializeParams) -> anyhow::Result<()> {
+    pub(crate) fn init_workspaces(&mut self, params: InitializeParams) -> anyhow::Result<()> {
         let options = InitializationOptions::deserialize(
             params
                 .initialization_options

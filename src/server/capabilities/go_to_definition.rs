@@ -1,12 +1,15 @@
-use lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse};
+use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
-    pub fn go_to_declaration(
+    /// Request to go to the definition of a symbol
+    ///
+    /// The trait [`crate::core::ast::GetGoToDefinition`] needs to be implemented otherwise this will return None.
+    pub fn go_to_definition(
         &mut self,
-        params: GotoDeclarationParams,
-    ) -> anyhow::Result<Option<GotoDeclarationResponse>> {
+        params: GotoDefinitionParams,
+    ) -> anyhow::Result<Option<GotoDefinitionResponse>> {
         let uri = &params.text_document_position_params.text_document.uri;
         let workspace = WORKSPACES.lock();
 
@@ -24,7 +27,7 @@ impl Session {
             .find_map(|symbol| symbol.read().find_at_offset(offset));
 
         match item {
-            Some(item) => Ok(item.read().go_to_declaration(doc)),
+            Some(item) => Ok(item.read().go_to_definition(doc)),
             None => Ok(None),
         }
     }

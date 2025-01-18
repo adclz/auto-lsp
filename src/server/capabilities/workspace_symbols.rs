@@ -1,9 +1,13 @@
 use auto_lsp_core::ast::VecOrSymbol;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Request to get workspace symbols
+    ///
+    /// This function will return all symbols found in the workspace recursively by calling the inner [`Session::get_document_symbols`]
+    /// of every documents.
     pub fn get_workspace_symbols(
         &mut self,
         params: WorkspaceSymbolParams,

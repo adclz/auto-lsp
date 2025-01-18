@@ -1,27 +1,24 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, LazyLock},
-};
+use std::sync::Arc;
 
 use auto_lsp_core::{
     build::MainBuilder,
     workspace::{Document, Workspace},
 };
 use lsp_types::{DidChangeTextDocumentParams, Url};
-use parking_lot::Mutex;
 
-use crate::{
-    session::{lexer::get_tree_sitter_errors, Session},
-    texter_impl::{change::WrapChange, updateable::WrapTree},
-};
+use crate::server::session::{lexer::get_tree_sitter_errors, Session};
+use crate::server::texter_impl::change::WrapChange;
+use crate::server::texter_impl::updateable::WrapTree;
 
 use super::WORKSPACES;
 
-pub static DOCUMENTS: LazyLock<Mutex<HashMap<Url, Workspace>>> = LazyLock::new(Mutex::default);
-
 impl Session {
-    /// Add a new document to session workspaces
-    pub fn add_document(
+    /// Add a new document to workspaces
+    ///
+    /// This will first try to find the correct parser for the language id,
+    /// then parse the source code with the tree sitter parser,
+    /// and finally build the AST with the core [`tree_sitter::Query`] and root symbol.
+    pub(crate) fn add_document(
         &mut self,
         uri: &Url,
         language_id: &str,
@@ -55,7 +52,7 @@ impl Session {
 
         cst = cst_parser.parser.write().parse(&source_code, None).unwrap();
 
-        errors.extend(get_tree_sitter_errors(&cst.root_node(), source_code));
+        get_tree_sitter_errors(&cst.root_node(), source_code, &mut errors);
 
         let document = Document {
             document: text,
@@ -116,7 +113,19 @@ impl Session {
         Ok(())
     }
 
-    pub fn edit_document(&mut self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
+    /// Edit a document in workspaces
+    ///
+    /// Edits are incremental, meaning that the entire document is not re-parsed.
+    /// Instead, the changes are applied to the existing CST (using [`tree-sitter`] and [`Texter`]).
+    ///
+    /// The AST is not updated if the node is either:
+    ///  - an extra (comment)
+    ///  - an errored node
+    ///  - a whitespace
+    pub(crate) fn edit_document(
+        &mut self,
+        params: DidChangeTextDocumentParams,
+    ) -> anyhow::Result<()> {
         let uri = &params.text_document.uri;
 
         let mut workspaces = WORKSPACES.lock();
@@ -174,10 +183,11 @@ impl Session {
         workspace.document.cst = new_tree;
 
         workspace.errors.clear();
-        workspace.errors.extend(get_tree_sitter_errors(
+        get_tree_sitter_errors(
             &workspace.document.cst.root_node(),
             workspace.document.document.text.as_bytes(),
-        ));
+            &mut workspace.errors,
+        );
 
         let mut builder_params = MainBuilder {
             document: &workspace.document,
@@ -220,14 +230,6 @@ impl Session {
 
         Self::add_comments(&workspace)?;
 
-        Ok(())
-    }
-
-    pub fn delete_document(&mut self, uri: &Url) -> anyhow::Result<()> {
-        let mut workspaces = WORKSPACES.lock();
-        workspaces
-            .remove(uri)
-            .ok_or_else(|| anyhow::format_err!("Workspace not found"))?;
         Ok(())
     }
 }

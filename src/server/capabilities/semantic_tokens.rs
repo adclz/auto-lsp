@@ -2,9 +2,10 @@ use auto_lsp_core::semantic_tokens::SemanticTokensBuilder;
 
 use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Get all semantic tokens for a document.
     pub fn get_semantic_tokens_full(
         &mut self,
         params: SemanticTokensParams,
@@ -26,6 +27,7 @@ impl Session {
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }
 
+    /// Get semantic tokens for a range in a document.
     pub fn get_semantic_tokens_range(
         &mut self,
         params: SemanticTokensRangeParams,

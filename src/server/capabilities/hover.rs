@@ -1,10 +1,10 @@
 use lsp_types::{Hover, HoverParams};
 
-
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
-    pub fn get_hover_info(&mut self, params: HoverParams) -> anyhow::Result<Option<Hover>> {
+    /// Request to get hover information for a symbol at a position
+    pub fn get_hover(&mut self, params: HoverParams) -> anyhow::Result<Option<Hover>> {
         let uri = &params.text_document_position_params.text_document.uri;
         let workspace = WORKSPACES.lock();
 

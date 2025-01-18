@@ -1,3 +1,6 @@
+//! # Auto LSP Core
+//! Core crate for auto_lsp
+
 mod core_ast;
 mod core_build;
 

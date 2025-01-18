@@ -2,12 +2,12 @@ use crate::core::build::MainBuilder;
 use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::seq;
-use auto_lsp_core::ast::{BuildCodeLens, GetHoverInfo, GetSymbolData};
+use auto_lsp_core::ast::{BuildCodeLens, GetHover, GetSymbolData};
 use lsp_types::Url;
 use std::sync::Arc;
 use texter::core::text::Text;
 
-use crate::session::Session;
+use crate::server::Session;
 use crate::{self as auto_lsp, define_semantic_token_types};
 
 use crate::configure_parsers;
@@ -134,7 +134,7 @@ impl BuildCodeLens for Function {
 )))]
 struct FunctionName {}
 
-impl GetHoverInfo for FunctionName {
+impl GetHover for FunctionName {
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         let parent = self.get_parent().unwrap().to_dyn().unwrap();
         let comment = parent.read().get_comment(doc.document.text.as_bytes());

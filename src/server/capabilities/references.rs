@@ -1,8 +1,12 @@
 use lsp_types::{Location, ReferenceParams};
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Request to get references of a symbol
+    ///
+    /// To get the references, the server will look for the symbol at the given position,
+    /// then read `get_referrers` from the symbol and return the references.
     pub fn get_references(
         &mut self,
         params: ReferenceParams,

@@ -1,6 +1,7 @@
 use lsp_types::{Position, TextDocumentContentChangeEvent};
 use texter::change::{Change, GridIndex};
 
+/// Simple wrapper around [`Change`].
 pub struct WrapChange<'a> {
     pub change: Change<'a>,
 }
@@ -11,6 +12,9 @@ impl<'a> WrapChange<'a> {
     }
 }
 
+/// Convert a `Position` into a [`GridIndex`].
+///
+/// ... Since `From` can't be implemented due to orphan rules.
 fn grid_into_position(value: Position) -> GridIndex {
     GridIndex {
         row: value.line as usize,

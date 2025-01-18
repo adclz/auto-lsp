@@ -15,6 +15,7 @@ use serde::Serialize;
 use super::Session;
 
 impl Session {
+    /// Main loop of the LSP server, backed by [`lsp-server`] and [`crossbeam-channel`] crates.
     pub fn main_loop(&mut self) -> anyhow::Result<()> {
         loop {
             select! {
@@ -26,16 +27,16 @@ impl Session {
                             };
                             RequestDispatcher::new(self, req)
                                 .on::<DocumentDiagnosticRequest, _>(Self::get_diagnostics)?
-                                .on::<DocumentLinkRequest, _>(Self::get_document_link)?
+                                .on::<DocumentLinkRequest, _>(Self::get_document_links)?
                                 .on::<DocumentSymbolRequest, _>(Self::get_document_symbols)?
                                 .on::<FoldingRangeRequest, _>(Self::get_folding_ranges)?
-                                .on::<HoverRequest, _>(Self::get_hover_info)?
+                                .on::<HoverRequest, _>(Self::get_hover)?
                                 .on::<SemanticTokensFullRequest, _>(Self::get_semantic_tokens_full)?
                                 .on::<SemanticTokensRangeRequest, _>(Self::get_semantic_tokens_range)?
                                 .on::<SelectionRangeRequest, _>(Self::get_selection_ranges)?
                                 .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?
                                 .on::<WorkspaceDiagnosticRequest, _>(Self::get_workspace_diagnostics)?
-                                .on::<InlayHintRequest, _>(Self::get_inlay_hint)?
+                                .on::<InlayHintRequest, _>(Self::get_inlay_hints)?
                                 .on::<CodeLensRequest, _>(Self::get_code_lens)?
                                 .on::<Completion, _>(Self::get_completion_items)?
                                 .on::<GotoDefinition, _>(Self::go_to_definition)?
@@ -56,9 +57,7 @@ impl Session {
     }
 }
 
-/**
- * Code taken from https://github.com/oxlip-lang/oal/blob/b6741ff99f7c9338551e2067c0de7acd492fad00/oal-client/src/lsp/dispatcher.rs
- */
+/// Code taken from <https://github.com/oxlip-lang/oal/blob/b6741ff99f7c9338551e2067c0de7acd492fad00/oal-client/src/lsp/dispatcher.rs>
 pub struct RequestDispatcher<'a> {
     session: &'a mut Session,
     req: Option<Request>,

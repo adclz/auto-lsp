@@ -4,10 +4,16 @@ use lsp_types::{DocumentLink, DocumentLinkParams, Range, Url};
 use regex::Regex;
 use streaming_iterator::StreamingIterator;
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
-    pub fn get_document_link(
+    /// Get document links for a document.
+    ///
+    /// To find a document link, we need the comment [`tree_sitter::Query`] to find all comments,
+    /// then we use a regex to find links matching the pattern "source:file.extension:line".
+    ///
+    /// TODO: Allow for user defined patterns in initialization options.
+    pub fn get_document_links(
         &mut self,
         params: DocumentLinkParams,
     ) -> anyhow::Result<Vec<DocumentLink>> {

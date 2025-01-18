@@ -14,12 +14,12 @@ use crate::Feature;
 #[derive(Debug, FromMeta)]
 pub struct HoverFeature {}
 
-pub struct HoverInfoBuilder<'a> {
+pub struct HoverBuilder<'a> {
     pub input_name: &'a Ident,
     pub fields: &'a StructFields,
 }
 
-impl<'a> HoverInfoBuilder<'a> {
+impl<'a> HoverBuilder<'a> {
     pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
         Self { input_name, fields }
     }
@@ -34,7 +34,7 @@ impl<'a> HoverInfoBuilder<'a> {
     }
 }
 
-impl<'a> FeaturesCodeGen for HoverInfoBuilder<'a> {
+impl<'a> FeaturesCodeGen for HoverBuilder<'a> {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
         match &params.lsp_hover_info {
             None => self.default_impl(),

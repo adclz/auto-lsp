@@ -3,9 +3,12 @@ use lsp_types::{
     FullDocumentDiagnosticReport, RelatedFullDocumentDiagnosticReport,
 };
 
-use crate::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
+    /// Get diagnostics for a document.
+    ///
+    /// Diagnostics are kept in memory since the last time the document was added or updated.
     pub fn get_diagnostics(
         &mut self,
         params: DocumentDiagnosticParams,

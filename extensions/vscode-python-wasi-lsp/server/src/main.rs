@@ -1,9 +1,6 @@
 use std::error::Error;
 
-use auto_lsp::session::{
-    init::{InitOptions, LspOptions},
-    Session,
-};
+use auto_lsp::server::{InitOptions, LspOptions, Session};
 
 use auto_lsp::python_workspace::PARSERS;
 

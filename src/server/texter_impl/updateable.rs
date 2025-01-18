@@ -3,8 +3,11 @@ use texter::error::Error;
 use texter::updateables::{ChangeContext, UpdateContext, Updateable};
 use tree_sitter::{InputEdit, Point, Tree};
 
+/// A wrapper around a [`Tree`] that keeps track of the edits made to it.
 pub struct WrapTree<'a> {
+    /// The tree being wrapped.
     pub tree: &'a mut Tree,
+    /// The edits made to the tree ([`InputEdit`], and is_whitespace bool).
     edits: Option<Vec<(InputEdit, bool)>>,
 }
 
@@ -15,6 +18,7 @@ impl<'a> From<&'a mut Tree> for WrapTree<'a> {
 }
 
 impl Updateable for WrapTree<'_> {
+    /// This implementation of `update` keeps track of the edits made to the tree.
     fn update(&mut self, ctx: UpdateContext) -> Result<(), Error> {
         let new_edits = WrapTree::edit_from_ctx(ctx)?;
         self.tree.edit(&new_edits.0);
@@ -34,10 +38,18 @@ fn grid_into_point(value: GridIndex) -> Point {
 }
 
 impl WrapTree<'_> {
+    /// Returns the edits made to the tree since the last call to `get_edits`.
+    ///
+    /// This function consumes the `WrapTree` and returns the edits.
     pub(crate) fn get_edits(&mut self) -> Vec<(InputEdit, bool)> {
         self.edits.take().unwrap_or_default()
     }
 
+    /// Taken from the original `edit_from_ctx` in `texter_impl/updateable.rs`.
+    ///
+    /// The difference here is that this function returns a tuple ([`tree_sitter::InputEdit`], `bool`).
+    ///
+    /// Where [`tree_sitter::InputEdit`] is the edit to be made to the tree, and `bool` is whether the edit is whitespace.
     fn edit_from_ctx(ctx: UpdateContext) -> anyhow::Result<(InputEdit, bool), Error> {
         let old_br = ctx.old_breaklines;
         let new_br = ctx.breaklines;

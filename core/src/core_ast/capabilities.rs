@@ -63,7 +63,7 @@ impl From<VecOrSymbol> for Vec<DocumentSymbol> {
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide hover information
-pub trait GetHoverInfo {
+pub trait GetHover {
     /// Return hover information
     ///
     /// [LSP Hover](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover)
@@ -235,7 +235,7 @@ pub trait IsCheck {
 pub trait Check: IsCheck {
     /// Perform a check on the symbol during the last step of build process
     ///
-    /// If the check fails, push your [Diagnostic](s) to the accumulator and return `Err(())`
+    /// If the check fails, push your [`lsp_types::Diagnostic`] to the accumulator and return `std::Err(())`
     /// If the check succeeds, return `Ok(())`
     ///
     /// By default `Ok(())`
