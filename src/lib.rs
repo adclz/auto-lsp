@@ -24,5 +24,7 @@ pub use auto_lsp_macros as macros;
 pub use constcat;
 pub use lsp_types;
 pub use parking_lot;
+#[cfg(feature = "rayon")]
+pub use rayon;
 pub use texter;
 pub use tree_sitter;

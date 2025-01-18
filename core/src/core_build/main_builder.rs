@@ -15,6 +15,7 @@ pub struct MainBuilder<'a> {
 }
 
 impl<'a> MainBuilder<'a> {
+    #[cfg(not(feature = "rayon"))]
     pub fn resolve_references(&mut self) -> &mut Self {
         self.unsolved_references.retain(|item| {
             let item = match item.to_dyn() {
@@ -39,6 +40,42 @@ impl<'a> MainBuilder<'a> {
         self
     }
 
+    #[cfg(feature = "rayon")]
+    pub fn resolve_references(&mut self) -> &mut Self {
+        use parking_lot::RwLock;
+        use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+        let diagnostics = RwLock::new(vec![]);
+        *self.unsolved_references = self
+            .unsolved_references
+            .par_iter()
+            .cloned()
+            .filter(|item| {
+                let item = match item.to_dyn() {
+                    Some(read) => read,
+                    None => return false,
+                };
+                let read = item.read();
+                match read.find(&self.document) {
+                    Ok(Some(target)) => {
+                        target.write().add_referrer(item.to_weak());
+                        drop(read);
+                        item.write().set_target_reference(target.to_weak());
+                        false
+                    }
+                    Ok(None) => true,
+                    Err(err) => {
+                        diagnostics.write().push(err);
+                        true
+                    }
+                }
+            })
+            .collect::<Vec<WeakSymbol>>();
+        self.diagnostics.extend(diagnostics.into_inner());
+        self
+    }
+
+    #[cfg(not(feature = "rayon"))]
     pub fn resolve_checks(&mut self) -> &mut Self {
         self.unsolved_checks.retain(|item| {
             let item = match item.to_dyn() {
@@ -51,6 +88,32 @@ impl<'a> MainBuilder<'a> {
                 Err(()) => true,
             }
         });
+        self
+    }
+
+    #[cfg(feature = "rayon")]
+    pub fn resolve_checks(&mut self) -> &mut Self {
+        use parking_lot::RwLock;
+        use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+        let diagnostics = RwLock::new(vec![]);
+        *self.unsolved_checks = self
+            .unsolved_checks
+            .par_iter()
+            .cloned()
+            .filter(|item| {
+                let item = match item.to_dyn() {
+                    Some(read) => read,
+                    None => return false,
+                };
+                let read = item.read();
+                match read.check(&self.document, &mut diagnostics.write()) {
+                    Ok(()) => false,
+                    Err(()) => true,
+                }
+            })
+            .collect::<Vec<WeakSymbol>>();
+        self.diagnostics.extend(diagnostics.into_inner());
         self
     }
 

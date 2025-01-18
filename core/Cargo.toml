@@ -3,6 +3,9 @@ name = "auto-lsp-core"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+rayon = []
+
 [dependencies]
 lsp-types = { workspace = true }
 tree-sitter = { workspace = true }
@@ -11,5 +14,6 @@ streaming-iterator = { workspace = true }
 parking_lot = { workspace = true }
 log = { workspace = true }
 texter = { workspace = true }
+rayon = { workspace = true }
 const-str = "0.3.1"
 const_panic = "0.2.11"
