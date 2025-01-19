@@ -43,7 +43,8 @@ texter = "0.1.2"
 rayon = "1.10"
 
 [features]
-default = []
+default = ["assertions"]
+assertions = ["auto-lsp-core/assertions", "auto-lsp-macros/assertions"]
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
 log = []
 lsp_server = [
@@ -54,7 +55,7 @@ lsp_server = [
     "dep:crossbeam-channel",
     "dep:texter",
 ]
-python_test = ["lsp_server", "dep:tree-sitter-python"]
+python_test = ["assertions", "lsp_server", "dep:tree-sitter-python"]
 rayon = ["auto-lsp-core/rayon", "dep:rayon"]
 wasm = ["parking_lot/nightly"]
 

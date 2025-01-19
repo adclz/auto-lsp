@@ -157,14 +157,16 @@ pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
 }
 
-/// Call [check_conflicts] to find duplicated queries with a struct or enum
+/// Call [`check_conflicts`] to find duplicated queries with a struct or enum
 ///
 /// Executed at compile time
+#[cfg(feature = "assertions")]
 pub trait CheckQueryable {
     const CHECK: ();
 }
 
 /// Compare the names of the queries and panic if there are duplicates
+#[cfg(feature = "assertions")]
 pub const fn check_conflicts(
     input_name: &str,
     fields: &'static [&'static str],

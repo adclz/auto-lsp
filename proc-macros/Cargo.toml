@@ -10,6 +10,9 @@ quote = "1.0"
 darling = "0.20.10"
 structx = "0.1.11"
 
+[features]
+assertions = []
+
 [lib]
 proc-macro = true
 

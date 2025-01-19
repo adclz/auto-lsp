@@ -162,9 +162,9 @@ dependencies = [
 
 [[package]]
 name = "const_panic"
-version = "0.2.11"
+version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53857514f72ee4a2b583de67401e3ff63a5472ca4acf289d09a9ea7636dfec17"
+checksum = "2459fc9262a1aa204eb4b5764ad4f189caec88aea9634389c0a25f8be7f6265e"
 dependencies = [
  "typewit",
 ]

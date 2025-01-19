@@ -178,7 +178,6 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_queryable(&self, builder: &mut VariantBuilder) {
         let queryable = &PATHS.queryable.path;
-        let check_queryable = &PATHS.check_queryable.path;
 
         let concat: Vec<_> = self
             .fields
@@ -203,30 +202,35 @@ impl<'a> EnumBuilder<'a> {
             })
             .stage_trait(&self.input_builder_name, queryable);
 
-        let names = self
-            .fields
-            .variant_names
-            .iter()
-            .map(|name| quote! { stringify!(#name) })
-            .collect::<Vec<_>>();
+        #[cfg(feature = "assertions")]
+        {
+            let check_queryable = &PATHS.check_queryable.path;
 
-        let names = quote! { &[#(#names),*] };
+            let names = self
+                .fields
+                .variant_names
+                .iter()
+                .map(|name| quote! { stringify!(#name) })
+                .collect::<Vec<_>>();
 
-        let input_name = self.input_name;
-        let check_conflicts = &PATHS.check_conflicts;
+            let names = quote! { &[#(#names),*] };
 
-        builder
-            .add(quote! { const CHECK: () = {
-                use #queryable;
-                use #check_queryable;
-                let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
-                #check_conflicts(stringify!(#input_name), #names, queries);
-            }; })
-            .stage_trait(&self.input_name, check_queryable);
+            let input_name = self.input_name;
+            let check_conflicts = &PATHS.check_conflicts;
 
-        builder
-            .add(quote! { const _: () = <#input_name as  #check_queryable>::CHECK; })
-            .stage();
+            builder
+                .add(quote! { const CHECK: () = {
+                    use #queryable;
+                    use #check_queryable;
+                    let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
+                    #check_conflicts(stringify!(#input_name), #names, queries);
+                }; })
+                .stage_trait(&self.input_name, check_queryable);
+
+            builder
+                .add(quote! { const _: () = <#input_name as  #check_queryable>::CHECK; })
+                .stage();
+        }
     }
 
     fn impl_parent(&self, builder: &mut VariantBuilder) {

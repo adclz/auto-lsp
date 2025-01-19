@@ -41,6 +41,7 @@ pub struct Paths {
                 },
         },
     >,
+    #[cfg(feature = "assertions")]
     pub check_queryable: TraitInfo<
         Structx! {
                 CHECK: Structx! {
@@ -48,6 +49,7 @@ pub struct Paths {
                 },
         },
     >,
+    #[cfg(feature = "assertions")]
     pub check_conflicts: Path,
     pub symbol_trait: TraitInfo<
         Structx! {
@@ -277,7 +279,9 @@ impl Default for Paths {
                     },
                 },
             },
+            #[cfg(feature = "assertions")]
             check_conflicts: core_build(parse_quote!(check_conflicts)),
+            #[cfg(feature = "assertions")]
             check_queryable: TraitInfo {
                 path: core_build(parse_quote!(CheckQueryable)),
                 methods: structx! {
