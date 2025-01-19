@@ -28,7 +28,6 @@ rayon = { version = "1.10", optional = true }
 tree-sitter-python = { version = "0.23.6", optional = true }
 
 [features]
-default = ["lsp_server"]
 lsp_server = [
     "dep:serde",
     "dep:serde_json",
@@ -38,13 +37,20 @@ lsp_server = [
     "dep:texter",
 ]
 log = []
-rayon = ["dep:rayon", "auto-lsp-core/rayon"]
+rayon = ["auto-lsp-core/rayon", "dep:rayon"]
 wasm = ["parking_lot/nightly"]
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
-python_test = ["dep:tree-sitter-python"]
+python_test = ["lsp_server", "dep:tree-sitter-python"]
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
+lsp-server = "0.7.6"
+serde = "1.0.189"
+serde_json = "1.0.107"
+walkdir = "2"
+crossbeam-channel = "0.5.13"
+texter = "0.1.2"
+rayon = "1.10"
 tree-sitter-python = "0.23.6"
 tree-sitter-html = "0.23.2"
 

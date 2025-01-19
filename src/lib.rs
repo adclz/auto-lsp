@@ -61,7 +61,7 @@
 #[cfg(any(feature = "python_test", test))]
 pub mod python_workspace;
 /// LSP server (enabled with feature `lsp_server`)
-#[cfg(feature = "lsp_server")]
+#[cfg(any(feature = "lsp_server", test))]
 pub mod server;
 #[cfg(test)]
 pub mod tests;
@@ -88,5 +88,6 @@ pub use lsp_types;
 pub use parking_lot;
 #[cfg(feature = "rayon")]
 pub use rayon;
+#[cfg(any(feature = "lsp_server", test))]
 pub use texter;
 pub use tree_sitter;
