@@ -27,33 +27,6 @@ texter = { version = "0.1.2", optional = true }
 rayon = { version = "1.10", optional = true }
 tree-sitter-python = { version = "0.23.6", optional = true }
 
-[features]
-lsp_server = [
-    "dep:serde",
-    "dep:serde_json",
-    "dep:walkdir",
-    "dep:lsp-server",
-    "dep:crossbeam-channel",
-    "dep:texter",
-]
-log = []
-rayon = ["auto-lsp-core/rayon", "dep:rayon"]
-wasm = ["parking_lot/nightly"]
-deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
-python_test = ["lsp_server", "dep:tree-sitter-python"]
-
-[dev-dependencies]
-criterion = { version = "0.5.1", features = ["html_reports"] }
-lsp-server = "0.7.6"
-serde = "1.0.189"
-serde_json = "1.0.107"
-walkdir = "2"
-crossbeam-channel = "0.5.13"
-texter = "0.1.2"
-rayon = "1.10"
-tree-sitter-python = "0.23.6"
-tree-sitter-html = "0.23.2"
-
 [workspace]
 members = ["core", "proc-macros"]
 exclude = ["extensions/vscode-python-wasi-lsp/server"]
@@ -68,6 +41,37 @@ parking_lot = "0.12.3"
 log = "0.4.22"
 texter = "0.1.2"
 rayon = "1.10"
+
+[features]
+default = []
+deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
+log = []
+lsp_server = [
+    "dep:serde",
+    "dep:serde_json",
+    "dep:walkdir",
+    "dep:lsp-server",
+    "dep:crossbeam-channel",
+    "dep:texter",
+]
+python_test = ["lsp_server", "dep:tree-sitter-python"]
+rayon = ["auto-lsp-core/rayon", "dep:rayon"]
+wasm = ["parking_lot/nightly"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
+lsp-server = "0.7.6"
+serde = "1.0.189"
+serde_json = "1.0.107"
+walkdir = "2"
+crossbeam-channel = "0.5.13"
+texter = "0.1.2"
+rayon = "1.10"
+tree-sitter-python = "0.23.6"
+tree-sitter-html = "0.23.2"
 
 [[bench]]
 name = "main"

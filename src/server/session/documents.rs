@@ -116,7 +116,7 @@ impl Session {
     /// Edit a document in workspaces
     ///
     /// Edits are incremental, meaning that the entire document is not re-parsed.
-    /// Instead, the changes are applied to the existing CST (using [`tree-sitter`] and [`Texter`]).
+    /// Instead, the changes are applied to the existing CST (using [`tree-sitter`] and [`texter`]).
     ///
     /// The AST is not updated if the node is either:
     ///  - an extra (comment)

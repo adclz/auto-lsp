@@ -50,12 +50,15 @@
 //! You can find more examples in the `tests` folder.
 //!
 //! ## Features
-//! - `lsp_server`: Enable the LSP server.
-//! - `wasm`: Enable wasm support.
-//! - `rayon`: Enable rayon support (not compatible with `wasm`).
+//! - `deadlock_detection`: Enable [`parking_lot`]'s deadlock detection (not compatible with `wasm`).
+//! - `log`: Enable logging. (uses [`stderrlog`])
+//! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
 //! - `python_test`: Enable the python workspace mock for testing purposes.
-//!
+//! - `rayon`: Enable [`rayon`] support (not compatible with `wasm`).
+//! - `wasm`: Enable wasm support.
 
+#[cfg(doc)]
+use lsp_server;
 /// A mock Python workspace used for testing purposes.
 /// This module is only available with the `python_test` feature enabled or during tests.
 #[cfg(any(feature = "python_test", test))]
@@ -66,7 +69,7 @@ pub mod server;
 #[cfg(test)]
 pub mod tests;
 
-/// Core functionalities of the crate
+/// Re-export of the [`auto_lsp_core`] crate
 pub mod core {
     // Not public API. Referenced by macro-generated code.
     #[doc(hidden)]
@@ -77,6 +80,7 @@ pub mod core {
     pub use auto_lsp_core::ast;
     pub use auto_lsp_core::semantic_tokens;
     pub use auto_lsp_core::workspace;
+    #[doc(hidden)]
     pub use auto_lsp_core::{builder_error, builder_warning};
 }
 /// [`macros::seq`] and [`macros::choice`] macros
