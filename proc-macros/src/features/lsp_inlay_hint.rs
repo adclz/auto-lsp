@@ -41,7 +41,7 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let inlay_hint_path = &PATHS.lsp_inlay_hint.path;
-        let sig = &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig;
+        let sig = &PATHS.lsp_inlay_hint.build_inlay_hint.sig;
 
         match &params.lsp_inlay_hints {
             None => self.default_impl(),
@@ -98,7 +98,7 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let hover_info_path = &PATHS.lsp_hover_info.path;
-        let sig = &PATHS.lsp_hover_info.methods.get_hover.sig;
+        let sig = &PATHS.lsp_hover_info.get_hover.sig;
 
         match &params.lsp_inlay_hints {
             None => self.default_impl(),

@@ -109,8 +109,8 @@ impl<'a> StructBuilder<'a> {
     }
 
     fn impl_ast_symbol(&self, builder: &mut FieldBuilder) {
-        let get_data = &PATHS.symbol_trait.methods.get_data.sig;
-        let get_mut_data = &PATHS.symbol_trait.methods.get_mut_data.sig;
+        let get_data = &PATHS.symbol_trait.get_data.sig;
+        let get_mut_data = &PATHS.symbol_trait.get_mut_data.sig;
 
         builder
             .add(quote! { #get_data { &self._data } })
@@ -123,7 +123,7 @@ impl<'a> StructBuilder<'a> {
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.locator.methods.find_at_offset.sig,
+                &PATHS.locator.find_at_offset.sig,
                 Some(quote! {
                     use #symbol_trait;
                     if (!self.is_inside_offset(offset)) {
@@ -146,7 +146,7 @@ impl<'a> StructBuilder<'a> {
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.parent.methods.inject_parent.sig,
+                &PATHS.parent.inject_parent.sig,
                 None,
                 |_, _, name, _, _| {
                     quote! {
@@ -212,7 +212,7 @@ impl<'a> StructBuilder<'a> {
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.dynamic_swap.methods.swap.sig,
+                &PATHS.dynamic_swap.swap.sig,
                 None,
                 |_, _, name, _, _| {
                     quote! {
@@ -228,7 +228,7 @@ impl<'a> StructBuilder<'a> {
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.edit_range.methods.edit_range.sig,
+                &PATHS.edit_range.edit_range.sig,
                 None,
                 |_, _, name, _, _| {
                     quote! {
@@ -244,7 +244,7 @@ impl<'a> StructBuilder<'a> {
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.collect_references.methods.collect_references.sig,
+                &PATHS.collect_references.collect_references.sig,
                 None,
                 |_, _, name, _, _| {
                     quote! {
@@ -274,7 +274,7 @@ impl<'a> StructBuilder<'a> {
 
     fn fn_new(&self, builder: &mut FieldBuilder) {
         let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
-        let sig = &PATHS.symbol_builder_trait.methods.new.sig;
+        let sig = &PATHS.symbol_builder_trait.new.sig;
 
         let fields = FieldBuilder::default()
             .add_iter(&self.fields, |ty, _, name, _, _| match ty {
@@ -305,7 +305,7 @@ impl<'a> StructBuilder<'a> {
         let add_symbol_trait = &PATHS.add_symbol_trait;
         builder.add_fn_iter(
             &self.fields,
-            &PATHS.symbol_builder_trait.methods.add.sig,
+            &PATHS.symbol_builder_trait.add.sig,
             Some(quote! { use #add_symbol_trait; }),
             |_, _, name, field_type, builder| {
                 quote! {

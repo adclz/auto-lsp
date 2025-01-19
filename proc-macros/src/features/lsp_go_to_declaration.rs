@@ -50,7 +50,7 @@ impl<'a> FeaturesCodeGen for GoToDeclarationBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let go_to_declarations_path = &PATHS.lsp_go_to_declaration.path;
-        let sig = &PATHS.lsp_go_to_declaration.methods.go_to_declaration.sig;
+        let sig = &PATHS.lsp_go_to_declaration.go_to_declaration.sig;
 
         match &params.lsp_go_to_declaration {
             None => self.default_impl(),

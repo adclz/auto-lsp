@@ -50,7 +50,7 @@ impl<'a> FeaturesCodeGen for HoverBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let hover_info_path = &PATHS.lsp_hover_info.path;
-        let sig = &PATHS.lsp_hover_info.methods.get_hover.sig;
+        let sig = &PATHS.lsp_hover_info.get_hover.sig;
 
         match &params.lsp_hover_info {
             None => self.default_impl(),

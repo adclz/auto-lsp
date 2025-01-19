@@ -91,13 +91,13 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.symbol_trait.methods.get_data.sig,
-                &PATHS.symbol_trait.methods.get_data.variant,
+                &PATHS.symbol_trait.get_data.sig,
+                &PATHS.symbol_trait.get_data.variant,
             )
             .add_default_iter(
                 &self.fields,
-                &PATHS.symbol_trait.methods.get_mut_data.sig,
-                &PATHS.symbol_trait.methods.get_mut_data.variant,
+                &PATHS.symbol_trait.get_mut_data.sig,
+                &PATHS.symbol_trait.get_mut_data.variant,
             )
             .stage_trait(&self.input_name, &PATHS.symbol_trait.path);
     }
@@ -106,16 +106,16 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.is_check.methods.must_check.sig,
-                &PATHS.is_check.methods.must_check.variant,
+                &PATHS.is_check.must_check.sig,
+                &PATHS.is_check.must_check.variant,
             )
             .stage_trait(&self.input_name, &PATHS.is_check.path);
 
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.check.methods.check.sig,
-                &PATHS.check.methods.check.variant,
+                &PATHS.check.check.sig,
+                &PATHS.check.check.variant,
             )
             .stage_trait(&self.input_name, &PATHS.check.path);
     }
@@ -124,14 +124,14 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.is_reference.methods.is_reference.sig,
-                &PATHS.is_reference.methods.is_reference.variant,
+                &PATHS.is_reference.is_reference.sig,
+                &PATHS.is_reference.is_reference.variant,
             )
             .stage_trait(&self.input_name, &PATHS.is_reference.path)
             .add_default_iter(
                 &self.fields,
-                &PATHS.accessor.methods.find.sig,
-                &PATHS.accessor.methods.find.variant,
+                &PATHS.accessor.find.sig,
+                &PATHS.accessor.find.variant,
             )
             .stage_trait(&self.input_name, &PATHS.accessor.path);
     }
@@ -140,8 +140,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.locator.methods.find_at_offset.sig,
-                &PATHS.locator.methods.find_at_offset.variant,
+                &PATHS.locator.find_at_offset.sig,
+                &PATHS.locator.find_at_offset.variant,
             )
             .stage_trait(&self.input_name, &PATHS.locator.path);
     }
@@ -150,8 +150,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.dynamic_swap.methods.swap.sig,
-                &PATHS.dynamic_swap.methods.swap.variant,
+                &PATHS.dynamic_swap.swap.sig,
+                &PATHS.dynamic_swap.swap.variant,
             )
             .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
     }
@@ -160,8 +160,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.edit_range.methods.edit_range.sig,
-                &PATHS.edit_range.methods.edit_range.variant,
+                &PATHS.edit_range.edit_range.sig,
+                &PATHS.edit_range.edit_range.variant,
             )
             .stage_trait(&self.input_name, &PATHS.edit_range.path);
     }
@@ -170,8 +170,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.collect_references.methods.collect_references.sig,
-                &PATHS.collect_references.methods.collect_references.variant,
+                &PATHS.collect_references.collect_references.sig,
+                &PATHS.collect_references.collect_references.variant,
             )
             .stage_trait(&self.input_name, &PATHS.collect_references.path);
     }
@@ -237,8 +237,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.parent.methods.inject_parent.sig,
-                &PATHS.parent.methods.inject_parent.variant,
+                &PATHS.parent.inject_parent.sig,
+                &PATHS.parent.inject_parent.variant,
             )
             .stage_trait(&self.input_name, &PATHS.parent.path);
     }
@@ -247,16 +247,16 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.is_scope.methods.is_scope.sig,
-                &PATHS.is_scope.methods.is_scope.variant,
+                &PATHS.is_scope.is_scope.sig,
+                &PATHS.is_scope.is_scope.variant,
             )
             .stage_trait(&self.input_name, &PATHS.is_scope.path);
 
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.scope.methods.get_scope_range.sig,
-                &PATHS.scope.methods.get_scope_range.variant,
+                &PATHS.scope.get_scope_range.sig,
+                &PATHS.scope.get_scope_range.variant,
             )
             .stage_trait(&self.input_name, &PATHS.scope.path);
     }
@@ -265,8 +265,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.is_comment.methods.is_comment.sig,
-                &PATHS.is_comment.methods.is_comment.variant,
+                &PATHS.is_comment.is_comment.sig,
+                &PATHS.is_comment.is_comment.variant,
             )
             .stage_trait(&self.input_name, &PATHS.is_comment.path);
     }
@@ -275,8 +275,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.lsp_code_lens.methods.build_code_lens.sig,
-                &PATHS.lsp_code_lens.methods.build_code_lens.variant,
+                &PATHS.lsp_code_lens.build_code_lens.sig,
+                &PATHS.lsp_code_lens.build_code_lens.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_code_lens.path);
     }
@@ -285,16 +285,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS
-                    .lsp_completion_items
-                    .methods
-                    .build_completion_items
-                    .sig,
-                &PATHS
-                    .lsp_completion_items
-                    .methods
-                    .build_completion_items
-                    .variant,
+                &PATHS.lsp_completion_items.build_completion_items.sig,
+                &PATHS.lsp_completion_items.build_completion_items.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_completion_items.path);
     }
@@ -303,12 +295,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.lsp_document_symbols.methods.get_document_symbols.sig,
-                &PATHS
-                    .lsp_document_symbols
-                    .methods
-                    .get_document_symbols
-                    .variant,
+                &PATHS.lsp_document_symbols.get_document_symbols.sig,
+                &PATHS.lsp_document_symbols.get_document_symbols.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_document_symbols.path);
     }
@@ -317,8 +305,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.lsp_hover_info.methods.get_hover.sig,
-                &PATHS.lsp_hover_info.methods.get_hover.variant,
+                &PATHS.lsp_hover_info.get_hover.sig,
+                &PATHS.lsp_hover_info.get_hover.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_hover_info.path);
     }
@@ -327,8 +315,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.lsp_inlay_hint.methods.build_inlay_hint.sig,
-                &PATHS.lsp_inlay_hint.methods.build_inlay_hint.variant,
+                &PATHS.lsp_inlay_hint.build_inlay_hint.sig,
+                &PATHS.lsp_inlay_hint.build_inlay_hint.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_inlay_hint.path);
     }
@@ -337,12 +325,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig,
-                &PATHS
-                    .lsp_semantic_token
-                    .methods
-                    .build_semantic_tokens
-                    .variant,
+                &PATHS.lsp_semantic_token.build_semantic_tokens.sig,
+                &PATHS.lsp_semantic_token.build_semantic_tokens.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_semantic_token.path);
     }
@@ -351,8 +335,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.lsp_go_to_definition.methods.go_to_definition.sig,
-                &PATHS.lsp_go_to_definition.methods.go_to_definition.variant,
+                &PATHS.lsp_go_to_definition.go_to_definition.sig,
+                &PATHS.lsp_go_to_definition.go_to_definition.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_go_to_definition.path);
     }
@@ -361,12 +345,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_default_iter(
                 &self.fields,
-                &PATHS.lsp_go_to_declaration.methods.go_to_declaration.sig,
-                &PATHS
-                    .lsp_go_to_declaration
-                    .methods
-                    .go_to_declaration
-                    .variant,
+                &PATHS.lsp_go_to_declaration.go_to_declaration.sig,
+                &PATHS.lsp_go_to_declaration.go_to_declaration.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_go_to_declaration.path);
     }
@@ -385,8 +365,8 @@ impl<'a> EnumBuilder<'a> {
         let variant_types_names = &self.fields.variant_types_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
-        let sig = &PATHS.symbol_builder_trait.methods.new.sig;
-        let variant = &PATHS.symbol_builder_trait.methods.new.variant;
+        let sig = &PATHS.symbol_builder_trait.new.sig;
+        let variant = &PATHS.symbol_builder_trait.new.variant;
 
         builder.add(quote! {
             #sig {
@@ -408,8 +388,8 @@ impl<'a> EnumBuilder<'a> {
     }
 
     fn fn_add(&self, builder: &mut VariantBuilder) {
-        let sig = &PATHS.symbol_builder_trait.methods.add.sig;
-        let variant = &PATHS.symbol_builder_trait.methods.add.variant;
+        let sig = &PATHS.symbol_builder_trait.add.sig;
+        let variant = &PATHS.symbol_builder_trait.add.variant;
 
         builder.add(quote! {
             #sig {

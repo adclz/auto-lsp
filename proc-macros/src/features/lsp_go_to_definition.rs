@@ -51,7 +51,7 @@ impl<'a> FeaturesCodeGen for GotoDefinitionBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let go_to_definitions_path = &PATHS.lsp_go_to_definition.path;
-        let sig = &PATHS.lsp_go_to_definition.methods.go_to_definition.sig;
+        let sig = &PATHS.lsp_go_to_definition.go_to_definition.sig;
 
         match &params.lsp_go_to_definition {
             None => self.default_impl(),

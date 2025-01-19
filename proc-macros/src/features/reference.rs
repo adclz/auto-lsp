@@ -41,7 +41,7 @@ impl<'a> FeaturesCodeGen for ReferenceBuilder<'a> {
         let input_name = &self.input_name;
         let is_reference_path = &PATHS.is_reference.path;
 
-        let is_reference_sig = &PATHS.is_reference.methods.is_reference.sig;
+        let is_reference_sig = &PATHS.is_reference.is_reference.sig;
 
         quote! {
             impl #is_reference_path for #input_name {

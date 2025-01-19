@@ -44,7 +44,7 @@ impl<'a> FeaturesCodeGen for CodeLensBuilder<'a> {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let code_lens_path = &PATHS.lsp_code_lens.path;
-        let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;
+        let sig = &PATHS.lsp_code_lens.build_code_lens.sig;
 
         match &params.lsp_code_lens {
             None => self.default_impl(),
@@ -85,7 +85,7 @@ impl<'a> FeaturesCodeGen for CodeLensBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let code_lens_path = &PATHS.lsp_code_lens.path;
-        let sig = &PATHS.lsp_code_lens.methods.build_code_lens.sig;
+        let sig = &PATHS.lsp_code_lens.build_code_lens.sig;
 
         match &params.lsp_code_lens {
             None => self.default_impl(),

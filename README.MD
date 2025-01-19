@@ -11,7 +11,6 @@ and [Language Server Protocol](https://microsoft.github.io/language-server-proto
  </div> 
 
 ![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)
-
 ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
 
 > [!IMPORTANT]

@@ -47,7 +47,7 @@ impl<'a> FeaturesCodeGen for SemanticTokensBuilder<'a> {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let semantic_tokens_path = &PATHS.lsp_semantic_token.path;
-        let sig = &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig;
+        let sig = &PATHS.lsp_semantic_token.build_semantic_tokens.sig;
 
         match &params.lsp_semantic_tokens {
             None => self.default_impl(),
@@ -111,7 +111,7 @@ impl<'a> FeaturesCodeGen for SemanticTokensBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let semantic_tokens_path = &PATHS.lsp_semantic_token.path;
-        let sig = &PATHS.lsp_semantic_token.methods.build_semantic_tokens.sig;
+        let sig = &PATHS.lsp_semantic_token.build_semantic_tokens.sig;
 
         match &params.lsp_semantic_tokens {
             None => self.default_impl(),

@@ -42,7 +42,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let document_symbols_path = &PATHS.lsp_document_symbols.path;
-        let sig = &PATHS.lsp_document_symbols.methods.get_document_symbols.sig;
+        let sig = &PATHS.lsp_document_symbols.get_document_symbols.sig;
         let vec_or_symbol = &PATHS.vec_or_symbol;
         match &params.lsp_document_symbols {
             None => self.default_impl(),
@@ -111,7 +111,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let document_symbols_path = &PATHS.lsp_document_symbols.path;
-        let sig = &PATHS.lsp_document_symbols.methods.get_document_symbols.sig;
+        let sig = &PATHS.lsp_document_symbols.get_document_symbols.sig;
 
         match &params.lsp_document_symbols {
             None => self.default_impl(),

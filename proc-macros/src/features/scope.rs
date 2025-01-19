@@ -52,9 +52,9 @@ impl<'a> FeaturesCodeGen for ScopeBuilder<'a> {
         let is_scope_path = &PATHS.is_scope.path;
         let scope_path = &PATHS.scope.path;
 
-        let is_scope_sig = &PATHS.is_scope.methods.is_scope.sig;
+        let is_scope_sig = &PATHS.is_scope.is_scope.sig;
 
-        let get_scope_range_sig = &PATHS.scope.methods.get_scope_range.sig;
+        let get_scope_range_sig = &PATHS.scope.get_scope_range.sig;
 
         match &params.scope {
             None => self.default_impl(),

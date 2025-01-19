@@ -49,7 +49,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
         let completion_items_path = &PATHS.lsp_completion_items.path;
         let sig = &PATHS
             .lsp_completion_items
-            .methods
+            
             .build_completion_items
             .sig;
 
@@ -86,7 +86,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
         let completion_items_path = &PATHS.lsp_completion_items.path;
         let sig = &PATHS
             .lsp_completion_items
-            .methods
+            
             .build_completion_items
             .sig;
 
