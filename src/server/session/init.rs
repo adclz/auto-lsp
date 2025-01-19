@@ -5,7 +5,6 @@ use std::fs;
 
 use auto_lsp_core::workspace::{Parsers, TreeSitter};
 use lsp_server::{Connection, IoThreads};
-use lsp_types::OneOf;
 use lsp_types::{
     CodeLensOptions, DocumentLinkOptions, InitializeParams, InitializeResult, PositionEncodingKind,
     SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
@@ -13,6 +12,8 @@ use lsp_types::{
     WorkspaceServerCapabilities,
 };
 use lsp_types::{DiagnosticOptions, DiagnosticServerCapabilities};
+use lsp_types::{DocumentLink, OneOf};
+use regex::{Match, Regex};
 use texter::core::text::Text;
 
 use super::Session;
@@ -24,6 +25,19 @@ use super::Session;
 pub struct SemanticTokensList {
     pub semantic_token_types: Option<&'static [lsp_types::SemanticTokenType]>,
     pub semantic_token_modifiers: Option<&'static [lsp_types::SemanticTokenModifier]>,
+}
+
+/// Regex used when the server is asked to provide document links
+///
+/// **to_document_link** receives the matches and pushes [`lsp_types::DocumentLink`] to the accumulator
+pub struct RegexToDocumentLink {
+    pub regex: Regex,
+    pub to_document_link:
+        for<'a> fn(Match<'a>, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink,
+}
+
+pub struct DocumentLinksOption {
+    pub with_regex: RegexToDocumentLink,
 }
 
 /// List of options for the LSP server capabilties [`lsp_types::ServerCapabilities`]
@@ -46,7 +60,7 @@ pub struct LspOptions {
     pub document_symbols: bool,
     pub definition_provider: bool,
     pub declaration_provider: bool,
-    pub document_links: bool,
+    pub document_links: Option<DocumentLinksOption>,
     pub folding_ranges: bool,
     pub hover_info: bool,
     pub references: bool,
@@ -64,7 +78,7 @@ pub struct InitOptions {
 }
 
 /// Function to create a new [`Text`] from a [`String`]
-pub type TextFn = fn(String) -> Text;
+pub(crate) type TextFn = fn(String) -> Text;
 
 fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEncodingKind) {
     const DEFAULT: (TextFn, PositionEncodingKind) = (Text::new_utf16, PositionEncodingKind::UTF16);
@@ -201,7 +215,7 @@ impl Session {
                     true => Some(OneOf::Left(true)),
                     false => None,
                 },
-                document_link_provider: match init_options.lsp_options.document_links {
+                document_link_provider: match init_options.lsp_options.document_links.is_some() {
                     true => Some(DocumentLinkOptions {
                         resolve_provider: Some(false),
                         work_done_progress_options: Default::default(),

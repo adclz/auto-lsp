@@ -1,7 +1,4 @@
-use std::str::FromStr;
-
-use lsp_types::{DocumentLink, DocumentLinkParams, Range, Url};
-use regex::Regex;
+use lsp_types::{DocumentLink, DocumentLinkParams};
 use streaming_iterator::StreamingIterator;
 
 use crate::server::session::{Session, WORKSPACES};
@@ -10,13 +7,22 @@ impl Session {
     /// Get document links for a document.
     ///
     /// To find a document link, we need the comment [`tree_sitter::Query`] to find all comments,
-    /// then we use a regex to find links matching the pattern "source:file.extension:line".
-    ///
-    /// TODO: Allow for user defined patterns in initialization options.
+    /// then we use the regex from the [`crate::server::DocumentLinksOption`] to find the links,
+    /// and finally we pass matches to the **to_document_link** function.
     pub fn get_document_links(
         &mut self,
         params: DocumentLinkParams,
     ) -> anyhow::Result<Vec<DocumentLink>> {
+        let with_regex = &self
+            .init_options
+            .lsp_options
+            .document_links
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Document links regex not found"))?
+            .with_regex;
+
+        let re = &with_regex.regex;
+        let to_document_lnik = &with_regex.to_document_link;
         let uri = &params.text_document.uri;
         let workspace = WORKSPACES.lock();
 
@@ -31,7 +37,6 @@ impl Session {
 
         let root_node = workspace.document.cst.root_node();
         let source = workspace.document.document.text.as_str();
-        let re = Regex::new(r"\s+source:(\w+\.\w+):(\d+)").unwrap();
 
         let mut query_cursor = tree_sitter::QueryCursor::new();
         let mut captures = query_cursor.captures(query, root_node, source.as_bytes());
@@ -43,36 +48,7 @@ impl Session {
             let comment_text = capture.node.utf8_text(source.as_bytes()).unwrap();
 
             for _match in re.find_iter(comment_text) {
-                let link_start = _match.range().start;
-                let link_end = _match.range().end;
-
-                let url = _match.as_str().split(":").collect::<Vec<&str>>();
-
-                let start = match workspace
-                    .document
-                    .position_at(capture.node.start_byte() + link_start)
-                {
-                    Some(start) => start,
-                    None => continue,
-                };
-
-                let end = match workspace
-                    .document
-                    .position_at(capture.node.start_byte() + link_end)
-                {
-                    Some(end) => end,
-                    None => continue,
-                };
-
-                results.push(DocumentLink {
-                    range: Range { start, end },
-                    target: Some(
-                        Url::from_str(&format!("file:///workspace/{}#L{}", url[1], url[2]))
-                            .unwrap(),
-                    ),
-                    tooltip: None,
-                    data: None,
-                });
+                to_document_lnik(_match, &mut results);
             }
         }
 
