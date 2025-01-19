@@ -308,6 +308,7 @@ impl Session {
 /// configure_parsers!(
 ///     "python" => {
 ///         language: tree_sitter_python::LANGUAGE,
+///         node_types: tree_sitter_python::NODE_TYPES,
 ///         ast_root: Module,
 ///         core: CORE_QUERY,
 ///         comment: Some(COMMENT_QUERY),
