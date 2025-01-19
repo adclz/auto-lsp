@@ -1,47 +1,77 @@
 <div align="center">
   <h1>Auto LSP</h1>
   <p>
-    <strong>AST generator based on tree sitter queries</strong>
+    <strong>AST and LSP server library based on tree sitter queries</strong>
   </p>
 
-A rust crate to facilitate the creation of [Language Servers](https://microsoft.github.io/language-server-protocol/) for [tree sitter](https://tree-sitter.github.io/tree-sitter/) grammars using [tree-sitter queries](https://tree-sitter.github.io/tree-sitter/using-parsers/queries/1-syntax.html).
+
+A Rust crate for creating [Abstract Syntax Trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (AST)
+and [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) (LSP) servers.
 
  </div> 
 
+![Build status](https://github.com/github/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)
+![Static Badge](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
+
+> [!INFO]
+> `auto_lsp` is at an early stage, expect frequent breaking changes. 
+
+## Quick Example
+
+`auto_lsp` is designed to be as language-agnostic as possible, allowing any Tree-sitter grammar to be used.
+
+Defining a simple AST involves two steps: writing the queries and then defining the corresponding AST structures in Rust.
+
+Let's say you have a toy language with a root node named **document** containing a list of **function** nodes, each containing a unique **name**.
+
+A simple query file to capture the root document and function names:
+
+```lisp
+(document) @document
+(function
+    (name) @name) @function
+```
+
+The corresponding AST definition in Rust:
+
+```rust
+#[seq(query_name = "document", kind(symbol()))]
+struct Document {
+   functions: Vec<Function>
+}
+
+#[seq(query_name = "function", kind(symbol()))]
+struct Function {
+   name: Name
+}
+
+#[seq(query_name = "name", kind(symbol()))]
+struct Name {}  
+```
+
+Now that you have your AST defined, you can:
+ - Implement the LSP traits and create a LSP server (with the `lsp_server` feature).
+ - Add your own logic for testing purposes, code_generation, etc.
+
+You can find more examples in the `src/tests` folder.
+
 ## Features
 
-- Desgined to be language agnostic
-- Easy to configure 
-- Thread safe
-- Compile and Runtime checks
-- Partial incremental updates [WIP]
-- Support of multiple parsers (per file extension)
-- Support multiline edits
-- All symbols implement downcasting
-- Works on @vscode/wasi-lsp
+- `assertions`: Enable compile-time checks for conflicting queries.
+- `deadlock_detection`: Enable [`parking_lot`](https://crates.io/crates/parking_lot)'s deadlock detection (not compatible with `wasm`).
+- `log`: Enable logging. (uses [`stderrlog`](https://crates.io/crates/stderrlog))
+- `lsp_server`: Enable the LSP server (uses [`lsp_server`](https://crates.io/crates/lsp-server)).
+- `python_test`: Enable the python workspace mock for testing purposes.
+- `rayon`: Enable [`rayon`](https://crates.io/crates/rayon) support (not compatible with `wasm`).
+- `wasm`: Enable wasm support.
 
 ## Documentation
 
-- [Install](#install)
-- [Configure](#configure)
-    - [Declare semantic tokens]()
-    - [Configure Parsers]() 
-- [Create the AST]()
-    - [Declare symbols]()
-        - [seq]()
-        - [repeat]()
-        - [option]()
-        - [choice]()
-    - [Add capabilities]()
-        - [LSP]()
-            - [Document Symbols]()
-        - [Special capabilities]()
-            - [Check]()
-            - [Scope]()
-            - [Reference]()
-- [Debug]()
-    - [Compile time checking]()
-    - [Runtime messages]()
-- [Build]()
-    - [WebAssembly]()              
-- [Similar projects](#similar-projects)    
+The complete documentation will be available in the upcoming book.
+
+## Inspirations / Similar projects
+
+- [Volar](https://volarjs.dev/)
+- [Rust-sitter](https://github.com/hydro-project/rust-sitter)
+- [StackGraphs](https://github.com/github/stack-graphs)
+- [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache

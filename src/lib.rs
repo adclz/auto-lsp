@@ -29,13 +29,11 @@
 //!
 //! #[seq(query_name = "document", kind(symbol()))]
 //! struct Document {
-//!    /// A collection of functions defined in the document
 //!    functions: Vec<Function>
 //! }
 //!
 //! #[seq(query_name = "function", kind(symbol()))]
 //! struct Function {
-//!    /// The name of the function
 //!    name: Name
 //! }
 //!
@@ -44,7 +42,7 @@
 //! ```
 //!
 //! Now that you have your AST defined, you can:
-//!  - Implements the [LSP traits](core::ast) and create a LSP server (with the `lsp_server` feature).
+//!  - Implement the [LSP traits](core::ast) and create a LSP server (with the `lsp_server` feature).
 //!  - Add your own logic for testing purposes, code_generation, etc.
 //!
 //! You can find more examples in the `tests` folder.
