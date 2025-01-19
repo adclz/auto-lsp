@@ -59,14 +59,6 @@ pub struct InitOptions {
     pub lsp_options: LspOptions,
 }
 
-/// Result of the initialization of a new [`Session`]
-///
-/// Contains the session and the IO threads from [`lsp_server::IoThreads`]
-pub struct InitResult {
-    pub session: Session,
-    pub io_threads: IoThreads,
-}
-
 use texter::core::text::Text;
 
 use super::Session;
