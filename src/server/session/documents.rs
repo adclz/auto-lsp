@@ -41,7 +41,7 @@ impl Session {
             .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
-        let cst_parser = &parsers.cst_parser;
+        let tree_sitter = &parsers.tree_sitter;
         let ast_parser = parsers.ast_parser;
 
         let cst;
@@ -50,7 +50,11 @@ impl Session {
 
         let source_code = source_code.as_bytes();
 
-        cst = cst_parser.parser.write().parse(&source_code, None).unwrap();
+        cst = tree_sitter
+            .parser
+            .write()
+            .parse(&source_code, None)
+            .unwrap();
 
         get_tree_sitter_errors(&cst.root_node(), source_code, &mut errors);
 
@@ -67,7 +71,7 @@ impl Session {
         let params = &mut MainBuilder {
             document: &document,
             diagnostics: &mut errors,
-            query: &cst_parser.queries.core,
+            query: &tree_sitter.queries.core,
             url: arc_uri.clone(),
             unsolved_checks: &mut unsolved_checks,
             unsolved_references: &mut unsolved_references,
@@ -155,7 +159,7 @@ impl Session {
             .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
-        let cst_parser = &parsers.cst_parser;
+        let tree_sitter = &parsers.tree_sitter;
 
         let mut new_tree = WrapTree::from(&mut workspace.document.cst);
         for ch in params.content_changes {
@@ -168,7 +172,7 @@ impl Session {
 
         let new_tree = workspace
             .parsers
-            .cst_parser
+            .tree_sitter
             .parser
             .write()
             .parse(
@@ -191,7 +195,7 @@ impl Session {
 
         let mut builder_params = MainBuilder {
             document: &workspace.document,
-            query: &cst_parser.queries.core,
+            query: &tree_sitter.queries.core,
             url: arc_uri.clone(),
             diagnostics: &mut workspace.errors,
             unsolved_checks: &mut workspace.unsolved_checks,

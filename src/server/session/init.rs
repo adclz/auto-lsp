@@ -3,7 +3,7 @@ use std::collections::HashMap;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
-use auto_lsp_core::workspace::{CstParser, Parsers};
+use auto_lsp_core::workspace::{Parsers, TreeSitter};
 use lsp_server::{Connection, IoThreads};
 use lsp_types::OneOf;
 use lsp_types::{
@@ -13,6 +13,10 @@ use lsp_types::{
     WorkspaceServerCapabilities,
 };
 use lsp_types::{DiagnosticOptions, DiagnosticServerCapabilities};
+use texter::core::text::Text;
+
+use super::Session;
+
 /// Lists of semantic token types and modifiers
 ///
 /// Usually you should define the lists with the [`crate::define_semantic_token_types`] and [`crate::define_semantic_token_modifiers`] macros.
@@ -58,10 +62,6 @@ pub struct InitOptions {
     pub parsers: &'static HashMap<&'static str, Parsers>,
     pub lsp_options: LspOptions,
 }
-
-use texter::core::text::Text;
-
-use super::Session;
 
 /// Function to create a new [`Text`] from a [`String`]
 pub type TextFn = fn(String) -> Text;
@@ -306,6 +306,7 @@ impl Session {
 macro_rules! configure_parsers {
     ($($extension: expr => {
             language: $language: path,
+            node_types: $node_types: path,
             ast_root: $root: ident,
             core: $core: path,
             comment: $comment: expr,
@@ -317,7 +318,7 @@ macro_rules! configure_parsers {
                 let mut map = std::collections::HashMap::new();
                 map.insert(
                     $($extension, $crate::core::workspace::Parsers {
-                        cst_parser: $crate::server::create_parser($language, $core, $comment, $fold, $highlights),
+                        tree_sitter: $crate::server::create_parser($language, $node_types, $core, $comment, $fold, $highlights),
                         ast_parser: |params: &mut $crate::core::build::MainBuilder<'_>, range: Option<std::ops::Range<usize>>| {
                             use $crate::core::build::StaticBuildable;
 
@@ -335,11 +336,12 @@ macro_rules! configure_parsers {
 #[doc(hidden)]
 pub fn create_parser(
     language: tree_sitter_language::LanguageFn,
+    node_types: &'static str,
     core: &'static str,
     comments: Option<&'static str>,
     fold: Option<&'static str>,
     highlights: Option<&'static str>,
-) -> CstParser {
+) -> TreeSitter {
     let mut parser = crate::tree_sitter::Parser::new();
     parser.set_language(&language.into()).unwrap();
 
@@ -350,8 +352,9 @@ pub fn create_parser(
     let fold = fold.map(|path| crate::tree_sitter::Query::new(&language, path).unwrap());
     let highlights =
         highlights.map(|path| crate::tree_sitter::Query::new(&language, path).unwrap());
-    CstParser {
+    TreeSitter {
         parser: crate::parking_lot::RwLock::new(parser),
+        node_types,
         language,
         queries: crate::core::workspace::Queries {
             comments,

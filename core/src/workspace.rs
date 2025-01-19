@@ -14,8 +14,9 @@ pub struct Queries {
     pub highlights: Option<Query>,
 }
 
-pub struct CstParser {
+pub struct TreeSitter {
     pub parser: RwLock<Parser>,
+    pub node_types: &'static str,
     pub language: Language,
     pub queries: Queries,
 }
@@ -26,7 +27,7 @@ pub type StaticBuildableFn = fn(
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
 pub struct Parsers {
-    pub cst_parser: CstParser,
+    pub tree_sitter: TreeSitter,
     pub ast_parser: StaticBuildableFn,
 }
 

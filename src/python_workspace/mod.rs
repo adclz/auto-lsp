@@ -26,6 +26,7 @@ static COMMENT_QUERY: &'static str = "
 configure_parsers!(
     "python" => {
         language: tree_sitter_python::LANGUAGE,
+        node_types: tree_sitter_python::NODE_TYPES,
         ast_root: Module,
         core: CORE_QUERY,
         comment: Some(COMMENT_QUERY),
@@ -154,7 +155,7 @@ pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
     let parse = PARSERS.get("python").unwrap();
 
     let tree = parse
-        .cst_parser
+        .tree_sitter
         .parser
         .write()
         .parse(source_code.as_bytes(), None)
@@ -170,7 +171,7 @@ pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
     let mut unsolved_references = vec![];
 
     let mut params = MainBuilder {
-        query: &parse.cst_parser.queries.core,
+        query: &parse.tree_sitter.queries.core,
         document: &document,
         url: Arc::new(uri),
         diagnostics: &mut diagnostics,

@@ -18,7 +18,7 @@ impl Session {
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let query = match workspace.parsers.cst_parser.queries.fold {
+        let query = match workspace.parsers.tree_sitter.queries.fold {
             Some(ref query) => query,
             None => return Ok(vec![]),
         };

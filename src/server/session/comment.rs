@@ -8,7 +8,7 @@ impl Session {
     ///
     /// TODO: Add support for incremental updates
     pub(crate) fn add_comments(workspace: &Workspace) -> anyhow::Result<()> {
-        let comments_query = match workspace.parsers.cst_parser.queries.comments {
+        let comments_query = match workspace.parsers.tree_sitter.queries.comments {
             Some(ref query) => query,
             None => return Ok(()),
         };
