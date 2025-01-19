@@ -10,10 +10,11 @@ and [Language Server Protocol](https://microsoft.github.io/language-server-proto
 
  </div> 
 
-![Build status](https://github.com/github/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)
-![Static Badge](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
+![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)
 
-> [!INFO]
+![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
+
+> [!IMPORTANT]
 > `auto_lsp` is at an early stage, expect frequent breaking changes. 
 
 ## Quick Example
