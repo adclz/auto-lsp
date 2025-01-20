@@ -6,11 +6,11 @@ and <a href="https://microsoft.github.io/language-server-protocol/">Language Ser
   </p>
 
 ![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)
+![docs.rs](https://img.shields.io/docsrs/auto-lsp)
 ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
 
 </div>
 
-> [!IMPORTANT]
 > `auto_lsp` is at an early stage, expect frequent breaking changes. 
 
 # Quick Example

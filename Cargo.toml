@@ -10,6 +10,7 @@ categories = ["parsing"]
 keywords = ["parser", "tree-sitter", "lsp"]
 version = "0.1.0"
 edition = "2021"
+readme = "README.MD"
 
 [dependencies]
 auto-lsp-core = { path = "./core", version = "0.1.0" }
