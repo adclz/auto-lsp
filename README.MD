@@ -1,4 +1,4 @@
-<div align="center" style="padding-bottom: 50px">
+<div align="center" style="margin-bottom: 50px">
   <h1>Auto LSP</h1>
   <p>
     <strong>A Rust crate for creating <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract Syntax Trees</a> (AST)
@@ -9,12 +9,9 @@ and <a href="https://microsoft.github.io/language-server-protocol/">Language Ser
 ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
 
 </div>
-<div style = "padding-bottom: 30px;">
 
 > [!IMPORTANT]
 > `auto_lsp` is at an early stage, expect frequent breaking changes. 
-
-</div>
 
 # Quick Example
 
