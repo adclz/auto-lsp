@@ -1,0 +1,16 @@
+[workspace]
+git_release_enable = false
+pr_labels = ["release"]
+semver_check = true
+
+[[package]]
+name = "auto-lsp"
+
+[[package]]
+name = "auto-lsp-core"
+
+[[package]]
+name = "auto-lsp-macros"
+
+[changelog]
+protect_breaking_commits = true
