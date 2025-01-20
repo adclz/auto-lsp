@@ -1,22 +1,22 @@
-<div align="center">
+<div align="center" style="padding-bottom: 50px">
   <h1>Auto LSP</h1>
   <p>
-    <strong>AST and LSP server library based on tree sitter queries</strong>
+    <strong>A Rust crate for creating <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract Syntax Trees</a> (AST)
+and <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a> (LSP) servers powered by <a href="https://tree-sitter.github.io/tree-sitter/">Tree-sitter</a> queries</strong>
   </p>
-
-
-A Rust crate for creating [Abstract Syntax Trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (AST)
-and [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) (LSP) servers.
-
- </div> 
 
 ![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)
 ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
 
+</div>
+<div style = "padding-bottom: 30px;">
+
 > [!IMPORTANT]
 > `auto_lsp` is at an early stage, expect frequent breaking changes. 
 
-## Quick Example
+</div>
+
+# Quick Example
 
 `auto_lsp` is designed to be as language-agnostic as possible, allowing any Tree-sitter grammar to be used.
 
@@ -55,7 +55,7 @@ Now that you have your AST defined, you can:
 
 You can find more examples in the `src/tests` folder.
 
-## Features
+# Features
 
 - `assertions`: Enable compile-time checks for conflicting queries.
 - `deadlock_detection`: Enable [`parking_lot`](https://crates.io/crates/parking_lot)'s deadlock detection (not compatible with `wasm`).
@@ -65,11 +65,11 @@ You can find more examples in the `src/tests` folder.
 - `rayon`: Enable [`rayon`](https://crates.io/crates/rayon) support (not compatible with `wasm`).
 - `wasm`: Enable wasm support.
 
-## Documentation
+# Documentation
 
 The complete documentation will be available in the upcoming book.
 
-## Inspirations / Similar projects
+# Inspirations / Similar projects
 
 - [Volar](https://volarjs.dev/)
 - [Rust-sitter](https://github.com/hydro-project/rust-sitter)
