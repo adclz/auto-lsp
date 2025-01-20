@@ -1,5 +1,11 @@
 [package]
 name = "auto-lsp-core"
+authors = ["Clauzel Adrien"]
+license = "MIT"
+repository = "https://github.com/adclz/auto-lsp"
+description = """
+Core crate for `auto_lsp`.
+"""
 version = "0.1.0"
 edition = "2021"
 

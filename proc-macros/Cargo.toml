@@ -1,5 +1,11 @@
 [package]
 name = "auto-lsp-macros"
+authors = ["Clauzel Adrien"]
+license = "MIT"
+repository = "https://github.com/adclz/auto-lsp"
+description = """
+Macros for `auto_lsp`.
+"""
 version = "0.1.0"
 edition = "2021"
 
