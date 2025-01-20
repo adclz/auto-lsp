@@ -6,7 +6,7 @@ repository = "https://github.com/adclz/auto-lsp"
 description = """
 A rust crate for creating AST and LSP servers powered by tree-sitter queries.
 """
-categories = ["parser", "parsing"]
+categories = ["parsing"]
 keywords = ["parser", "tree-sitter", "lsp"]
 version = "0.1.0"
 edition = "2021"
