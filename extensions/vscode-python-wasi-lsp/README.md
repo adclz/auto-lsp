@@ -1,4 +1,4 @@
-> [!INFO]
+> [!NOTE]
 > This is the official README from [vscode-extension-samples](https://github.com/microsoft/vscode-extension-samples/tree/main/wasm-language-server).
 > In addition to the instructions below, ensure that you enable the **wasm** feature.
 > Please note that the **rayon** and **deadlock_detection** features are not available in the wasm environment for now.
@@ -8,10 +8,6 @@
 An example demonstrating how to implement a Language Server in WebAssembly and run it in VS Code.
 
 It uses the `python_workspace` module from `auto_lsp` to implement a basic Python LSP server for testing purposes.
-
-## Functionality
-
-A simple language server that has a dummy got definition method and response to a custom message.
 
 ## Pre-requisites
 
