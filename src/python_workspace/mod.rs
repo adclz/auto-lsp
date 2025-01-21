@@ -2,7 +2,8 @@ use crate::core::build::MainBuilder;
 use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::seq;
-use auto_lsp_core::ast::{BuildCodeLens, GetHover, GetSymbolData};
+use auto_lsp_core::ast::{BuildCodeLens, GetHover, GetSymbolData, Scope};
+use auto_lsp_macros::choice;
 use lsp_types::Url;
 use std::sync::Arc;
 use texter::core::text::Text;
@@ -16,7 +17,22 @@ static CORE_QUERY: &'static str = "
 (module) @module
 
 (function_definition
-  name: (identifier) @function.name) @function
+  name: (identifier) @identifier) @function
+
+(parameter
+  ((identifier) @untyped_parameter [ \",\" \")\"])
+)
+
+(typed_parameter
+	. (_) @any
+    type: (_) @any2
+) @typed_parameter
+
+(typed_default_parameter
+	name: (identifier) @identifier
+    type: (_) @any
+    value: (_) @any2
+) @typed_default_parameter
 ";
 
 static COMMENT_QUERY: &'static str = "
@@ -95,10 +111,18 @@ impl BuildSemanticTokens for Module {
     ),
     lsp_inlay_hints(user),
     lsp_code_lens(user),
-    comment(user)
+    comment(user),
+    scope(user)
 )))]
 struct Function {
-    name: FunctionName,
+    name: Identifier,
+    parameters: Vec<Parameter>
+}
+
+impl Scope for Function {
+    fn get_scope_range(&self) -> Vec<[usize; 2]> {
+        vec![]
+    }
 }
 
 impl BuildInlayHints for Function {
@@ -130,12 +154,20 @@ impl BuildCodeLens for Function {
     }
 }
 
-#[seq(query_name = "function.name", kind(symbol(
+#[seq(query_name = "any", kind(symbol(
+)))]
+struct Any {}
+
+#[seq(query_name = "any2", kind(symbol(
+)))]
+struct Any2 {}
+
+#[seq(query_name = "identifier", kind(symbol(
     lsp_hover_info(user)
 )))]
-struct FunctionName {}
+struct Identifier {}
 
-impl GetHover for FunctionName {
+impl GetHover for Identifier {
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         let parent = self.get_parent().unwrap().to_dyn().unwrap();
         let comment = parent.read().get_comment(doc.document.text.as_bytes());
@@ -149,6 +181,31 @@ impl GetHover for FunctionName {
             range: None,
         })
     }
+}
+
+#[choice]
+enum Parameter {
+    Untyped(UntypedParameter),
+    Typed(TypedParameter),
+    TypedDefault(TypedDefaultParameter),
+}
+
+#[seq(query_name = "untyped_parameter", kind(symbol()))]
+struct UntypedParameter {}
+
+#[seq(query_name = "typed_parameter", kind(symbol(
+    
+)))]
+struct TypedParameter {
+    name: Any,
+    _type: Any2
+}
+
+#[seq(query_name = "typed_default_parameter", kind(symbol()))]
+struct TypedDefaultParameter {
+    name: Identifier,
+    _type: Any,
+    default: Any2
 }
 
 pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
