@@ -142,6 +142,10 @@ nested_struct!(
             pub path: Path,
             pub swap: Method
         },
+        pub static_swap: StaticSwap {
+            pub path: Path,
+            pub swap: Method
+        },
         pub edit_range: EditRange {
             pub path: Path,
             pub edit_range: Method
@@ -363,6 +367,18 @@ impl Default for Paths {
                         builder_params: &'a mut auto_lsp::core::build::MainBuilder,
                     ) -> std::ops::ControlFlow<Result<usize, auto_lsp::lsp_types::Diagnostic>, ()> },
                     variant: quote! { dyn_swap(start, offset, builder_params) },
+                },
+            },
+            static_swap: StaticSwap {
+                path: core_ast(parse_quote!(StaticUpdate)),
+                swap: Method {
+                    sig: quote! { fn to_swap<'a>(
+                        &mut self,
+                        start: usize,
+                        offset: isize,
+                        builder_params: &'a mut auto_lsp::core::build::MainBuilder,
+                    ) -> std::ops::ControlFlow<Result<usize, auto_lsp::lsp_types::Diagnostic>, ()> },
+                    variant: quote! { to_swap(start, offset, builder_params) },
                 },
             },
             edit_range: EditRange {

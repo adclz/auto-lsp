@@ -209,11 +209,12 @@ impl<'a> StructBuilder<'a> {
     }
 
     fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {
+        let static_update_trait = &PATHS.static_swap.path;
         builder
             .add_fn_iter(
                 &self.fields,
                 &PATHS.dynamic_swap.swap.sig,
-                None,
+                Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
                         self.#name.to_swap(start, offset, builder_params)?;
@@ -225,11 +226,12 @@ impl<'a> StructBuilder<'a> {
     }
 
     fn impl_edit_range(&self, builder: &mut FieldBuilder) {
+        let static_update_trait = &PATHS.edit_range.path;
         builder
             .add_fn_iter(
                 &self.fields,
                 &PATHS.edit_range.edit_range.sig,
-                None,
+                Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
                         self.#name.edit_range(start, offset);

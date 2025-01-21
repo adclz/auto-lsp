@@ -1,4 +1,4 @@
-use crate::core::ast::{AstSymbol, StaticUpdate, Symbol};
+use crate::core::ast::{AstSymbol, Symbol};
 use crate::core::build::MainBuilder;
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::{choice, seq};

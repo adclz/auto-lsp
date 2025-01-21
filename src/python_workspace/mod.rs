@@ -1,5 +1,5 @@
 use crate::core::build::MainBuilder;
-use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, StaticUpdate, Symbol, VecOrSymbol};
+use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::seq;
 use auto_lsp_core::ast::{BuildCodeLens, GetHover, GetSymbolData, Scope};
