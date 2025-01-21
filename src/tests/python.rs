@@ -2,15 +2,16 @@ use crate::core::ast::{AstSymbol, BuildInlayHints, GetSymbolData, IsComment, Vec
 use crate::core::workspace::Workspace;
 use auto_lsp_core::ast::{BuildCodeLens, GetHover};
 use lsp_types::Url;
-use std::sync::LazyLock;
+use rstest::{fixture, rstest};
 
 use crate::python_workspace::*;
 
-static TEST_FILE: LazyLock<Workspace> = LazyLock::new(|| {
+#[fixture]
+fn foo_bar() -> Workspace {
     create_python_workspace(
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
-def foo():
+def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
@@ -18,13 +19,12 @@ def bar():
 "#
         .into(),
     )
-});
+}
 
-#[test]
-fn check_ast() {
-    let workspace = &TEST_FILE;
-    let ast = workspace.ast.as_ref().unwrap();
-    let document = &workspace.document;
+#[rstest]
+fn check_ast(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
+    let document = &foo_bar.document;
 
     // Root node should be module
 
@@ -58,13 +58,88 @@ fn check_ast() {
     assert!(function.name.read().get_parent().is_some());
     let parent = function.name.read().get_parent().unwrap();
     assert!(parent.to_dyn().unwrap().read().is::<Function>());
+
+    // Foo has 2 parameters
 }
 
-#[test]
-fn check_comment() {
-    let test_file = &TEST_FILE;
-    let ast = test_file.ast.as_ref().unwrap();
-    let document = &test_file.document;
+#[rstest]
+fn check_foo_parameters(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
+    let module = ast.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    // Foo has 2 parameters
+    let function = module.functions[0].read();
+    assert_eq!(function.parameters.len(), 3);
+    let parameters = &function.parameters;
+
+    // param1 is untyped
+    assert!(matches!(*parameters[0].read(), Parameter::Untyped(_)));
+
+    // param2 is typed
+    assert!(matches!(*parameters[1].read(), Parameter::Typed(_)));
+    if let Parameter::Typed(typed) = &*parameters[1].read() {
+        assert_eq!(
+            typed
+                .name
+                .read()
+                .get_text(foo_bar.document.document.text.as_bytes())
+                .unwrap(),
+            "param2"
+        );
+
+        assert_eq!(
+            typed
+                ._type
+                .read()
+                .get_text(foo_bar.document.document.text.as_bytes())
+                .unwrap(),
+            "int"
+        );
+    } else {
+        panic!("Expected Typed parameter");
+    }
+
+    // param3 is typed with default value
+    if let Parameter::TypedDefault(typed_default) = &*parameters[2].read() {
+        assert_eq!(
+            typed_default
+                .name
+                .read()
+                .get_text(foo_bar.document.document.text.as_bytes())
+                .unwrap(),
+            "param3"
+        );
+
+        assert_eq!(
+            typed_default
+                ._type
+                .read()
+                .get_text(foo_bar.document.document.text.as_bytes())
+                .unwrap(),
+            "int"
+        );
+
+        assert_eq!(
+            typed_default
+                .default
+                .read()
+                .get_text(foo_bar.document.document.text.as_bytes())
+                .unwrap(),
+            "5"
+        );
+    } else {
+        panic!("Expected TypedDefault parameter");
+    }
+
+    // param3 is typed with default value
+    assert!(matches!(*parameters[2].read(), Parameter::TypedDefault(_)));
+}
+
+#[rstest]
+fn check_comment(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
+    let document = &foo_bar.document;
 
     // Root node should be module
 
@@ -80,15 +155,11 @@ fn check_comment() {
     );
 }
 
-#[test]
-fn check_document_symbols() {
-    let test_file = &TEST_FILE;
-    let ast = test_file.ast.as_ref().unwrap();
+#[rstest]
+fn check_document_symbols(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
 
-    let symbols = ast
-        .read()
-        .get_document_symbols(&test_file.document)
-        .unwrap();
+    let symbols = ast.read().get_document_symbols(&foo_bar.document).unwrap();
 
     // Symbols should be a Vec (boo and far)
     assert!(matches!(symbols, VecOrSymbol::Vec(_)));
@@ -106,14 +177,13 @@ fn check_document_symbols() {
     }
 }
 
-#[test]
-fn check_semantic_tokens() {
-    let test_file = &TEST_FILE;
-    let ast = test_file.ast.as_ref().unwrap();
+#[rstest]
+fn check_semantic_tokens(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
 
     let mut builder = auto_lsp_core::semantic_tokens::SemanticTokensBuilder::new("".into());
     ast.read()
-        .build_semantic_tokens(&test_file.document, &mut builder);
+        .build_semantic_tokens(&foo_bar.document, &mut builder);
 
     let tokens = builder.build().data;
 
@@ -141,10 +211,9 @@ fn check_semantic_tokens() {
     assert_eq!(tokens[1].length, 3); // def
 }
 
-#[test]
-fn check_hover() {
-    let test_file = &TEST_FILE;
-    let ast = test_file.ast.as_ref().unwrap();
+#[rstest]
+fn check_hover(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
 
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
@@ -152,7 +221,7 @@ fn check_hover() {
     let foo = module.functions[0].read();
     let foo_name = foo.name.read();
 
-    let foo_hover = foo_name.get_hover(&test_file.document).unwrap();
+    let foo_hover = foo_name.get_hover(&foo_bar.document).unwrap();
 
     assert_eq!(
         foo_hover.contents,
@@ -165,7 +234,7 @@ fn check_hover() {
     let bar = module.functions[1].read();
     let bar_name = bar.name.read();
 
-    let bar_hover = bar_name.get_hover(&test_file.document).unwrap();
+    let bar_hover = bar_name.get_hover(&foo_bar.document).unwrap();
 
     assert_eq!(
         bar_hover.contents,
@@ -176,16 +245,15 @@ fn check_hover() {
     );
 }
 
-#[test]
-fn check_inlay_hints() {
-    let test_file = &TEST_FILE;
-    let ast = test_file.ast.as_ref().unwrap();
+#[rstest]
+fn check_inlay_hints(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
 
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut hints = vec![];
-    module.build_inlay_hint(&test_file.document, &mut hints);
+    module.build_inlay_hint(&foo_bar.document, &mut hints);
 
     assert_eq!(hints.len(), 2);
 
@@ -193,16 +261,15 @@ fn check_inlay_hints() {
     assert_eq!(hints[1].kind, Some(lsp_types::InlayHintKind::TYPE));
 }
 
-#[test]
-fn check_code_lens() {
-    let test_file = &TEST_FILE;
-    let ast = test_file.ast.as_ref().unwrap();
+#[rstest]
+fn check_code_lens(foo_bar: Workspace) {
+    let ast = foo_bar.ast.as_ref().unwrap();
 
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut code_lens = vec![];
-    module.build_code_lens(&test_file.document, &mut code_lens);
+    module.build_code_lens(&foo_bar.document, &mut code_lens);
 
     assert_eq!(code_lens.len(), 2);
 
