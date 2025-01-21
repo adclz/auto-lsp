@@ -1,20 +1,16 @@
 #![allow(unused)]
 use syn::{Ident, Type};
 
-use crate::features::{
-    check::CheckFeature, comment::CommentFeature, lsp_code_lens::CodeLensFeature,
-    lsp_completion_item::CompletionItemFeature, lsp_document_symbol::DocumentSymbolFeature,
-    lsp_go_to_declaration::GoToDeclarationFeature, lsp_go_to_definition::GotoDefinitionFeature,
-    lsp_hover_info::HoverFeature, lsp_inlay_hint::InlayHintFeature,
-    lsp_semantic_token::SemanticTokenFeature, scope::ScopeFeature,
-};
+use crate::features::*;
 use darling::{ast, util, FromDeriveInput, FromField, FromMeta};
 
+/// Struct input when `seq` macro is used
 #[derive(Debug, FromDeriveInput)]
 pub struct StructInput {
     pub data: ast::Data<util::Ignored, StructHelpers>,
 }
 
+/// Mandatory `query_name` field and `kind` field (reference or symbol)
 #[derive(Debug, FromMeta)]
 pub struct UserFeatures {
     pub query_name: String,
@@ -28,12 +24,14 @@ pub struct StructHelpers {
     pub ty: Type,
 }
 
+/// Reference or Symbol kind
 #[derive(Debug, FromMeta)]
 pub enum AstStructKind {
     Reference(ReferenceFeatures),
     Symbol(SymbolFeatures),
 }
 
+/// Reference or Symbol features
 #[derive(Debug, FromMeta)]
 pub enum Feature<T>
 where

@@ -1,18 +1,9 @@
-use crate::{
-    features::{
-        check::CheckBuilder, comment::CommentBuilder, lsp_code_lens::CodeLensBuilder,
-        lsp_completion_item::CompletionItemsBuilder, lsp_document_symbol::DocumentSymbolBuilder,
-        lsp_go_to_declaration::GoToDeclarationBuilder, lsp_go_to_definition::GotoDefinitionBuilder,
-        lsp_hover_info::HoverBuilder, lsp_inlay_hint::InlayHintsBuilder,
-        lsp_semantic_token::SemanticTokensBuilder, reference::ReferenceBuilder,
-        scope::ScopeBuilder,
-    },
-    utilities::extract_fields::StructFields,
-    ReferenceFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures,
-};
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::ToTokens;
+
+use super::{features::*, fields_builder::Fields};
+use crate::{ReferenceFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures};
 
 pub trait FeaturesCodeGen {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens;
@@ -40,7 +31,7 @@ impl<'a> Features<'a> {
         features_attributes: &'a ReferenceOrSymbolFeatures<'a>,
         helper_attributes: &'a ast::Data<util::Ignored, StructHelpers>,
         input_name: &'a Ident,
-        fields: &'a StructFields,
+        fields: &'a Fields,
     ) -> Self {
         Self {
             features_attributes,

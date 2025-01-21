@@ -1,5 +1,9 @@
 use syn::{Type, TypePath};
 
+/// Extracts the raw type name by recursively unwrapping wrapper types
+///
+/// This function traverses through common wrapper types (Arc, RwLock, Vec, Option)
+/// to get the underlying type name.
 pub fn get_raw_type_name(ty: &Type) -> String {
     match ty {
         Type::Path(TypePath { path, .. }) => {
@@ -40,6 +44,7 @@ pub fn get_inner_type(ty: &Type, index: usize) -> Option<Type> {
     None
 }
 
+/// Checks if the type is a Vec
 pub fn is_vec(ty: &Type) -> bool {
     if let Type::Path(TypePath { path, .. }) = ty {
         if let Some(segment) = path.segments.first() {
@@ -50,6 +55,7 @@ pub fn is_vec(ty: &Type) -> bool {
     false
 }
 
+/// Checks if the type is an Option
 pub fn is_option(ty: &Type) -> bool {
     if let Type::Path(TypePath { path, .. }) = ty {
         if let Some(segment) = path.segments.first() {
@@ -58,4 +64,28 @@ pub fn is_option(ty: &Type) -> bool {
         }
     }
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_get_raw_type_name() {
+        let ty = parse_quote! { Arc<RwLock<Vec<Option<String>>>> };
+        assert_eq!(get_raw_type_name(&ty), "String");
+    }
+
+    #[test]
+    fn test_is_vec() {
+        let ty = parse_quote! { Vec<String> };
+        assert!(is_vec(&ty));
+    }
+
+    #[test]
+    fn test_is_option() {
+        let ty = parse_quote! { Option<String> };
+        assert!(is_option(&ty));
+    }
 }

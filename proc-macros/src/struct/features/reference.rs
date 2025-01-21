@@ -5,17 +5,17 @@ use quote::quote;
 use syn::Ident;
 
 use crate::{
-    utilities::extract_fields::StructFields, FeaturesCodeGen, ReferenceFeatures, SymbolFeatures,
-    PATHS,
+    feature_builder::FeaturesCodeGen, fields_builder::Fields, ReferenceFeatures,
+    SymbolFeatures, PATHS,
 };
 
 pub struct ReferenceBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> ReferenceBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 

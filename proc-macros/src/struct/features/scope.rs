@@ -5,10 +5,9 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, Path};
 
-use crate::{
-    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    FeaturesCodeGen, ReferenceFeatures, SymbolFeatures, PATHS,
-};
+use crate::fields_builder::Fields;
+use crate::utilities::path_to_dot_tokens;
+use crate::{r#struct::feature_builder::FeaturesCodeGen, ReferenceFeatures, SymbolFeatures, PATHS};
 
 use crate::Feature;
 #[derive(Debug, FromMeta)]
@@ -24,11 +23,11 @@ pub struct ScopeRange {
 
 pub struct ScopeBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> ScopeBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 

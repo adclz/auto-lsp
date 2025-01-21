@@ -6,7 +6,7 @@ use quote::quote;
 use syn::Ident;
 
 use crate::{
-    utilities::extract_fields::StructFields, Feature, FeaturesCodeGen, ReferenceFeatures,
+    fields_builder::Fields, r#struct::feature_builder::FeaturesCodeGen, Feature, ReferenceFeatures,
     StructHelpers, SymbolFeatures, PATHS,
 };
 
@@ -15,7 +15,7 @@ pub struct CheckFeature {}
 
 pub struct CheckBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
     pub helper: &'a ast::Data<util::Ignored, StructHelpers>,
 }
 
@@ -23,7 +23,7 @@ impl<'a> CheckBuilder<'a> {
     pub fn new(
         input_name: &'a Ident,
         helper: &'a ast::Data<util::Ignored, StructHelpers>,
-        fields: &'a StructFields,
+        fields: &'a Fields,
     ) -> Self {
         Self {
             input_name,

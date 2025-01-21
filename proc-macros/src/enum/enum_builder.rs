@@ -1,21 +1,18 @@
-use crate::utilities::extract_fields::EnumFields;
 use crate::PATHS;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{Ident, Path};
+use syn::Ident;
+
+use super::variants_builder::{VariantBuilder, Variants};
 
 pub struct EnumBuilder<'a> {
-    pub fields: &'a EnumFields,
+    pub fields: &'a Variants,
     pub input_name: &'a Ident,
     pub input_builder_name: &'a Ident,
 }
 
 impl<'a> EnumBuilder<'a> {
-    pub fn new(
-        input_name: &'a Ident,
-        input_builder_name: &'a Ident,
-        fields: &'a EnumFields,
-    ) -> Self {
+    pub fn new(input_name: &'a Ident, input_builder_name: &'a Ident, fields: &'a Variants) -> Self {
         Self {
             fields,
             input_name,
@@ -89,12 +86,12 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_ast_symbol(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.symbol_trait.get_data.sig,
                 &PATHS.symbol_trait.get_data.variant,
             )
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.symbol_trait.get_mut_data.sig,
                 &PATHS.symbol_trait.get_mut_data.variant,
@@ -104,7 +101,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_check(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.is_check.must_check.sig,
                 &PATHS.is_check.must_check.variant,
@@ -112,7 +109,7 @@ impl<'a> EnumBuilder<'a> {
             .stage_trait(&self.input_name, &PATHS.is_check.path);
 
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.check.check.sig,
                 &PATHS.check.check.variant,
@@ -122,13 +119,13 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_accessor(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.is_reference.is_reference.sig,
                 &PATHS.is_reference.is_reference.variant,
             )
             .stage_trait(&self.input_name, &PATHS.is_reference.path)
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.accessor.find.sig,
                 &PATHS.accessor.find.variant,
@@ -138,7 +135,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_locator(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.locator.find_at_offset.sig,
                 &PATHS.locator.find_at_offset.variant,
@@ -148,7 +145,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_dynamic_swap(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.dynamic_swap.swap.sig,
                 &PATHS.dynamic_swap.swap.variant,
@@ -158,7 +155,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_edit_range(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.edit_range.edit_range.sig,
                 &PATHS.edit_range.edit_range.variant,
@@ -168,7 +165,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_collect_references(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.collect_references.collect_references.sig,
                 &PATHS.collect_references.collect_references.variant,
@@ -235,7 +232,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_parent(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.parent.inject_parent.sig,
                 &PATHS.parent.inject_parent.variant,
@@ -245,7 +242,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_scope(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.is_scope.is_scope.sig,
                 &PATHS.is_scope.is_scope.variant,
@@ -253,7 +250,7 @@ impl<'a> EnumBuilder<'a> {
             .stage_trait(&self.input_name, &PATHS.is_scope.path);
 
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.scope.get_scope_range.sig,
                 &PATHS.scope.get_scope_range.variant,
@@ -263,7 +260,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_comment(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.is_comment.is_comment.sig,
                 &PATHS.is_comment.is_comment.variant,
@@ -273,7 +270,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_code_lens(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_code_lens.build_code_lens.sig,
                 &PATHS.lsp_code_lens.build_code_lens.variant,
@@ -283,7 +280,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_completion_items(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_completion_items.build_completion_items.sig,
                 &PATHS.lsp_completion_items.build_completion_items.variant,
@@ -293,7 +290,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_document_symbol(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_document_symbols.get_document_symbols.sig,
                 &PATHS.lsp_document_symbols.get_document_symbols.variant,
@@ -303,7 +300,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_hover_info(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_hover_info.get_hover.sig,
                 &PATHS.lsp_hover_info.get_hover.variant,
@@ -313,7 +310,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_inlay_hint(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_inlay_hint.build_inlay_hint.sig,
                 &PATHS.lsp_inlay_hint.build_inlay_hint.variant,
@@ -323,7 +320,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_semantic_tokens(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_semantic_token.build_semantic_tokens.sig,
                 &PATHS.lsp_semantic_token.build_semantic_tokens.variant,
@@ -333,7 +330,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_go_to_definition(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_go_to_definition.go_to_definition.sig,
                 &PATHS.lsp_go_to_definition.go_to_definition.variant,
@@ -343,7 +340,7 @@ impl<'a> EnumBuilder<'a> {
 
     fn impl_go_to_declaration(&self, builder: &mut VariantBuilder) {
         builder
-            .add_default_iter(
+            .add_pattern_match_iter(
                 &self.fields,
                 &PATHS.lsp_go_to_declaration.go_to_declaration.sig,
                 &PATHS.lsp_go_to_declaration.go_to_declaration.variant,
@@ -431,162 +428,5 @@ impl<'a> EnumBuilder<'a> {
             }
         });
         builder.stage();
-    }
-}
-
-#[derive(Default)]
-pub struct VariantBuilder {
-    staged: Vec<TokenStream>,
-    unstaged: Vec<TokenStream>,
-}
-
-impl VariantBuilder {
-    pub fn add(&mut self, field: TokenStream) -> &mut Self {
-        self.unstaged.push(field);
-        self
-    }
-
-    pub fn add_iter<F>(&mut self, variants: &EnumFields, body: F) -> &mut Self
-    where
-        F: Fn(&Ident, &Ident, &Ident) -> TokenStream,
-    {
-        let variants = variants
-            .variant_names
-            .iter()
-            .zip(variants.variant_types_names.iter())
-            .zip(variants.variant_builder_names.iter())
-            .map(|((name, _type), builder)| body(name, _type, builder))
-            .collect::<Vec<_>>();
-
-        self.unstaged.extend(variants);
-        self
-    }
-
-    pub fn add_default_iter(
-        &mut self,
-        variants: &EnumFields,
-        sig_path: &TokenStream,
-        default: &TokenStream,
-    ) -> &mut Self {
-        let variants = variants
-            .variant_names
-            .iter()
-            .map(|name| {
-                quote! {
-                    Self::#name(inner) => inner.#default,
-                }
-            })
-            .collect::<Vec<_>>();
-
-        self.unstaged.push(quote! {
-            #sig_path {
-                match self {
-                    #(#variants)*
-                }
-            }
-        });
-        self
-    }
-
-    pub fn add_fn_iter<F>(
-        &mut self,
-        variants: &EnumFields,
-        sig_path: &TokenStream,
-        before: Option<TokenStream>,
-        body: F,
-        after: Option<TokenStream>,
-    ) -> &mut Self
-    where
-        F: Fn(&Ident, &Ident, &Ident) -> TokenStream,
-    {
-        let variants = variants
-            .variant_names
-            .iter()
-            .zip(variants.variant_types_names.iter())
-            .zip(variants.variant_builder_names.iter())
-            .map(|((name, _type), builder)| {
-                let body = body(name, _type, builder);
-                quote! {
-                    Self::#name(inner) => inner.#body,
-                }
-            })
-            .collect::<Vec<_>>();
-
-        let mut result = TokenStream::default();
-        if let Some(before) = before {
-            result.extend(before);
-        }
-
-        result.extend(variants);
-
-        if let Some(after) = after {
-            result.extend(after);
-        }
-
-        self.unstaged.push(quote! {
-            #sig_path {
-                match self {
-                    #result
-                }
-            }
-        });
-        self
-    }
-
-    fn drain(&mut self) -> Vec<TokenStream> {
-        std::mem::take(&mut self.unstaged)
-    }
-
-    pub fn stage(&mut self) -> &mut Self {
-        let drain = self.drain();
-        self.staged.extend(drain);
-        self
-    }
-
-    pub fn stage_trait(&mut self, input_name: &Ident, trait_path: &Path) -> &mut Self {
-        let drain = self.drain();
-        let result = quote! {
-            impl #trait_path for #input_name {
-                #(#drain)*
-            }
-        };
-        self.staged.push(result);
-        self
-    }
-
-    pub fn stage_struct(&mut self, input_name: &Ident) -> &mut Self {
-        let drain = self.drain();
-        let result = quote! {
-            #[derive(Clone)]
-            pub struct #input_name {
-                #(#drain,)*
-            }
-        };
-        self.staged.push(result);
-        self
-    }
-
-    pub fn stage_enum(&mut self, input_name: &Ident) -> &mut Self {
-        let drain = self.drain();
-        let result = quote! {
-            #[derive(Clone)]
-            pub enum #input_name {
-                #(#drain,)*
-            }
-        };
-        self.staged.push(result);
-        self
-    }
-}
-
-impl ToTokens for VariantBuilder {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.extend(self.staged.clone());
-    }
-}
-
-impl<'a> From<VariantBuilder> for Vec<TokenStream> {
-    fn from(builder: VariantBuilder) -> Self {
-        builder.staged
     }
 }

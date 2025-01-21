@@ -6,8 +6,8 @@ use quote::quote;
 use syn::{Ident, Path};
 
 use crate::{
-    utilities::extract_fields::StructFields, ReferenceFeatures, Feature, FeaturesCodeGen,
-    ReferenceFeature, StructHelpers, SymbolFeatures, PATHS,
+    fields_builder::Fields, r#struct::feature_builder::FeaturesCodeGen, Feature, ReferenceFeature,
+    ReferenceFeatures, StructHelpers, SymbolFeatures, PATHS,
 };
 
 #[derive(Debug, FromMeta)]
@@ -15,11 +15,11 @@ pub struct CommentFeature {}
 
 pub struct CommentBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> CommentBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 

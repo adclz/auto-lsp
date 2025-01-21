@@ -1,8 +1,8 @@
 extern crate proc_macro;
 
 use crate::{
-    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    FeaturesCodeGen, ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS,
+    fields_builder::Fields, r#struct::feature_builder::FeaturesCodeGen,
+    utilities::path_to_dot_tokens, ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS,
 };
 use darling::{util::PathList, FromMeta};
 use proc_macro2::TokenStream;
@@ -20,11 +20,11 @@ pub struct DocumentSymbolFeature {
 
 pub struct DocumentSymbolBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> DocumentSymbolBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 

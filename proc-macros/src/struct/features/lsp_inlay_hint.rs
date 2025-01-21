@@ -5,9 +5,10 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
+use crate::fields_builder::{FieldInfoExtract, Fields};
 use crate::{
-    utilities::extract_fields::{FieldInfoExtract, StructFields},
-    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    r#struct::feature_builder::FeaturesCodeGen, ReferenceFeature, ReferenceFeatures,
+    SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
@@ -19,11 +20,11 @@ pub struct InlayHintFeature {
 
 pub struct InlayHintsBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> InlayHintsBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 

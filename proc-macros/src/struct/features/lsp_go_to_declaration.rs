@@ -5,22 +5,21 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
+use crate::feature_builder::FeaturesCodeGen;
+use crate::fields_builder::Fields;
 use crate::Feature;
-use crate::{
-    utilities::extract_fields::StructFields, FeaturesCodeGen, ReferenceFeature, ReferenceFeatures,
-    SymbolFeatures, PATHS,
-};
+use crate::{ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS};
 
 #[derive(Debug, FromMeta)]
 pub struct GoToDeclarationFeature {}
 
 pub struct GoToDeclarationBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> GoToDeclarationBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 

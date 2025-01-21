@@ -5,28 +5,27 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, Path};
 
+use crate::fields_builder::{FieldInfoExtract, Fields};
+use crate::utilities::path_to_dot_tokens;
 use crate::{
-    utilities::{
-        extract_fields::{FieldInfoExtract, StructFields},
-        format_tokens::path_to_dot_tokens,
-    },
-    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    r#struct::feature_builder::FeaturesCodeGen, ReferenceFeature, ReferenceFeatures,
+    SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
 
 #[derive(Debug, FromMeta)]
 pub struct CodeLensFeature {
-    code_lens_fn: Path,
+    pub code_lens_fn: Path,
 }
 
 pub struct CodeLensBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> CodeLensBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 

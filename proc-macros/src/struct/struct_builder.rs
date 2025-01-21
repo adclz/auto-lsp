@@ -1,6 +1,7 @@
 #![allow(unused)]
+use super::{feature_builder::Features, fields_builder::{FieldBuilder, FieldType, Fields}};
 use crate::{
-    utilities::extract_fields::StructFields, Features, ReferenceOrSymbolFeatures, StructHelpers,
+    ReferenceOrSymbolFeatures, StructHelpers,
     PATHS,
 };
 use darling::{ast, util};
@@ -14,7 +15,7 @@ pub struct StructBuilder<'a> {
     pub input_name: &'a Ident,
     pub query_name: &'a str,
     pub input_builder_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
     // Features
     pub features: Features<'a>,
 }
@@ -27,7 +28,7 @@ impl<'a> StructBuilder<'a> {
         input_name: &'a Ident,
         input_buider_name: &'a Ident,
         query_name: &'a str,
-        fields: &'a StructFields,
+        fields: &'a Fields,
     ) -> Self {
         Self {
             input_name,
@@ -386,198 +387,5 @@ impl<'a> StructBuilder<'a> {
             }
         });
         builder.stage();
-    }
-}
-
-#[derive(Default)]
-pub struct FieldBuilder {
-    staged: Vec<TokenStream>,
-    unstaged: Vec<TokenStream>,
-}
-
-pub enum FieldType {
-    Normal,
-    Vec,
-    Option,
-}
-
-impl FieldBuilder {
-    pub fn add(&mut self, field: TokenStream) -> &mut Self {
-        self.unstaged.push(field);
-        self
-    }
-
-    pub fn add_iter<F>(&mut self, fields: &StructFields, f: F) -> &mut Self
-    where
-        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
-    {
-        let mut _fields: Vec<TokenStream> = vec![];
-
-        if !fields.field_names.is_empty() {
-            _fields.extend::<Vec<TokenStream>>(self.apply(&fields, &f) as _);
-        }
-        if !fields.field_option_names.is_empty() {
-            _fields.extend::<Vec<TokenStream>>(self.apply_opt(&fields, &f) as _);
-        }
-        if !fields.field_vec_names.is_empty() {
-            _fields.extend::<Vec<TokenStream>>(self.apply_vec(&fields, &f) as _);
-        }
-        self.unstaged.extend(_fields);
-        self
-    }
-
-    pub fn add_fn_iter<F>(
-        &mut self,
-        fields: &StructFields,
-        sig_path: &TokenStream,
-        before: Option<TokenStream>,
-        body: F,
-        after: Option<TokenStream>,
-    ) -> &mut Self
-    where
-        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
-    {
-        let mut _body: Vec<TokenStream> = vec![];
-        if !fields.field_names.is_empty() {
-            _body.extend::<Vec<TokenStream>>(self.apply(&fields, &body) as _);
-        }
-        if !fields.field_option_names.is_empty() {
-            _body.extend::<Vec<TokenStream>>(self.apply_opt(&fields, &body) as _);
-        }
-        if !fields.field_vec_names.is_empty() {
-            _body.extend::<Vec<TokenStream>>(self.apply_vec(&fields, &body) as _);
-        }
-
-        let mut result = TokenStream::default();
-        if let Some(before) = before {
-            result.extend(before);
-        }
-
-        result.extend(_body);
-
-        if let Some(after) = after {
-            result.extend(after);
-        }
-
-        self.unstaged.push(quote! {
-            #sig_path {
-                #result
-            }
-        });
-        self
-    }
-
-    fn drain(&mut self) -> Vec<TokenStream> {
-        std::mem::take(&mut self.unstaged)
-    }
-
-    pub fn stage(&mut self) -> &mut Self {
-        let drain = self.drain();
-        self.staged.extend(drain);
-        self
-    }
-
-    pub fn stage_fields(&mut self) -> &mut Self {
-        let fields = self.drain();
-        self.staged.push(quote! { #(#fields,)* });
-        self
-    }
-
-    pub fn stage_trait(&mut self, input_name: &Ident, trait_path: &Path) -> &mut Self {
-        let drain = self.drain();
-        let result = quote! {
-            impl #trait_path for #input_name {
-                #(#drain)*
-            }
-        };
-        self.staged.push(result);
-        self
-    }
-
-    pub fn stage_struct(&mut self, input_name: &Ident) -> &mut Self {
-        let drain = self.drain();
-        let result = quote! {
-            #[derive(Clone)]
-            pub struct #input_name {
-                #(#drain,)*
-            }
-        };
-        self.staged.push(result);
-        self
-    }
-
-    fn apply<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
-    where
-        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
-    {
-        fields
-            .field_names
-            .iter()
-            .zip(fields.field_types_names.iter())
-            .zip(fields.field_builder_names.iter())
-            .map(|((field, field_type), field_builder)| {
-                f(
-                    FieldType::Normal,
-                    &field.attr,
-                    &field.ident,
-                    &field_type,
-                    &field_builder,
-                )
-            })
-            .collect::<Vec<_>>()
-    }
-
-    fn apply_opt<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
-    where
-        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
-    {
-        fields
-            .field_option_names
-            .iter()
-            .zip(fields.field_option_types_names.iter())
-            .zip(fields.field_option_builder_names.iter())
-            .map(|((field, field_type), field_builder)| {
-                f(
-                    FieldType::Option,
-                    &field.attr,
-                    &field.ident,
-                    &field_type,
-                    &field_builder,
-                )
-            })
-            .collect::<Vec<_>>()
-    }
-
-    fn apply_vec<F>(&mut self, fields: &StructFields, f: F) -> Vec<TokenStream>
-    where
-        F: Fn(FieldType, &Vec<Attribute>, &Ident, &Ident, &Ident) -> TokenStream,
-    {
-        fields
-            .field_vec_names
-            .iter()
-            .zip(fields.field_vec_types_names.iter())
-            .zip(fields.field_vec_builder_names.iter())
-            .map(|((field, field_type), field_builder)| {
-                f(
-                    FieldType::Vec,
-                    &field.attr,
-                    &field.ident,
-                    &field_type,
-                    &field_builder,
-                )
-            })
-            .collect::<Vec<_>>()
-    }
-}
-
-impl ToTokens for FieldBuilder {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.extend(self.staged.clone());
-    }
-}
-
-impl From<FieldBuilder> for Vec<TokenStream> {
-    fn from(builder: FieldBuilder) -> Self {
-        builder.staged
     }
 }

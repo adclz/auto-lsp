@@ -5,31 +5,33 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, Path};
 
+use crate::fields_builder::Fields;
+use crate::utilities::path_to_dot_tokens;
 use crate::{
-    utilities::{extract_fields::StructFields, format_tokens::path_to_dot_tokens},
-    ReferenceFeatures, FeaturesCodeGen, ReferenceFeature, SymbolFeatures, PATHS,
+    r#struct::feature_builder::FeaturesCodeGen, ReferenceFeature, ReferenceFeatures,
+    SymbolFeatures, PATHS,
 };
 
 use crate::Feature;
 
 #[derive(Debug, FromMeta)]
 pub struct CompletionItemFeature {
-    item: CompletionItem,
+    pub item: CompletionItem,
 }
 
 #[derive(Debug, FromMeta)]
 pub struct CompletionItem {
-    label: Path,
-    kind: Path,
+    pub label: Path,
+    pub kind: Path,
 }
 
 pub struct CompletionItemsBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> CompletionItemsBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 
@@ -47,11 +49,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let completion_items_path = &PATHS.lsp_completion_items.path;
-        let sig = &PATHS
-            .lsp_completion_items
-            
-            .build_completion_items
-            .sig;
+        let sig = &PATHS.lsp_completion_items.build_completion_items.sig;
 
         match &params.lsp_completion_items {
             None => self.default_impl(),
@@ -84,11 +82,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
     fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let completion_items_path = &PATHS.lsp_completion_items.path;
-        let sig = &PATHS
-            .lsp_completion_items
-            
-            .build_completion_items
-            .sig;
+        let sig = &PATHS.lsp_completion_items.build_completion_items.sig;
 
         match &params.lsp_completion_items {
             None => self.default_impl(),

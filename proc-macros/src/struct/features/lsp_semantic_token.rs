@@ -5,13 +5,10 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, Path};
 
-use crate::{
-    utilities::{
-        extract_fields::{FieldInfoExtract, StructFields},
-        format_tokens::path_to_dot_tokens,
-    },
-    FeaturesCodeGen, ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS,
-};
+use crate::feature_builder::FeaturesCodeGen;
+use crate::fields_builder::{FieldInfoExtract, Fields};
+use crate::utilities::path_to_dot_tokens;
+use crate::{ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS};
 
 use crate::Feature;
 
@@ -25,11 +22,11 @@ pub struct SemanticTokenFeature {
 
 pub struct SemanticTokensBuilder<'a> {
     pub input_name: &'a Ident,
-    pub fields: &'a StructFields,
+    pub fields: &'a Fields,
 }
 
 impl<'a> SemanticTokensBuilder<'a> {
-    pub fn new(input_name: &'a Ident, fields: &'a StructFields) -> Self {
+    pub fn new(input_name: &'a Ident, fields: &'a Fields) -> Self {
         Self { input_name, fields }
     }
 
