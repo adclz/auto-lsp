@@ -239,7 +239,13 @@ impl AddSymbol for PendingSymbol {
                 None => {
                     return Err(builder_error!(
                         tree_sitter_range_to_lsp_range(&capture.node.range()),
-                        format!("Invalid {:?} for {:?}", field_name, parent_name)
+                        format!(
+                            "Invalid {:?} for {:?}, expected: {:?}, received: {:?}",
+                            field_name,
+                            parent_name,
+                            name,
+                            Y::QUERY_NAMES
+                        )
                     ))
                 }
             }
@@ -273,7 +279,13 @@ impl AddSymbol for MaybePendingSymbol {
                     None => {
                         return Err(builder_error!(
                             tree_sitter_range_to_lsp_range(&capture.node.range()),
-                            format!("Invalid {:?} for {:?}", field_name, parent_name)
+                            format!(
+                                "Invalid {:?} for {:?}, expected: {:?}, received: {:?}",
+                                field_name,
+                                parent_name,
+                                name,
+                                Y::QUERY_NAMES
+                            )
                         ))
                     }
                 },
@@ -303,7 +315,13 @@ impl AddSymbol for Vec<PendingSymbol> {
                 None => {
                     return Err(builder_error!(
                         tree_sitter_range_to_lsp_range(&capture.node.range()),
-                        format!("Invalid {:?} for {:?}", field_name, parent_name)
+                        format!(
+                            "Invalid {:?} for {:?}, expected: {:?}, received: {:?}",
+                            field_name,
+                            parent_name,
+                            name,
+                            Y::QUERY_NAMES
+                        )
                     ))
                 }
             }

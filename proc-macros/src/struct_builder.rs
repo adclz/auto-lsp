@@ -347,8 +347,10 @@ impl<'a> StructBuilder<'a> {
                             auto_lsp,
                             builder_range,
                             format!(
-                                "Invalid {:?} for {:?}",
-                                stringify!(#name), stringify!(#input_name)
+                                "Invalid {:?} for {:?}, {:?} is mandatory but received empty value",
+                                stringify!(#name), 
+                                stringify!(#input_name),
+                                stringify!(#name)
                             )
                         ))?
                         .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?, params);

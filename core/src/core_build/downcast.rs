@@ -63,7 +63,12 @@ where
             .downcast_ref::<T>()
             .ok_or(builder_error!(
                 field_range,
-                format!("Invalid {:?} for {:?}", field_name, input_name)
+                format!(
+                    "Invalid {:?} for {:?}: received: {:?}",
+                    field_name,
+                    input_name,
+                    check.query.capture_names()[self.get_query_index()]
+                )
             ))?
             .try_into_builder(check)
     }
