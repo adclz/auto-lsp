@@ -5,8 +5,8 @@ use quote::quote;
 use syn::Ident;
 
 use crate::{
-    feature_builder::FeaturesCodeGen, fields_builder::Fields, ReferenceFeatures,
-    SymbolFeatures, PATHS,
+    feature_builder::FeaturesCodeGen, field_builder::Fields, ReferenceFeatures, SymbolFeatures,
+    PATHS,
 };
 
 pub struct ReferenceBuilder<'a> {

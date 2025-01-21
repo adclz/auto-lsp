@@ -1,5 +1,5 @@
 #![allow(unused)]
-use super::{feature_builder::Features, fields_builder::{FieldBuilder, FieldType, Fields}};
+use super::{feature_builder::Features, field_builder::{FieldBuilder, FieldType, Fields}};
 use crate::{
     ReferenceOrSymbolFeatures, StructHelpers,
     PATHS,

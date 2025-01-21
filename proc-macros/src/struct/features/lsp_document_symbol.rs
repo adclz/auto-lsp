@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use crate::{
-    fields_builder::Fields, r#struct::feature_builder::FeaturesCodeGen,
+    field_builder::Fields, r#struct::feature_builder::FeaturesCodeGen,
     utilities::path_to_dot_tokens, ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS,
 };
 use darling::{util::PathList, FromMeta};

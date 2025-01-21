@@ -3,7 +3,7 @@ use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::Ident;
 
-use super::variants_builder::{VariantBuilder, Variants};
+use super::variant_builder::{VariantBuilder, Variants};
 
 pub struct EnumBuilder<'a> {
     pub fields: &'a Variants,

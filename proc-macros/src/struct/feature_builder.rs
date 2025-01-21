@@ -2,7 +2,7 @@ use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::ToTokens;
 
-use super::{features::*, fields_builder::Fields};
+use super::{features::*, field_builder::Fields};
 use crate::{ReferenceFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolFeatures};
 
 pub trait FeaturesCodeGen {

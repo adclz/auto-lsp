@@ -1,2 +1,2 @@
 pub mod enum_builder;
-pub mod variants_builder;
+pub mod variant_builder;

@@ -5,7 +5,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Ident, Path};
 
-use crate::fields_builder::Fields;
+use crate::field_builder::Fields;
 use crate::utilities::path_to_dot_tokens;
 use crate::{r#struct::feature_builder::FeaturesCodeGen, ReferenceFeatures, SymbolFeatures, PATHS};
 

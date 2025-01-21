@@ -6,7 +6,7 @@ use quote::quote;
 use syn::{Ident, Path};
 
 use crate::feature_builder::FeaturesCodeGen;
-use crate::fields_builder::{FieldInfoExtract, Fields};
+use crate::field_builder::{FieldInfoExtract, Fields};
 use crate::utilities::path_to_dot_tokens;
 use crate::{ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS};
 

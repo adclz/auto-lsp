@@ -6,7 +6,7 @@ use quote::quote;
 use syn::Ident;
 
 use crate::feature_builder::FeaturesCodeGen;
-use crate::fields_builder::Fields;
+use crate::field_builder::Fields;
 use crate::{ReferenceFeature, ReferenceFeatures, SymbolFeatures, PATHS};
 
 use crate::Feature;

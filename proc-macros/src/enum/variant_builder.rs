@@ -217,6 +217,8 @@ impl VariantBuilder {
     /// Stages a trait implementation for the input name.
     ///
     /// This is similar to `stage` but it encapsulates the unstaged TokenStream in a trait implementation.
+    ///
+    /// The final struct will also be derived with `Clone`.
     pub fn stage_trait(&mut self, input_name: &Ident, trait_path: &Path) -> &mut Self {
         let drain = self.drain();
         let result = quote! {
@@ -273,11 +275,11 @@ impl<'a> From<VariantBuilder> for Vec<TokenStream> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use syn::{parse_quote, DeriveInput};
+
     #[test]
     fn test_extract_variants() {
-        use super::*;
-        use syn::DeriveInput;
-
         let data = quote! {
             enum MyEnum {
                 Variant1(u8),
@@ -303,6 +305,78 @@ mod tests {
         assert_eq!(
             "StringBuilder",
             variants.variant_builder_names[1].to_string()
+        );
+    }
+
+    #[test]
+    fn test_stage_trait() {
+        let data = quote! {
+            enum MyEnum {
+                Variant1(u8),
+                Variant2(String),
+            }
+        };
+
+        let mut builder = VariantBuilder::default();
+
+        let input: DeriveInput = syn::parse2(data).unwrap();
+        let data = &input.data;
+        let variants = extract_variants(&data);
+
+        builder.add_iter(&variants, |name, _type, _| {
+            quote! {
+                if let Self::#name = #name(#_type) {
+                    true
+                } else {
+                    false
+                };
+            }
+        });
+
+        let input_name = Ident::new("MyEnum", proc_macro2::Span::call_site());
+        let staged = builder.stage_trait(&input_name, &parse_quote! { Path::To::Trait });
+        let result = staged.to_token_stream().to_string();
+
+        assert_eq!(
+            result,
+            quote! {
+                impl Path::To::Trait for MyEnum {
+                    if let Self::Variant1 = Variant1(u8) {
+                        true
+                    } else {
+                        false
+                    };
+                    if let Self::Variant2 = Variant2(String) {
+                        true
+                    } else {
+                        false
+                    };
+                }
+            }
+            .to_string()
+        );
+    }
+
+    #[test]
+    fn stage_struct() {
+        let mut builder = VariantBuilder::default();
+
+        builder
+            .add(quote! { pub unique_field: u8 })
+            .stage_struct(&parse_quote!(MyStruct));
+
+        let staged = builder.stage();
+        let result = staged.to_token_stream().to_string();
+
+        assert_eq!(
+            result,
+            quote! {
+                #[derive(Clone)]
+                pub struct MyStruct {
+                    pub unique_field: u8,
+                }
+            }
+            .to_string()
         );
     }
 }

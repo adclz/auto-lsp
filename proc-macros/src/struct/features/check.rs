@@ -6,7 +6,7 @@ use quote::quote;
 use syn::Ident;
 
 use crate::{
-    fields_builder::Fields, r#struct::feature_builder::FeaturesCodeGen, Feature, ReferenceFeatures,
+    field_builder::Fields, r#struct::feature_builder::FeaturesCodeGen, Feature, ReferenceFeatures,
     StructHelpers, SymbolFeatures, PATHS,
 };
 

@@ -316,6 +316,8 @@ impl FieldBuilder {
     /// Stages a struct for the input name.
     ///
     /// It will generate a struct with the fields defined in the unstaged TokenStream.
+    ///
+    /// The final struct will also be derived with `Clone`.
     pub fn stage_struct(&mut self, input_name: &Ident) -> &mut Self {
         let drain = self.drain();
         let result = quote! {
@@ -409,13 +411,13 @@ impl From<FieldBuilder> for Vec<TokenStream> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::StructInput;
+    use darling::FromDeriveInput;
+    use syn::{parse_quote, DeriveInput};
+
     #[test]
     fn text_extract_fields() {
-        use super::*;
-        use crate::StructInput;
-        use darling::FromDeriveInput;
-        use syn::DeriveInput;
-
         let data = quote! {
             struct MyStruct {
                 field1: u8,
@@ -439,5 +441,126 @@ mod tests {
         assert_eq!(fields.field_builder_names.len(), 1);
         assert_eq!(fields.field_vec_builder_names.len(), 1);
         assert_eq!(fields.field_option_builder_names.len(), 1);
+    }
+
+    #[test]
+    fn test_stage_fields() {
+        let data = quote! {
+            struct MyStruct {
+                field1: u8,
+                field2: Vec<u8>,
+                field3: Option<u8>,
+            }
+        };
+
+        let input: DeriveInput = syn::parse2(data).unwrap();
+        let derive_input = StructInput::from_derive_input(&input).unwrap();
+
+        let fields = extract_fields(&derive_input.data);
+
+        // Transform fields into a Rc<RefCell<**field**>> for testing
+        let mut builder = FieldBuilder::default();
+        builder.add_iter(&fields, |_, _, name, _type, _| {
+            quote! {
+                #name: Rc<RefCell<#_type>>
+            }
+        });
+
+        let staged = builder.stage_fields();
+        let result = staged.to_token_stream().to_string();
+
+        // Since get_raw_type_name only returns the lowest type, Vec and Option are ommited
+        assert_eq!(
+            result,
+            quote! {
+                field1: Rc<RefCell<u8>>,
+                field3: Rc<RefCell<u8>>,
+                field2: Rc<RefCell<u8>>,
+            }
+            .to_string()
+        );
+    }
+
+    #[test]
+    fn test_stage_trait() {
+        let data = quote! {
+            struct MyStruct {
+                field1: u8,
+                field2: Vec<u8>,
+                field3: Option<u8>,
+            }
+        };
+
+        let input: DeriveInput = syn::parse2(data).unwrap();
+        let derive_input = StructInput::from_derive_input(&input).unwrap();
+
+        let fields = extract_fields(&derive_input.data);
+
+        let mut builder = FieldBuilder::default();
+        builder.add_iter(&fields, |_, _, name, _type, _| {
+            quote! {
+                #name.do_stuff();
+            }
+        });
+
+        let staged = builder.stage_trait(&input.ident, &parse_quote! { Path::To::Trait });
+        let result = staged.to_token_stream().to_string();
+
+        assert_eq!(
+            result,
+            quote! {
+                impl Path::To::Trait for MyStruct {
+                    field1.do_stuff();
+                    field3.do_stuff();
+                    field2.do_stuff();
+                }
+            }
+            .to_string()
+        );
+    }
+
+    #[test]
+    fn test_stage_struct() {
+        use super::*;
+        use crate::StructInput;
+        use darling::FromDeriveInput;
+        use syn::DeriveInput;
+
+        let data = quote! {
+            struct MyStruct {
+                field1: u8,
+                field2: Vec<u8>,
+                field3: Option<u8>,
+            }
+        };
+
+        let input: DeriveInput = syn::parse2(data).unwrap();
+        let derive_input = StructInput::from_derive_input(&input).unwrap();
+
+        let fields = extract_fields(&derive_input.data);
+
+        let mut builder = FieldBuilder::default();
+        builder.add_iter(&fields, |_, _, name, _type, _| {
+            quote! {
+                #name: Rc<RefCell<#_type>>
+            }
+        });
+
+        let staged = builder.stage_struct(&input.ident);
+        let result = staged.to_token_stream().to_string();
+
+        // Since get_raw_type_name only returns the lowest type, Vec and Option are ommited
+        assert_eq!(
+            result,
+            quote! {
+                #[derive(Clone)]
+                pub struct MyStruct {
+                    field1: Rc<RefCell<u8>>,
+                    field3: Rc<RefCell<u8>>,
+                    field2: Rc<RefCell<u8>>,
+                }
+            }
+            .to_string()
+        );
     }
 }

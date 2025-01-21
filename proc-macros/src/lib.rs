@@ -5,7 +5,7 @@ extern crate proc_macro;
 use darling::FromDeriveInput;
 use darling::{ast::NestedMeta, FromMeta};
 use enum_builder::EnumBuilder;
-use fields_builder::extract_fields;
+use field_builder::extract_fields;
 use meta::*;
 use paths::*;
 use proc_macro::TokenStream;
@@ -14,7 +14,7 @@ use r#enum::*;
 use r#struct::*;
 use struct_builder::StructBuilder;
 use syn::{parse_macro_input, DeriveInput};
-use variants_builder::extract_variants;
+use variant_builder::extract_variants;
 
 mod r#enum;
 mod meta;

@@ -5,7 +5,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
-use crate::fields_builder::{FieldInfoExtract, Fields};
+use crate::field_builder::{FieldInfoExtract, Fields};
 use crate::{
     r#struct::feature_builder::FeaturesCodeGen, ReferenceFeature, ReferenceFeatures,
     SymbolFeatures, PATHS,
