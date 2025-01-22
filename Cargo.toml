@@ -83,6 +83,7 @@ rayon = "1.10"
 tree-sitter-python = "0.23.6"
 tree-sitter-html = "0.23.2"
 rstest = "0.24.0"
+tempfile = "3.15.0"
 
 [[bench]]
 name = "main"

@@ -2,11 +2,12 @@ use std::{fs::File, io::Read};
 
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{workspace::get_extension, Session, WORKSPACES};
 
 impl Session {
     /// Handle the watched files change notification.
-    /// The differences between this and the document requests is that the watched files are not modified by the client.
+    ///
+    /// The differences between this and the document requests is that the watched files are not necessarily modified by the client.
     ///
     /// Some changes can be made by external tools, github, someone editing the project with NotePad while the IDE is active, etc ...
     pub(crate) fn changed_watched_files(
@@ -23,18 +24,23 @@ impl Session {
                     // We can ignore this change
                     return Ok(());
                 };
-                // TODO: define a helper fn to extract extension from uri
-                let language_id = file.uri.as_str().split(".").last().unwrap().to_string();
 
-                let mut open_file = File::open(uri.to_file_path().unwrap()).unwrap();
+                let language_id = get_extension(&uri)?;
+
+                let file_path = uri
+                    .to_file_path()
+                    .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
+                let mut open_file = File::open(file_path)?;
                 let mut buffer = String::new();
-                open_file.read_to_string(&mut buffer).unwrap();
+                open_file.read_to_string(&mut buffer)?;
                 self.add_document(uri, &language_id, &buffer)
             }
             FileChangeType::CHANGED => {
                 let uri = &file.uri;
                 let mut workspace = WORKSPACES.lock();
-                let file_path = uri.to_file_path().unwrap();
+                let file_path = uri
+                    .to_file_path()
+                    .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
                 let mut open_file = File::open(file_path)?;
 
                 if workspace.contains_key(&uri) {
@@ -46,11 +52,10 @@ impl Session {
                         &workspace.get(&uri).unwrap().document.document.text,
                     ))? {
                         workspace.remove(uri);
-                        // TODO: define a helper fn to extract extension from uri
-                        let language_id = file.uri.as_str().split(".").last().unwrap().to_string();
+                        let language_id = get_extension(&uri)?;
 
                         let mut buffer = String::new();
-                        open_file.read_to_string(&mut buffer).unwrap();
+                        open_file.read_to_string(&mut buffer)?;
                         drop(workspace);
 
                         self.add_document(uri, &language_id, &buffer)?;
@@ -97,4 +102,43 @@ fn is_file_content_different(file: &File, content: &str) -> std::io::Result<bool
 
     // Ensure the content doesn't have extra bytes at the end
     Ok(index != content_bytes.len())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_file_content_different() {
+        use super::is_file_content_different;
+        use std::fs::File;
+        use std::io::Write;
+        use tempfile::tempdir;
+
+        let tmp_dir = tempdir().unwrap();
+
+        let file_path = tmp_dir.path().join("my-temporary-note.txt");
+
+        let mut tmp_file = File::create(&file_path).unwrap();
+        tmp_file.write_all(b"Hello, World!").unwrap();
+
+        // Bad file descriptor
+        drop(tmp_file);
+        let tmp_file = File::open(&file_path).unwrap();
+
+        assert_eq!(
+            is_file_content_different(&tmp_file, "Hello, World!").unwrap(),
+            false
+        );
+        assert_eq!(
+            is_file_content_different(&tmp_file, "Hello, World").unwrap(),
+            true
+        );
+        assert_eq!(
+            is_file_content_different(&tmp_file, "Hello,_World!").unwrap(),
+            true
+        );
+        assert_eq!(
+            is_file_content_different(&tmp_file, "Hello, World!!").unwrap(),
+            true
+        );
+    }
 }
