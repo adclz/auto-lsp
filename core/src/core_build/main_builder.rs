@@ -126,7 +126,8 @@ impl<'a> MainBuilder<'a> {
             Option<std::ops::Range<usize>>,
         ) -> Result<DynSymbol, lsp_types::Diagnostic>,
     ) -> &'a mut MainBuilder<'a> {
-        for (edit, is_ws) in edit_ranges.iter() {
+        // All ranges have to be updated
+        for (edit, _) in edit_ranges {
             let start_byte = edit.start_byte;
             let old_end_byte = edit.old_end_byte;
             let new_end_byte = edit.new_end_byte;
@@ -137,6 +138,19 @@ impl<'a> MainBuilder<'a> {
             }
 
             root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
+        }
+
+        // Filter out overlapping edits for ast edit
+        // Since the containing node is already uodated, chil dnodes do not need to be built twice.
+        for (edit, is_ws) in filter_intersecting_edits(edit_ranges).iter() {
+            let start_byte = edit.start_byte;
+            let old_end_byte = edit.old_end_byte;
+            let new_end_byte = edit.new_end_byte;
+
+            let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
+            if is_noop {
+                continue;
+            }
 
             let node = self
                 .document
@@ -198,5 +212,84 @@ impl<'a> MainBuilder<'a> {
             };
         }
         self
+    }
+}
+
+/// Filter out intersecting edits and keep the biggest one
+fn filter_intersecting_edits(params: &Vec<(InputEdit, bool)>) -> Vec<(InputEdit, bool)> {
+    if params.is_empty() {
+        return vec![];
+    }
+
+    if params.len() == 1 {
+        return params.clone();
+    }
+
+    // Sort by range
+    let mut sorted_edits = params.clone();
+    sorted_edits.sort_by_key(|(edit, _)| edit.start_byte + edit.new_end_byte);
+
+    // Filter out overlapping edits
+    let mut filtered = Vec::new();
+    let mut last_end = sorted_edits[0].0.new_end_byte;
+
+    for edit in sorted_edits {
+        // Check if current edit starts after previous edit ends
+        if edit.0.start_byte >= last_end {
+            filtered.push(edit);
+            last_end = edit.0.new_end_byte;
+        }
+    }
+
+    filtered
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tree_sitter::{InputEdit, Point};
+
+    #[test]
+    fn test_intersecting_edits() {
+        let edits = vec![
+            (
+                InputEdit {
+                    start_byte: 0,
+                    new_end_byte: 20,
+                    old_end_byte: 0,
+                    start_position: Point::default(),
+                    old_end_position: Point::default(),
+                    new_end_position: Point::default(),
+                },
+                false,
+            ),
+            (
+                InputEdit {
+                    start_byte: 10,
+                    new_end_byte: 30,
+                    old_end_byte: 0,
+                    start_position: Point::default(),
+                    old_end_position: Point::default(),
+                    new_end_position: Point::default(),
+                },
+                false,
+            ),
+            (
+                InputEdit {
+                    start_byte: 20,
+                    new_end_byte: 40,
+                    old_end_byte: 0,
+                    start_position: Point::default(),
+                    old_end_position: Point::default(),
+                    new_end_position: Point::default(),
+                },
+                false,
+            ),
+        ];
+
+        let filtered = filter_intersecting_edits(&edits);
+        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered[0].0.start_byte, 20);
+        assert_eq!(filtered[0].0.new_end_byte, 40);
     }
 }
