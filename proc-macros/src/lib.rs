@@ -27,9 +27,10 @@ use std::cell::LazyCell;
 /// Paths of every structs, enums, traits and functions from core crate
 const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 
-/// Procedural macro for generating an AstSymbol from a struct
+/// A procedural macro for generating an AST symbol from a struct.
 ///
 /// ## Basic usage
+///
 /// ```ignore
 /// #[seq(query_name = "query_name", kind(symbol()))]
 /// struct MyStruct {}
@@ -37,18 +38,20 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 ///
 /// ## Attributes
 ///
-/// - `query_name`: The name of the tree sitter query this struct will be associated with
-/// - `kind`: The kind of struct to generate. Can be either `symbol` or `reference`
+/// - `query_name`: The name of the Tree-sitter query associated with this struct.
+/// - `kind`: Specifies the type of symbol to generate, which can be either `symbol` or `reference`.
 ///
 /// ### symbol
 ///
-/// When the `kind` attribute is set to `symbol`, the generated struct will implement the `AstSymbol` trait,
-/// therefore, all LSP traits are implemented by default but can be overriden by the user using the nested attributes.
+/// When the `kind` attribute is set to `symbol`, the generated symbol will implement the `AstSymbol` trait.
 ///
-/// All nested attributes are optional, when an attribute is set it offers the user the ability to override the default implementation,
-/// either by providing a custom implementation of the trait (with `user`) or code_gen (with `codegen`).
+/// As a result, all capabilities traits are implemented by default, but users can override them using nested attributes.
+///
+/// All nested attributes are optional. If an attribute is set, it allows the user to override the default implementation,
+/// either by providing a custom implementation of the trait (using `user`) or replacing the default implementation with code generation (using code_gen when available).
+///
 /// ```ignore
-/// // With `user`, default trait implementation is removed
+/// // When using `user`, the default trait implementation is removed.
 ///
 /// #[seq(query_name = "query_name", kind(symbol(
 ///     lsp_document_symbols(user),
@@ -59,7 +62,7 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 ///    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
 ///        /* ... */
 ///    }
-///}
+/// }
 ///
 /// // With `codegen`, the default implementation is replaced by the code_gen implementation
 ///
@@ -69,15 +72,63 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 ///        name = self::name,
 ///        kind = auto_lsp::lsp_types::SymbolKind::FUNCTION,
 ///    )
-///),
-/// )))]
+/// ))))]
 /// struct MyStruct2 {}
 ///
 /// ```
 ///
 /// ### reference
 ///
-/// When the `kind` attribute is set to `reference`, the generated struct implements `AstSymbol` as well, but
+/// When the `kind` attribute is set to `reference`, the generated struct implements `AstSymbol` as well,
+///  and redirects most function calls to the referenced symbol.
+///
+/// By default, all capabilities are inactive.
+///
+/// The capabilites attributes have the same name as `symbol`, however their values are different.
+///
+///  - user: The default implementation is removed and the trait must be implemented manually.
+///  - reference: The symbol will redirect the function call to the referenced symbol.
+///  - disable: Disable the feature.
+///
+/// # Example
+///
+/// ```ignore
+/// // A simple reference.
+/// // This reference will call the referenced symbol's get_document_symbols function.
+///
+/// #[seq(query_name = "query_name", kind(reference(
+///     lsp_document_symbols(reference),
+/// )))]
+/// struct MyStruct {}
+///
+/// // Each symbol marked as reference must implement the Reference trait.
+///
+/// impl Reference for MyStruct {
+///     fn find(&self, doc: &Document) -> Result<Option<DynSymbol>, Diagnostic> {
+///         /* ... */
+///     }
+/// }
+///
+/// // A manual implementation of `BuildDocumentSymbols` is necessary.
+///
+/// #[seq(query_name = "query_name2", kind(reference(
+///     lsp_document_symbols(user),
+/// )))]
+/// struct MyStruct2 {}
+///
+/// impl BuildDocumentSymbols for Module {
+///     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
+///        /* ... */
+///     }
+/// }
+///
+/// // Document symbols are disabled.
+///
+/// #[seq(query_name = "query_name3", kind(reference(
+///     lsp_document_symbols(disable),
+/// )))]
+/// struct MyStruct3 {}
+/// ```
 ///
 #[proc_macro_attribute]
 pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
@@ -143,9 +194,10 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::from(tokens)
 }
 
-/// Procedural macro for generating an AstSymbol from an enum
+/// A procedural macro for generating an AST symbol from an enum.
 ///
 /// ## Basic usage
+///
 /// ```ignore
 /// #[choice]
 /// enum MyEnum {
@@ -153,10 +205,13 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
 /// }
 /// ```
 ///
-/// `choice` does not have any attributes, it generates an enum that implements the `AstSymbol` trait.
+/// The `choice` macro does not accept any attributes. It invokes the AstSymbol implementation of the inner variant.
 ///
-/// However, every variant of the enum **must** implement the `AstSymbol` trait.
+/// This macro functions similarly to `enum_dispatch` but is tailored for the specific needs of `auto_lsp`.
 ///
+/// However, every variant of the enum **has to be** a struct or enum that implements the `AstSymbol` trait.
+///
+/// This means that all variants must be a unique symbol, and therefore a `Vec` or Option of `AstSymbol` can't be used.
 #[proc_macro_attribute]
 pub fn choice(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
