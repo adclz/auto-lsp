@@ -232,7 +232,7 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
-                        self.#name.update(start, offset, builder_params)?;
+                        self.#name.update(start, offset, parent_check.clone(), builder_params)?;
                     }
                 },
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),

@@ -358,27 +358,29 @@ impl Default for Paths {
                 },
             },
             dynamic_swap: DynamicSwap {
-                path: core_ast(parse_quote!(DynamicUpdate)),
+                path: core_ast(parse_quote!(UpdateDynamic)),
                 swap: Method {
-                    sig: quote! { fn dyn_swap<'a>(
+                    sig: quote! { fn dyn_update<'a>(
                         &mut self,
                         start: usize,
                         offset: isize,
+                        parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
                         builder_params: &'a mut auto_lsp::core::build::MainBuilder,
-                    ) -> std::ops::ControlFlow<Result<usize, auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { dyn_swap(start, offset, builder_params) },
+                    ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
+                    variant: quote! { dyn_update(start, offset, parent_check, builder_params) },
                 },
             },
             static_swap: StaticSwap {
-                path: core_ast(parse_quote!(StaticUpdate)),
+                path: core_ast(parse_quote!(UpdateStatic)),
                 swap: Method {
                     sig: quote! { fn update<'a>(
                         &mut self,
                         start: usize,
                         offset: isize,
+                        parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
                         builder_params: &'a mut auto_lsp::core::build::MainBuilder,
-                    ) -> std::ops::ControlFlow<Result<usize, auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { update(start, offset, builder_params) },
+                    ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
+                    variant: quote! { update(start, offset, parent_check, builder_params) },
                 },
             },
             edit_range: EditRange {

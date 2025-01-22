@@ -165,9 +165,17 @@ impl<'a> MainBuilder<'a> {
                 continue;
             }
 
-            let result =
-                root.write()
-                    .dyn_swap(start_byte, (new_end_byte - old_end_byte) as isize, self);
+            let parent_check = match root.read().must_check() {
+                true => Some(root.to_weak()),
+                false => None,
+            };
+
+            let result = root.write().dyn_update(
+                start_byte,
+                (new_end_byte - old_end_byte) as isize,
+                parent_check,
+                self,
+            );
             match result {
                 ControlFlow::Break(Err(e)) => {
                     self.diagnostics.push(e);

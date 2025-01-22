@@ -37,7 +37,7 @@ pub trait AstSymbol:
     + Check
     // update.rs
     + Parent
-    + DynamicUpdate
+    + UpdateDynamic
     + UpdateRange
     + CollectReferences
 {
