@@ -169,8 +169,8 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let input_attr = input.attrs;
     let tokens = match attributes.kind {
-        AstStructKind::Reference(accessor_features) => StructBuilder::new(
-            &ReferenceOrSymbolFeatures::Reference(&accessor_features),
+        AstStructKind::Reference(reference_features) => StructBuilder::new(
+            &ReferenceOrSymbolFeatures::Reference(&reference_features),
             &derive_input.data,
             &input_attr,
             &input_name,

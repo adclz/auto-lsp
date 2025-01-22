@@ -79,7 +79,7 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
+    fn code_gen_reference(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let completion_items_path = &PATHS.lsp_completion_items.path;
         let sig = &PATHS.lsp_completion_items.build_completion_items.sig;
@@ -92,9 +92,9 @@ impl<'a> FeaturesCodeGen for CompletionItemsBuilder<'a> {
                     quote! {
                         impl #completion_items_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.get_target() {
-                                    if let Some(accessor) = accessor.to_dyn() {
-                                        accessor.read().build_completion_items(doc, acc)
+                                if let Some(reference) = &self.get_target() {
+                                    if let Some(reference) = reference.to_dyn() {
+                                        reference.read().build_completion_items(doc, acc)
                                     }
                                 }
                             }

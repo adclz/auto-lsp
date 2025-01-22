@@ -7,7 +7,7 @@ use crate::{ReferenceFeatures, ReferenceOrSymbolFeatures, StructHelpers, SymbolF
 
 pub trait FeaturesCodeGen {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens;
-    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens;
+    fn code_gen_reference(&self, params: &ReferenceFeatures) -> impl quote::ToTokens;
 }
 
 pub struct Features<'a> {
@@ -21,7 +21,7 @@ pub struct Features<'a> {
     pub lsp_go_to_definition: GotoDefinitionBuilder<'a>,
     pub lsp_go_to_declaration: GoToDeclarationBuilder<'a>,
     pub scope: ScopeBuilder<'a>,
-    pub accessor: ReferenceBuilder<'a>,
+    pub reference: ReferenceBuilder<'a>,
     pub check: CheckBuilder<'a>,
     pub comment: CommentBuilder<'a>,
 }
@@ -44,7 +44,7 @@ impl<'a> Features<'a> {
             lsp_go_to_definition: GotoDefinitionBuilder::new(input_name, fields),
             lsp_go_to_declaration: GoToDeclarationBuilder::new(input_name, fields),
             scope: ScopeBuilder::new(input_name, fields),
-            accessor: ReferenceBuilder::new(input_name, fields),
+            reference: ReferenceBuilder::new(input_name, fields),
             check: CheckBuilder::new(input_name, helper_attributes, fields),
             comment: CommentBuilder::new(input_name, fields),
         }
@@ -55,37 +55,39 @@ impl<'a> ToTokens for Features<'a> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match &self.features_attributes {
             ReferenceOrSymbolFeatures::Reference(reference) => {
-                self.accessor.code_gen_accessor(reference).to_tokens(tokens);
-                self.scope.code_gen_accessor(reference).to_tokens(tokens);
-                self.check.code_gen_accessor(reference).to_tokens(tokens);
-                self.comment.code_gen_accessor(reference).to_tokens(tokens);
+                self.reference
+                    .code_gen_reference(reference)
+                    .to_tokens(tokens);
+                self.scope.code_gen_reference(reference).to_tokens(tokens);
+                self.check.code_gen_reference(reference).to_tokens(tokens);
+                self.comment.code_gen_reference(reference).to_tokens(tokens);
                 self.lsp_code_lens
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
                 self.lsp_completion_items
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
                 self.lsp_document_symbols
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
                 self.lsp_hover_info
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
                 self.lsp_inlay_hints
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
                 self.lsp_semantic_tokens
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
                 self.lsp_go_to_definition
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
                 self.lsp_go_to_declaration
-                    .code_gen_accessor(reference)
+                    .code_gen_reference(reference)
                     .to_tokens(tokens);
             }
             ReferenceOrSymbolFeatures::Symbol(symbol) => {
-                self.accessor.code_gen(symbol).to_tokens(tokens);
+                self.reference.code_gen(symbol).to_tokens(tokens);
                 self.scope.code_gen(symbol).to_tokens(tokens);
                 self.check.code_gen(symbol).to_tokens(tokens);
                 self.comment.code_gen(symbol).to_tokens(tokens);

@@ -9,6 +9,13 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{Attribute, Path};
 
+/// Builder for generating the AST symbol from a struct.
+/// 
+/// This is the core builder called by the `#[seq]` macro.
+/// 
+/// It generates:
+///     - The implementation of all capabilitties and `AstSymbol` traits. 
+///     - The builder struct (named `input_builder_name`) that is used to create the AST symbol.
 pub struct StructBuilder<'a> {
     // Input data
     pub input_attr: &'a Vec<Attribute>,
@@ -47,22 +54,27 @@ impl<'a> ToTokens for StructBuilder<'a> {
 
         let mut builder = FieldBuilder::default();
 
+        /// Create the struct 
         self.struct_input(&mut builder);
 
+        // Implement the AstSymbol trait
         self.impl_ast_symbol(&mut builder);
+
+        // Implement core capabilities
         self.impl_locator(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_dynamic_swap(&mut builder);
         self.impl_edit_range(&mut builder);
         self.impl_collect_references(&mut builder);
 
+        // Implement other features
         builder.add(self.features.to_token_stream());
         builder.stage();
 
-        // Generate builder
-
+        // Generate builder struct
         self.struct_input_builder(&mut builder);
 
+        // Implement `Buildable` trait
         builder.add(quote! {
             fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> {
                 self.url.clone()
@@ -80,8 +92,10 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.fn_add(&mut builder);
         builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
 
+        // Implement `TryFromBuilder`
         self.impl_try_from(&mut builder);
 
+        // Implement `Queryable`
         self.impl_queryable(&mut builder);
 
         tokens.extend(builder.to_token_stream());
@@ -94,7 +108,7 @@ impl<'a> StructBuilder<'a> {
         let symbol_data = &PATHS.symbol_data;
 
         builder
-            .add(quote! { pub _data: #symbol_data })
+            .add(quote! { _data: #symbol_data })
             .add_iter(&self.fields, |ty, _, name, field_type, _| match ty {
                 FieldType::Normal => quote! {
                     pub #name: #symbol<#field_type>
@@ -218,7 +232,7 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
-                        self.#name.to_swap(start, offset, builder_params)?;
+                        self.#name.update(start, offset, builder_params)?;
                     }
                 },
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),

@@ -91,6 +91,24 @@ impl GetSymbolData for SymbolData {
         self.parent = Some(parent);
     }
 
+    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
+        match self.comment {
+            Some(ref range) => {
+                // Check if the range is within bounds and valid
+                if range.start <= range.end && range.end <= source_code.len() {
+                    std::str::from_utf8(&source_code[range.start..range.end]).ok()
+                } else {
+                    None
+                }
+            }
+            None => None,
+        }
+    }
+
+    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
+        self.comment = range;
+    }
+
     fn get_target(&self) -> Option<&WeakSymbol> {
         self.target.as_ref()
     }
@@ -110,24 +128,6 @@ impl GetSymbolData for SymbolData {
     fn get_mut_referrers(&mut self) -> &mut Referrers {
         self.referrers.get_or_insert_default()
     }
-
-    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
-        match self.comment {
-            Some(ref range) => {
-                // Check if the range is within bounds and valid
-                if range.start <= range.end && range.end <= source_code.len() {
-                    std::str::from_utf8(&source_code[range.start..range.end]).ok()
-                } else {
-                    None
-                }
-            }
-            None => None,
-        }
-    }
-
-    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
-        self.comment = range;
-    }
 }
 
 /// List of weak symbols that refer to this symbol
@@ -142,7 +142,7 @@ pub trait ReferrersTrait {
     /// Clean up any null referrers
     fn clean_null_referrers(&mut self);
 
-    /// Drop any referrers that have an accessor
+    /// Drop any referrers that have an reference
     ///
     /// If the referrer was not dropped, add it to the unsolved checks field of [`MainBuilder`]
     fn drop_referrers(&mut self, params: &mut MainBuilder);

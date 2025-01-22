@@ -55,7 +55,7 @@ impl<'a> FeaturesCodeGen for CommentBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
+    fn code_gen_reference(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let is_comment = &PATHS.is_comment.path;
 

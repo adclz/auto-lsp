@@ -154,6 +154,14 @@ impl<T: AstSymbol + ?Sized> GetSymbolData for T {
         self.get_mut_data().set_parent(parent)
     }
 
+    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
+        self.get_data().get_comment(source_code)
+    }
+
+    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
+        self.get_mut_data().set_comment(range)
+    }
+
     fn get_target(&self) -> Option<&WeakSymbol> {
         self.get_data().get_target()
     }
@@ -172,13 +180,5 @@ impl<T: AstSymbol + ?Sized> GetSymbolData for T {
 
     fn get_mut_referrers(&mut self) -> &mut Referrers {
         self.get_mut_data().get_mut_referrers()
-    }
-
-    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
-        self.get_data().get_comment(source_code)
-    }
-
-    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
-        self.get_mut_data().set_comment(range)
     }
 }

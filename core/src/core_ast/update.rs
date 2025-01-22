@@ -12,6 +12,7 @@ use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
 
+///
 pub trait CollectReferences {
     fn collect_references(&self, params: &mut MainBuilder);
 }
@@ -135,7 +136,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol,
 {
-    fn to_swap<'a>(
+    fn update<'a>(
         &mut self,
         start: usize,
         offset: isize,
@@ -151,7 +152,7 @@ where
         + StaticBuildable<T, Y>
         + CollectReferences,
 {
-    fn to_swap<'a>(
+    fn update<'a>(
         &mut self,
         start: usize,
         offset: isize,
@@ -194,14 +195,14 @@ where
         + StaticBuildable<T, Y>
         + CollectReferences,
 {
-    fn to_swap<'a>(
+    fn update<'a>(
         &mut self,
         start: usize,
         offset: isize,
         builder_params: &'a mut MainBuilder,
     ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
         match self {
-            Some(symbol) => symbol.to_swap(start, offset, builder_params),
+            Some(symbol) => symbol.update(start, offset, builder_params),
             None => ControlFlow::Continue(()),
         }
     }
@@ -215,14 +216,14 @@ where
         + StaticBuildable<T, Y>
         + CollectReferences,
 {
-    fn to_swap<'a>(
+    fn update<'a>(
         &mut self,
         start: usize,
         offset: isize,
         builder_params: &'a mut MainBuilder,
     ) -> ControlFlow<Result<usize, Diagnostic>, ()> {
         for symbol in self.iter_mut() {
-            match symbol.to_swap(start, offset, builder_params) {
+            match symbol.update(start, offset, builder_params) {
                 ControlFlow::Break(result) => return ControlFlow::Break(result),
                 ControlFlow::Continue(()) => continue,
             }

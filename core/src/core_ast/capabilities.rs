@@ -29,7 +29,7 @@ pub trait BuildDocumentSymbols {
     ///
     /// [LSP DocumentSymbol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
     ///
-    /// By default `None`
+    /// By default, `None`
     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
         None
     }
@@ -68,7 +68,7 @@ pub trait GetHover {
     ///
     /// [LSP Hover](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover)
     ///
-    /// By default `None`
+    /// By default, `None`
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         None
     }
@@ -80,7 +80,7 @@ pub trait GetGoToDefinition {
     ///
     /// [LSP GotoDefinitionResponse](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_definition)
     ///
-    /// By default `None`
+    /// By default, `None`
     fn go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse> {
         None
     }
@@ -92,7 +92,7 @@ pub trait GetGoToDeclaration {
     ///
     /// [LSP GotoDeclarationResponse](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_declaration)
     ///
-    /// By default `None`
+    /// By default, `None`
     fn go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse> {
         None
     }
@@ -197,11 +197,11 @@ impl<T: AstSymbol> Locator for Vec<Symbol<T>> {
 
 /// Trait implemented by all [AstSymbol]
 pub trait IsReference: GetSymbolData {
-    /// Check if the symbol is an accessor
+    /// Check if the symbol is an reference
     ///
     /// References are symbols used to access other symbols.
     ///
-    /// By default `false`
+    /// By default, `false`
     fn is_reference(&self) -> bool {
         false
     }
@@ -215,7 +215,7 @@ pub trait Reference: IsReference {
     ///
     /// If the symbol cannot be found, return a [Diagnostic] with the reason
     ///
-    /// By default `Ok(None)`
+    /// By default, `Ok(None)`
     fn find(&self, doc: &Document) -> Result<Option<DynSymbol>, Diagnostic> {
         Ok(None)
     }
@@ -225,7 +225,7 @@ pub trait Reference: IsReference {
 pub trait IsCheck {
     /// Tell this symbol has to be checked during the build process
     ///
-    /// By default `false`
+    /// By default, `false`
     fn must_check(&self) -> bool {
         false
     }
@@ -235,10 +235,10 @@ pub trait IsCheck {
 pub trait Check: IsCheck {
     /// Perform a check on the symbol during the last step of build process
     ///
-    /// If the check fails, push your [`lsp_types::Diagnostic`] to the accumulator and return `std::Err(())`
+    /// If the check fails, push your [`Diagnostic`] to the accumulator and return `std::Err(())`
     /// If the check succeeds, return `Ok(())`
     ///
-    /// By default `Ok(())`
+    /// By default, `Ok(())`
     fn check(&self, doc: &Document, diagnostics: &mut Vec<Diagnostic>) -> Result<(), ()> {
         Ok(())
     }
@@ -248,7 +248,7 @@ pub trait Check: IsCheck {
 pub trait IsScope {
     /// Tell this symbol is a scope
     ///
-    /// By default `false`
+    /// By default, `false`
     fn is_scope(&self) -> bool {
         false
     }
@@ -256,11 +256,11 @@ pub trait IsScope {
 
 /// Trait to be implemented by any [AstSymbol] that is a scope
 pub trait Scope: IsScope {
-    /// When a symbol is a scope, it provide a list of ranges where its content is valid
+    /// When a symbol is a scope, it provides a list of ranges where its content is valid
     ///
-    /// This is useful when trying to find a reference, a completion item, etc because this delimits the search area
+    /// This is useful when trying to find a reference, a completion item, etc. because this delimits the search area
     ///
-    /// By default `Vec::new()`
+    /// By default, `Vec::new()`
     fn get_scope_range(&self) -> Vec<[usize; 2]> {
         Vec::new()
     }
@@ -272,7 +272,7 @@ pub trait IsComment {
     ///
     /// This function is used when the **comment** query find a comment above this symbol to tell if the symbol can be commented
     ///
-    /// By default `false`
+    /// By default, `false`
     fn is_comment(&self) -> bool {
         false
     }
@@ -285,7 +285,7 @@ pub trait Finder {
     /// This function first try to find the nearest scope that contains the symbol,
     /// then it searches for the symbol in the scope via its text
     ///
-    /// If a symbol is not found, it tries to to get the parent scope and search again until a symbol is found or there's no more parent scope
+    /// If a symbol is not found, it tries to get the parent scope and search again until a symbol is found or there's no more parent scope
     fn find_in_file(&self, doc: &Document) -> Option<DynSymbol>;
 }
 

@@ -47,7 +47,7 @@ impl<'a> FeaturesCodeGen for GotoDefinitionBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
+    fn code_gen_reference(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let go_to_definitions_path = &PATHS.lsp_go_to_definition.path;
         let sig = &PATHS.lsp_go_to_definition.go_to_definition.sig;
@@ -60,9 +60,9 @@ impl<'a> FeaturesCodeGen for GotoDefinitionBuilder<'a> {
                     quote! {
                         impl #go_to_definitions_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.get_target() {
-                                    if let Some(accessor) = accessor.to_dyn() {
-                                        let read = accessor.read();
+                                if let Some(reference) = &self.get_target() {
+                                    if let Some(reference) = reference.to_dyn() {
+                                        let read = reference.read();
                                         return Some(auto_lsp::lsp_types::GotoDefinitionResponse::Scalar(auto_lsp::lsp_types::Location {
                                             uri: (*read.get_url()).clone(),
                                             range: auto_lsp::lsp_types::Range {

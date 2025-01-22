@@ -96,7 +96,7 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
+    fn code_gen_reference(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let hover_info_path = &PATHS.lsp_hover_info.path;
         let sig = &PATHS.lsp_hover_info.get_hover.sig;
@@ -109,9 +109,9 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                     quote! {
                         impl #hover_info_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.get_target() {
-                                    if let Some(accessor) = accessor.to_dyn() {
-                                        accessor.read().build_inlay_hint(doc, acc)
+                                if let Some(reference) = &self.get_target() {
+                                    if let Some(reference) = reference.to_dyn() {
+                                        reference.read().build_inlay_hint(doc, acc)
                                     }
                                 }
                             }

@@ -22,12 +22,12 @@ impl<'a> ReferenceBuilder<'a> {
     pub fn default_impl(&self) -> TokenStream {
         let input_name = &self.input_name;
         let is_reference_path = &PATHS.is_reference.path;
-        let accessor_path = &PATHS.accessor.path;
+        let reference_path = &PATHS.reference.path;
 
         quote! {
             impl #is_reference_path for #input_name {}
 
-            impl #accessor_path for #input_name {}
+            impl #reference_path for #input_name {}
         }
     }
 }
@@ -37,7 +37,7 @@ impl<'a> FeaturesCodeGen for ReferenceBuilder<'a> {
         self.default_impl()
     }
 
-    fn code_gen_accessor(&self, _params: &ReferenceFeatures) -> impl quote::ToTokens {
+    fn code_gen_reference(&self, _params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let is_reference_path = &PATHS.is_reference.path;
 

@@ -108,7 +108,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
+    fn code_gen_reference(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let document_symbols_path = &PATHS.lsp_document_symbols.path;
         let sig = &PATHS.lsp_document_symbols.get_document_symbols.sig;
@@ -121,9 +121,9 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                     quote! {
                         impl #document_symbols_path for #input_name {
                             #sig {
-                                if let Some(accessor) = &self.get_target() {
-                                    if let Some(accessor) = accessor.to_dyn() {
-                                        return accessor.read().get_document_symbols(doc)
+                                if let Some(reference) = &self.get_target() {
+                                    if let Some(reference) = reference.to_dyn() {
+                                        return reference.read().get_document_symbols(doc)
                                     }
                                 }
                                 None

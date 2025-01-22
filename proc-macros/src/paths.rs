@@ -106,7 +106,7 @@ nested_struct!(
             pub path: Path,
             pub is_reference: Method
         },
-        pub accessor: Accessor {
+        pub reference: Reference {
             pub path: Path,
             pub find: Method
         },
@@ -301,7 +301,7 @@ impl Default for Paths {
                     variant: quote! { is_reference() },
                 },
             },
-            accessor: Accessor {
+            reference: Reference {
                 path: core_ast(parse_quote!(Reference)),
                 find: Method {
                     sig: quote! { fn find(&self, doc: &auto_lsp::core::workspace::Document) -> Result<Option<auto_lsp::core::ast::DynSymbol>, auto_lsp::lsp_types::Diagnostic> },
@@ -372,13 +372,13 @@ impl Default for Paths {
             static_swap: StaticSwap {
                 path: core_ast(parse_quote!(StaticUpdate)),
                 swap: Method {
-                    sig: quote! { fn to_swap<'a>(
+                    sig: quote! { fn update<'a>(
                         &mut self,
                         start: usize,
                         offset: isize,
                         builder_params: &'a mut auto_lsp::core::build::MainBuilder,
                     ) -> std::ops::ControlFlow<Result<usize, auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { to_swap(start, offset, builder_params) },
+                    variant: quote! { update(start, offset, builder_params) },
                 },
             },
             edit_range: EditRange {

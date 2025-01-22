@@ -91,7 +91,7 @@ impl<'a> FeaturesCodeGen for ScopeBuilder<'a> {
         }
     }
 
-    fn code_gen_accessor(&self, _params: &ReferenceFeatures) -> impl quote::ToTokens {
+    fn code_gen_reference(&self, _params: &ReferenceFeatures) -> impl quote::ToTokens {
         self.default_impl()
     }
 }
