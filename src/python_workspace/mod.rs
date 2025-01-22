@@ -2,7 +2,7 @@ use crate::core::build::MainBuilder;
 use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
 use crate::macros::seq;
-use auto_lsp_core::ast::{BuildCodeLens, GetHover, GetSymbolData, Scope};
+use auto_lsp_core::ast::{BuildCodeLens, Check, GetHover, GetSymbolData, Scope};
 use auto_lsp_macros::choice;
 use lsp_types::Url;
 use std::sync::Arc;
@@ -24,14 +24,26 @@ static CORE_QUERY: &'static str = "
 )
 
 (typed_parameter
-	. (_) @any
-    type: (_) @any2
+	. (identifier) @identifier
+    type: [
+    		((_) @bool (#eq? @bool \"bool\"))
+          	((_) @complex (#eq? @complex \"complex\"))
+    	  	((_) @int (#eq? @int \"int\"))
+          	((_) @float (#eq? @float \"float\"))
+            ((_) @str (#eq? @str \"str\"))
+          ]
 ) @typed_parameter
 
 (typed_default_parameter
 	name: (identifier) @identifier
-    type: (_) @any
-    value: (_) @any2
+    type: [
+    		((_) @bool (#eq? @bool \"bool\"))
+          	((_) @complex (#eq? @complex \"complex\"))
+    	  	((_) @int (#eq? @int \"int\"))
+          	((_) @float (#eq? @float \"float\"))
+            ((_) @str (#eq? @str \"str\"))
+          ]
+    value: (_) @any
 ) @typed_default_parameter
 ";
 
@@ -197,15 +209,112 @@ struct UntypedParameter {}
     
 )))]
 struct TypedParameter {
-    name: Any,
-    _type: Any2
+    name: Identifier,
+    parameter_type: Type
 }
 
-#[seq(query_name = "typed_default_parameter", kind(symbol()))]
+#[seq(query_name = "typed_default_parameter", kind(symbol(
+    check(user)
+)))]
 struct TypedDefaultParameter {
     name: Identifier,
-    _type: Any,
-    default: Any2
+    parameter_type: Type,
+    default: Any
+}
+
+impl Check for TypedDefaultParameter {
+    fn check(&self, doc: &Document, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> Result<(), ()> {
+        let source = doc.document.text.as_bytes();
+        match self.parameter_type.read().check_value(self.default.read().get_text(source).unwrap()) {
+            true => Ok(()),
+            false => {
+                diagnostics.push(lsp_types::Diagnostic {
+                    range: self.get_lsp_range(doc),
+                    severity: Some(lsp_types::DiagnosticSeverity::ERROR),
+                    code: None,
+                    code_description: None,
+                    source: None,
+                    message: format!("Invalid value {} for type {}", 
+                        self.default.read().get_text(source).unwrap(),
+                        self.parameter_type.read().get_text(source).unwrap()),
+                    related_information: None,
+                    tags: None,
+                    data: None,
+                });
+                Err(())
+            }
+        }
+    }
+}
+
+#[choice]
+enum Type {
+    Bool(Bool),
+    Complex(Complex),
+    Int(Int),
+    Float(Float),
+    Str(Str),
+}
+
+pub trait CheckPrimitive {
+    fn check_value(&self, value: &str) -> bool;
+}
+
+impl CheckPrimitive for Type {
+    fn check_value(&self, value: &str) -> bool {
+        match self {
+            Type::Bool(t) => t.check_value(value),
+            Type::Complex(t) => t.check_value(value),
+            Type::Int(t) => t.check_value(value),
+            Type::Float(t) => t.check_value(value),
+            Type::Str(t) => t.check_value(value),
+        }
+    }
+}
+
+#[seq(query_name = "bool", kind(symbol()))]
+struct Bool {}
+
+impl CheckPrimitive for Bool {
+    fn check_value(&self, value: &str) -> bool {
+        value.parse::<bool>().is_ok()
+    }
+}
+
+#[seq(query_name = "complex", kind(symbol()))]
+struct Complex {}
+
+impl CheckPrimitive for Complex {
+    fn check_value(&self, value: &str) -> bool {
+        value.parse::<f64>().is_ok()
+    }
+}
+
+#[seq(query_name = "int", kind(symbol()))]
+struct Int {}
+
+impl CheckPrimitive for Int {
+    fn check_value(&self, value: &str) -> bool {
+        value.parse::<i64>().is_ok()
+    }
+}
+
+#[seq(query_name = "float", kind(symbol()))]
+struct Float {}
+
+impl CheckPrimitive for Float {
+    fn check_value(&self, value: &str) -> bool {
+        value.parse::<f64>().is_ok()
+    }
+}
+
+#[seq(query_name = "str", kind(symbol()))]
+struct Str {}
+
+impl CheckPrimitive for Str {
+    fn check_value(&self, value: &str) -> bool {
+        value.starts_with("\"") && value.ends_with("\"")
+    }
 }
 
 pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
@@ -223,7 +332,7 @@ pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
         cst: tree,
     };
 
-    let mut diagnostics = vec![];
+    let mut errors = vec![];
     let mut unsolved_checks = vec![];
     let mut unsolved_references = vec![];
 
@@ -231,18 +340,19 @@ pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
         query: &parse.tree_sitter.queries.core,
         document: &document,
         url: Arc::new(uri),
-        diagnostics: &mut diagnostics,
+        diagnostics: &mut errors,
         unsolved_checks: &mut unsolved_checks,
         unsolved_references: &mut unsolved_references,
     };
 
     let ast_parser = parse.ast_parser;
     let ast = ast_parser(&mut params, None).unwrap();
+    params.resolve_checks().resolve_references();
 
     let workspace = Workspace {
         parsers: parse,
         document,
-        errors: diagnostics,
+        errors,
         ast: Some(ast),
         unsolved_checks,
         unsolved_references,

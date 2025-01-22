@@ -55,7 +55,7 @@ impl<'a> FeaturesCodeGen for CheckBuilder<'a> {
             Some(params) => match params {
                 Feature::User => quote! {
                     impl #is_check for #input_name {
-                        fn is_check(&self) -> bool {
+                        fn must_check(&self) -> bool {
                             true
                         }
                     }

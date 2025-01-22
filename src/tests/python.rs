@@ -21,6 +21,21 @@ def bar():
     )
 }
 
+#[fixture]
+fn foo_bar_with_type_error() -> Workspace {
+    create_python_workspace(
+        Url::parse("file:///test_type_error.py").unwrap(),
+        r#"# foo comment
+def foo(param1, param2: int = "string"):
+    pass
+
+def bar():
+    pass  
+"#
+        .into(),
+    )
+}
+
 #[rstest]
 fn check_ast(foo_bar: Workspace) {
     let ast = foo_bar.ast.as_ref().unwrap();
@@ -58,8 +73,6 @@ fn check_ast(foo_bar: Workspace) {
     assert!(function.name.read().get_parent().is_some());
     let parent = function.name.read().get_parent().unwrap();
     assert!(parent.to_dyn().unwrap().read().is::<Function>());
-
-    // Foo has 2 parameters
 }
 
 #[rstest]
@@ -90,12 +103,14 @@ fn check_foo_parameters(foo_bar: Workspace) {
 
         assert_eq!(
             typed
-                ._type
+                .parameter_type
                 .read()
                 .get_text(foo_bar.document.document.text.as_bytes())
                 .unwrap(),
             "int"
         );
+
+        assert!(matches!(*typed.parameter_type.read(), Type::Int(_)));
     } else {
         panic!("Expected Typed parameter");
     }
@@ -113,12 +128,14 @@ fn check_foo_parameters(foo_bar: Workspace) {
 
         assert_eq!(
             typed_default
-                ._type
+                .parameter_type
                 .read()
                 .get_text(foo_bar.document.document.text.as_bytes())
                 .unwrap(),
             "int"
         );
+
+        assert!(matches!(*typed_default.parameter_type.read(), Type::Int(_)));
 
         assert_eq!(
             typed_default
@@ -134,6 +151,24 @@ fn check_foo_parameters(foo_bar: Workspace) {
 
     // param3 is typed with default value
     assert!(matches!(*parameters[2].read(), Parameter::TypedDefault(_)));
+}
+
+#[rstest]
+fn check_type_checking(foo_bar: Workspace, foo_bar_with_type_error: Workspace) {
+    // foo_bar has no type errors
+    assert!(foo_bar.errors.is_empty());
+    assert!(foo_bar.unsolved_checks.is_empty());
+    assert!(foo_bar.unsolved_references.is_empty());
+
+    // foo_bar_with_type_error has one type error
+    assert!(!foo_bar_with_type_error.errors.is_empty());
+    assert!(!foo_bar_with_type_error.unsolved_checks.is_empty());
+    assert!(foo_bar.unsolved_references.is_empty());
+
+    assert_eq!(
+        foo_bar_with_type_error.errors[0].message,
+        "Invalid value \"string\" for type int"
+    );
 }
 
 #[rstest]
