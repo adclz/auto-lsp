@@ -15,7 +15,7 @@
 //! ```rust
 //! # use auto_lsp::configure_parsers;
 //! # use auto_lsp::core::ast::*;
-//! # use auto_lsp::macros::seq;
+//! # use auto_lsp::seq;
 //! static CORE_QUERY: &'static str = "(module) @module";
 //!
 //! #[seq(query_name = "module", kind(symbol()))]
@@ -41,7 +41,7 @@
 //!  ```rust
 //! # use auto_lsp::configure_parsers;
 //! # use auto_lsp::core::ast::*;
-//! # use auto_lsp::macros::seq;
+//! # use auto_lsp::seq;
 //! # static CORE_QUERY: &'static str = "(module) @module";
 //! # #[seq(query_name = "module", kind(symbol()))]
 //! # struct Module {}

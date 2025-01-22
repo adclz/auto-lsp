@@ -1,9 +1,8 @@
 use crate::core::build::MainBuilder;
 use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Symbol, VecOrSymbol};
 use crate::core::workspace::{Document, Workspace};
-use crate::macros::seq;
+use crate::{choice, seq};
 use auto_lsp_core::ast::{BuildCodeLens, Check, GetHover, GetSymbolData, Scope};
-use auto_lsp_macros::choice;
 use lsp_types::Url;
 use std::sync::Arc;
 use texter::core::text::Text;

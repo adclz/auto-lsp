@@ -25,7 +25,7 @@
 //!
 //! ```
 //! # use auto_lsp::core::ast::*;
-//! # use auto_lsp::macros::seq;
+//! # use auto_lsp::seq;
 //!
 //! #[seq(query_name = "document", kind(symbol()))]
 //! struct Document {
@@ -82,8 +82,7 @@ pub mod core {
     #[doc(hidden)]
     pub use auto_lsp_core::{builder_error, builder_warning};
 }
-/// [`macros::seq`] and [`macros::choice`] macros
-pub use auto_lsp_macros as macros;
+pub use auto_lsp_macros::*;
 
 #[doc(hidden)]
 pub use constcat;

@@ -10,7 +10,6 @@ impl Session {
         &mut self,
         params: DidChangeTextDocumentParams,
     ) -> anyhow::Result<()> {
-        eprintln!("CHANGED EDITED FILE");
         self.edit_document(params)?;
 
         Ok(())
