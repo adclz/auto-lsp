@@ -14,11 +14,18 @@ use crate::document::Document;
 use crate::workspace::Workspace;
 use crate::{builder_error, builder_warning, core_ast::core::AstSymbol};
 
+/// Trait for invoking the stack builder
+///
+/// This trait is implemented for all types that implement [`Buildable`] and [`Queryable`].
 pub trait InvokeStackBuilder<
     T: Buildable + Queryable,
     Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 >
 {
+    /// Creates a symbol.
+    ///
+    /// This method internally initializes a stack builder to build the AST and derive a symbol
+    /// of type [`Y`].
     fn create_symbol(
         workspace: &mut Workspace,
         document: &Document,
@@ -39,12 +46,21 @@ where
         StackBuilder::<T>::new(workspace, document).create_symbol(&range)
     }
 }
+
+/// Function signature for invoking the stack builder.
+///
+/// This type alias is useful for mapping language IDs to specific parsers,
+/// helping avoiding ambiguity.
 pub type InvokeStackBuilderFn = fn(
     &mut Workspace,
     &Document,
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
+/// Stack builder for constructing Abstract Syntax Trees (ASTs).
+///
+/// This struct is responsible for building ASTs using Tree-sitter queries.
+/// Inspired by [vscode anycode](https://github.com/microsoft/vscode-anycode/blob/17190d5b94850095b7ecd7cc37170324dfe08e0e/anycode/server/src/common/features/documentSymbols.ts#L50).
 pub struct StackBuilder<'a, T>
 where
     T: Buildable + Queryable,
@@ -52,8 +68,10 @@ where
     _meta: PhantomData<T>,
     workspace: &'a mut Workspace,
     document: &'a Document,
+    /// Symbols created while building the AST
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
+    /// Indicates whether building has started
     start_building: bool,
 }
 
@@ -61,6 +79,7 @@ impl<'a, T> StackBuilder<'a, T>
 where
     T: Buildable + Queryable,
 {
+    /// Creates a new `StackBuilder` instance.
     pub fn new(workspace: &'a mut Workspace, document: &'a Document) -> Self {
         Self {
             _meta: PhantomData,
@@ -72,6 +91,10 @@ where
         }
     }
 
+    /// Creates a symbol of type [`Y`] based on the specified range.
+    ///
+    /// This method builds the AST for the provided range (if any) and attempts to derive
+    /// a symbol from the root node.
     pub fn create_symbol<Y>(
         &mut self,
         range: &Option<std::ops::Range<usize>>,
@@ -91,6 +114,10 @@ where
             .try_into_builder(self.workspace, self.document)
     }
 
+    /// Builds the AST based on Tree-sitter query captures.
+    ///
+    /// If a range is specified, only the portion of the document within that range
+    /// is processed. Captures are iterated in the order they appear in the tree.
     fn build(&mut self, range: &Option<std::ops::Range<usize>>) -> &mut Self {
         let mut cursor = tree_sitter::QueryCursor::new();
 
@@ -104,10 +131,14 @@ where
             captures.set_byte_range(range.clone());
         }
 
+        // Iterate over the captures.
+        // Captures are sorted by their location in the tree, not their pattern.
         while let Some((m, capture_index)) = captures.next() {
             let capture = Arc::new(m.captures[*capture_index]);
             let capture_index = capture.index as usize;
 
+            // To determine if we should start building the AST, we check if the current capture
+            // is within the given range, we also check if T contains the query name .
             if !self.start_building {
                 if let Some(range) = range {
                     if capture.node.range().start_byte <= range.start
@@ -122,6 +153,7 @@ where
                     {
                         continue;
                     } else {
+                        // Start building.
                         self.start_building = true;
                     }
                 }
@@ -151,6 +183,9 @@ where
         self
     }
 
+    /// Creates the root node of the AST.
+    ///
+    /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
         let mut node = T::new(
             self.workspace.url.clone(),
@@ -194,6 +229,7 @@ where
         }
     }
 
+    /// Creates a child node
     fn create_child_node(&mut self, parent: &PendingSymbol, capture: &QueryCapture) {
         let add = parent
             .get_rc()
@@ -274,6 +310,9 @@ where
         };
     }
 
+    /// Attempt to retrive root node, initially created with [`Self::create_root_node`].
+    ///
+    /// If no root node exists, an error is returned indicating the expected query names.
     fn get_root_node(
         &mut self,
         range: &Option<std::ops::Range<usize>>,
