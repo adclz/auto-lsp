@@ -40,7 +40,6 @@ impl Session {
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
         let tree_sitter = &parsers.tree_sitter;
-        let ast_parser = &parsers.ast_parser;
         let source_code = source_code.as_bytes();
         let mut errors = vec![];
 
@@ -66,17 +65,7 @@ impl Session {
             ast: None,
         };
 
-        workspace.ast = match ast_parser(&mut workspace, &document, None) {
-            Ok(item) => {
-                workspace.resolve_references(&document);
-                workspace.resolve_checks(&document);
-                Some(item)
-            }
-            Err(e) => {
-                workspace.diagnostics.push(e);
-                None
-            }
-        };
+        workspace.create_ast(None, &document);
 
         if !workspace.unsolved_checks.is_empty() {
             log::info!("");
@@ -152,7 +141,7 @@ impl Session {
 
         // Update AST
         workspace
-            .swap_ast(&edits, &document)
+            .create_ast(Some(&edits), &document)
             .resolve_references(&document)
             .resolve_checks(&document);
 
