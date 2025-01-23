@@ -9,14 +9,14 @@ impl Session {
     /// Get diagnostics for all documents.
     pub fn get_workspace_diagnostics(
         &mut self,
-        _params: WorkspaceDiagnosticParams,
+        _workspace: WorkspaceDiagnosticParams,
     ) -> anyhow::Result<WorkspaceDiagnosticReport> {
         let workspaces = WORKSPACES.lock();
 
         let result: Vec<lsp_types::WorkspaceDocumentDiagnosticReport> = workspaces
             .iter()
-            .map(|(uri, workspace)| {
-                let errors = workspace.errors.clone();
+            .map(|(uri, (workspace, _))| {
+                let errors = workspace.diagnostics.clone();
                 WorkspaceDocumentDiagnosticReport::Full(WorkspaceFullDocumentDiagnosticReport {
                     version: None,
                     full_document_diagnostic_report: FullDocumentDiagnosticReport {

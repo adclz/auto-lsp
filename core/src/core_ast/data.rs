@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::core_build::main_builder::MainBuilder;
+use crate::workspace::Workspace;
 
 use super::core::AstSymbol;
 use super::symbol::*;
@@ -21,6 +21,8 @@ pub struct SymbolData {
     pub target: Option<WeakSymbol>,
     /// The byte range of the symbol in the source code
     pub range: std::ops::Range<usize>,
+    /// Whether the symbol has been checked for errors
+    pub unchecked: bool,
 }
 
 impl SymbolData {
@@ -32,6 +34,7 @@ impl SymbolData {
             referrers: None,
             target: None,
             range,
+            unchecked: false,
         }
     }
 }
@@ -72,6 +75,11 @@ pub trait GetSymbolData {
     ///
     /// Referrers are symbols that refer to this symbol
     fn get_mut_referrers(&mut self) -> &mut Referrers;
+
+    /// Get whether the symbol has been checked for errors
+    fn get_unchecked(&self) -> bool;
+    /// Set whether the symbol has been checked for errors
+    fn set_unchecked(&mut self, unchecked: bool);
 }
 
 impl GetSymbolData for SymbolData {
@@ -128,6 +136,14 @@ impl GetSymbolData for SymbolData {
     fn get_mut_referrers(&mut self) -> &mut Referrers {
         self.referrers.get_or_insert_default()
     }
+
+    fn get_unchecked(&self) -> bool {
+        self.unchecked
+    }
+
+    fn set_unchecked(&mut self, unchecked: bool) {
+        self.unchecked = unchecked;
+    }
 }
 
 /// List of weak symbols that refer to this symbol
@@ -144,8 +160,8 @@ pub trait ReferrersTrait {
 
     /// Drop any referrers that have an reference
     ///
-    /// If the referrer was not dropped, add it to the unsolved checks field of [`MainBuilder`]
-    fn drop_referrers(&mut self, params: &mut MainBuilder);
+    /// If the referrer was not dropped, add it to the unsolved checks field of [`Workspace`]
+    fn drop_referrers(&mut self, workspace: &mut Workspace);
 }
 
 impl<'a> IntoIterator for &'a Referrers {
@@ -168,14 +184,14 @@ impl<T: AstSymbol + ?Sized> ReferrersTrait for T {
             .retain(|r| r.get_ptr().weak_count() > 0);
     }
 
-    fn drop_referrers(&mut self, params: &mut MainBuilder) {
+    fn drop_referrers(&mut self, workspace: &mut Workspace) {
         self.get_mut_referrers().0.retain(|r| {
             if let Some(symbol) = r.to_dyn() {
                 let read = symbol.read();
                 if read.get_target().is_some() {
                     drop(read);
                     symbol.write().reset_target_reference_reference();
-                    params.unsolved_references.push(r.clone());
+                    workspace.add_unsolved_reference(&symbol.clone());
                 }
             }
             false

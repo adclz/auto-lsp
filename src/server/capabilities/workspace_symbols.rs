@@ -20,12 +20,12 @@ impl Session {
 
         let workspaces = WORKSPACES.lock();
 
-        workspaces.iter().for_each(|(uri, v)| {
-            let ast = &v.ast;
+        workspaces.iter().for_each(|(uri, (workspace, document))| {
+            let ast = &workspace.ast;
 
             symbols.extend(
                 ast.iter()
-                    .filter_map(|p| p.read().get_document_symbols(&v.document))
+                    .filter_map(|p| p.read().get_document_symbols(&document))
                     .flat_map(|p| match p {
                         VecOrSymbol::Symbol(s) => vec![WorkspaceSymbol {
                             name: s.name,

@@ -49,7 +49,7 @@ impl Session {
                     // If there's a single byte difference, we replace the document
                     if (is_file_content_different(
                         &open_file,
-                        &workspace.get(&uri).unwrap().document.document.text,
+                        &workspace.get(&uri).unwrap().1.texter.text,
                     ))? {
                         workspace.remove(uri);
                         let language_id = get_extension(&uri)?;

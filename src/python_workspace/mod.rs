@@ -1,6 +1,6 @@
-use crate::core::build::MainBuilder;
 use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Symbol, VecOrSymbol};
-use crate::core::workspace::{Document, Workspace};
+use crate::core::document::Document;
+use crate::core::workspace::Workspace;
 use crate::{choice, seq};
 use auto_lsp_core::ast::{BuildCodeLens, Check, GetHover, GetSymbolData, Scope};
 use lsp_types::Url;
@@ -16,7 +16,10 @@ static CORE_QUERY: &'static str = "
 (module) @module
 
 (function_definition
-  name: (identifier) @identifier) @function
+  name: (identifier) @identifier
+  parameters: (_) @parameters 
+  body: (_) @body
+) @function
 
 (parameter
   ((identifier) @untyped_parameter [ \",\" \")\"])
@@ -44,6 +47,12 @@ static CORE_QUERY: &'static str = "
           ]
     value: (_) @any
 ) @typed_default_parameter
+
+(assignment
+	(_) @identifier
+	\"=\"
+    (_) @any
+) @assignment
 ";
 
 static COMMENT_QUERY: &'static str = "
@@ -127,7 +136,29 @@ impl BuildSemanticTokens for Module {
 )))]
 struct Function {
     name: Identifier,
-    parameters: Vec<Parameter>
+    parameters: Parameters,
+    body: Body,
+}
+
+#[seq(query_name = "parameters", kind(symbol()))]
+pub struct Parameters {
+    parameters: Vec<Parameter>,
+}
+
+#[seq(query_name = "body", kind(symbol()))]
+pub struct Body {
+    pub statements: Vec<Statement>,
+}
+
+#[choice]
+enum Statement {
+    Assignment(Assignment),
+}
+
+#[seq(query_name = "assignment", kind(symbol()))]
+pub struct Assignment {
+    left: Identifier,
+    right: Any,
 }
 
 impl Scope for Function {
@@ -142,7 +173,7 @@ impl BuildInlayHints for Function {
         acc.push(auto_lsp::lsp_types::InlayHint {
             kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
             label: auto_lsp::lsp_types::InlayHintLabel::String(
-                read.get_text(doc.document.text.as_bytes()).unwrap().into()
+                read.get_text(doc.texter.text.as_bytes()).unwrap().into()
             ),
             position: read.get_start_position(doc),
             tooltip: None,
@@ -181,13 +212,13 @@ struct Identifier {}
 impl GetHover for Identifier {
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         let parent = self.get_parent().unwrap().to_dyn().unwrap();
-        let comment = parent.read().get_comment(doc.document.text.as_bytes());
+        let comment = parent.read().get_comment(doc.texter.text.as_bytes());
         Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
                 value: format!("{}hover {}", 
                     if let Some(comment) = comment { format!("{}\n", comment) } else { "".to_string() },
-                    self.get_text(doc.document.text.as_bytes()).unwrap()).into(),
+                    self.get_text(doc.texter.text.as_bytes()).unwrap()).into(),
             }),
             range: None,
         })
@@ -223,7 +254,7 @@ struct TypedDefaultParameter {
 
 impl Check for TypedDefaultParameter {
     fn check(&self, doc: &Document, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> Result<(), ()> {
-        let source = doc.document.text.as_bytes();
+        let source = doc.texter.text.as_bytes();
         match self.parameter_type.read().check_value(self.default.read().get_text(source).unwrap()) {
             true => Ok(()),
             false => {
@@ -316,7 +347,7 @@ impl CheckPrimitive for Str {
     }
 }
 
-pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
+pub fn create_python_workspace(uri: Url, source_code: String) -> (Workspace, Document) {
     let parse = PARSERS.get("python").unwrap();
 
     let tree = parse
@@ -327,37 +358,26 @@ pub fn create_python_workspace(uri: Url, source_code: String) -> Workspace {
         .unwrap();
 
     let document = Document {
-        document: Text::new(source_code.into()),
-        cst: tree,
+        texter: Text::new(source_code.into()),
+        tree,
     };
 
-    let mut errors = vec![];
-    let mut unsolved_checks = vec![];
-    let mut unsolved_references = vec![];
-
-    let mut params = MainBuilder {
-        query: &parse.tree_sitter.queries.core,
-        document: &document,
-        url: Arc::new(uri),
-        diagnostics: &mut errors,
-        unsolved_checks: &mut unsolved_checks,
-        unsolved_references: &mut unsolved_references,
+    let mut workspace = Workspace {
+        url: Arc::new(uri.clone()),
+        parsers: parse,
+        diagnostics: vec![],
+        ast: None,
+        unsolved_checks: vec![],
+        unsolved_references: vec![],
     };
 
     let ast_parser = parse.ast_parser;
-    let ast = ast_parser(&mut params, None).unwrap();
-    params.resolve_checks().resolve_references();
+    let ast = ast_parser(&mut workspace, &document, None).unwrap();
+    workspace.ast = Some(ast);
 
-    let workspace = Workspace {
-        parsers: parse,
-        document,
-        errors,
-        ast: Some(ast),
-        unsolved_checks,
-        unsolved_references,
-    };
+    workspace.resolve_checks(&document).resolve_references(&document);
 
-    Session::add_comments(&workspace).unwrap();
+    Session::add_comments(&workspace, &document).unwrap();
 
-    workspace
+    (workspace, document)
 }

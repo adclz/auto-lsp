@@ -14,16 +14,14 @@ impl Session {
         let uri = &params.text_document.uri;
         let workspace = WORKSPACES.lock();
 
-        let workspace = workspace
+        let (workspace, document) = workspace
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
-
-        let source = &workspace.document;
 
         let symbols = workspace
             .ast
             .iter()
-            .filter_map(|p| p.read().get_document_symbols(source))
+            .filter_map(|p| p.read().get_document_symbols(document))
             .collect::<Vec<_>>();
 
         Ok(Some(DocumentSymbolResponse::Nested(

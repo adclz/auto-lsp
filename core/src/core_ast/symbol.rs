@@ -1,6 +1,6 @@
 use std::sync::{Arc, Weak};
 
-use crate::core_build::main_builder::MainBuilder;
+use crate::workspace::Workspace;
 
 use super::core::AstSymbol;
 use parking_lot::RwLock;
@@ -39,18 +39,16 @@ impl<T: AstSymbol> Symbol<T> {
     /// If the symbol is a reference ([`super::capabilities::Reference`]), add it to the unsolved references list
     ///
     /// If the symbol requires checking ([`super::capabilities::Check`]), add it to the unsolved checks list
-    pub fn new_and_check(symbol: T, params: &mut MainBuilder) -> Self {
-        let arc = Symbol::new(symbol);
-        let read = arc.read();
-        if read.is_reference() {
-            params.unsolved_references.push(arc.to_weak());
+    pub fn new_and_check(symbol: T, workspace: &mut Workspace) -> Self {
+        let symbol = Symbol::new(symbol);
+        if symbol.read().is_reference() {
+            workspace.add_unsolved_reference(&symbol.to_dyn());
         }
-        if read.must_check() {
-            params.unsolved_checks.push(arc.to_weak());
+        if symbol.read().must_check() {
+            workspace.add_unsolved_check(&symbol.to_dyn());
         }
-        drop(read);
-        arc.write().inject_parent(arc.to_weak());
-        arc
+        symbol.write().inject_parent(symbol.to_weak());
+        symbol
     }
 
     pub(crate) fn new(symbol: T) -> Self {

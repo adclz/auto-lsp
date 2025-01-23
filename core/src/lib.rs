@@ -17,12 +17,12 @@ pub mod ast {
 pub mod build {
     pub use crate::core_build::buildable::*;
     pub use crate::core_build::downcast::*;
-    pub use crate::core_build::main_builder::*;
     pub use crate::core_build::symbol::*;
 }
 
 /// Semantic tokens builder
 pub mod semantic_tokens;
 
+pub mod document;
 /// Workspace and document handling
 pub mod workspace;

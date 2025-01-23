@@ -1,3 +1,4 @@
+use auto_lsp_core::document::Document;
 use auto_lsp_core::workspace::Workspace;
 use streaming_iterator::StreamingIterator;
 
@@ -7,14 +8,14 @@ impl Session {
     /// Find all comments in the document and add them to the ast using the comment [`tree_sitter::Query`]
     ///
     /// TODO: Add support for incremental updates
-    pub(crate) fn add_comments(workspace: &Workspace) -> anyhow::Result<()> {
+    pub(crate) fn add_comments(workspace: &Workspace, document: &Document) -> anyhow::Result<()> {
         let comments_query = match workspace.parsers.tree_sitter.queries.comments {
             Some(ref query) => query,
             None => return Ok(()),
         };
 
-        let source_code = workspace.document.document.text.as_bytes();
-        let cst = &workspace.document.cst;
+        let source_code = document.texter.text.as_bytes();
+        let cst = &document.tree;
         let ast = match workspace.ast.as_ref() {
             Some(ast) => ast,
             None => return Ok(()),

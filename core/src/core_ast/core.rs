@@ -2,7 +2,7 @@ use super::capabilities::*;
 use super::data::*;
 use super::symbol::*;
 use super::update::*;
-use crate::workspace::Document;
+use crate::document::Document;
 use downcast_rs::{impl_downcast, DowncastSync};
 use lsp_types::Position;
 use lsp_types::Range;
@@ -87,7 +87,7 @@ pub trait AstSymbol:
     fn get_start_position(&self, workspace: &Document) -> Position {
         let range = self.get_data().get_range();
         let node = workspace
-            .cst
+            .tree
             .root_node()
             .descendant_for_byte_range(range.start, range.start)
             .unwrap();
@@ -102,7 +102,7 @@ pub trait AstSymbol:
     fn get_end_position(&self, workspace: &Document) -> Position {
         let range = self.get_data().get_range();
         let node = workspace
-            .cst
+            .tree
             .root_node()
             .descendant_for_byte_range(range.end, range.end)
             .unwrap();
@@ -117,7 +117,7 @@ pub trait AstSymbol:
     fn get_lsp_range(&self, workspace: &Document) -> Range {
         let range = self.get_data().get_range();
         let node = workspace
-            .cst
+            .tree
             .root_node()
             .descendant_for_byte_range(range.start, range.end)
             .unwrap();
@@ -180,5 +180,13 @@ impl<T: AstSymbol + ?Sized> GetSymbolData for T {
 
     fn get_mut_referrers(&mut self) -> &mut Referrers {
         self.get_mut_data().get_mut_referrers()
+    }
+
+    fn get_unchecked(&self) -> bool {
+        self.get_data().get_unchecked()
+    }
+
+    fn set_unchecked(&mut self, unchecked: bool) {
+        self.get_mut_data().set_unchecked(unchecked)
     }
 }

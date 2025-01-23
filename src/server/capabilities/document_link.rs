@@ -26,7 +26,7 @@ impl Session {
         let uri = &params.text_document.uri;
         let workspace = WORKSPACES.lock();
 
-        let workspace = workspace
+        let (workspace, document) = workspace
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
@@ -35,8 +35,8 @@ impl Session {
             None => return Ok(vec![]),
         };
 
-        let root_node = workspace.document.cst.root_node();
-        let source = workspace.document.document.text.as_str();
+        let root_node = document.tree.root_node();
+        let source = document.texter.text.as_str();
 
         let mut query_cursor = tree_sitter::QueryCursor::new();
         let mut captures = query_cursor.captures(query, root_node, source.as_bytes());

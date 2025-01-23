@@ -32,7 +32,7 @@ nested_struct!(
         pub vec_or_symbol: Path,
         pub pending_symbol: Path,
         pub maybe_pending_symbol: Path,
-        pub builder_params: Path,
+        pub workspace: Path,
 
         pub queryable: Queryable {
             pub path: Path,
@@ -168,7 +168,7 @@ impl Default for Paths {
             referrers: core_ast(parse_quote!(Referrers)),
             pending_symbol: core_build(parse_quote!(PendingSymbol)),
             maybe_pending_symbol: core_build(parse_quote!(MaybePendingSymbol)),
-            builder_params: core_build(parse_quote!(MainBuilder)),
+            workspace: parse_quote!(auto_lsp::core::workspace::Workspace),
 
             queryable: Queryable {
                 path: core_build(parse_quote!(Queryable)),
@@ -215,9 +215,10 @@ impl Default for Paths {
                     sig: quote! { fn add(
                         &mut self,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
-                        params: &mut auto_lsp::core::build::MainBuilder,
+                        workspace: &mut auto_lsp::core::workspace::Workspace,
+                        document: &auto_lsp::core::document::Document,
                     ) -> Result<Option<auto_lsp::core::build::PendingSymbol>, auto_lsp::lsp_types::Diagnostic> },
-                    variant: quote! { add(capture, params) },
+                    variant: quote! { add(capture, workspace, document) },
                 },
                 get_url: Method {
                     sig: quote! { fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> },
@@ -241,56 +242,56 @@ impl Default for Paths {
             lsp_document_symbols: LspDocumentSymbols {
                 path: core_ast(parse_quote!(BuildDocumentSymbols)),
                 get_document_symbols: Method {
-                    sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::core::ast::VecOrSymbol> },
+                    sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::core::ast::VecOrSymbol> },
                     variant: quote! { get_document_symbols(doc) },
                 },
             },
             lsp_code_lens: LspCodeLens {
                 path: core_ast(parse_quote!(BuildCodeLens)),
                 build_code_lens: Method {
-                    sig: quote! { fn build_code_lens(&self, doc: &auto_lsp::core::workspace::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
+                    sig: quote! { fn build_code_lens(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
                     variant: quote! { build_code_lens(doc, acc) },
                 },
             },
             lsp_completion_items: LspCompletionItems {
                 path: core_ast(parse_quote!(BuildCompletionItems)),
                 build_completion_items: Method {
-                    sig: quote! { fn build_completion_items(&self, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>, doc: &auto_lsp::core::workspace::Document) },
+                    sig: quote! { fn build_completion_items(&self, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>, doc: &auto_lsp::core::document::Document) },
                     variant: quote! { build_completion_items(acc, doc) },
                 },
             },
             lsp_go_to_definition: LspGoToDefinition {
                 path: core_ast(parse_quote!(GetGoToDefinition)),
                 go_to_definition: Method {
-                    sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::lsp_types::GotoDefinitionResponse> },
+                    sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::lsp_types::GotoDefinitionResponse> },
                     variant: quote! { go_to_definition(doc) },
                 },
             },
             lsp_go_to_declaration: LspGoToDeclaration {
                 path: core_ast(parse_quote!(GetGoToDeclaration)),
                 go_to_declaration: Method {
-                    sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::lsp_types::request::GotoDeclarationResponse> },
+                    sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::lsp_types::request::GotoDeclarationResponse> },
                     variant: quote! { go_to_declaration(doc) },
                 },
             },
             lsp_hover_info: LspHoverInfo {
                 path: core_ast(parse_quote!(GetHover)),
                 get_hover: Method {
-                    sig: quote! { fn get_hover(&self, doc: &auto_lsp::core::workspace::Document) -> Option<auto_lsp::lsp_types::Hover> },
+                    sig: quote! { fn get_hover(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::lsp_types::Hover> },
                     variant: quote! { get_hover(doc) },
                 },
             },
             lsp_inlay_hint: LspInlayHint {
                 path: core_ast(parse_quote!(BuildInlayHints)),
                 build_inlay_hint: Method {
-                    sig: quote! { fn build_inlay_hint(&self, doc: &auto_lsp::core::workspace::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
+                    sig: quote! { fn build_inlay_hint(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
                     variant: quote! { build_inlay_hint(doc, acc) },
                 },
             },
             lsp_semantic_token: LspSemanticToken {
                 path: core_ast(parse_quote!(BuildSemanticTokens)),
                 build_semantic_tokens: Method {
-                    sig: quote! { fn build_semantic_tokens(&self, doc: &auto_lsp::core::workspace::Document, builder: &mut auto_lsp::core::semantic_tokens::SemanticTokensBuilder) },
+                    sig: quote! { fn build_semantic_tokens(&self, doc: &auto_lsp::core::document::Document, builder: &mut auto_lsp::core::semantic_tokens::SemanticTokensBuilder) },
                     variant: quote! { build_semantic_tokens(doc, builder) },
                 },
             },
@@ -304,7 +305,7 @@ impl Default for Paths {
             reference: Reference {
                 path: core_ast(parse_quote!(Reference)),
                 find: Method {
-                    sig: quote! { fn find(&self, doc: &auto_lsp::core::workspace::Document) -> Result<Option<auto_lsp::core::ast::DynSymbol>, auto_lsp::lsp_types::Diagnostic> },
+                    sig: quote! { fn find(&self, doc: &auto_lsp::core::document::Document) -> Result<Option<auto_lsp::core::ast::DynSymbol>, auto_lsp::lsp_types::Diagnostic> },
                     variant: quote! { find(doc) },
                 },
             },
@@ -353,34 +354,36 @@ impl Default for Paths {
             check: Check {
                 path: core_ast(parse_quote!(Check)),
                 check: Method {
-                    sig: quote! { fn check(&self, doc: &auto_lsp::core::workspace::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> Result<(), ()> },
+                    sig: quote! { fn check(&self, doc: &auto_lsp::core::document::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> Result<(), ()> },
                     variant: quote! { check(doc, diagnostics) },
                 },
             },
             dynamic_swap: DynamicSwap {
                 path: core_ast(parse_quote!(UpdateDynamic)),
                 swap: Method {
-                    sig: quote! { fn dyn_update<'a>(
+                    sig: quote! { fn dyn_update(
                         &mut self,
                         start: usize,
                         offset: isize,
                         parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
-                        builder_params: &'a mut auto_lsp::core::build::MainBuilder,
+                        workspace: &mut auto_lsp::core::workspace::Workspace,
+                        document: &auto_lsp::core::document::Document,
                     ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { dyn_update(start, offset, parent_check, builder_params) },
+                    variant: quote! { dyn_update(start, offset, parent_check, workspace, document) },
                 },
             },
             static_swap: StaticSwap {
                 path: core_ast(parse_quote!(UpdateStatic)),
                 swap: Method {
-                    sig: quote! { fn update<'a>(
+                    sig: quote! { fn update(
                         &mut self,
                         start: usize,
                         offset: isize,
                         parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
-                        builder_params: &'a mut auto_lsp::core::build::MainBuilder,
+                        workspace: &mut auto_lsp::core::workspace::Workspace,
+                        document: &auto_lsp::core::document::Document,
                     ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { update(start, offset, parent_check, builder_params) },
+                    variant: quote! { update(start, offset, parent_check, workspace, document) },
                 },
             },
             edit_range: EditRange {
@@ -393,8 +396,8 @@ impl Default for Paths {
             collect_references: CollectReferences {
                 path: core_ast(parse_quote!(CollectReferences)),
                 collect_references: Method {
-                    sig: quote! { fn collect_references(&self, builder_params: &mut auto_lsp::core::build::MainBuilder) },
-                    variant: quote! { collect_references(builder_params) },
+                    sig: quote! { fn collect_references(&self, workspace: &mut auto_lsp::core::workspace::Workspace) },
+                    variant: quote! { collect_references(workspace) },
                 },
             },
         }

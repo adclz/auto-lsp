@@ -19,17 +19,16 @@ impl Session {
                 CompletionTriggerKind::INVOKED => {
                     let workspace = WORKSPACES.lock();
 
-                    let workspace = workspace
+                    let (workspace, document) = workspace
                         .get(uri)
                         .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-                    let offset = workspace
-                        .document
+                    let offset = document
                         .descendant_at_position(params.text_document_position.position)
                         .unwrap()
                         .start_byte();
 
-                    let source_code = workspace.document.document.text.as_str();
+                    let source_code = document.texter.text.as_str();
                     let content_bytes = source_code.as_bytes();
 
                     // Find the start of the word at the position
@@ -57,8 +56,8 @@ impl Session {
                     let mut cursor = QueryCursor::new();
                     let mut captures = cursor.captures(
                         &query,
-                        workspace.document.cst.root_node(),
-                        workspace.document.document.text.as_bytes(),
+                        document.tree.root_node(),
+                        document.texter.text.as_bytes(),
                     );
 
                     while let Some((m, capture_index)) = captures.next() {
@@ -69,8 +68,7 @@ impl Session {
                             .iter()
                             .filter_map(|x| x.read().find_at_offset(capture.node.start_byte()))
                             .for_each(|x| {
-                                x.read()
-                                    .build_completion_items(&mut results, &workspace.document);
+                                x.read().build_completion_items(&mut results, &document);
                             });
                     }
                 }

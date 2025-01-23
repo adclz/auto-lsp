@@ -8,7 +8,7 @@ use lsp_types::{
 use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
-use crate::{semantic_tokens::SemanticTokensBuilder, workspace::Document};
+use crate::{document::Document, semantic_tokens::SemanticTokensBuilder};
 
 /// Either a single symbol or a vector of symbols
 ///
@@ -291,7 +291,7 @@ pub trait Finder {
 
 impl<T: AstSymbol> Finder for T {
     fn find_in_file(&self, doc: &Document) -> Option<DynSymbol> {
-        let source_code = &doc.document.text;
+        let source_code = &doc.texter.text;
         let pattern = match self.get_text(source_code.as_bytes()) {
             Some(a) => a,
             None => return None,

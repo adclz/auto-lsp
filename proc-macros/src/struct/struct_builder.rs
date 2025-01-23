@@ -232,7 +232,7 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
-                        self.#name.update(start, offset, parent_check.clone(), builder_params)?;
+                        self.#name.update(start, offset, parent_check.clone(), workspace, document)?;
                     }
                 },
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),
@@ -265,7 +265,7 @@ impl<'a> StructBuilder<'a> {
                 None,
                 |_, _, name, _, _| {
                     quote! {
-                        self.#name.collect_references(builder_params);
+                        self.#name.collect_references(workspace);
                     }
                 },
                 None,
@@ -327,7 +327,7 @@ impl<'a> StructBuilder<'a> {
             |_, _, name, field_type, builder| {
                 quote! {
                     
-                    if let Some(node) =  self.#name.add::<#builder>(capture, params, stringify!(#input_name), stringify!(#field_type))? {
+                    if let Some(node) =  self.#name.add::<#builder>(capture, workspace, stringify!(#input_name), stringify!(#field_type))? {
                        return Ok(Some(node))
                     };
                 }
@@ -345,7 +345,7 @@ impl<'a> StructBuilder<'a> {
         let try_from_builder = &PATHS.try_from_builder;
 
         let symbol_data = &PATHS.symbol_data;
-        let builder_params = &PATHS.builder_params;
+        let workspace = &PATHS.workspace;
         let try_downcast = &PATHS.try_downcast_trait;
         let finalize = &PATHS.finalize_trait;
 
@@ -370,12 +370,12 @@ impl<'a> StructBuilder<'a> {
                                 stringify!(#name)
                             )
                         ))?
-                        .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?, params);
+                        .try_downcast(workspace, document, stringify!(#field_type), builder_range, stringify!(#input_name))?, workspace);
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(params, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(params);
+                            .try_downcast(workspace, document, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(workspace);
                     }
             })
             .stage()
@@ -387,9 +387,9 @@ impl<'a> StructBuilder<'a> {
             impl #try_from_builder<&#input_builder_name> for #input_name {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, params: &mut #builder_params) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, workspace: &mut #workspace, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
                     use #builder_trait;
-                    let builder_range = builder.get_lsp_range(params.document);
+                    let builder_range = builder.get_lsp_range(document);
 
                     #_builder
 

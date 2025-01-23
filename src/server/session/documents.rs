@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
-use auto_lsp_core::{
-    build::MainBuilder,
-    workspace::{Document, Workspace},
-};
+use auto_lsp_core::document::Document;
+use auto_lsp_core::workspace::Workspace;
 use lsp_types::{DidChangeTextDocumentParams, Url};
 
 use crate::server::session::{lexer::get_tree_sitter_errors, Session};
@@ -42,15 +40,11 @@ impl Session {
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
         let tree_sitter = &parsers.tree_sitter;
-        let ast_parser = parsers.ast_parser;
-
-        let cst;
-        let ast;
+        let ast_parser = &parsers.ast_parser;
+        let source_code = source_code.as_bytes();
         let mut errors = vec![];
 
-        let source_code = source_code.as_bytes();
-
-        cst = tree_sitter
+        let cst = tree_sitter
             .parser
             .write()
             .parse(&source_code, None)
@@ -59,60 +53,49 @@ impl Session {
         get_tree_sitter_errors(&cst.root_node(), source_code, &mut errors);
 
         let document = Document {
-            document: text,
-            cst,
+            texter: text,
+            tree: cst,
         };
 
-        let arc_uri = Arc::new(uri.clone());
-
-        let mut unsolved_checks = vec![];
-        let mut unsolved_references = vec![];
-
-        let params = &mut MainBuilder {
-            document: &document,
-            diagnostics: &mut errors,
-            query: &tree_sitter.queries.core,
-            url: arc_uri.clone(),
-            unsolved_checks: &mut unsolved_checks,
-            unsolved_references: &mut unsolved_references,
+        let mut workspace = Workspace {
+            url: Arc::new(uri.clone()),
+            parsers,
+            diagnostics: errors,
+            unsolved_checks: vec![],
+            unsolved_references: vec![],
+            ast: None,
         };
-        let ast_build = ast_parser(params, None);
 
-        ast = match ast_build {
+        workspace.ast = match ast_parser(&mut workspace, &document, None) {
             Ok(item) => {
-                params.resolve_references();
-                params.resolve_checks();
+                workspace.resolve_references(&document);
+                workspace.resolve_checks(&document);
                 Some(item)
             }
             Err(e) => {
-                errors.push(e);
+                workspace.diagnostics.push(e);
                 None
             }
         };
 
-        if !unsolved_checks.is_empty() {
+        if !workspace.unsolved_checks.is_empty() {
             log::info!("");
-            log::warn!("Unsolved checks: {:?}", unsolved_checks.len());
+            log::warn!("Unsolved checks: {:?}", workspace.unsolved_checks.len());
         }
 
-        if !unsolved_references.is_empty() {
+        if !workspace.unsolved_references.is_empty() {
             log::info!("");
-            log::warn!("Unsolved references: {:?}", unsolved_references.len());
+            log::warn!(
+                "Unsolved references: {:?}",
+                workspace.unsolved_references.len()
+            );
         }
 
-        let mut workspaces = WORKSPACES.lock();
-        let workspace = Workspace {
-            parsers,
-            document,
-            errors,
-            unsolved_checks,
-            unsolved_references,
-            ast,
-        };
+        Self::add_comments(&workspace, &document)?;
 
-        Self::add_comments(&workspace)?;
-
-        workspaces.insert(uri.to_owned(), workspace);
+        WORKSPACES
+            .lock()
+            .insert(uri.to_owned(), (workspace, document));
 
         Ok(())
     }
@@ -133,91 +116,45 @@ impl Session {
         let uri = &params.text_document.uri;
 
         let mut workspaces = WORKSPACES.lock();
-
-        let workspace = workspaces
+        let (workspace, document) = workspaces
             .get_mut(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let extension = uri.to_file_path().unwrap();
-        let language_id = extension.extension().unwrap().to_str().unwrap();
-
-        let extension = match self.extensions.get(language_id) {
-            Some(extension) => extension,
-            None => {
-                return Err(anyhow::format_err!(
-                    "Extension {} is not registered",
-                    language_id
-                ))
-            }
-        };
-
-        let arc_uri = Arc::new(uri.clone());
-
-        let parsers = self
-            .init_options
-            .parsers
-            .get(extension.as_str())
-            .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
-
-        let tree_sitter = &parsers.tree_sitter;
-
-        let mut new_tree = WrapTree::from(&mut workspace.document.cst);
+        // Update document and tree sitter
+        let mut new_tree = WrapTree::from(&mut document.tree);
         for ch in params.content_changes {
-            workspace
-                .document
-                .document
+            document
+                .texter
                 .update(WrapChange::from(&ch).change, &mut new_tree)?;
         }
         let edits = new_tree.get_edits();
 
-        let new_tree = workspace
+        document.tree = workspace
             .parsers
             .tree_sitter
             .parser
             .write()
-            .parse(
-                workspace.document.document.text.as_bytes(),
-                Some(&workspace.document.cst),
-            )
+            .parse(document.texter.text.as_bytes(), Some(&document.tree))
             .ok_or(anyhow::format_err!(
-                "Tree sitter failed to edit cst of document {}",
+                "Tree sitter failed to edit tree of document {}",
                 uri
             ))?;
 
-        workspace.document.cst = new_tree;
+        // Clear diagnostics
+        workspace.diagnostics.clear();
 
-        workspace.errors.clear();
+        // Get new diagnostics from tree sitter
         get_tree_sitter_errors(
-            &workspace.document.cst.root_node(),
-            workspace.document.document.text.as_bytes(),
-            &mut workspace.errors,
+            &document.tree.root_node(),
+            document.texter.text.as_bytes(),
+            &mut workspace.diagnostics,
         );
 
-        let mut builder_params = MainBuilder {
-            document: &workspace.document,
-            query: &tree_sitter.queries.core,
-            url: arc_uri.clone(),
-            diagnostics: &mut workspace.errors,
-            unsolved_checks: &mut workspace.unsolved_checks,
-            unsolved_references: &mut workspace.unsolved_references,
-        };
-        if let Some(ast) = &mut workspace.ast {
-            builder_params
-                .swap_ast(ast, &edits, &parsers.ast_parser)
-                .resolve_references()
-                .resolve_checks();
-        } else {
-            let ast_parser = &workspace.parsers.ast_parser;
-            let ast_build = ast_parser(&mut builder_params, None);
-
-            workspace.ast = match ast_build {
-                Ok(item) => Some(item),
-                Err(e) => {
-                    workspace.errors.push(e);
-                    None
-                }
-            };
-        }
+        // Update AST
+        workspace
+            .swap_ast(&edits, &document)
+            .resolve_references(&document)
+            .resolve_checks(&document);
 
         if !workspace.unsolved_checks.is_empty() {
             log::info!("");
@@ -232,7 +169,7 @@ impl Session {
             );
         }
 
-        Self::add_comments(&workspace)?;
+        Self::add_comments(&workspace, &document)?;
 
         Ok(())
     }

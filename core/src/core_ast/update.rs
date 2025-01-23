@@ -16,7 +16,8 @@ use crate::core_build::buildable::Buildable;
 use crate::core_build::buildable::Queryable;
 use crate::core_build::buildable::StaticBuildable;
 use crate::core_build::downcast::TryFromBuilder;
-use crate::core_build::main_builder::MainBuilder;
+use crate::document::Document;
+use crate::workspace::Workspace;
 
 use super::core::AstSymbol;
 use super::data::*;
@@ -26,31 +27,31 @@ use super::symbol::*;
 ///
 /// This trait is used when a section of the AST is being deleted.
 /// It ensures that any references to symbols within the deleted section are collected
-/// and stored in [`MainBuilder`] for further processing.
+/// and stored in [`Workspace`] for further processing.
 pub trait CollectReferences {
-    fn collect_references(&self, params: &mut MainBuilder);
+    fn collect_references(&self, workspace: &mut Workspace);
 }
 
 impl<T: AstSymbol> CollectReferences for Symbol<T> {
-    fn collect_references(&self, params: &mut MainBuilder) {
+    fn collect_references(&self, workspace: &mut Workspace) {
         if let Some(target) = &self.read().get_data().target {
-            params.unsolved_references.push(target.clone());
+            workspace.add_unsolved_reference(&target.to_dyn().unwrap());
         }
     }
 }
 
 impl<T: AstSymbol> CollectReferences for Option<Symbol<T>> {
-    fn collect_references(&self, params: &mut MainBuilder) {
+    fn collect_references(&self, workspace: &mut Workspace) {
         if let Some(symbol) = self.as_ref() {
-            symbol.collect_references(params);
+            symbol.collect_references(workspace);
         }
     }
 }
 
 impl<T: AstSymbol> CollectReferences for Vec<Symbol<T>> {
-    fn collect_references(&self, params: &mut MainBuilder) {
+    fn collect_references(&self, workspace: &mut Workspace) {
         for symbol in self.iter() {
-            symbol.collect_references(params);
+            symbol.collect_references(workspace);
         }
     }
 }
@@ -172,12 +173,13 @@ where
     /// The method returns a [ControlFlow] to indicate the result:
     /// - [ControlFlow::Break]: The symbol was successfully updated, with an optional diagnostic.
     /// - [ControlFlow::Continue]: The symbol did not require updating.
-    fn update<'a>(
+    fn update(
         &mut self,
         start: usize,
         offset: isize,
         parent_check: Option<WeakSymbol>,
-        builder_params: &'a mut MainBuilder,
+        workspace: &mut Workspace,
+        document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()>;
 }
 
@@ -189,12 +191,13 @@ where
         + StaticBuildable<T, Y>
         + CollectReferences,
 {
-    fn update<'a>(
+    fn update(
         &mut self,
         start: usize,
         offset: isize,
         parent_check: Option<WeakSymbol>,
-        builder_params: &'a mut MainBuilder,
+        workspace: &mut Workspace,
+        document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         let read = self.read();
         match read.is_inside_offset(start) {
@@ -207,7 +210,7 @@ where
                 // Check if no lower level symbols could be updated.
 
                 self.write()
-                    .dyn_update(start, offset, check, builder_params)?;
+                    .dyn_update(start, offset, check, workspace, document)?;
                 let parent = self.read().get_parent();
                 let range = self.read().get_range();
                 log::info!("");
@@ -216,20 +219,20 @@ where
 
                 // Create the symbol
                 let symbol = Symbol::new_and_check(
-                    match Y::static_build(builder_params, Some(range)) {
+                    match Y::static_build(workspace, document, Some(range)) {
                         Ok(symbol) => symbol,
                         Err(err) => return ControlFlow::Break(Err(err)),
                     },
-                    builder_params,
+                    workspace,
                 );
                 // One of the parent must be checked
                 if let Some(parent_check) = parent_check {
-                    builder_params.unsolved_checks.push(parent_check);
+                    workspace.add_unsolved_check(&parent_check.to_dyn().unwrap());
                 }
 
                 // Collect all references that are about to be dropped
 
-                self.collect_references(builder_params);
+                self.collect_references(workspace);
                 if let Some(parent) = parent {
                     symbol.write().set_parent(parent);
                 }
@@ -252,14 +255,15 @@ where
         + CollectReferences,
 {
     fn update<'a>(
-        &mut self,
+        &'a mut self,
         start: usize,
         offset: isize,
         parent_check: Option<WeakSymbol>,
-        builder_params: &'a mut MainBuilder,
+        workspace: &'a mut Workspace,
+        document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         match self {
-            Some(symbol) => symbol.update(start, offset, parent_check, builder_params),
+            Some(symbol) => symbol.update(start, offset, parent_check, workspace, document),
             None => ControlFlow::Continue(()),
         }
     }
@@ -278,10 +282,11 @@ where
         start: usize,
         offset: isize,
         parent_check: Option<WeakSymbol>,
-        builder_params: &'a mut MainBuilder,
+        workspace: &'a mut Workspace,
+        document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         for symbol in self.iter_mut() {
-            match symbol.update(start, offset, parent_check.clone(), builder_params) {
+            match symbol.update(start, offset, parent_check.clone(), workspace, document) {
                 ControlFlow::Break(result) => return ControlFlow::Break(result),
                 ControlFlow::Continue(()) => continue,
             }
@@ -292,11 +297,12 @@ where
 
 /// This trait is similar to [UpdateStatic], but is used for trait objects ([DynSymbol])
 pub trait UpdateDynamic {
-    fn dyn_update<'a>(
+    fn dyn_update(
         &mut self,
         start: usize,
         offset: isize,
         parent_check: Option<WeakSymbol>,
-        builder_params: &'a mut MainBuilder,
+        workspace: &mut Workspace,
+        document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()>;
 }

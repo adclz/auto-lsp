@@ -1,10 +1,9 @@
 use lsp_types::Diagnostic;
 
-use crate::{builder_error, core_ast::core::AstSymbol};
+use crate::{builder_error, core_ast::core::AstSymbol, document::Document, workspace::Workspace};
 
 use super::{
     buildable::Buildable,
-    main_builder::MainBuilder,
     symbol::{MaybePendingSymbol, PendingSymbol},
 };
 
@@ -13,19 +12,31 @@ where
     T: Sized,
 {
     type Error;
-    fn try_from_builder(value: T, params: &mut MainBuilder) -> Result<Self, Self::Error>;
+    fn try_from_builder(
+        value: T,
+        workspace: &mut Workspace,
+        document: &Document,
+    ) -> Result<Self, Self::Error>;
 }
 pub trait TryIntoBuilder<T>: Sized {
     type Error;
-    fn try_into_builder(self, params: &mut MainBuilder) -> Result<T, Self::Error>;
+    fn try_into_builder(
+        self,
+        workspace: &mut Workspace,
+        document: &Document,
+    ) -> Result<T, Self::Error>;
 }
 impl<T, U> TryIntoBuilder<U> for T
 where
     U: TryFromBuilder<T>,
 {
     type Error = U::Error;
-    fn try_into_builder(self, params: &mut MainBuilder) -> Result<U, Self::Error> {
-        U::try_from_builder(self, params)
+    fn try_into_builder(
+        self,
+        workspace: &mut Workspace,
+        document: &Document,
+    ) -> Result<U, Self::Error> {
+        U::try_from_builder(self, workspace, document)
     }
 }
 
@@ -38,7 +49,8 @@ pub trait TryDownCast<
 
     fn try_downcast(
         &self,
-        check: &mut MainBuilder,
+        workspace: &mut Workspace,
+        document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
@@ -53,7 +65,8 @@ where
     type Output = Y;
     fn try_downcast(
         &self,
-        check: &mut MainBuilder,
+        workspace: &mut Workspace,
+        document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
@@ -67,10 +80,11 @@ where
                     "Invalid {:?} for {:?}: received: {:?}",
                     field_name,
                     input_name,
-                    check.query.capture_names()[self.get_query_index()]
+                    workspace.parsers.tree_sitter.queries.core.capture_names()
+                        [self.get_query_index()]
                 )
             ))?
-            .try_into_builder(check)
+            .try_into_builder(workspace, document)
     }
 }
 
@@ -83,14 +97,15 @@ where
 
     fn try_downcast(
         &self,
-        check: &mut MainBuilder,
+        workspace: &mut Workspace,
+        document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
     ) -> Result<Self::Output, Diagnostic> {
         self.as_ref().map_or(Ok(None), |pending| {
             pending
-                .try_downcast(check, field_name, field_range, input_name)
+                .try_downcast(workspace, document, field_name, field_range, input_name)
                 .map(Some)
         })
     }
@@ -106,13 +121,14 @@ where
 
     fn try_downcast(
         &self,
-        check: &mut MainBuilder,
+        workspace: &mut Workspace,
+        document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
     ) -> Result<Self::Output, Diagnostic> {
         self.iter()
-            .map(|item| item.try_downcast(check, field_name, field_range, input_name))
+            .map(|item| item.try_downcast(workspace, document, field_name, field_range, input_name))
             .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()
     }
 }

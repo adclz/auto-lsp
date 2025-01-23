@@ -405,23 +405,23 @@ impl<'a> EnumBuilder<'a> {
         let try_from_builder = &PATHS.try_from_builder;
         let try_into_builder = &PATHS.try_into_builder;
 
-        let params = &PATHS.builder_params;
+        let workspace = &PATHS.workspace;
 
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, params: &mut #params) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, workspace: &mut #workspace, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
                     use #try_into_builder;
 
                     #(
                         if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(variant.try_into_builder(params)?));
+                            return Ok(Self::#variant_names(variant.try_into_builder(workspace, document)?));
                         };
                     )*
                     Err(auto_lsp::core::builder_error!(
                         auto_lsp,
-                        builder.unique_field.get_rc().borrow().get_lsp_range(params.document),
+                        builder.unique_field.get_rc().borrow().get_lsp_range(document),
                         format!("Failed to downcast builder to enum: {}", stringify!(#name))
                     ))
                 }

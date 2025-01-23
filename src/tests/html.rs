@@ -1,6 +1,6 @@
 use crate::core::ast::{AstSymbol, Symbol};
-use crate::core::build::MainBuilder;
-use crate::core::workspace::{Document, Workspace};
+use crate::core::document::Document;
+use crate::core::workspace::Workspace;
 use crate::{choice, seq};
 use lsp_types::Url;
 use std::sync::{Arc, LazyLock};
@@ -62,7 +62,7 @@ pub struct Script {}
 #[seq(query_name = "style_tag", kind(symbol()))]
 pub struct Style {}
 
-fn create_html_workspace(uri: Url, source_code: String) -> Workspace {
+fn create_html_workspace(uri: Url, source_code: String) -> (Workspace, Document) {
     let parse = PARSERS.get("html").unwrap();
 
     let tree = parse
@@ -73,39 +73,29 @@ fn create_html_workspace(uri: Url, source_code: String) -> Workspace {
         .unwrap();
 
     let document = Document {
-        document: Text::new(source_code.into()),
-        cst: tree,
+        texter: Text::new(source_code.into()),
+        tree,
     };
 
-    let mut diagnostics = vec![];
-    let mut unsolved_checks = vec![];
-    let mut unsolved_references = vec![];
-
-    let mut params = MainBuilder {
-        query: &parse.tree_sitter.queries.core,
-        document: &document,
-        url: Arc::new(uri),
-        diagnostics: &mut diagnostics,
-        unsolved_checks: &mut unsolved_checks,
-        unsolved_references: &mut unsolved_references,
+    let mut workspace = Workspace {
+        url: Arc::new(uri.clone()),
+        parsers: parse,
+        diagnostics: vec![],
+        ast: None,
+        unsolved_checks: vec![],
+        unsolved_references: vec![],
     };
 
     let ast_parser = parse.ast_parser;
-    let ast = ast_parser(&mut params, None).unwrap();
-
-    let workspace = Workspace {
-        parsers: parse,
-        document,
-        errors: diagnostics,
-        ast: Some(ast),
-        unsolved_checks,
-        unsolved_references,
-    };
-
+    let ast = ast_parser(&mut workspace, &document, None).unwrap();
     workspace
+        .resolve_checks(&document)
+        .resolve_references(&document);
+    workspace.ast = Some(ast);
+    (workspace, document)
 }
 
-static TEST_FILE: LazyLock<Workspace> = LazyLock::new(|| {
+static TEST_FILE: LazyLock<(Workspace, Document)> = LazyLock::new(|| {
     create_html_workspace(
         Url::parse("file:///test.html").unwrap(),
         r#"<!DOCTYPE html>
@@ -122,7 +112,7 @@ static TEST_FILE: LazyLock<Workspace> = LazyLock::new(|| {
 
 #[test]
 fn check_ast() {
-    let workspace = &TEST_FILE;
+    let (workspace, document) = &*TEST_FILE;
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();
 
@@ -132,7 +122,7 @@ fn check_ast() {
     let html = ast.downcast_ref::<HtmlDocument>().unwrap();
     let tags = &html.tags;
 
-    // Should contains Script, Style, and Element
+    // Should contain Script, Style, and Element
 
     assert_eq!(tags.len(), 3);
     assert!(matches!(*tags[0].read(), Node::Script(_)));
@@ -147,7 +137,7 @@ fn check_ast() {
         let tag_name = element.tag_name.read();
         assert_eq!(
             tag_name
-                .get_text(workspace.document.document.text.as_bytes())
+                .get_text(document.texter.text.as_bytes())
                 .unwrap(),
             "div"
         );
@@ -164,7 +154,7 @@ fn check_ast() {
                 .read()
                 .tag_name
                 .read()
-                .get_text(workspace.document.document.text.as_bytes())
+                .get_text(document.texter.text.as_bytes())
                 .unwrap(),
             "span"
         );
@@ -176,7 +166,7 @@ fn check_ast() {
                 .read()
                 .tag_name
                 .read()
-                .get_text(workspace.document.document.text.as_bytes())
+                .get_text(document.texter.text.as_bytes())
                 .unwrap(),
             "br"
         );

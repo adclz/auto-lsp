@@ -16,7 +16,7 @@ impl Session {
         let uri = params.text_document.uri;
         let workspace = WORKSPACES.lock();
 
-        let workspace = workspace
+        let (workspace, _) = workspace
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
         Ok(DocumentDiagnosticReportResult::Report(
@@ -24,7 +24,7 @@ impl Session {
                 related_documents: None,
                 full_document_diagnostic_report: FullDocumentDiagnosticReport {
                     result_id: None,
-                    items: workspace.errors.clone(),
+                    items: workspace.diagnostics.clone(),
                 },
             }),
         ))

@@ -85,7 +85,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                             #sig {
                                 let read = #name.read();
 
-                                let name = read.get_text(doc.document.text.as_bytes())?.to_string();
+                                let name = read.get_text(doc.texter.text.as_bytes())?.to_string();
                                 if name.is_empty() {
                                     return None
                                 }

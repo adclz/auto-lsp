@@ -14,13 +14,12 @@ impl Session {
         let uri = &params.text_document_position.text_document.uri;
         let workspace = WORKSPACES.lock();
 
-        let workspace = workspace
+        let (workspace, document) = workspace
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
         let position = params.text_document_position.position;
-        let doc = &workspace.document;
 
-        let offset = doc.offset_at(position).unwrap();
+        let offset = document.offset_at(position).unwrap();
         let item = workspace
             .ast
             .iter()
@@ -35,7 +34,7 @@ impl Session {
                             let reference = reference.read();
                             Some(Location::new(
                                 (*reference.get_url()).clone(),
-                                reference.get_lsp_range(doc),
+                                reference.get_lsp_range(document),
                             ))
                         })
                         .collect::<Vec<_>>(),

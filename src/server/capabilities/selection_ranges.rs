@@ -13,18 +13,18 @@ impl Session {
         let uri = &params.text_document.uri;
         let workspace = WORKSPACES.lock();
 
-        let workspace = workspace
+        let (_, document) = workspace
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
-        let root_node = workspace.document.cst.root_node();
+        let root_node = document.tree.root_node();
 
-        let mut query_cursor = workspace.document.cst.walk();
+        let mut query_cursor = document.tree.walk();
 
         let mut results = vec![];
 
         for position in params.positions.iter() {
             let mut stack: Vec<tree_sitter::Node> = vec![];
-            let offset = workspace.document.offset_at(*position).unwrap();
+            let offset = document.offset_at(*position).unwrap();
 
             let mut node = root_node;
             loop {
@@ -45,7 +45,7 @@ impl Session {
 
             let mut parent: Option<SelectionRange> = None;
             for _node in stack {
-                let range = match workspace.document.range_at(offset) {
+                let range = match document.range_at(offset) {
                     Some(range) => range,
                     None => continue,
                 };
