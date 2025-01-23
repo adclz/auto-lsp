@@ -50,6 +50,7 @@ parking_lot = "0.12.3"
 log = "0.4.22"
 texter = "0.1.2"
 rayon = "1.10"
+anyhow = "1.0.91"
 
 [features]
 default = ["assertions"]

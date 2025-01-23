@@ -8,7 +8,6 @@ use lsp_server::{Connection, IoThreads};
 use lsp_types::Url;
 use parking_lot::Mutex;
 
-pub mod comment;
 pub mod documents;
 pub mod fs;
 pub mod init;

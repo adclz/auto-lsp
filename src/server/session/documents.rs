@@ -91,7 +91,7 @@ impl Session {
             );
         }
 
-        Self::add_comments(&workspace, &document)?;
+        workspace.set_comments(&document)?;
 
         WORKSPACES
             .lock()
@@ -169,7 +169,7 @@ impl Session {
             );
         }
 
-        Self::add_comments(&workspace, &document)?;
+        workspace.set_comments(&document)?;
 
         Ok(())
     }

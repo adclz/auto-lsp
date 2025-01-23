@@ -7,7 +7,6 @@ use lsp_types::Url;
 use std::sync::Arc;
 use texter::core::text::Text;
 
-use crate::server::Session;
 use crate::{self as auto_lsp, define_semantic_token_types};
 
 use crate::configure_parsers;
@@ -377,7 +376,7 @@ pub fn create_python_workspace(uri: Url, source_code: String) -> (Workspace, Doc
 
     workspace.resolve_checks(&document).resolve_references(&document);
 
-    Session::add_comments(&workspace, &document).unwrap();
+    workspace.set_comments(&document).unwrap();
 
     (workspace, document)
 }
