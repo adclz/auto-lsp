@@ -10,11 +10,11 @@ use parking_lot::Mutex;
 
 pub mod comment;
 pub mod documents;
+pub mod fs;
 pub mod init;
 pub mod lexer;
 pub mod main_loop;
 pub mod senders;
-pub mod workspace;
 
 /// List of workspaces and documents in the current session.
 pub(crate) static WORKSPACES: LazyLock<Mutex<HashMap<Url, (Workspace, Document)>>> =

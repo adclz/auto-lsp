@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
-use crate::server::session::{workspace::get_extension, Session, WORKSPACES};
+use crate::server::session::{fs::get_extension, Session, WORKSPACES};
 
 impl Session {
     /// Handle the watched files change notification.
