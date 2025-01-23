@@ -1,11 +1,7 @@
 use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Symbol, VecOrSymbol};
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
 use crate::{choice, seq};
 use auto_lsp_core::ast::{BuildCodeLens, Check, GetHover, GetSymbolData, Scope};
-use lsp_types::Url;
-use std::sync::Arc;
-use texter::core::text::Text;
 
 use crate::{self as auto_lsp, define_semantic_token_types};
 
@@ -344,39 +340,4 @@ impl CheckPrimitive for Str {
     fn check_value(&self, value: &str) -> bool {
         value.starts_with("\"") && value.ends_with("\"")
     }
-}
-
-pub fn create_python_workspace(uri: Url, source_code: String) -> (Workspace, Document) {
-    let parse = PARSERS.get("python").unwrap();
-
-    let tree = parse
-        .tree_sitter
-        .parser
-        .write()
-        .parse(source_code.as_bytes(), None)
-        .unwrap();
-
-    let document = Document {
-        texter: Text::new(source_code.into()),
-        tree,
-    };
-
-    let mut workspace = Workspace {
-        url: Arc::new(uri.clone()),
-        parsers: parse,
-        diagnostics: vec![],
-        ast: None,
-        unsolved_checks: vec![],
-        unsolved_references: vec![],
-    };
-
-    let ast_parser = parse.ast_parser;
-    let ast = ast_parser(&mut workspace, &document, None).unwrap();
-    workspace.ast = Some(ast);
-
-    workspace.resolve_checks(&document).resolve_references(&document);
-
-    workspace.set_comments(&document).unwrap();
-
-    (workspace, document)
 }

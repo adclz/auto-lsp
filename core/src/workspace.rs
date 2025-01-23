@@ -12,6 +12,7 @@ use crate::{
 use lsp_types::{Diagnostic, Url};
 use parking_lot::RwLock;
 use streaming_iterator::StreamingIterator;
+use texter::core::text::Text;
 use tree_sitter::{InputEdit, Language, Parser, Query};
 
 pub struct Queries {
@@ -43,6 +44,62 @@ pub struct Workspace {
 }
 
 impl Workspace {
+    /// Creates a new workspace and document
+    ///
+    /// This will parse the source code with the tree sitter parser,
+    /// and finally build the AST with the core [`tree_sitter::Query`] and root symbol.
+    ///
+    /// # Arguments
+    ///
+    /// * `parsers` - Parsers for the language (create with the `configure_parsers!` macro)
+    /// * `uri` - The uri of the document
+    /// * `source_code` - The source code of the document
+    ///
+    ///  # Returns
+    ///
+    /// A tuple containing the workspace and the document
+    pub fn new(
+        parsers: &'static Parsers,
+        uri: Url,
+        source_code: String,
+    ) -> anyhow::Result<(Self, Document)> {
+        let tree = parsers
+            .tree_sitter
+            .parser
+            .write()
+            .parse(source_code.as_bytes(), None)
+            .ok_or_else(|| anyhow::format_err!("Tree-sitter failed to parse source code"))?;
+
+        let document = Document {
+            texter: Text::new(source_code.into()),
+            tree,
+        };
+
+        let mut workspace = Workspace {
+            url: Arc::new(uri.clone()),
+            parsers: &parsers,
+            diagnostics: vec![],
+            ast: None,
+            unsolved_checks: vec![],
+            unsolved_references: vec![],
+        };
+
+        let ast_parser = parsers.ast_parser;
+        workspace.ast = match ast_parser(&mut workspace, &document, None) {
+            Ok(ast) => Some(ast),
+            Err(e) => {
+                workspace.diagnostics.push(e);
+                None
+            }
+        };
+        workspace
+            .resolve_checks(&document)
+            .resolve_references(&document)
+            .set_comments(&document)?;
+
+        Ok((workspace, document))
+    }
+
     pub fn set_comments(&self, document: &Document) -> anyhow::Result<()> {
         let comments_query = match self.parsers.tree_sitter.queries.comments {
             Some(ref query) => query,

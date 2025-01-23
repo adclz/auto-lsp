@@ -3,8 +3,7 @@ use crate::core::document::Document;
 use crate::core::workspace::Workspace;
 use crate::{choice, seq};
 use lsp_types::Url;
-use std::sync::{Arc, LazyLock};
-use texter::core::text::Text;
+use std::sync::LazyLock;
 
 use crate as auto_lsp;
 
@@ -62,41 +61,9 @@ pub struct Script {}
 #[seq(query_name = "style_tag", kind(symbol()))]
 pub struct Style {}
 
-fn create_html_workspace(uri: Url, source_code: String) -> (Workspace, Document) {
-    let parse = PARSERS.get("html").unwrap();
-
-    let tree = parse
-        .tree_sitter
-        .parser
-        .write()
-        .parse(source_code.as_bytes(), None)
-        .unwrap();
-
-    let document = Document {
-        texter: Text::new(source_code.into()),
-        tree,
-    };
-
-    let mut workspace = Workspace {
-        url: Arc::new(uri.clone()),
-        parsers: parse,
-        diagnostics: vec![],
-        ast: None,
-        unsolved_checks: vec![],
-        unsolved_references: vec![],
-    };
-
-    let ast_parser = parse.ast_parser;
-    let ast = ast_parser(&mut workspace, &document, None).unwrap();
-    workspace
-        .resolve_checks(&document)
-        .resolve_references(&document);
-    workspace.ast = Some(ast);
-    (workspace, document)
-}
-
 static TEST_FILE: LazyLock<(Workspace, Document)> = LazyLock::new(|| {
-    create_html_workspace(
+    Workspace::new(
+        &PARSERS.get("html").unwrap(),
         Url::parse("file:///test.html").unwrap(),
         r#"<!DOCTYPE html>
 <script></script>
@@ -108,6 +75,7 @@ static TEST_FILE: LazyLock<(Workspace, Document)> = LazyLock::new(|| {
 "#
         .into(),
     )
+    .unwrap()
 });
 
 #[test]
@@ -136,9 +104,7 @@ fn check_ast() {
     if let Node::Element(ref element) = *tag_3 {
         let tag_name = element.tag_name.read();
         assert_eq!(
-            tag_name
-                .get_text(document.texter.text.as_bytes())
-                .unwrap(),
+            tag_name.get_text(document.texter.text.as_bytes()).unwrap(),
             "div"
         );
 

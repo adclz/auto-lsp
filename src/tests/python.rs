@@ -1,7 +1,7 @@
 use crate::core::ast::{AstSymbol, BuildInlayHints, GetSymbolData, IsComment, VecOrSymbol};
-use crate::core::workspace::Workspace;
 use auto_lsp_core::ast::{BuildCodeLens, GetHover};
 use auto_lsp_core::document::Document;
+use auto_lsp_core::workspace::Workspace;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
@@ -9,7 +9,8 @@ use crate::python_workspace::*;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
-    create_python_workspace(
+    Workspace::new(
+        &PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -20,21 +21,24 @@ def bar():
 "#
         .into(),
     )
+    .unwrap()
 }
 
 #[fixture]
 fn foo_bar_with_type_error() -> (Workspace, Document) {
-    create_python_workspace(
-        Url::parse("file:///test_type_error.py").unwrap(),
+    Workspace::new(
+        &PARSERS.get("python").unwrap(),
+        Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
-def foo(param1, param2: int = "string"):
-    pass
-
-def bar():
-    pass  
-"#
+        def foo(param1, param2: int = "string"):
+            pass
+        
+        def bar():
+            pass  
+        "#
         .into(),
     )
+    .unwrap()
 }
 
 #[rstest]
