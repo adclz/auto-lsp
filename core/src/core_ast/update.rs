@@ -14,8 +14,8 @@ use lsp_types::Diagnostic;
 
 use crate::core_build::buildable::Buildable;
 use crate::core_build::buildable::Queryable;
-use crate::core_build::buildable::StaticBuildable;
 use crate::core_build::downcast::TryFromBuilder;
+use crate::core_build::stack_builder::InvokeStackBuilder;
 use crate::document::Document;
 use crate::workspace::Workspace;
 
@@ -188,7 +188,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuildable<T, Y>
+        + InvokeStackBuilder<T, Y>
         + CollectReferences,
 {
     fn update(
@@ -219,7 +219,7 @@ where
 
                 // Create the symbol
                 let symbol = Symbol::new_and_check(
-                    match Y::static_build(workspace, document, Some(range)) {
+                    match Y::create_symbol(workspace, document, Some(range)) {
                         Ok(symbol) => symbol,
                         Err(err) => return ControlFlow::Break(Err(err)),
                     },
@@ -251,7 +251,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuildable<T, Y>
+        + InvokeStackBuilder<T, Y>
         + CollectReferences,
 {
     fn update<'a>(
@@ -274,7 +274,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + StaticBuildable<T, Y>
+        + InvokeStackBuilder<T, Y>
         + CollectReferences,
 {
     fn update<'a>(

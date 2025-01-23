@@ -1,9 +1,12 @@
 use std::{ops::ControlFlow, sync::Arc};
 
 use crate::{
-    core_ast::data::ReferrersTrait,
-    core_ast::symbol::{DynSymbol, WeakSymbol},
-    core_ast::update::UpdateRange,
+    core_ast::{
+        data::ReferrersTrait,
+        symbol::{DynSymbol, WeakSymbol},
+        update::UpdateRange,
+    },
+    core_build::stack_builder::InvokeStackBuilderFn,
     document::Document,
 };
 use lsp_types::{Diagnostic, Url};
@@ -24,15 +27,9 @@ pub struct TreeSitter {
     pub queries: Queries,
 }
 
-pub type StaticBuildableFn = fn(
-    &mut Workspace,
-    &Document,
-    Option<std::ops::Range<usize>>,
-) -> Result<DynSymbol, lsp_types::Diagnostic>;
-
 pub struct Parsers {
     pub tree_sitter: TreeSitter,
-    pub ast_parser: StaticBuildableFn,
+    pub ast_parser: InvokeStackBuilderFn,
 }
 
 pub struct Workspace {

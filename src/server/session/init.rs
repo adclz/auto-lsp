@@ -334,11 +334,11 @@ macro_rules! configure_parsers {
                 map.insert(
                     $($extension, $crate::core::workspace::Parsers {
                         tree_sitter: $crate::server::create_parser($language, $node_types, $core, $comment, $fold, $highlights),
-                        ast_parser: |params: &mut $crate::core::workspace::Workspace, document: &$crate::core::document::Document, range: Option<std::ops::Range<usize>>| {
-                            use $crate::core::build::StaticBuildable;
+                        ast_parser: |workspace: &mut $crate::core::workspace::Workspace, document: & $crate::core::document::Document, range: Option<std::ops::Range<usize>>| {
+                            use $crate::core::build::InvokeStackBuilder;
 
                             Ok::<$crate::core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::core::ast::Symbol::new_and_check($root::static_build(params, document, range)?, params).to_dyn(),
+                                $crate::core::ast::Symbol::new_and_check($root::create_symbol(workspace, document, range)?, workspace).to_dyn(),
                             )
                         },
                     }),*

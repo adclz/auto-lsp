@@ -10,8 +10,6 @@ use crate::{
 };
 
 use super::{
-    downcast::TryFromBuilder,
-    stack_builder::StackBuilder,
     symbol::{MaybePendingSymbol, PendingSymbol},
     utils::tree_sitter_range_to_lsp_range,
 };
@@ -122,34 +120,6 @@ pub trait Buildable: Downcast {
 }
 
 impl_downcast!(Buildable);
-
-pub trait StaticBuildable<
-    T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
->
-{
-    fn static_build(
-        workspace: &mut Workspace,
-        document: &Document,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Y, Diagnostic>;
-}
-
-impl<T, Y> StaticBuildable<T, Y> for Y
-where
-    T: Buildable + Queryable,
-    Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
-{
-    fn static_build(
-        workspace: &mut Workspace,
-        document: &Document,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Y, Diagnostic> {
-        StackBuilder::<T>::new(workspace, document)
-            .build(&range)
-            .to_static_symbol(&range)
-    }
-}
 
 /// List of queries associated with a struct or enum.
 ///

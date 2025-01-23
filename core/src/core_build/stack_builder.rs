@@ -9,11 +9,43 @@ use super::buildable::*;
 use super::downcast::*;
 use super::symbol::*;
 use super::utils::{intersecting_ranges, tree_sitter_range_to_lsp_range};
+use crate::ast::DynSymbol;
 use crate::document::Document;
 use crate::workspace::Workspace;
 use crate::{builder_error, builder_warning, core_ast::core::AstSymbol};
 
-pub(crate) struct StackBuilder<'a, T>
+pub trait InvokeStackBuilder<
+    T: Buildable + Queryable,
+    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+>
+{
+    fn create_symbol(
+        workspace: &mut Workspace,
+        document: &Document,
+        range: Option<std::ops::Range<usize>>,
+    ) -> Result<Y, Diagnostic>;
+}
+
+impl<T, Y> InvokeStackBuilder<T, Y> for Y
+where
+    T: Buildable + Queryable,
+    Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
+{
+    fn create_symbol(
+        workspace: &mut Workspace,
+        document: &Document,
+        range: Option<std::ops::Range<usize>>,
+    ) -> Result<Y, Diagnostic> {
+        StackBuilder::<T>::new(workspace, document).create_symbol(&range)
+    }
+}
+pub type InvokeStackBuilderFn = fn(
+    &mut Workspace,
+    &Document,
+    Option<std::ops::Range<usize>>,
+) -> Result<DynSymbol, lsp_types::Diagnostic>;
+
+pub struct StackBuilder<'a, T>
 where
     T: Buildable + Queryable,
 {
@@ -40,7 +72,26 @@ where
         }
     }
 
-    pub fn build(&mut self, range: &Option<std::ops::Range<usize>>) -> &mut Self {
+    pub fn create_symbol<Y>(
+        &mut self,
+        range: &Option<std::ops::Range<usize>>,
+    ) -> Result<Y, Diagnostic>
+    where
+        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
+    {
+        self.build(range);
+        let result = self.get_root_node(range)?;
+        let result = result.get_rc().borrow();
+        result
+            .downcast_ref::<T>()
+            .ok_or(builder_error!(
+                result.get_lsp_range(&self.document),
+                format!("Invalid cast {:?}", T::QUERY_NAMES[0])
+            ))?
+            .try_into_builder(self.workspace, self.document)
+    }
+
+    fn build(&mut self, range: &Option<std::ops::Range<usize>>) -> &mut Self {
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
@@ -264,23 +315,5 @@ where
                 )),
             },
         }
-    }
-
-    pub fn to_static_symbol<Y>(
-        &mut self,
-        range: &Option<std::ops::Range<usize>>,
-    ) -> Result<Y, Diagnostic>
-    where
-        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
-    {
-        let result = self.get_root_node(range)?;
-        let result = result.get_rc().borrow();
-        result
-            .downcast_ref::<T>()
-            .ok_or(builder_error!(
-                result.get_lsp_range(&self.document),
-                format!("Invalid cast {:?}", T::QUERY_NAMES[0])
-            ))?
-            .try_into_builder(self.workspace, self.document)
     }
 }

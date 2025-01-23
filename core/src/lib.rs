@@ -17,6 +17,8 @@ pub mod ast {
 pub mod build {
     pub use crate::core_build::buildable::*;
     pub use crate::core_build::downcast::*;
+    #[doc(hidden)]
+    pub use crate::core_build::stack_builder::InvokeStackBuilder;
     pub use crate::core_build::symbol::*;
 }
 
