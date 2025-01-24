@@ -22,8 +22,9 @@ pub mod build {
 }
 
 /// Semantic tokens builder
-pub mod semantic_tokens;
+pub mod semantic_tokens_builder;
 
+/// Document handling
 pub mod document;
-/// Workspace and document handling
+/// Workspace handling
 pub mod workspace;

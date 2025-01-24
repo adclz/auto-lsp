@@ -78,11 +78,17 @@ pub mod core {
 
     pub use auto_lsp_core::ast;
     pub use auto_lsp_core::document;
-    pub use auto_lsp_core::semantic_tokens;
+    pub use auto_lsp_core::semantic_tokens_builder;
     pub use auto_lsp_core::workspace;
     #[doc(hidden)]
     pub use auto_lsp_core::{builder_error, builder_warning};
 }
+
+/// Configuration utilities
+#[doc(hidden)]
+pub mod configure;
+
+// Re-export of [`seq`] and [`choice`] macros
 pub use auto_lsp_macros::*;
 
 #[doc(hidden)]

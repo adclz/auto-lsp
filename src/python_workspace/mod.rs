@@ -1,11 +1,7 @@
-use crate::core::ast::{AstSymbol, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Symbol, VecOrSymbol};
-use crate::core::document::Document;
-use crate::{choice, seq};
-use auto_lsp_core::ast::{BuildCodeLens, Check, GetHover, GetSymbolData, Scope};
-
-use crate::{self as auto_lsp, define_semantic_token_types};
-
-use crate::configure_parsers;
+use crate::{self as auto_lsp};
+use auto_lsp::core::ast::{AstSymbol, BuildCodeLens, Check, GetHover, GetSymbolData, Scope, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, VecOrSymbol};
+use auto_lsp::core::document::Document;
+use auto_lsp::{configure_parsers, define_semantic_token_types, choice, seq};
 
 static CORE_QUERY: &'static str = "
 (module) @module
@@ -103,7 +99,7 @@ impl BuildDocumentSymbols for Module {
 }
 
 impl BuildSemanticTokens for Module {
-    fn build_semantic_tokens(&self, doc: &Document, builder: &mut auto_lsp_core::semantic_tokens::SemanticTokensBuilder) {
+    fn build_semantic_tokens(&self, doc: &Document, builder: &mut auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder) {
         for function in &self.functions {
             function.read().build_semantic_tokens(doc, builder);
         }

@@ -5,7 +5,7 @@
 //! Configuring the server involves having:
 //! - The tree_sitter language and node_types paths (which should be present in any rust bindings).
 //! - The core [`tree_sitter::Query`] to build the AST.
-//! - A root symbol created with either [`crate::macros::seq`] or [`crate::macros::choice`] macro.
+//! - A root symbol created with either [`crate::seq`] or [`crate::choice`] macro.
 //!
 //! ## Minimal example
 //! The first step is to configure parsers using the [crate::configure_parsers] macro.

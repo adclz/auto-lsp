@@ -8,7 +8,7 @@ use lsp_types::{
 use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
-use crate::{document::Document, semantic_tokens::SemanticTokensBuilder};
+use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
 
 /// Either a single symbol or a vector of symbols
 ///

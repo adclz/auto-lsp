@@ -1,4 +1,4 @@
-use auto_lsp_core::semantic_tokens::SemanticTokensBuilder;
+use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
 
 use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 
@@ -48,45 +48,4 @@ impl Session {
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }
-}
-
-#[macro_export]
-macro_rules! define_semantic_token_types {
-    (
-        standard {
-            $($ts_name: expr => $standard:ident),*$(,)?
-        }
-
-    ) => {
-        $(pub const $standard: auto_lsp::lsp_types::SemanticTokenType = auto_lsp::lsp_types::SemanticTokenType::$standard;)*
-
-        pub const SUPPORTED_TYPES: &[auto_lsp::lsp_types::SemanticTokenType] = &[
-            $(auto_lsp::lsp_types::SemanticTokenType::$standard,)*
-        ];
-
-        pub static TOKEN_TYPES: phf::OrderedMap<&'static str, auto_lsp::lsp_types::SemanticTokenType> = phf::phf_ordered_map! {
-            $( $ts_name => auto_lsp::lsp_types::SemanticTokenType::$standard,)*
-        };
-    };
-}
-
-#[macro_export]
-macro_rules! define_semantic_token_modifiers {
-    (
-        standard {
-            $($ts_name: expr => $standard:ident),*$(,)?
-        }
-
-    ) => {
-
-        $(pub const $standard: auto_lsp::lsp_types::SemanticTokenModifier = auto_lsp::lsp_types::SemanticTokenModifier::$standard;)*
-
-        pub const SUPPORTED_MODIFIERS: &[auto_lsp::lsp_types::SemanticTokenModifier] = &[
-            $(auto_lsp::lsp_types::SemanticTokenModifier::$standard,)*
-        ];
-
-        pub static TOKEN_MODIFIERS: phf::OrderedMap<&'static str, auto_lsp::lsp_types::SemanticTokenModifier> = phf::phf_ordered_map! {
-            $( $ts_name => auto_lsp::lsp_types::SemanticTokenModifier::$standard,)*
-        };
-    };
 }

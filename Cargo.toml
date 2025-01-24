@@ -86,6 +86,7 @@ tree-sitter-html = "0.23.2"
 rstest = "0.24.0"
 tempfile = "3.15.0"
 static_assertions = "1.1.0"
+impls = "1.0.3"
 
 [[bench]]
 name = "main"

@@ -25,7 +25,7 @@ pub trait InvokeStackBuilder<
     /// Creates a symbol.
     ///
     /// This method internally initializes a stack builder to build the AST and derive a symbol
-    /// of type [`Y`].
+    /// of type Y.
     fn create_symbol(
         workspace: &mut Workspace,
         document: &Document,
