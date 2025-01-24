@@ -1,5 +1,5 @@
 [workspace]
-git_release_enable = false
+git_release_enable = true
 pr_labels = ["release"]
 semver_check = true
 
