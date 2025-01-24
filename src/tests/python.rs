@@ -9,7 +9,7 @@ use crate::python_workspace::*;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
-    Workspace::new(
+    Workspace::from_utf8(
         &PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -26,7 +26,7 @@ def bar():
 
 #[fixture]
 fn foo_bar_with_type_error() -> (Workspace, Document) {
-    Workspace::new(
+    Workspace::from_utf8(
         &PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment

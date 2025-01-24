@@ -7,14 +7,33 @@ use crate::{ast::UpdateRange, document::Document};
 use super::Workspace;
 
 impl Workspace {
-    pub fn create_ast(
+    /// Parses a document and updates the AST.
+    ///
+    /// This method assumes the document has already been updated and parsed by the tree-sitter parser.
+    /// It performs the following steps:
+    ///
+    /// 1. Clears existing diagnostics.
+    /// 2. Extracts syntax diagnostics from tree-sitter.
+    /// 3. If no AST exists, it creates one from scratch.
+    /// 4. If edit ranges are provided, updates the AST incrementally.
+    pub fn parse(
         &mut self,
         edit_ranges: Option<&Vec<(InputEdit, bool)>>,
         document: &Document,
     ) -> &mut Self {
+        // Clean diagnostics
+        self.diagnostics.clear();
+
+        // Get new diagnostics from tree sitter
+        Workspace::get_tree_sitter_errors(
+            &document.tree.root_node(),
+            document.texter.text.as_bytes(),
+            &mut self.diagnostics,
+        );
+
         let ast_parser = self.parsers.ast_parser;
 
-        // If no root node, create a new one and return
+        // Create a new AST if none exists and return
         let mut root = match self.ast.clone() {
             Some(root) => root,
             None => {
@@ -35,7 +54,7 @@ impl Workspace {
             None => return self,
         };
 
-        // All ranges have to be updated
+        // Apply edit ranges to update AST nodes
         for (edit, _) in edit_ranges {
             let start_byte = edit.start_byte;
             let old_end_byte = edit.old_end_byte;
@@ -49,8 +68,7 @@ impl Workspace {
             root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
         }
 
-        // Filter out intersecting edits for ast edit
-        // Since the containing node is already updated, child nodes do not need to be built twice.
+        // Filter intersecting edits and update AST incrementally
         for (edit, is_ws) in filter_intersecting_edits(edit_ranges).iter() {
             let start_byte = edit.start_byte;
             let old_end_byte = edit.old_end_byte;
@@ -66,6 +84,7 @@ impl Workspace {
                 .root_node()
                 .descendant_for_byte_range(edit.start_byte, edit.new_end_byte);
 
+            // Skip invalid nodes
             if let Some(node) = node {
                 if let Some(node) = node.parent() {
                     if node.is_error() {
@@ -81,17 +100,20 @@ impl Workspace {
                 }
             }
 
+            // Skip whitespace-only edits
             if *is_ws {
                 log::info!("");
                 log::info!("Whitespace edit, only update ranges");
                 continue;
             }
 
+            // todo!
             let parent_check = match root.read().must_check() {
                 true => Some(root.to_weak()),
                 false => None,
             };
 
+            // Update AST incrementally
             let result = root.write().dyn_update(
                 start_byte,
                 (new_end_byte - old_end_byte) as isize,
@@ -124,7 +146,7 @@ impl Workspace {
     }
 }
 
-/// Filter out intersecting edits and keep the biggest one
+/// Filters intersecting edits and keeps only the largest non-overlapping ones.
 fn filter_intersecting_edits(params: &Vec<(InputEdit, bool)>) -> Vec<(InputEdit, bool)> {
     if params.is_empty() {
         return vec![];
@@ -138,7 +160,7 @@ fn filter_intersecting_edits(params: &Vec<(InputEdit, bool)>) -> Vec<(InputEdit,
     let mut sorted_edits = params.clone();
     sorted_edits.sort_by_key(|(edit, _)| edit.start_byte + edit.new_end_byte);
 
-    // Filter out intersecting edits
+    // Filter out overlapping edits
     let mut filtered = Vec::new();
     let mut last_end = sorted_edits[0].0.new_end_byte;
 

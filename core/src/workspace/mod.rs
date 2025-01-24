@@ -10,9 +10,10 @@ use parking_lot::RwLock;
 use texter::core::text::Text;
 use tree_sitter::{Language, Parser, Query};
 
-pub mod ast;
 pub mod checks;
 pub mod comments;
+pub mod lexer;
+pub mod parse;
 
 /// Parsers available in a [`Workspace`].
 ///
@@ -70,7 +71,7 @@ pub struct Workspace {
 }
 
 impl Workspace {
-    /// Creates a new workspace and initializes the document.
+    /// Creates a new [`Workspace`] and [`Document`].
     ///
     /// This function:
     /// 1. Parses the source code using the [`TreeSitter`] parser.
@@ -80,11 +81,11 @@ impl Workspace {
     /// # Arguments
     /// * `parsers` - Language parsers (created using the `configure_parsers!` macro).
     /// * `uri` - The URI of the document to process.
-    /// * `source_code` - The source code of the document as a string.
+    /// * `source_code` - The source code of the document as a UTF-8 string.
     ///
     /// # Returns
     /// A tuple containing the newly created [`Workspace`] and [`Document`].
-    pub fn new(
+    pub fn from_utf8(
         parsers: &'static Parsers,
         uri: Url,
         source_code: String,
@@ -114,17 +115,60 @@ impl Workspace {
         };
 
         // Build the AST using the core query and AST parser function.
-        let ast_parser = parsers.ast_parser;
-        workspace.ast = match ast_parser(&mut workspace, &document, None) {
-            Ok(ast) => Some(ast),
-            Err(e) => {
-                workspace.diagnostics.push(e);
-                None
-            }
+        workspace
+            .parse(None, &document)
+            // Resolve checks, references, and comments in the document.
+            .resolve_checks(&document)
+            .resolve_references(&document)
+            .set_comments(&document)?;
+
+        Ok((workspace, document))
+    }
+
+    /// Creates a new [`Workspace`] and [`Document`].
+    ///
+    /// This function:
+    /// 1. Parses the source code using the [`TreeSitter`] parser.
+    /// 2. Builds the AST using the core query and AST parser.
+    /// 3. Resolves checks, references, and comments in the document.
+    ///
+    /// # Arguments
+    /// * `parsers` - Language parsers (created using the `configure_parsers!` macro).
+    /// * `uri` - The URI of the document to process.
+    /// * `texter` - [`texter::core::text::Text`].
+    ///
+    /// # Returns
+    /// A tuple containing the newly created [`Workspace`] and [`Document`].
+    pub fn from_texter(
+        parsers: &'static Parsers,
+        uri: Url,
+        texter: texter::core::text::Text,
+    ) -> anyhow::Result<(Self, Document)> {
+        // Parse the source code into a syntax tree.
+        let tree = parsers
+            .tree_sitter
+            .parser
+            .write()
+            .parse(texter.text.as_bytes(), None)
+            .ok_or_else(|| anyhow::format_err!("Tree-sitter failed to parse source code"))?;
+
+        // Initialize the document with the source code and syntax tree.
+        let document = Document { texter, tree };
+
+        // Set up the workspace with basic properties.
+        let mut workspace = Workspace {
+            url: Arc::new(uri.clone()),
+            parsers,
+            diagnostics: vec![],
+            ast: None,
+            unsolved_checks: vec![],
+            unsolved_references: vec![],
         };
 
-        // Resolve checks, references, and comments in the document.
+        // Build the AST using the core query and AST parser function.
         workspace
+            .parse(None, &document)
+            // Resolve checks, references, and comments in the document.
             .resolve_checks(&document)
             .resolve_references(&document)
             .set_comments(&document)?;

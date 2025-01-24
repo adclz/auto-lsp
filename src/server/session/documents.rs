@@ -1,10 +1,7 @@
-use std::sync::Arc;
-
-use auto_lsp_core::document::Document;
 use auto_lsp_core::workspace::Workspace;
 use lsp_types::{DidChangeTextDocumentParams, Url};
 
-use crate::server::session::{lexer::get_tree_sitter_errors, Session};
+use crate::server::session::Session;
 use crate::server::texter_impl::change::WrapChange;
 use crate::server::texter_impl::updateable::WrapTree;
 
@@ -39,33 +36,7 @@ impl Session {
             .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
-        let tree_sitter = &parsers.tree_sitter;
-        let source_code = source_code.as_bytes();
-        let mut errors = vec![];
-
-        let cst = tree_sitter
-            .parser
-            .write()
-            .parse(&source_code, None)
-            .unwrap();
-
-        get_tree_sitter_errors(&cst.root_node(), source_code, &mut errors);
-
-        let document = Document {
-            texter: text,
-            tree: cst,
-        };
-
-        let mut workspace = Workspace {
-            url: Arc::new(uri.clone()),
-            parsers,
-            diagnostics: errors,
-            unsolved_checks: vec![],
-            unsolved_references: vec![],
-            ast: None,
-        };
-
-        workspace.create_ast(None, &document);
+        let (workspace, document) = Workspace::from_texter(parsers, uri.clone(), text)?;
 
         if !workspace.unsolved_checks.is_empty() {
             log::info!("");
@@ -129,19 +100,9 @@ impl Session {
                 uri
             ))?;
 
-        // Clear diagnostics
-        workspace.diagnostics.clear();
-
-        // Get new diagnostics from tree sitter
-        get_tree_sitter_errors(
-            &document.tree.root_node(),
-            document.texter.text.as_bytes(),
-            &mut workspace.diagnostics,
-        );
-
         // Update AST
         workspace
-            .create_ast(Some(&edits), &document)
+            .parse(Some(&edits), &document)
             .resolve_references(&document)
             .resolve_checks(&document);
 

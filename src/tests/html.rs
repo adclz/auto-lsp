@@ -62,7 +62,7 @@ pub struct Script {}
 pub struct Style {}
 
 static TEST_FILE: LazyLock<(Workspace, Document)> = LazyLock::new(|| {
-    Workspace::new(
+    Workspace::from_utf8(
         &PARSERS.get("html").unwrap(),
         Url::parse("file:///test.html").unwrap(),
         r#"<!DOCTYPE html>

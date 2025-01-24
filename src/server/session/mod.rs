@@ -11,7 +11,6 @@ use parking_lot::Mutex;
 pub mod documents;
 pub mod fs;
 pub mod init;
-pub mod lexer;
 pub mod main_loop;
 pub mod senders;
 
