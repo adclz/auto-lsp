@@ -1,6 +1,6 @@
 use crate::{self as auto_lsp};
 use auto_lsp::{choice, seq};
-use auto_lsp_core::ast::{AstSymbol, Symbol};
+use auto_lsp_core::ast::AstSymbol;
 use auto_lsp_core::build::{
     Buildable, CheckQueryable, InvokeStackBuilder, Queryable, TryFromBuilder,
 };

@@ -1,11 +1,10 @@
-use crate::core::ast::{AstSymbol, Symbol};
+use crate::core::ast::AstSymbol;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
+use crate::{self as auto_lsp};
 use crate::{choice, seq};
 use lsp_types::Url;
 use std::sync::LazyLock;
-
-use crate as auto_lsp;
 
 use crate::configure_parsers;
 

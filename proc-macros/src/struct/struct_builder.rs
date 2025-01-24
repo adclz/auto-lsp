@@ -348,6 +348,7 @@ impl<'a> StructBuilder<'a> {
         let workspace = &PATHS.workspace;
         let try_downcast = &PATHS.try_downcast_trait;
         let finalize = &PATHS.finalize_trait;
+        let symbol = &PATHS.symbol;
 
         let _builder = FieldBuilder::default()
             .add(quote! {
@@ -357,7 +358,7 @@ impl<'a> StructBuilder<'a> {
             .add_iter(&self.fields,
                 |ty, _, name, field_type, _| match ty  {
                 FieldType::Normal  => quote! {
-                    let #name = Symbol::new_and_check(builder
+                    let #name = #symbol::new_and_check(builder
                         .#name
                         .as_ref()
                         .ok_or(auto_lsp::core::builder_error!(

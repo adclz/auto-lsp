@@ -1,7 +1,7 @@
 use crate::core::ast::{AstSymbol, BuildInlayHints, GetSymbolData, IsComment, VecOrSymbol};
-use auto_lsp_core::ast::{BuildCodeLens, GetHover};
-use auto_lsp_core::document::Document;
-use auto_lsp_core::workspace::Workspace;
+use crate::core::ast::{BuildCodeLens, GetHover};
+use crate::core::document::Document;
+use crate::core::workspace::Workspace;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
@@ -229,7 +229,7 @@ fn check_semantic_tokens(foo_bar: (Workspace, Document)) {
     let ast = foo_bar.0.ast.as_ref().unwrap();
     let document = &foo_bar.1;
 
-    let mut builder = auto_lsp_core::semantic_tokens::SemanticTokensBuilder::new("".into());
+    let mut builder = auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder::new("".into());
     ast.read().build_semantic_tokens(&document, &mut builder);
 
     let tokens = builder.build().data;
