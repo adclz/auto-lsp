@@ -22,7 +22,7 @@ impl Session {
             .with_regex;
 
         let re = &with_regex.regex;
-        let to_document_lnik = &with_regex.to_document_link;
+        let to_document_link = &with_regex.to_document_link;
         let uri = &params.text_document.uri;
         let workspace = WORKSPACES.lock();
 
@@ -48,7 +48,7 @@ impl Session {
             let comment_text = capture.node.utf8_text(source.as_bytes()).unwrap();
 
             for _match in re.find_iter(comment_text) {
-                to_document_lnik(_match, &mut results);
+                to_document_link(_match, &capture.node, &document, &uri, &mut results);
             }
         }
 
