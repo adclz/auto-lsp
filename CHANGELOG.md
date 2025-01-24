@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.1.0...auto-lsp-v0.2.0) - 2025-01-24
+
+### Added
+
+- update document link fn signature
+- add Workspace::new constructor
+- add type checking
+- add rstest for improved test structure and parameter validation in Python tests
+- enhance Python workspace AST
+
+### Fixed
+
+- proc macro hygiene
+
+### Other
+
+- move semantic tokens and parsers macros to configuration module
+- enable git release in configuration
+- add traits tests for proc macros
+- add proc_macros tests
+- add multiple constructors for Workspace and move lexer to core crate
+- enhance Workspace struct
+- integrate comment handling into Workspace and remove Session::add_comments
+- rename workspace module to fs
+- replace StaticBuildable with InvokeStackBuilder in core_ast and core_build modules
+- update workspace and document handling, remove MainBuilder struct
+- improve handling of file extensions and fs operations
+- re-export proc macros at root of main crate
+- reorganize proc-macro modules and update field handling
+- proc macro hygiene with StaticUpdate import
+- update extension README
+- add README for WASM Language Server example and update build script
+- update README for crates.io
+
 ## [0.1.0](https://github.com/adclz/auto-lsp/releases/tag/auto-lsp-v0.1.0) - 2025-01-20
 
 ### Added

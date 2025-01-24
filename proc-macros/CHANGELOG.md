@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.0...auto-lsp-macros-v0.1.1) - 2025-01-24
+
+### Added
+
+- add type checking
+
+### Fixed
+
+- proc macro hygiene
+
+### Other
+
+- move semantic tokens and parsers macros to configuration module
+- update workspace and document handling, remove MainBuilder struct
+- core_ast/update.rs module
+- rename accessor methods to reference methods for consistency
+- documentation for proc-macros
+- rename fields_builder and variants_builder modules
+- reorganize proc-macro modules and update field handling
+- proc macro hygiene with StaticUpdate import
+- improve error messages for invalid field inputs with expected and received values
+
 ## [0.1.0](https://github.com/adclz/auto-lsp/releases/tag/auto-lsp-macros-v0.1.0) - 2025-01-20
 
 ### Added
