@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.1.0...auto-lsp-core-v0.2.0) - 2025-01-24
+
+### Added
+
+- add Workspace::new constructor
+
+### Fixed
+
+- multi-line edits
+
+### Other
+
+- move semantic tokens and parsers macros to configuration module
+- add multiple constructors for Workspace and move lexer to core crate
+- enhance Workspace struct
+- integrate comment handling into Workspace and remove Session::add_comments
+- add documentation for StackBuilder
+- replace StaticBuildable with InvokeStackBuilder in core_ast and core_build modules
+- update workspace and document handling, remove MainBuilder struct
+- core_ast/update.rs module
+- rename accessor methods to reference methods for consistency
+- improve error messages for invalid field inputs with expected and received values
+
 ## [0.1.0](https://github.com/adclz/auto-lsp/releases/tag/auto-lsp-core-v0.1.0) - 2025-01-20
 
 ### Added
