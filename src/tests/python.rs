@@ -344,8 +344,8 @@ fn foo_with_type_error() -> (Workspace, Document) {
     .unwrap()
 }
 
-use crate::server::texter_impl::change::WrapChange;
-use crate::server::texter_impl::updateable::WrapTree;
+use crate::core::document::texter_impl::change::WrapChange;
+use crate::core::document::texter_impl::updateable::WrapTree;
 
 #[rstest]
 fn non_redundant_type_error(mut foo_with_type_error: (Workspace, Document)) {

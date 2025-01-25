@@ -1,6 +1,8 @@
 use texter::core::text::Text;
 use tree_sitter::{Point, Tree};
 
+pub mod texter_impl;
+
 pub struct Document {
     pub texter: Text,
     pub tree: Tree,

@@ -41,7 +41,7 @@ impl WrapTree<'_> {
     /// Returns the edits made to the tree since the last call to `get_edits`.
     ///
     /// This function consumes the `WrapTree` and returns the edits.
-    pub(crate) fn get_edits(&mut self) -> Vec<(InputEdit, bool)> {
+    pub fn get_edits(&mut self) -> Vec<(InputEdit, bool)> {
         self.edits.take().unwrap_or_default()
     }
 

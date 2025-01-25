@@ -1,9 +1,10 @@
+use auto_lsp_core::document::texter_impl::change::WrapChange;
+use auto_lsp_core::document::texter_impl::updateable::WrapTree;
 use auto_lsp_core::workspace::Workspace;
+
 use lsp_types::{DidChangeTextDocumentParams, Url};
 
 use crate::server::session::Session;
-use crate::server::texter_impl::change::WrapChange;
-use crate::server::texter_impl::updateable::WrapTree;
 
 use super::WORKSPACES;
 
