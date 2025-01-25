@@ -86,10 +86,6 @@ impl DynSymbol {
     pub(crate) fn to_weak(&self) -> WeakSymbol {
         WeakSymbol::new(self)
     }
-
-    pub(crate) fn swap(&mut self, other: &mut Self) {
-        std::mem::swap(&mut self.0, &mut other.0);
-    }
 }
 
 /// Generic Thread-safe wrapper around a [Weak] reference to an [AstSymbol] using [Weak] and [parking_lot::RwLock]

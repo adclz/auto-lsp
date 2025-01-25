@@ -34,7 +34,7 @@ impl Workspace {
         let ast_parser = self.parsers.ast_parser;
 
         // Create a new AST if none exists and return
-        let mut root = match self.ast.clone() {
+        let root = match self.ast.clone() {
             Some(root) => root,
             None => {
                 self.ast = match ast_parser(self, &document, None) {
@@ -125,7 +125,6 @@ impl Workspace {
                 continue;
             }
 
-            // todo!
             let parent_check = match root.read().must_check() && !root.read().has_check_pending() {
                 true => Some(root.to_weak()),
                 false => None,
@@ -150,13 +149,18 @@ impl Workspace {
                         log::info!("No incremental update available, root node will be reparsed");
                         log::info!("");
                     }
-                    let mut ast_builder = ast_parser(self, document, None);
+                    // clean checks, since we are going to reparse the root node
+                    self.unsolved_checks.clear();
+                    self.unsolved_references.clear();
+
+                    let ast_builder = ast_parser(self, document, None);
                     match ast_builder {
-                        Ok(ref mut new_root) => {
-                            root.swap(new_root);
+                        Ok(new_root) => {
+                            self.ast = Some(new_root);
                         }
                         Err(e) => {
                             self.diagnostics.push(e);
+                            self.ast = None;
                         }
                     }
                 }
