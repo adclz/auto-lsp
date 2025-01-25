@@ -213,9 +213,12 @@ where
                     .dyn_update(start, offset, check, workspace, document)?;
                 let parent = self.read().get_parent();
                 let range = self.read().get_range();
-                log::info!("");
-                log::info!("Incremental update at {:?}", range);
-                log::info!("");
+                #[cfg(feature = "log")]
+                {
+                    log::info!("");
+                    log::info!("Incremental update at {:?}", range);
+                    log::info!("");
+                }
 
                 // Create the symbol
                 let symbol = Symbol::new_and_check(

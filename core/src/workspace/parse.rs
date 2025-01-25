@@ -44,10 +44,13 @@ impl Workspace {
                         None
                     }
                 };
-                return self
-                    .set_comments(document)
+                self.set_comments(document)
                     .resolve_checks(document)
                     .resolve_references(document);
+                #[cfg(feature = "log")]
+                self.log_unsolved();
+
+                return self;
             }
         };
 
@@ -94,22 +97,31 @@ impl Workspace {
             if let Some(node) = node {
                 if let Some(node) = node.parent() {
                     if node.is_error() {
-                        log::warn!("");
-                        log::warn!("Node has an invalid syntax, aborting incremental update");
+                        #[cfg(feature = "log")]
+                        {
+                            log::warn!("");
+                            log::warn!("Node has an invalid syntax, aborting incremental update");
+                        }
                         continue;
                     }
                 }
                 if node.is_extra() {
-                    log::info!("");
-                    log::info!("Node is extra, only update ranges");
+                    #[cfg(feature = "log")]
+                    {
+                        log::info!("");
+                        log::info!("Node is extra, only update ranges");
+                    }
                     continue;
                 }
             }
 
             // Skip whitespace-only edits
             if *is_ws {
-                log::info!("");
-                log::info!("Whitespace edit, only update ranges");
+                #[cfg(feature = "log")]
+                {
+                    log::info!("");
+                    log::info!("Whitespace edit, only update ranges");
+                }
                 continue;
             }
 
@@ -132,9 +144,12 @@ impl Workspace {
                     self.diagnostics.push(e);
                 }
                 ControlFlow::Continue(()) => {
-                    log::info!("");
-                    log::info!("No incremental update available, root node will be reparsed");
-                    log::info!("");
+                    #[cfg(feature = "log")]
+                    {
+                        log::info!("");
+                        log::info!("No incremental update available, root node will be reparsed");
+                        log::info!("");
+                    }
                     let mut ast_builder = ast_parser(self, document, None);
                     match ast_builder {
                         Ok(ref mut new_root) => {
@@ -150,7 +165,28 @@ impl Workspace {
         }
         self.set_comments(document)
             .resolve_checks(document)
-            .resolve_references(document)
+            .resolve_references(document);
+
+        #[cfg(feature = "log")]
+        self.log_unsolved();
+
+        return self;
+    }
+
+    #[cfg(feature = "log")]
+    fn log_unsolved(&self) -> &Self {
+        {
+            if !self.unsolved_checks.is_empty() {
+                log::info!("");
+                log::warn!("Unsolved checks: {:?}", self.unsolved_checks.len());
+            }
+
+            if !self.unsolved_references.is_empty() {
+                log::info!("");
+                log::warn!("Unsolved references: {:?}", self.unsolved_references.len());
+            }
+            self
+        }
     }
 }
 

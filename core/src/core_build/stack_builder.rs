@@ -193,20 +193,23 @@ where
             &capture,
         );
 
-        let node_char_start = tree_sitter_range_to_lsp_range(&capture.node.range())
-            .start
-            .character as usize;
+        #[cfg(feature = "log")]
+        {
+            let node_char_start = tree_sitter_range_to_lsp_range(&capture.node.range())
+                .start
+                .character as usize;
 
-        log::debug!(
-            "{}├──{:?} [root]",
-            " ".repeat(node_char_start as usize),
-            self.workspace
-                .parsers
-                .tree_sitter
-                .queries
-                .core
-                .capture_names()[capture.index as usize]
-        );
+            log::debug!(
+                "{}├──{:?} [root]",
+                " ".repeat(node_char_start as usize),
+                self.workspace
+                    .parsers
+                    .tree_sitter
+                    .queries
+                    .core
+                    .capture_names()[capture.index as usize]
+            );
+        }
 
         match node.take() {
             Some(builder) => {
@@ -252,60 +255,66 @@ where
                             .capture_names()[capture.index as usize],
                     )
                 ));
-                let parent_char_start = parent
-                    .get_rc()
-                    .borrow()
-                    .get_lsp_range(&self.document)
-                    .start
-                    .character as usize;
+                #[cfg(feature = "log")]
+                {
+                    let parent_char_start = parent
+                        .get_rc()
+                        .borrow()
+                        .get_lsp_range(&self.document)
+                        .start
+                        .character as usize;
 
-                let node_char_start = capture.node.start_position().column;
+                    let node_char_start = capture.node.start_position().column;
 
-                log::warn!(
-                    " {}└──{}{:?} [unknown]",
-                    " ".repeat(parent_char_start as usize),
-                    "─".repeat(
-                        (node_char_start)
-                            .checked_sub(parent_char_start + 3)
-                            .or(Some(0))
-                            .unwrap(),
-                    ),
-                    self.workspace
-                        .parsers
-                        .tree_sitter
-                        .queries
-                        .core
-                        .capture_names()[capture.index as usize],
-                );
+                    log::warn!(
+                        " {}└──{}{:?} [unknown]",
+                        " ".repeat(parent_char_start as usize),
+                        "─".repeat(
+                            (node_char_start)
+                                .checked_sub(parent_char_start + 3)
+                                .or(Some(0))
+                                .unwrap(),
+                        ),
+                        self.workspace
+                            .parsers
+                            .tree_sitter
+                            .queries
+                            .core
+                            .capture_names()[capture.index as usize],
+                    );
+                }
             }
             Ok(Some(node)) => {
                 self.stack.push(parent.clone());
                 self.stack.push(node.clone());
-                let parent_char_start = parent
-                    .get_rc()
-                    .borrow()
-                    .get_lsp_range(&self.document)
-                    .start
-                    .character as usize;
+                #[cfg(feature = "log")]
+                {
+                    let parent_char_start = parent
+                        .get_rc()
+                        .borrow()
+                        .get_lsp_range(&self.document)
+                        .start
+                        .character as usize;
 
-                let node_char_start = capture.node.start_position().column;
+                    let node_char_start = capture.node.start_position().column;
 
-                log::debug!(
-                    "{}└──{}{:?}",
-                    " ".repeat(parent_char_start as usize),
-                    "─".repeat(
-                        (node_char_start)
-                            .checked_sub(parent_char_start + 3)
-                            .or(Some(0))
-                            .unwrap(),
-                    ),
-                    self.workspace
-                        .parsers
-                        .tree_sitter
-                        .queries
-                        .core
-                        .capture_names()[capture.index as usize],
-                );
+                    log::debug!(
+                        "{}└──{}{:?}",
+                        " ".repeat(parent_char_start as usize),
+                        "─".repeat(
+                            (node_char_start)
+                                .checked_sub(parent_char_start + 3)
+                                .or(Some(0))
+                                .unwrap(),
+                        ),
+                        self.workspace
+                            .parsers
+                            .tree_sitter
+                            .queries
+                            .core
+                            .capture_names()[capture.index as usize],
+                    );
+                }
             }
         };
     }

@@ -37,19 +37,6 @@ impl Session {
 
         let (workspace, document) = Workspace::from_texter(parsers, uri.clone(), text)?;
 
-        if !workspace.unsolved_checks.is_empty() {
-            log::info!("");
-            log::warn!("Unsolved checks: {:?}", workspace.unsolved_checks.len());
-        }
-
-        if !workspace.unsolved_references.is_empty() {
-            log::info!("");
-            log::warn!(
-                "Unsolved references: {:?}",
-                workspace.unsolved_references.len()
-            );
-        }
-
         WORKSPACES
             .lock()
             .insert(uri.to_owned(), (workspace, document));
@@ -84,20 +71,6 @@ impl Session {
 
         // Update AST
         workspace.parse(Some(&edits), &document);
-
-        if !workspace.unsolved_checks.is_empty() {
-            log::info!("");
-            log::warn!("Unsolved checks: {:?}", workspace.unsolved_checks.len());
-        }
-
-        if !workspace.unsolved_references.is_empty() {
-            log::info!("");
-            log::warn!(
-                "Unsolved references: {:?}",
-                workspace.unsolved_references.len()
-            );
-        }
-
         Ok(())
     }
 }

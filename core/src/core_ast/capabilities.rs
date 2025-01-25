@@ -306,6 +306,7 @@ impl<T: AstSymbol> Finder for T {
                 let area = match source_code.as_str().get(range[0]..range[1]) {
                     Some(a) => a,
                     None => {
+                        #[cfg(feature = "log")]
                         log::warn!("Invalid document range: {:?}", range);
                         continue;
                     }

@@ -56,7 +56,7 @@ anyhow = "1.0.91"
 default = ["assertions"]
 assertions = ["auto-lsp-core/assertions", "auto-lsp-macros/assertions"]
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
-log = []
+log = ["auto-lsp-core/log"]
 lsp_server = [
     "dep:serde",
     "dep:serde_json",
