@@ -145,6 +145,7 @@ pub struct Body {
 
 #[choice]
 enum Statement {
+    Function(Function),
     Assignment(Assignment),
 }
 
