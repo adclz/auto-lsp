@@ -4,7 +4,7 @@ use crate::core::workspace::Workspace;
 use crate::{self as auto_lsp};
 use crate::{choice, seq};
 use lsp_types::Url;
-use std::sync::LazyLock;
+use rstest::{fixture, rstest};
 
 use crate::configure_parsers;
 
@@ -60,26 +60,28 @@ pub struct Script {}
 #[seq(query_name = "style_tag", kind(symbol()))]
 pub struct Style {}
 
-static TEST_FILE: LazyLock<(Workspace, Document)> = LazyLock::new(|| {
+#[fixture]
+fn sample_file() -> (Workspace, Document) {
     Workspace::from_utf8(
         &PARSERS.get("html").unwrap(),
-        Url::parse("file:///test.html").unwrap(),
+        Url::parse("file:///sample_file.py").unwrap(),
         r#"<!DOCTYPE html>
 <script></script>
 <style></style>
 <div>
 	<span> </span>
     <br/>
-</div>
-"#
-        .into(),
+</div>"#
+            .into(),
     )
     .unwrap()
-});
+}
 
-#[test]
-fn check_ast() {
-    let (workspace, document) = &*TEST_FILE;
+#[rstest]
+fn check_ast(sample_file: (Workspace, Document)) {
+    let workspace = sample_file.0;
+    let document = sample_file.1;
+
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();
 
@@ -138,4 +140,138 @@ fn check_ast() {
     } else {
         panic!("Expected Element node");
     }
+}
+
+#[fixture]
+fn divs() -> (Workspace, Document) {
+    Workspace::from_utf8(
+        &PARSERS.get("html").unwrap(),
+        Url::parse("file:///sample_file.py").unwrap(),
+        r#"<div> </div>"#.into(),
+    )
+    .unwrap()
+}
+
+#[rstest]
+fn insert_whitespace(divs: (Workspace, Document)) {
+    let workspace = divs.0;
+    let mut document = divs.1;
+
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+        }),
+        range_length: Some(1),
+        text: " ".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits.len(), 1);
+    assert!(edits[0].1);
+}
+
+#[rstest]
+fn insert_newline(divs: (Workspace, Document)) {
+    let workspace = divs.0;
+    let mut document = divs.1;
+
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+        }),
+        range_length: Some(1),
+        text: "\n".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits.len(), 1);
+    assert!(edits[0].1);
+}
+
+#[rstest]
+fn insert_tabulation(divs: (Workspace, Document)) {
+    let workspace = divs.0;
+    let mut document = divs.1;
+
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+        }),
+        range_length: Some(1),
+        text: "\t".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits.len(), 1);
+    assert!(edits[0].1);
+}
+
+#[rstest]
+fn delete_whitespace(divs: (Workspace, Document)) {
+    let workspace = divs.0;
+    let mut document = divs.1;
+
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 5,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 6,
+            },
+        }),
+        range_length: Some(1),
+        text: "".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits.len(), 1);
+    assert!(edits[0].1);
 }
