@@ -68,7 +68,10 @@ impl Workspace {
                 continue;
             }
 
-            root.edit_range(start_byte, (new_end_byte - old_end_byte) as isize);
+            root.edit_range(
+                start_byte,
+                (new_end_byte.wrapping_sub(old_end_byte)) as isize,
+            );
         }
 
         // Filter intersecting edits and update AST incrementally
@@ -111,7 +114,7 @@ impl Workspace {
             }
 
             // todo!
-            let parent_check = match root.read().must_check() {
+            let parent_check = match root.read().must_check() && !root.read().has_check_pending() {
                 true => Some(root.to_weak()),
                 false => None,
             };
@@ -119,7 +122,7 @@ impl Workspace {
             // Update AST incrementally
             let result = root.write().dyn_update(
                 start_byte,
-                (new_end_byte - old_end_byte) as isize,
+                (new_end_byte.wrapping_sub(old_end_byte)) as isize,
                 parent_check,
                 self,
                 document,

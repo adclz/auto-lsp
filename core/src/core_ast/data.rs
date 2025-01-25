@@ -21,8 +21,8 @@ pub struct SymbolData {
     pub target: Option<WeakSymbol>,
     /// The byte range of the symbol in the source code
     pub range: std::ops::Range<usize>,
-    /// Whether the symbol has been checked for errors
-    pub unchecked: bool,
+    /// Whether the symbol is being checked for errors
+    pub check_pending: bool,
 }
 
 impl SymbolData {
@@ -34,7 +34,7 @@ impl SymbolData {
             referrers: None,
             target: None,
             range,
-            unchecked: false,
+            check_pending: false,
         }
     }
 }
@@ -77,9 +77,9 @@ pub trait GetSymbolData {
     fn get_mut_referrers(&mut self) -> &mut Referrers;
 
     /// Get whether the symbol has been checked for errors
-    fn get_unchecked(&self) -> bool;
+    fn has_check_pending(&self) -> bool;
     /// Set whether the symbol has been checked for errors
-    fn set_unchecked(&mut self, unchecked: bool);
+    fn update_check_pending(&mut self, unchecked: bool);
 }
 
 impl GetSymbolData for SymbolData {
@@ -137,12 +137,12 @@ impl GetSymbolData for SymbolData {
         self.referrers.get_or_insert_default()
     }
 
-    fn get_unchecked(&self) -> bool {
-        self.unchecked
+    fn has_check_pending(&self) -> bool {
+        self.check_pending
     }
 
-    fn set_unchecked(&mut self, unchecked: bool) {
-        self.unchecked = unchecked;
+    fn update_check_pending(&mut self, unchecked: bool) {
+        self.check_pending = unchecked;
     }
 }
 

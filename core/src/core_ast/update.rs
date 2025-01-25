@@ -202,7 +202,7 @@ where
         let read = self.read();
         match read.is_inside_offset(start) {
             true => {
-                let check = match read.must_check() {
+                let check = match read.must_check() && !read.has_check_pending() {
                     true => Some(self.to_weak()),
                     false => None,
                 };

@@ -90,10 +90,16 @@ impl Workspace {
                 Some(read) => read,
                 None => return false,
             };
-            let read = item.read();
-            match read.check(&document, &mut self.diagnostics) {
-                Ok(()) => false,
-                Err(()) => true,
+            let check_result = item.read().check(&document, &mut self.diagnostics);
+            match check_result {
+                Ok(()) => {
+                    item.write().update_check_pending(false);
+                    false
+                }
+                Err(()) => {
+                    item.write().update_check_pending(true);
+                    true
+                }
             }
         });
         self
@@ -114,10 +120,16 @@ impl Workspace {
                     Some(read) => read,
                     None => return false,
                 };
-                let read = item.read();
-                match read.check(&document, &mut diagnostics.write()) {
-                    Ok(()) => false,
-                    Err(()) => true,
+                let check_result = item.read().check(&document, &mut diagnostics.write());
+                match check_result {
+                    Ok(()) => {
+                        item.write().update_check_pending(false);
+                        false
+                    }
+                    Err(()) => {
+                        item.write().update_check_pending(true);
+                        true
+                    }
                 }
             })
             .collect::<Vec<WeakSymbol>>();

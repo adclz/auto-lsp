@@ -24,23 +24,6 @@ def bar():
     .unwrap()
 }
 
-#[fixture]
-fn foo_bar_with_type_error() -> (Workspace, Document) {
-    Workspace::from_utf8(
-        &PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
-        r#"# foo comment
-        def foo(param1, param2: int = "string"):
-            pass
-        
-        def bar():
-            pass  
-        "#
-        .into(),
-    )
-    .unwrap()
-}
-
 #[rstest]
 fn check_ast(foo_bar: (Workspace, Document)) {
     let ast = foo_bar.0.ast.as_ref().unwrap();
@@ -157,29 +140,6 @@ fn check_foo_parameters(foo_bar: (Workspace, Document)) {
 
     // param3 is typed with default value
     assert!(matches!(*parameters[2].read(), Parameter::TypedDefault(_)));
-}
-
-#[rstest]
-fn check_type_checking(
-    foo_bar: (Workspace, Document),
-    foo_bar_with_type_error: (Workspace, Document),
-) {
-    let foo_bar = foo_bar.0;
-    // foo_bar has no type errors
-    assert!(foo_bar.diagnostics.is_empty());
-    assert!(foo_bar.unsolved_checks.is_empty());
-    assert!(foo_bar.unsolved_references.is_empty());
-
-    let foo_bar_with_type_error = foo_bar_with_type_error.0;
-    // foo_bar_with_type_error has one type error
-    assert!(!foo_bar_with_type_error.diagnostics.is_empty());
-    assert!(!foo_bar_with_type_error.unsolved_checks.is_empty());
-    assert!(foo_bar.unsolved_references.is_empty());
-
-    assert_eq!(
-        foo_bar_with_type_error.diagnostics[0].message,
-        "Invalid value \"string\" for type int"
-    );
 }
 
 #[rstest]
@@ -332,4 +292,173 @@ fn check_code_lens(foo_bar: (Workspace, Document)) {
     assert_eq!(code_lens[1].range.start.character, 4);
     assert_eq!(code_lens[1].range.end.line, 4);
     assert_eq!(code_lens[1].range.end.character, 7);
+}
+
+#[fixture]
+fn foo_bar_with_type_error() -> (Workspace, Document) {
+    Workspace::from_utf8(
+        &PARSERS.get("python").unwrap(),
+        Url::parse("file:///test.py").unwrap(),
+        r#"# foo comment
+        def foo(param1, param2: int = "string"):
+            pass
+        
+        def bar():
+            pass  
+        "#
+        .into(),
+    )
+    .unwrap()
+}
+
+#[rstest]
+fn foo_has_type_error(
+    foo_bar: (Workspace, Document),
+    foo_bar_with_type_error: (Workspace, Document),
+) {
+    let foo_bar = foo_bar.0;
+    // foo_bar has no type errors
+    assert!(foo_bar.diagnostics.is_empty());
+    assert!(foo_bar.unsolved_checks.is_empty());
+    assert!(foo_bar.unsolved_references.is_empty());
+
+    let foo_bar_with_type_error = foo_bar_with_type_error.0;
+    // foo_bar_with_type_error has one type error
+    assert!(!foo_bar_with_type_error.diagnostics.is_empty());
+    assert!(!foo_bar_with_type_error.unsolved_checks.is_empty());
+    assert!(foo_bar.unsolved_references.is_empty());
+
+    assert_eq!(
+        foo_bar_with_type_error.diagnostics[0].message,
+        "Invalid value \"string\" for type int"
+    );
+}
+
+#[fixture]
+fn foo_with_type_error() -> (Workspace, Document) {
+    Workspace::from_utf8(
+        &PARSERS.get("python").unwrap(),
+        Url::parse("file:///test.py").unwrap(),
+        r#"def foo(p: int = "x"): pass "#.into(),
+    )
+    .unwrap()
+}
+
+use crate::server::texter_impl::change::WrapChange;
+use crate::server::texter_impl::updateable::WrapTree;
+
+#[rstest]
+fn non_redundant_type_error(mut foo_with_type_error: (Workspace, Document)) {
+    // foo_with_type_error has one type error
+    let mut workspace = foo_with_type_error.0;
+    let document = &mut foo_with_type_error.1;
+    assert!(!workspace.diagnostics.is_empty());
+    assert!(!workspace.unsolved_checks.is_empty());
+    assert!(workspace.unsolved_references.is_empty());
+    assert_eq!(
+        workspace.diagnostics[0].message,
+        "Invalid value \"x\" for type int"
+    );
+
+    // Insert "xxxx"
+    // "def foo(p: int = "x"): pass " -> "def foo(p: int = "xxxx"): pass "
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 18,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 19,
+            },
+        }),
+        range_length: Some(1),
+        text: "xxxx".into(),
+    };
+
+    let change = WrapChange::from(&change);
+    let mut new_tree = WrapTree::from(&mut document.tree);
+
+    document
+        .texter
+        .update(change.change, &mut new_tree)
+        .unwrap();
+
+    let edits = new_tree.get_edits();
+
+    document.tree = workspace
+        .parsers
+        .tree_sitter
+        .parser
+        .write()
+        .parse(&document.texter.text.as_bytes(), Some(&document.tree))
+        .unwrap();
+
+    workspace.parse(Some(&edits), document);
+
+    // foo_with_type_error should have 1 error
+    assert_eq!(workspace.diagnostics.len(), 1);
+    assert_eq!(workspace.unsolved_checks.len(), 1);
+    assert_eq!(workspace.unsolved_references.len(), 0);
+    assert_eq!(
+        workspace.diagnostics[0].message,
+        "Invalid value \"xxxx\" for type int"
+    );
+}
+
+#[rstest]
+fn fix_type_error(mut foo_with_type_error: (Workspace, Document)) {
+    // foo_with_type_error has one type error
+    let mut workspace = foo_with_type_error.0;
+    let document = &mut foo_with_type_error.1;
+    assert!(!workspace.diagnostics.is_empty());
+    assert!(!workspace.unsolved_checks.is_empty());
+    assert!(workspace.unsolved_references.is_empty());
+    assert_eq!(
+        workspace.diagnostics[0].message,
+        "Invalid value \"x\" for type int"
+    );
+
+    // Replace "x" with 1
+    // "def foo(p: int = "x"): pass " -> "def foo(p: int = 1): pass "
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 17,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 20,
+            },
+        }),
+        range_length: Some(3),
+        text: "1".into(),
+    };
+
+    let change = WrapChange::from(&change);
+    let mut new_tree = WrapTree::from(&mut document.tree);
+
+    document
+        .texter
+        .update(change.change, &mut new_tree)
+        .unwrap();
+
+    let edits = new_tree.get_edits();
+
+    document.tree = workspace
+        .parsers
+        .tree_sitter
+        .parser
+        .write()
+        .parse(&document.texter.text.as_bytes(), Some(&document.tree))
+        .unwrap();
+
+    workspace.parse(Some(&edits), document);
+
+    // foo_with_type_error should have no type errors
+    assert_eq!(workspace.diagnostics.len(), 0);
+    assert_eq!(workspace.unsolved_checks.len(), 0);
+    assert_eq!(workspace.unsolved_references.len(), 0);
 }

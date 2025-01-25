@@ -164,7 +164,10 @@ impl BuildInlayHints for Function {
         acc.push(auto_lsp::lsp_types::InlayHint {
             kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
             label: auto_lsp::lsp_types::InlayHintLabel::String(
-                read.get_text(doc.texter.text.as_bytes()).unwrap().into()
+                match read.get_text(doc.texter.text.as_bytes()) {
+                    Some(text) => text.to_string(),
+                    None => "".to_string(),
+                }
             ),
             position: read.get_start_position(doc),
             tooltip: None,

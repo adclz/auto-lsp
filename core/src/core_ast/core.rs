@@ -182,11 +182,11 @@ impl<T: AstSymbol + ?Sized> GetSymbolData for T {
         self.get_mut_data().get_mut_referrers()
     }
 
-    fn get_unchecked(&self) -> bool {
-        self.get_data().get_unchecked()
+    fn has_check_pending(&self) -> bool {
+        self.get_data().has_check_pending()
     }
 
-    fn set_unchecked(&mut self, unchecked: bool) {
-        self.get_mut_data().set_unchecked(unchecked)
+    fn update_check_pending(&mut self, status: bool) {
+        self.get_mut_data().update_check_pending(status)
     }
 }
