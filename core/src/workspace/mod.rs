@@ -115,12 +115,7 @@ impl Workspace {
         };
 
         // Build the AST using the core query and AST parser function.
-        workspace
-            .parse(None, &document)
-            // Resolve checks, references, and comments in the document.
-            .resolve_checks(&document)
-            .resolve_references(&document)
-            .set_comments(&document)?;
+        workspace.parse(None, &document);
 
         Ok((workspace, document))
     }
@@ -166,12 +161,7 @@ impl Workspace {
         };
 
         // Build the AST using the core query and AST parser function.
-        workspace
-            .parse(None, &document)
-            // Resolve checks, references, and comments in the document.
-            .resolve_checks(&document)
-            .resolve_references(&document)
-            .set_comments(&document)?;
+        workspace.parse(None, &document);
 
         Ok((workspace, document))
     }

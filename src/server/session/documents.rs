@@ -51,8 +51,6 @@ impl Session {
             );
         }
 
-        workspace.set_comments(&document)?;
-
         WORKSPACES
             .lock()
             .insert(uri.to_owned(), (workspace, document));
@@ -101,10 +99,7 @@ impl Session {
             ))?;
 
         // Update AST
-        workspace
-            .parse(Some(&edits), &document)
-            .resolve_references(&document)
-            .resolve_checks(&document);
+        workspace.parse(Some(&edits), &document);
 
         if !workspace.unsolved_checks.is_empty() {
             log::info!("");
@@ -118,8 +113,6 @@ impl Session {
                 workspace.unsolved_references.len()
             );
         }
-
-        workspace.set_comments(&document)?;
 
         Ok(())
     }

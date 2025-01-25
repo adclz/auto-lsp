@@ -44,7 +44,10 @@ impl Workspace {
                         None
                     }
                 };
-                return self;
+                return self
+                    .set_comments(document)
+                    .resolve_checks(document)
+                    .resolve_references(document);
             }
         };
 
@@ -142,7 +145,9 @@ impl Workspace {
                 ControlFlow::Break(Ok(_)) => {}
             };
         }
-        self
+        self.set_comments(document)
+            .resolve_checks(document)
+            .resolve_references(document)
     }
 }
 

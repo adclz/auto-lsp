@@ -24,7 +24,7 @@ impl Workspace {
     }
 
     #[cfg(not(feature = "rayon"))]
-    pub fn resolve_references(&mut self, document: &Document) -> &mut Self {
+    pub(crate) fn resolve_references(&mut self, document: &Document) -> &mut Self {
         self.unsolved_references.retain(|item| {
             let item = match item.to_dyn() {
                 Some(read) => read,
@@ -49,7 +49,7 @@ impl Workspace {
     }
 
     #[cfg(feature = "rayon")]
-    pub fn resolve_references(&mut self, document: &Document) -> &mut Self {
+    pub(crate) fn resolve_references(&mut self, document: &Document) -> &mut Self {
         use parking_lot::RwLock;
         use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -84,7 +84,7 @@ impl Workspace {
     }
 
     #[cfg(not(feature = "rayon"))]
-    pub fn resolve_checks(&mut self, document: &Document) -> &mut Self {
+    pub(crate) fn resolve_checks(&mut self, document: &Document) -> &mut Self {
         self.unsolved_checks.retain(|item| {
             let item = match item.to_dyn() {
                 Some(read) => read,
@@ -100,7 +100,7 @@ impl Workspace {
     }
 
     #[cfg(feature = "rayon")]
-    pub fn resolve_checks(&mut self, document: &Document) -> &mut Self {
+    pub(crate) fn resolve_checks(&mut self, document: &Document) -> &mut Self {
         use parking_lot::RwLock;
         use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 

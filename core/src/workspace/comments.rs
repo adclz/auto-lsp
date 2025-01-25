@@ -3,17 +3,17 @@ use crate::document::Document;
 use streaming_iterator::StreamingIterator;
 
 impl Workspace {
-    pub fn set_comments(&self, document: &Document) -> anyhow::Result<()> {
+    pub fn set_comments(&mut self, document: &Document) -> &mut Self {
         let comments_query = match self.parsers.tree_sitter.queries.comments {
             Some(ref query) => query,
-            None => return Ok(()),
+            None => return self,
         };
 
         let source_code = document.texter.text.as_bytes();
         let cst = &document.tree;
         let ast = match self.ast.as_ref() {
             Some(ast) => ast,
-            None => return Ok(()),
+            None => return self,
         };
 
         let mut cursor = tree_sitter::QueryCursor::new();
@@ -57,6 +57,6 @@ impl Workspace {
                 }
             };
         }
-        Ok(())
+        self
     }
 }
