@@ -165,7 +165,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol,
 {
-    /// ### Conditions for Symbol Updates
+    /// ### Locate the symbol that needs to be updated.
     /// - The symbol must be within the range of the edit.
     /// - No lower-level symbols (children) have already been updated.
     ///
@@ -200,7 +200,7 @@ where
         document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         let read = self.read();
-        match read.is_inside_offset(start) {
+        match read.is_inside_offset(start) && read.is_scope() {
             true => {
                 let check = match read.must_check() && !read.has_check_pending() {
                     true => Some(self.to_weak()),
@@ -210,7 +210,7 @@ where
                 // Check if no lower level symbols could be updated.
 
                 self.write()
-                    .dyn_update(start, offset, check, workspace, document)?;
+                    .update(start, offset, check, workspace, document)?;
                 let parent = self.read().get_parent();
                 let range = self.read().get_range();
                 #[cfg(feature = "log")]
@@ -257,12 +257,12 @@ where
         + InvokeStackBuilder<T, Y>
         + CollectReferences,
 {
-    fn update<'a>(
-        &'a mut self,
+    fn update(
+        &mut self,
         start: usize,
         offset: isize,
         parent_check: Option<WeakSymbol>,
-        workspace: &'a mut Workspace,
+        workspace: &mut Workspace,
         document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         match self {
@@ -280,12 +280,12 @@ where
         + InvokeStackBuilder<T, Y>
         + CollectReferences,
 {
-    fn update<'a>(
+    fn update(
         &mut self,
         start: usize,
         offset: isize,
         parent_check: Option<WeakSymbol>,
-        workspace: &'a mut Workspace,
+        workspace: &mut Workspace,
         document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         for symbol in self.iter_mut() {
@@ -300,7 +300,7 @@ where
 
 /// This trait is similar to [UpdateStatic], but is used for trait objects ([DynSymbol])
 pub trait UpdateDynamic {
-    fn dyn_update(
+    fn update(
         &mut self,
         start: usize,
         offset: isize,

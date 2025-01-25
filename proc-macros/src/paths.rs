@@ -361,7 +361,7 @@ impl Default for Paths {
             dynamic_swap: DynamicSwap {
                 path: core_ast(parse_quote!(UpdateDynamic)),
                 swap: Method {
-                    sig: quote! { fn dyn_update(
+                    sig: quote! { fn update(
                         &mut self,
                         start: usize,
                         offset: isize,
@@ -369,7 +369,7 @@ impl Default for Paths {
                         workspace: &mut auto_lsp::core::workspace::Workspace,
                         document: &auto_lsp::core::document::Document,
                     ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { dyn_update(start, offset, parent_check, workspace, document) },
+                    variant: quote! { update(start, offset, parent_check, workspace, document) },
                 },
             },
             static_swap: StaticSwap {

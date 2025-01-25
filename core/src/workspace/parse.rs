@@ -131,7 +131,7 @@ impl Workspace {
             };
 
             // Update AST incrementally
-            let result = root.write().dyn_update(
+            let result = root.write().update(
                 start_byte,
                 (new_end_byte.wrapping_sub(old_end_byte)) as isize,
                 parent_check,
