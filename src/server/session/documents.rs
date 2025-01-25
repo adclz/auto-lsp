@@ -1,5 +1,3 @@
-use auto_lsp_core::document::texter_impl::change::WrapChange;
-use auto_lsp_core::document::texter_impl::updateable::WrapTree;
 use auto_lsp_core::workspace::Workspace;
 
 use lsp_types::{DidChangeTextDocumentParams, Url};
@@ -79,25 +77,10 @@ impl Session {
             .get_mut(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        // Update document and tree sitter
-        let mut new_tree = WrapTree::from(&mut document.tree);
-        for ch in params.content_changes {
-            document
-                .texter
-                .update(WrapChange::from(&ch).change, &mut new_tree)?;
-        }
-        let edits = new_tree.get_edits();
-
-        document.tree = workspace
-            .parsers
-            .tree_sitter
-            .parser
-            .write()
-            .parse(document.texter.text.as_bytes(), Some(&document.tree))
-            .ok_or(anyhow::format_err!(
-                "Tree sitter failed to edit tree of document {}",
-                uri
-            ))?;
+        let edits = document.update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &params.content_changes,
+        )?;
 
         // Update AST
         workspace.parse(Some(&edits), &document);

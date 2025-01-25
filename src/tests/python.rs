@@ -344,9 +344,6 @@ fn foo_with_type_error() -> (Workspace, Document) {
     .unwrap()
 }
 
-use crate::core::document::texter_impl::change::WrapChange;
-use crate::core::document::texter_impl::updateable::WrapTree;
-
 #[rstest]
 fn non_redundant_type_error(mut foo_with_type_error: (Workspace, Document)) {
     // foo_with_type_error has one type error
@@ -377,22 +374,11 @@ fn non_redundant_type_error(mut foo_with_type_error: (Workspace, Document)) {
         text: "xxxx".into(),
     };
 
-    let change = WrapChange::from(&change);
-    let mut new_tree = WrapTree::from(&mut document.tree);
-
-    document
-        .texter
-        .update(change.change, &mut new_tree)
-        .unwrap();
-
-    let edits = new_tree.get_edits();
-
-    document.tree = workspace
-        .parsers
-        .tree_sitter
-        .parser
-        .write()
-        .parse(&document.texter.text.as_bytes(), Some(&document.tree))
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
         .unwrap();
 
     workspace.parse(Some(&edits), document);
@@ -436,23 +422,11 @@ fn fix_type_error(mut foo_with_type_error: (Workspace, Document)) {
         range_length: Some(3),
         text: "1".into(),
     };
-
-    let change = WrapChange::from(&change);
-    let mut new_tree = WrapTree::from(&mut document.tree);
-
-    document
-        .texter
-        .update(change.change, &mut new_tree)
-        .unwrap();
-
-    let edits = new_tree.get_edits();
-
-    document.tree = workspace
-        .parsers
-        .tree_sitter
-        .parser
-        .write()
-        .parse(&document.texter.text.as_bytes(), Some(&document.tree))
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
         .unwrap();
 
     workspace.parse(Some(&edits), document);
