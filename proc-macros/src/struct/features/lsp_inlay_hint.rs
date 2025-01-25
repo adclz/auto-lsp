@@ -42,7 +42,7 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
     fn code_gen(&self, params: &SymbolFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
         let inlay_hint_path = &PATHS.lsp_inlay_hint.path;
-        let sig = &PATHS.lsp_inlay_hint.build_inlay_hint.sig;
+        let sig = &PATHS.lsp_inlay_hint.build_inlay_hints.sig;
 
         match &params.lsp_inlay_hints {
             None => self.default_impl(),
@@ -53,12 +53,14 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                     let field_vec_names = &self.fields.field_vec_names.get_field_names();
                     let field_option_names = &self.fields.field_option_names.get_field_names();
                     let queryable = &PATHS.queryable.path;
+                    let is_comment = &PATHS.is_comment.path;
 
                     if opt.query.is_some() {
                         quote! {
                             impl #inlay_hint_path for #input_name {
                                 #sig {
                                     use #queryable;
+                                    use #is_comment;
                                     let range = self.get_range();
                                     acc.push(auto_lsp::lsp_types::InlayHint {
                                         position: self.get_start_position(doc),
@@ -73,16 +75,16 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                                         data: None,
                                     });
                                     #(
-                                        self.#field_names.read().build_inlay_hint(doc, acc);
+                                        self.#field_names.read().build_inlay_hints(doc, acc);
                                     )*
                                     #(
                                         if let Some(field) = self.#field_option_names.as_ref() {
-                                            field.read().build_inlay_hint(doc, acc);
+                                            field.read().build_inlay_hints(doc, acc);
                                         };
                                     )*
                                     #(
                                         for field in self.#field_vec_names.iter() {
-                                            field.read().build_inlay_hint(doc, acc);
+                                            field.read().build_inlay_hints(doc, acc);
                                         };
                                     )*
                                 }
@@ -98,8 +100,8 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
 
     fn code_gen_reference(&self, params: &ReferenceFeatures) -> impl quote::ToTokens {
         let input_name = &self.input_name;
-        let hover_info_path = &PATHS.lsp_hover_info.path;
-        let sig = &PATHS.lsp_hover_info.get_hover.sig;
+        let inlay_hint_path = &PATHS.lsp_inlay_hint.path;
+        let sig = &PATHS.lsp_inlay_hint.build_inlay_hints.sig;
 
         match &params.lsp_inlay_hints {
             None => self.default_impl(),
@@ -107,11 +109,11 @@ impl<'a> FeaturesCodeGen for InlayHintsBuilder<'a> {
                 ReferenceFeature::Disable => self.default_impl(),
                 ReferenceFeature::Reference => {
                     quote! {
-                        impl #hover_info_path for #input_name {
+                        impl #inlay_hint_path for #input_name {
                             #sig {
                                 if let Some(reference) = &self.get_target() {
                                     if let Some(reference) = reference.to_dyn() {
-                                        reference.read().build_inlay_hint(doc, acc)
+                                        reference.read().build_inlay_hints(doc, acc)
                                     }
                                 }
                             }

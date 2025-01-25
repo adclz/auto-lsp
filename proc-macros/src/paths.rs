@@ -96,7 +96,7 @@ nested_struct!(
         },
         pub lsp_inlay_hint: LspInlayHint {
             pub path: Path,
-            pub build_inlay_hint: Method
+            pub build_inlay_hints: Method
         },
         pub lsp_semantic_token: LspSemanticToken {
             pub path: Path,
@@ -283,9 +283,9 @@ impl Default for Paths {
             },
             lsp_inlay_hint: LspInlayHint {
                 path: core_ast(parse_quote!(BuildInlayHints)),
-                build_inlay_hint: Method {
-                    sig: quote! { fn build_inlay_hint(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
-                    variant: quote! { build_inlay_hint(doc, acc) },
+                build_inlay_hints: Method {
+                    sig: quote! { fn build_inlay_hints(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
+                    variant: quote! { build_inlay_hints(doc, acc) },
                 },
             },
             lsp_semantic_token: LspSemanticToken {

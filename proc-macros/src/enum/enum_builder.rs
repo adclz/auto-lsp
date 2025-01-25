@@ -312,8 +312,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_pattern_match_iter(
                 &self.fields,
-                &PATHS.lsp_inlay_hint.build_inlay_hint.sig,
-                &PATHS.lsp_inlay_hint.build_inlay_hint.variant,
+                &PATHS.lsp_inlay_hint.build_inlay_hints.sig,
+                &PATHS.lsp_inlay_hint.build_inlay_hints.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_inlay_hint.path);
     }

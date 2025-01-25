@@ -262,9 +262,9 @@ fn check_inlay_hints(foo_bar: (Workspace, Document)) {
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut hints = vec![];
-    module.build_inlay_hint(&document, &mut hints);
+    module.build_inlay_hints(&document, &mut hints);
 
-    assert_eq!(hints.len(), 2);
+    assert_eq!(hints.len(), 4);
 
     assert_eq!(hints[0].kind, Some(lsp_types::InlayHintKind::TYPE));
     assert_eq!(hints[1].kind, Some(lsp_types::InlayHintKind::TYPE));

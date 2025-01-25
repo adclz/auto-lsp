@@ -115,7 +115,7 @@ pub trait BuildInlayHints {
     /// [LSP InlayHint](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_inlayHints)
     ///
     /// Push inlay hints to the accumulator
-    fn build_inlay_hint(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {}
+    fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {}
 }
 
 /// A trait to be implemented by any [AstSymbol] that can provide code lens
@@ -159,7 +159,7 @@ macro_rules! impl_build {
 }
 
 impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
-impl_build!(BuildInlayHints, build_inlay_hint(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
+impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_build!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(BuildCompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document));
 

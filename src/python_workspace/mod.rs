@@ -85,9 +85,9 @@ impl BuildCodeLens for Module {
 }
 
 impl BuildInlayHints for Module {
-    fn build_inlay_hint(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
+    fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
         for function in &self.functions {
-            function.read().build_inlay_hint(doc, acc);
+            function.read().build_inlay_hints(doc, acc);
         }
     }
 }
@@ -136,7 +136,9 @@ pub struct Parameters {
     parameters: Vec<Parameter>,
 }
 
-#[seq(query_name = "body", kind(symbol()))]
+#[seq(query_name = "body", kind(symbol(
+    lsp_inlay_hints(code_gen(query = true)),
+)))]
 pub struct Body {
     pub statements: Vec<Statement>,
 }
@@ -159,7 +161,7 @@ impl Scope for Function {
 }
 
 impl BuildInlayHints for Function {
-    fn build_inlay_hint(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
+    fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
         let read = self.name.read();
         acc.push(auto_lsp::lsp_types::InlayHint {
             kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
@@ -176,6 +178,7 @@ impl BuildInlayHints for Function {
             padding_right: None,
             data: None
         });
+        self.body.read().build_inlay_hints(doc, acc);
     }
 }
 

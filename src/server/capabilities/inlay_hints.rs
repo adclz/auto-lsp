@@ -18,7 +18,7 @@ impl Session {
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         workspace.ast.iter().for_each(|ast| {
-            ast.read().build_inlay_hint(&document, &mut results);
+            ast.read().build_inlay_hints(&document, &mut results);
         });
 
         Ok(Some(results))
