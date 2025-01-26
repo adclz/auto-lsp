@@ -31,6 +31,14 @@ impl Workspace {
             &mut self.diagnostics,
         );
 
+        // Clear AST if document is empty
+        if document.texter.text.is_empty() {
+            self.ast = None;
+            self.unsolved_checks.clear();
+            self.unsolved_references.clear();
+            return self;
+        }
+
         let ast_parser = self.parsers.ast_parser;
 
         // Create a new AST if none exists and return

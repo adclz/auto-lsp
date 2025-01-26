@@ -9,7 +9,8 @@ use rstest::{fixture, rstest};
 use crate::configure_parsers;
 
 static CORE_QUERY: &'static str = "
-(document (doctype) @doctype) @document
+(document) @document
+(document (doctype) @doctype)
     
 (element (start_tag (tag_name) @tag_name) (end_tag)) @element
 (element (self_closing_tag (tag_name) @tag_name)) @element
@@ -64,7 +65,7 @@ pub struct Style {}
 fn sample_file() -> (Workspace, Document) {
     Workspace::from_utf8(
         &PARSERS.get("html").unwrap(),
-        Url::parse("file:///sample_file.py").unwrap(),
+        Url::parse("file:///sample_file.html").unwrap(),
         r#"<!DOCTYPE html>
 <script></script>
 <style></style>
@@ -146,7 +147,7 @@ fn check_ast(sample_file: (Workspace, Document)) {
 fn divs() -> (Workspace, Document) {
     Workspace::from_utf8(
         &PARSERS.get("html").unwrap(),
-        Url::parse("file:///sample_file.py").unwrap(),
+        Url::parse("file:///sample_file.html").unwrap(),
         r#"<div> </div>"#.into(),
     )
     .unwrap()
@@ -274,4 +275,63 @@ fn delete_whitespace(divs: (Workspace, Document)) {
 
     assert_eq!(edits.len(), 1);
     assert!(edits[0].1);
+}
+
+#[fixture]
+fn empty() -> (Workspace, Document) {
+    Workspace::from_utf8(
+        &PARSERS.get("html").unwrap(),
+        Url::parse("file:///sample_file.html").unwrap(),
+        r#""#.into(),
+    )
+    .unwrap()
+}
+
+#[rstest]
+fn empty_document(empty: (Workspace, Document)) {
+    let mut workspace = empty.0;
+    let mut document = empty.1;
+
+    // Should not have an AST
+    assert!(workspace.ast.is_none());
+    assert!(workspace.diagnostics.is_empty());
+    assert!(workspace.unsolved_checks.is_empty());
+    assert!(workspace.unsolved_references.is_empty());
+
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 0,
+                character: 0,
+            },
+            end: lsp_types::Position {
+                line: 0,
+                character: 0,
+            },
+        }),
+        range_length: Some(26),
+        text: "<div></div>".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    workspace.parse(Some(&edits), &document);
+
+    // Should have an AST
+    assert!(workspace.ast.is_some());
+
+    let html = workspace.ast.unwrap();
+    let html = html.read();
+    let html = html.downcast_ref::<HtmlDocument>().unwrap();
+    let tags = &html.tags;
+
+    // Should contain div
+
+    assert_eq!(tags.len(), 1);
+    assert!(matches!(*tags[0].read(), Node::Element(_)));
 }
