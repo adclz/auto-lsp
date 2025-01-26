@@ -71,7 +71,7 @@
 //!  Finally, create your main function and initialize a new session..
 //!
 //! ```no_run
-//! # use auto_lsp::python_workspace::PARSERS;
+//! # use auto_lsp::python::PARSERS;
 //! use std::error::Error;
 //! use auto_lsp::server::{Session, InitOptions, LspOptions};
 //!

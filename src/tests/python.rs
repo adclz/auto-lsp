@@ -5,7 +5,7 @@ use crate::core::workspace::Workspace;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use crate::python_workspace::*;
+use super::python_workspace::*;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {

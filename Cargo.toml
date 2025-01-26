@@ -35,6 +35,7 @@ crossbeam-channel = { version = "0.5.13", optional = true }
 texter = { version = "0.1.2", optional = true }
 rayon = { version = "1.10", optional = true }
 tree-sitter-python = { version = "0.23.6", optional = true }
+tree-sitter-html = { version = "0.23.2", optional = true }
 
 [workspace]
 members = ["core", "proc-macros"]
@@ -65,9 +66,10 @@ lsp_server = [
     "dep:crossbeam-channel",
     "dep:texter",
 ]
-python_test = ["assertions", "lsp_server", "dep:tree-sitter-python"]
 rayon = ["auto-lsp-core/rayon", "dep:rayon"]
 wasm = ["parking_lot/nightly"]
+python = ["assertions", "lsp_server", "dep:tree-sitter-python"]
+html = ["assertions", "lsp_server", "dep:tree-sitter-html"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -91,4 +93,4 @@ impls = "1.0.3"
 [[bench]]
 name = "main"
 harness = false
-required-features = ["python_test"]
+required-features = ["python"]

@@ -58,9 +58,10 @@ You can find more examples in the `src/tests` folder.
 - `deadlock_detection`: Enable [`parking_lot`](https://crates.io/crates/parking_lot)'s deadlock detection (not compatible with `wasm`).
 - `log`: Enable logging. (uses [`stderrlog`](https://crates.io/crates/stderrlog))
 - `lsp_server`: Enable the LSP server (uses [`lsp_server`](https://crates.io/crates/lsp-server)).
-- `python_test`: Enable the python workspace mock for testing purposes.
 - `rayon`: Enable [`rayon`](https://crates.io/crates/rayon) support (not compatible with `wasm`).
 - `wasm`: Enable wasm support.
+- `html`: Enable the python workspace mock for testing purposes.
+- `python`: Enable the python workspace mock for testing purposes.
 
 # Documentation
 

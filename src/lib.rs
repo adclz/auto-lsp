@@ -52,21 +52,30 @@
 //! - `deadlock_detection`: Enable [`parking_lot`]'s deadlock detection (not compatible with `wasm`).
 //! - `log`: Enable logging. (uses [`stderrlog`])
 //! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
-//! - `python_test`: Enable the python workspace mock for testing purposes.
 //! - `rayon`: Enable [`rayon`] support (not compatible with `wasm`).
 //! - `wasm`: Enable wasm support.
+//! - `html`: Enable the html workspace mock for testing purposes.
+//! - `python`: Enable the python workspace mock for testing purposes.
 
 #[cfg(doc)]
 use lsp_server;
-/// A mock python workspace used for testing purposes.
-/// This module is only available with the `python_test` feature enabled or during tests.
-#[cfg(any(feature = "python_test", test))]
-pub mod python_workspace;
 /// LSP server (enabled with feature `lsp_server`)
 #[cfg(any(feature = "lsp_server", test))]
 pub mod server;
-#[cfg(test)]
-pub mod tests;
+
+mod tests;
+
+/// A mock implementation of a python AST
+#[cfg(any(feature = "python", test))]
+pub mod python {
+    pub use crate::tests::python_workspace::*;
+}
+
+/// A mock implementation of a html AST
+#[cfg(any(feature = "html", test))]
+pub mod html {
+    pub use crate::tests::html_workspace::*;
+}
 
 /// Re-export of the [`auto_lsp_core`] crate
 pub mod core {
