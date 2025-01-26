@@ -71,6 +71,7 @@ dependencies = [
  "lsp-types",
  "parking_lot",
  "rayon",
+ "regex",
  "streaming-iterator",
  "texter",
  "tree-sitter",

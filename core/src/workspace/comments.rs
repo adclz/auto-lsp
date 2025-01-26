@@ -5,8 +5,8 @@ use streaming_iterator::StreamingIterator;
 impl Workspace {
     /// Sets comments in the document based on the [`tree_sitter::Query`] for comments
     ///
-    /// This function identifies comments in the concrete syntax tree (CST) of the document and then
-    /// attempts to associate these comments with corresponding nodes in the abstract syntax tree (AST).
+    /// This function identifies comments in the [`tree_sitter::Tree`] of the [`Document`] and then
+    /// attempts to associate these comments with corresponding nodes in the AST.
     ///
     /// ### Process:
     /// 1. Searches for comments using the provided `comments_query`.

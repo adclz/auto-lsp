@@ -14,6 +14,7 @@ pub mod checks;
 pub mod comments;
 pub mod lexer;
 pub mod parse;
+pub mod regex;
 
 /// Parsers available in a [`Workspace`].
 ///

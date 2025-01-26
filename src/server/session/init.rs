@@ -3,20 +3,20 @@ use std::collections::HashMap;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
-use auto_lsp_core::document::Document;
-use auto_lsp_core::workspace::Parsers;
+use auto_lsp_core::{
+    document::Document,
+    workspace::{Parsers, Workspace},
+};
 use lsp_server::{Connection, IoThreads};
 use lsp_types::{
-    CodeLensOptions, DocumentLinkOptions, InitializeParams, InitializeResult, PositionEncodingKind,
+    CodeLensOptions, DiagnosticOptions, DiagnosticServerCapabilities, DocumentLink,
+    DocumentLinkOptions, InitializeParams, InitializeResult, OneOf, PositionEncodingKind,
     SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
-    SemanticTokensOptions, ServerCapabilities, Url, WorkspaceFoldersServerCapabilities,
+    SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
     WorkspaceServerCapabilities,
 };
-use lsp_types::{DiagnosticOptions, DiagnosticServerCapabilities};
-use lsp_types::{DocumentLink, OneOf};
 use regex::{Match, Regex};
 use texter::core::text::Text;
-use tree_sitter::Node;
 
 use super::Session;
 
@@ -38,32 +38,25 @@ pub struct SemanticTokensList {
 /// ```rust
 /// # use auto_lsp::server::{RegexToDocumentLink, Session};
 /// # use auto_lsp_core::document::Document;
+/// # use auto_lsp_core::workspace::Workspace;
 /// # use lsp_types::{DocumentLink, Url};
 /// # use regex::Regex;
-/// # use tree_sitter::Node;
 ///
 /// let regex = Regex::new(r"(\w+):(\d+)").unwrap();
 ///
-/// fn to_document_link(m: regex::Match, node: &Node,  document: &Document, url: &Url, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink {
-///    let range = node.range();
-///    let start = range.start_point;
-///    let end = range.end_point;
-///
+/// fn to_document_link(m: regex::Match, line: usize, document: &Document, workspace: &Workspace, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink {
 ///    lsp_types::DocumentLink {
 ///         data: None,
-///         tooltip: node
-///              .utf8_text(document.texter.text.as_bytes())
-///              .ok()
-///              .map(|s| s.to_string()),
-///         target: Some(url.clone()),
+///         tooltip: Some(m.as_str().to_string()),
+///         target:None,
 ///         range: lsp_types::Range {
 ///                     start: lsp_types::Position {
-///                         line: start.row as u32,
-///                         character: start.column as u32,
+///                         line: line as u32,
+///                         character: m.start() as u32,
 ///                     },
 ///                     end: lsp_types::Position {
-///                         line: end.row as u32,
-///                         character: end.column as u32,
+///                         line: line as u32,
+///                         character: m.end() as u32,
 ///                     },
 ///                },
 ///          }
@@ -77,9 +70,9 @@ pub struct RegexToDocumentLink {
     pub regex: Regex,
     pub to_document_link: fn(
         _match: Match<'_>,
-        node: &Node<'_>,
+        line: usize,
         document: &Document,
-        url: &Url,
+        workspace: &Workspace,
         acc: &mut Vec<DocumentLink>,
     ) -> lsp_types::DocumentLink,
 }

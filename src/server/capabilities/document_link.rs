@@ -1,7 +1,5 @@
-use lsp_types::{DocumentLink, DocumentLinkParams};
-use streaming_iterator::StreamingIterator;
-
 use crate::server::session::{Session, WORKSPACES};
+use lsp_types::{DocumentLink, DocumentLinkParams};
 
 impl Session {
     /// Get document links for a document.
@@ -30,27 +28,11 @@ impl Session {
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let query = match workspace.parsers.tree_sitter.queries.comments {
-            Some(ref query) => query,
-            None => return Ok(vec![]),
-        };
-
-        let root_node = document.tree.root_node();
-        let source = document.texter.text.as_str();
-
-        let mut query_cursor = tree_sitter::QueryCursor::new();
-        let mut captures = query_cursor.captures(query, root_node, source.as_bytes());
-
         let mut results = vec![];
-
-        while let Some((m, capture_index)) = captures.next() {
-            let capture = m.captures[*capture_index];
-            let comment_text = capture.node.utf8_text(source.as_bytes()).unwrap();
-
-            for _match in re.find_iter(comment_text) {
-                to_document_link(_match, &capture.node, &document, &uri, &mut results);
-            }
-        }
+        let matches = workspace.find_all_with_regex(&document, &re);
+        matches.into_iter().for_each(|(m, line)| {
+            to_document_link(m, line, &document, &workspace, &mut results);
+        });
 
         Ok(results)
     }
