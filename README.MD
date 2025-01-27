@@ -54,7 +54,6 @@ You can find more examples in the `src/tests` folder.
 
 # Features
 
-- `assertions`: Enable compile-time checks for conflicting queries.
 - `deadlock_detection`: Enable [`parking_lot`](https://crates.io/crates/parking_lot)'s deadlock detection (not compatible with `wasm`).
 - `log`: Enable logging. (uses [`stderrlog`](https://crates.io/crates/stderrlog))
 - `lsp_server`: Enable the LSP server (uses [`lsp_server`](https://crates.io/crates/lsp-server)).

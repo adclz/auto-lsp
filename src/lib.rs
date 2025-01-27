@@ -48,7 +48,6 @@
 //! You can find more examples in the `tests` folder.
 //!
 //! ## Features
-//! - `assertions`: Enable compile-time checks for conflicting queries.
 //! - `deadlock_detection`: Enable [`parking_lot`]'s deadlock detection (not compatible with `wasm`).
 //! - `log`: Enable logging. (uses [`stderrlog`])
 //! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).

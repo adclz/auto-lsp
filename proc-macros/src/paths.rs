@@ -39,15 +39,6 @@ nested_struct!(
             pub QUERY_NAMES: Method
         },
 
-        #[cfg(feature = "assertions")]
-        pub check_queryable: CheckQueryable {
-            pub path: Path,
-            pub CHECK: Method
-        },
-
-        #[cfg(feature = "assertions")]
-        pub check_conflicts: Path,
-
         pub symbol_trait: SymbolTrait {
             pub path: Path,
             pub get_data: Method,
@@ -81,6 +72,10 @@ nested_struct!(
         pub lsp_completion_items: LspCompletionItems {
             pub path: Path,
             pub build_completion_items: Method
+        },
+        pub lsp_invoked_completion_items: LspInvokedCompletionItems {
+            pub path: Path,
+            pub build_invoked_completion_items: Method
         },
         pub lsp_go_to_definition: LspGoToDefinition {
             pub path: Path,
@@ -178,17 +173,6 @@ impl Default for Paths {
                 },
             },
 
-            #[cfg(feature = "assertions")]
-            check_queryable: CheckQueryable {
-                path: core_build(parse_quote!(CheckQueryable)),
-                CHECK: Method {
-                    sig: quote! { const CHECK: () },
-                    variant: quote! { CHECK },
-                },
-            },
-            #[cfg(feature = "assertions")]
-            check_conflicts: core_build(parse_quote!(check_conflicts)),
-
             symbol_trait: SymbolTrait {
                 path: core_ast(parse_quote!(AstSymbol)),
                 get_data: Method {
@@ -256,8 +240,15 @@ impl Default for Paths {
             lsp_completion_items: LspCompletionItems {
                 path: core_ast(parse_quote!(BuildCompletionItems)),
                 build_completion_items: Method {
-                    sig: quote! { fn build_completion_items(&self, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>, doc: &auto_lsp::core::document::Document) },
-                    variant: quote! { build_completion_items(acc, doc) },
+                    sig: quote! { fn build_completion_items(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>)},
+                    variant: quote! { build_completion_items(doc, acc) },
+                },
+            },
+            lsp_invoked_completion_items: LspInvokedCompletionItems {
+                path: core_ast(parse_quote!(BuildInvokedCompletionItems)),
+                build_invoked_completion_items: Method {
+                    sig: quote! { fn build_invoked_completion_items(&self, trigger: &str, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>) },
+                    variant: quote! { build_invoked_completion_items(trigger, doc, acc) },
                 },
             },
             lsp_go_to_definition: LspGoToDefinition {

@@ -1,9 +1,7 @@
 use crate::{self as auto_lsp};
 use auto_lsp::{choice, seq};
 use auto_lsp_core::ast::AstSymbol;
-use auto_lsp_core::build::{
-    Buildable, CheckQueryable, InvokeStackBuilder, Queryable, TryFromBuilder,
-};
+use auto_lsp_core::build::{Buildable, InvokeStackBuilder, Queryable, TryFromBuilder};
 use downcast_rs::Downcast;
 use impls::impls;
 use static_assertions::{assert_fields, assert_impl_all};
@@ -18,7 +16,6 @@ fn simple_seq() {
     assert!(impls!(Module: InvokeStackBuilder<ModuleBuilder, Module>));
     assert_fields!(Module: _data);
     assert_eq!(Module::QUERY_NAMES[0], "module");
-    assert_eq!(Module::CHECK, ());
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
     assert_fields!(ModuleBuilder: url, query_index, range);
@@ -42,7 +39,6 @@ fn seq_with_field() {
     assert_fields!(Module: _data, function);
     assert_eq!(Module::QUERY_NAMES.len(), 1);
     assert_eq!(Module::QUERY_NAMES[0], "module");
-    assert_eq!(Module::CHECK, ());
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
     assert_fields!(ModuleBuilder: url, query_index, range);
@@ -65,7 +61,6 @@ fn simple_choice() {
     assert!(impls!(Choice: InvokeStackBuilder<ChoiceBuilder, Choice>));
     assert_eq!(Choice::QUERY_NAMES.len(), 1);
     assert_eq!(Choice::QUERY_NAMES[0], "module");
-    assert_eq!(Choice::CHECK, ());
 
     assert_impl_all!(ChoiceBuilder: Queryable, Buildable);
     assert_fields!(ChoiceBuilder: unique_field);
@@ -93,7 +88,6 @@ fn multiple_choices() {
     assert_eq!(Choice::QUERY_NAMES.len(), 2);
     assert_eq!(Choice::QUERY_NAMES[0], "module1");
     assert_eq!(Choice::QUERY_NAMES[1], "module2");
-    assert_eq!(Choice::CHECK, ());
 
     assert_impl_all!(ChoiceBuilder: Queryable, Buildable);
     assert_fields!(ChoiceBuilder: unique_field);
@@ -118,7 +112,6 @@ fn seq_with_optional() {
     assert_fields!(Module: _data, function);
     assert_eq!(Module::QUERY_NAMES.len(), 1);
     assert_eq!(Module::QUERY_NAMES[0], "module");
-    assert_eq!(Module::CHECK, ());
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
     assert_fields!(ModuleBuilder: url, query_index, range);
@@ -139,7 +132,6 @@ fn seq_with_recursive() {
     assert_fields!(A: _data, elems);
     assert_eq!(A::QUERY_NAMES.len(), 1);
     assert_eq!(A::QUERY_NAMES[0], "module1");
-    assert_eq!(A::CHECK, ());
 
     assert_impl_all!(ABuilder: Queryable, Buildable);
     assert_fields!(ABuilder: url, query_index, range);

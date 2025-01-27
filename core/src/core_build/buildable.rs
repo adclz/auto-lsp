@@ -130,44 +130,6 @@ pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
 }
 
-/// Call [`check_conflicts`] to find duplicated queries with a struct or enum
-///
-/// Executed at compile time
-#[cfg(feature = "assertions")]
-pub trait CheckQueryable {
-    const CHECK: ();
-}
-
-/// Compare the names of the queries and panic if there are duplicates
-#[cfg(feature = "assertions")]
-pub const fn check_conflicts(
-    input_name: &str,
-    fields: &'static [&'static str],
-    names: &'static [&'static str],
-) {
-    let mut i = 0;
-    while i < names.len() {
-        let mut j = i + 1;
-        while j < names.len() {
-            const_panic::concat_assert!(
-                !const_str::equal!(names[i], names[j]),
-                "\n\n\n**** Conflicting Queries detected! ****\n\n",
-                "\nSymbol -->           ",
-                input_name,
-                "\nQuery name -->       ",
-                names[i],
-                "\n\n\n1# : ",
-                fields[i],
-                "\n2# : ",
-                fields[j],
-                "\n\n\n\n"
-            );
-            j += 1;
-        }
-        i += 1;
-    }
-}
-
 pub trait Constructor<T: Buildable + Queryable> {
     fn new(
         url: Arc<Url>,
@@ -245,10 +207,7 @@ impl AddSymbol for MaybePendingSymbol {
         if Y::QUERY_NAMES.contains(&name) {
             match self.as_ref() {
                 Some(_) => {
-                    return Err(builder_error!(
-                        tree_sitter_range_to_lsp_range(&capture.node.range()),
-                        format!("{:?} already set in {:?}", field_name, parent_name)
-                    ));
+                    return Ok(None);
                 }
                 None => match Y::new(
                     workspace.url.clone(),
@@ -288,7 +247,6 @@ impl AddSymbol for Vec<PendingSymbol> {
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
         let name =
             workspace.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
-
         if Y::QUERY_NAMES.contains(&name) {
             match Y::new(
                 workspace.url.clone(),

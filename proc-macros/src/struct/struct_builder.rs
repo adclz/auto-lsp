@@ -191,36 +191,6 @@ impl<'a> StructBuilder<'a> {
             .iter()
             .map(|name| quote! { stringify!(#name) })
             .collect::<Vec<_>>();
-
-        #[cfg(feature = "assertions")]
-        {
-        let check_queryable = &PATHS.check_queryable.path;
-
-        let names = quote! { &[#(#names),*] };
-
-        let concat = self
-            .fields
-            .get_field_builder_names()
-            .iter()
-            .map(|name| quote! { #name::QUERY_NAMES })
-            .collect::<Vec<_>>();
-
-        let input_name = self.input_name;
-        let check_conflicts = &PATHS.check_conflicts;
-
-        builder
-            .add(quote! { const CHECK: () = {
-                use #queryable;
-                use #check_queryable;
-                let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
-                #check_conflicts(stringify!(#input_name), #names, queries);
-            }; })
-            .stage_trait(&self.input_name, check_queryable);
-        
-            builder
-                .add(quote! { const _: () = <#input_name as  #check_queryable>::CHECK; })
-                .stage();
-        }
     }
 
     fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {

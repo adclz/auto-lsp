@@ -55,8 +55,7 @@ anyhow = "1.0.91"
 regex = "1.11.1"
 
 [features]
-default = ["assertions"]
-assertions = ["auto-lsp-core/assertions", "auto-lsp-macros/assertions"]
+default = []
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
 log = ["auto-lsp-core/log"]
 lsp_server = [
@@ -69,8 +68,8 @@ lsp_server = [
 ]
 rayon = ["auto-lsp-core/rayon", "dep:rayon"]
 wasm = ["parking_lot/nightly"]
-python = ["assertions", "lsp_server", "dep:tree-sitter-python"]
-html = ["assertions", "lsp_server", "dep:tree-sitter-html"]
+python = ["lsp_server", "dep:tree-sitter-python"]
+html = ["lsp_server", "dep:tree-sitter-html"]
 
 [package.metadata.docs.rs]
 all-features = true

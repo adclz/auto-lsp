@@ -41,6 +41,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         self.impl_reference(&mut builder);
         self.impl_code_lens(&mut builder);
         self.impl_completion_items(&mut builder);
+        self.impl_invoked_completion_items(&mut builder);
         self.impl_document_symbol(&mut builder);
         self.impl_hover_info(&mut builder);
         self.impl_inlay_hint(&mut builder);
@@ -198,36 +199,6 @@ impl<'a> EnumBuilder<'a> {
                 };
             })
             .stage_trait(&self.input_builder_name, queryable);
-
-        #[cfg(feature = "assertions")]
-        {
-            let check_queryable = &PATHS.check_queryable.path;
-
-            let names = self
-                .fields
-                .variant_names
-                .iter()
-                .map(|name| quote! { stringify!(#name) })
-                .collect::<Vec<_>>();
-
-            let names = quote! { &[#(#names),*] };
-
-            let input_name = self.input_name;
-            let check_conflicts = &PATHS.check_conflicts;
-
-            builder
-                .add(quote! { const CHECK: () = {
-                    use #queryable;
-                    use #check_queryable;
-                    let queries = auto_lsp::constcat::concat_slices!([&str]: #(#concat),*);
-                    #check_conflicts(stringify!(#input_name), #names, queries);
-                }; })
-                .stage_trait(&self.input_name, check_queryable);
-
-            builder
-                .add(quote! { const _: () = <#input_name as  #check_queryable>::CHECK; })
-                .stage();
-        }
     }
 
     fn impl_parent(&self, builder: &mut VariantBuilder) {
@@ -286,6 +257,22 @@ impl<'a> EnumBuilder<'a> {
                 &PATHS.lsp_completion_items.build_completion_items.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_completion_items.path);
+    }
+
+    fn impl_invoked_completion_items(&self, builder: &mut VariantBuilder) {
+        builder
+            .add_pattern_match_iter(
+                &self.fields,
+                &PATHS
+                    .lsp_invoked_completion_items
+                    .build_invoked_completion_items
+                    .sig,
+                &PATHS
+                    .lsp_invoked_completion_items
+                    .build_invoked_completion_items
+                    .variant,
+            )
+            .stage_trait(&self.input_name, &PATHS.lsp_invoked_completion_items.path);
     }
 
     fn impl_document_symbol(&self, builder: &mut VariantBuilder) {
