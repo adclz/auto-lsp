@@ -70,13 +70,13 @@ fn check_foo_parameters(foo_bar: (Workspace, Document)) {
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
-    // Foo has 2 parameters
+    // Foo has 3 parameters
     let function = module.functions[0].read();
     assert_eq!(function.parameters.read().parameters.len(), 3);
     let parameters = &function.parameters.read().parameters;
 
     // param1 is untyped
-    assert!(matches!(*parameters[0].read(), Parameter::Untyped(_)));
+    assert!(matches!(*parameters[0].read(), Parameter::Identifier(_)));
 
     // param2 is typed
     assert!(matches!(*parameters[1].read(), Parameter::Typed(_)));
@@ -98,8 +98,6 @@ fn check_foo_parameters(foo_bar: (Workspace, Document)) {
                 .unwrap(),
             "int"
         );
-
-        assert!(matches!(*typed.parameter_type.read(), Type::Int(_)));
     } else {
         panic!("Expected Typed parameter");
     }
@@ -124,11 +122,11 @@ fn check_foo_parameters(foo_bar: (Workspace, Document)) {
             "int"
         );
 
-        assert!(matches!(*typed_default.parameter_type.read(), Type::Int(_)));
+        assert!(typed_default.value.read().is_integer());
 
         assert_eq!(
             typed_default
-                .default
+                .value
                 .read()
                 .get_text(document.text.as_bytes())
                 .unwrap(),

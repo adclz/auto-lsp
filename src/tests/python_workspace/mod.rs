@@ -5,45 +5,24 @@ use auto_lsp::{configure_parsers, define_semantic_token_types, choice, seq};
 
 static CORE_QUERY: &'static str = "
 (module) @module
+(identifier) @identifier
+
+(integer) @integer
+(float) @float
+(string) @string
+(true) @true
+(false) @false
 
 (function_definition
-  name: (identifier) @identifier
-  parameters: (_) @parameters 
-  body: (_) @body
+  body: (_) @body 
 ) @function
 
-(parameter
-  ((identifier) @untyped_parameter [ \",\" \")\"])
-)
+(parameters) @parameters
+(typed_parameter) @typed_parameter
+(typed_default_parameter) @typed_default_parameter
 
-(typed_parameter
-	. (identifier) @identifier
-    type: [
-    		((_) @bool (#eq? @bool \"bool\"))
-          	((_) @complex (#eq? @complex \"complex\"))
-    	  	((_) @int (#eq? @int \"int\"))
-          	((_) @float (#eq? @float \"float\"))
-            ((_) @str (#eq? @str \"str\"))
-          ]
-) @typed_parameter
-
-(typed_default_parameter
-	name: (identifier) @identifier
-    type: [
-    		((_) @bool (#eq? @bool \"bool\"))
-          	((_) @complex (#eq? @complex \"complex\"))
-    	  	((_) @int (#eq? @int \"int\"))
-          	((_) @float (#eq? @float \"float\"))
-            ((_) @str (#eq? @str \"str\"))
-          ]
-    value: (_) @any
-) @typed_default_parameter
-
-(assignment
-	(_) @identifier
-	\"=\"
-    (_) @any
-) @assignment
+(pass_statement) @pass_statement
+(assignment) @assignment
 ";
 
 static COMMENT_QUERY: &'static str = "
@@ -131,9 +110,17 @@ struct Function {
     body: Body,
 }
 
-#[seq(query_name = "parameters", kind(symbol()))]
+#[seq(query_name = "parameters", kind(symbol(
+    scope(user)
+)))]
 pub struct Parameters {
     parameters: Vec<Parameter>,
+}
+
+impl Scope for Parameters {
+    fn get_scope_range(&self) -> Vec<[usize; 2]> {
+        vec![]
+    }
 }
 
 #[seq(query_name = "body", kind(symbol(
@@ -145,14 +132,104 @@ pub struct Body {
 
 #[choice]
 enum Statement {
+    SimpleStatement(SimpleStatement),
+    CompoundStatement(CompoundStatement),
+}
+
+#[choice]
+enum SimpleStatement {
+    ExpressionStatement(ExpressionStatement),
+    PassStatement(PassStatement),
+}
+
+#[choice]
+enum CompoundStatement {
     Function(Function),
+}
+
+#[choice]
+pub enum ExpressionStatement {
     Assignment(Assignment),
+    AugmentedAssignent(AugmentedAssignment),
+    Expression(Expression),
+}
+
+#[seq(query_name = "pass_statement", kind(symbol(
+    lsp_hover_info(user)
+)))]
+pub struct PassStatement {}
+
+impl GetHover for PassStatement {
+    fn get_hover(&self, _doc: &Document) -> Option<lsp_types::Hover> {
+        Some(lsp_types::Hover {
+            contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+                kind: lsp_types::MarkupKind::Markdown,
+                value: r#"This is a pass statement
+
+[See python doc](https://docs.python.org/3/reference/simple_stmts.html#the-pass-statement)"#.into(),
+            }),
+            range: None
+        })
+    }
+}
+
+#[seq(query_name = "any", kind(symbol()))]
+pub struct Any {
+
+}
+
+#[seq(query_name = "augmented_assignment", kind(symbol()))]
+pub struct AugmentedAssignment {
+    left: Identifier,
+    right: Any,
 }
 
 #[seq(query_name = "assignment", kind(symbol()))]
 pub struct Assignment {
     left: Identifier,
     right: Any,
+}
+
+#[choice]
+pub enum Expression {
+    PrimaryExpression(PrimaryExpression),
+}
+
+impl Expression {
+    pub fn is_integer(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::Integer(_)))
+    }
+
+    pub fn is_float(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::Float(_)))
+    }
+
+    pub fn is_true(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::True(_)))
+    }
+
+    pub fn is_false(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::False(_)))
+    }
+
+    pub fn is_string(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::String(_)))
+    }
+
+    pub fn is_none(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::None(_)))
+    }
+}
+
+#[choice]
+pub enum PrimaryExpression {
+    Identifier(Identifier),
+    Integer(Integer),
+    Float(Float),
+    True(True),
+    False(False),
+    String(String),
+    None(None),
 }
 
 impl Scope for Function {
@@ -194,14 +271,6 @@ impl BuildCodeLens for Function {
     }
 }
 
-#[seq(query_name = "any", kind(symbol(
-)))]
-struct Any {}
-
-#[seq(query_name = "any2", kind(symbol(
-)))]
-struct Any2 {}
-
 #[seq(query_name = "identifier", kind(symbol(
     lsp_hover_info(user)
 )))]
@@ -225,7 +294,7 @@ impl GetHover for Identifier {
 
 #[choice]
 enum Parameter {
-    Untyped(UntypedParameter),
+    Identifier(Identifier),
     Typed(TypedParameter),
     TypedDefault(TypedDefaultParameter),
 }
@@ -247,100 +316,84 @@ struct TypedParameter {
 struct TypedDefaultParameter {
     name: Identifier,
     parameter_type: Type,
-    default: Any
+    value: Expression
+}
+
+#[choice]
+enum Type {
+    Expression(Expression)
 }
 
 impl Check for TypedDefaultParameter {
     fn check(&self, doc: &Document, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> Result<(), ()> {
         let source = doc.texter.text.as_bytes();
-        match self.parameter_type.read().check_value(self.default.read().get_text(source).unwrap()) {
-            true => Ok(()),
-            false => {
-                diagnostics.push(lsp_types::Diagnostic {
-                    range: self.get_lsp_range(doc),
-                    severity: Some(lsp_types::DiagnosticSeverity::ERROR),
-                    code: None,
-                    code_description: None,
-                    source: None,
-                    message: format!("Invalid value {} for type {}", 
-                        self.default.read().get_text(source).unwrap(),
-                        self.parameter_type.read().get_text(source).unwrap()),
-                    related_information: None,
-                    tags: None,
-                    data: None,
-                });
-                Err(())
-            }
+
+        match self.parameter_type.read().get_text(source).unwrap() {
+            "int" => match self.value.read().is_integer() {
+                true => Ok(()),
+                false => {
+                    diagnostics.push(self.type_error_message(doc));
+                    return Err(());
+                }
+            },
+            "float" => match self.value.read().is_float() {
+                true => Ok(()),
+                false => {
+                    diagnostics.push(self.type_error_message(doc));
+                    return Err(());
+                }
+            },
+            "str" => match self.value.read().is_string() {
+                true => Ok(()),
+                false => {
+                    diagnostics.push(self.type_error_message(doc));
+                    return Err(());
+                }
+            },
+            "bool" => match self.value.read().is_true() || self.value.read().is_false() {
+                true => Ok(()),
+                false => {
+                    diagnostics.push(self.type_error_message(doc));
+                    return Err(());
+                }
+            },
+            _ => Err(())
         }
     }
 }
 
-#[choice]
-enum Type {
-    Bool(Bool),
-    Complex(Complex),
-    Int(Int),
-    Float(Float),
-    Str(Str),
-}
-
-pub trait CheckPrimitive {
-    fn check_value(&self, value: &str) -> bool;
-}
-
-impl CheckPrimitive for Type {
-    fn check_value(&self, value: &str) -> bool {
-        match self {
-            Type::Bool(t) => t.check_value(value),
-            Type::Complex(t) => t.check_value(value),
-            Type::Int(t) => t.check_value(value),
-            Type::Float(t) => t.check_value(value),
-            Type::Str(t) => t.check_value(value),
+impl TypedDefaultParameter {
+    fn type_error_message(&self, document: &Document) -> lsp_types::Diagnostic {
+        let source_code = document.texter.text.as_bytes();
+        lsp_types::Diagnostic {
+            range: self.get_lsp_range(document),
+            severity: Some(lsp_types::DiagnosticSeverity::ERROR),
+            code: None,
+            code_description: None,
+            source: None,
+            message:  format!("Invalid value {} for type {}", 
+            self.value.read().get_text(source_code).unwrap(), self.parameter_type.read().get_text(source_code).unwrap()),
+            related_information: None,
+            tags: None,
+            data: None,
         }
     }
 }
 
-#[seq(query_name = "bool", kind(symbol()))]
-struct Bool {}
-
-impl CheckPrimitive for Bool {
-    fn check_value(&self, value: &str) -> bool {
-        value.parse::<bool>().is_ok()
-    }
-}
-
-#[seq(query_name = "complex", kind(symbol()))]
-struct Complex {}
-
-impl CheckPrimitive for Complex {
-    fn check_value(&self, value: &str) -> bool {
-        value.parse::<f64>().is_ok()
-    }
-}
-
-#[seq(query_name = "int", kind(symbol()))]
-struct Int {}
-
-impl CheckPrimitive for Int {
-    fn check_value(&self, value: &str) -> bool {
-        value.parse::<i64>().is_ok()
-    }
-}
+#[seq(query_name = "integer", kind(symbol()))]
+struct Integer {}
 
 #[seq(query_name = "float", kind(symbol()))]
 struct Float {}
 
-impl CheckPrimitive for Float {
-    fn check_value(&self, value: &str) -> bool {
-        value.parse::<f64>().is_ok()
-    }
-}
+#[seq(query_name = "string", kind(symbol()))]
+struct String {}
 
-#[seq(query_name = "str", kind(symbol()))]
-struct Str {}
+#[seq(query_name = "true", kind(symbol()))]
+struct True {}
 
-impl CheckPrimitive for Str {
-    fn check_value(&self, value: &str) -> bool {
-        value.starts_with("\"") && value.ends_with("\"")
-    }
-}
+#[seq(query_name = "false", kind(symbol()))]
+struct False {}
+
+#[seq(query_name = "none", kind(symbol()))]
+struct None {}
