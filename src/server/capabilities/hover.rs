@@ -15,10 +15,7 @@ impl Session {
         let position = params.text_document_position_params.position;
 
         let offset = document.offset_at(position).unwrap();
-        let item = workspace
-            .ast
-            .iter()
-            .find_map(|symbol| symbol.read().find_at_offset(offset));
+        let item = workspace.find_at_offset(offset);
 
         match item {
             Some(item) => Ok(item.read().get_hover(document)),

@@ -166,4 +166,16 @@ impl Workspace {
 
         Ok((workspace, document))
     }
+
+    /// Finds the symbol at the given offset in the AST.
+    pub fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+        let ast = self.ast.as_ref()?;
+        if let Some(symbol) = ast.read().find_at_offset(offset) {
+            return Some(symbol);
+        }
+        if ast.read().is_inside_offset(offset) {
+            return Some(ast.clone());
+        }
+        None
+    }
 }

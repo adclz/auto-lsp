@@ -1,7 +1,10 @@
+use std::sync::LazyLock;
+
 use crate::{self as auto_lsp};
 use auto_lsp::core::ast::{AstSymbol, BuildCodeLens, Check, GetHover, GetSymbolData, Scope, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, VecOrSymbol};
 use auto_lsp::core::document::Document;
 use auto_lsp::{configure_parsers, define_semantic_token_types, choice, seq};
+use auto_lsp_core::ast::BuildCompletionItems;
 
 static CORE_QUERY: &'static str = "
 (module) @module
@@ -45,11 +48,25 @@ define_semantic_token_types!(standard {
     "Function" => FUNCTION,
 });
 
+/// Globally available completion items
+static GLOBAL_COMPLETION_ITEMS: LazyLock<Vec<lsp_types::CompletionItem>> = LazyLock::new(|| {
+    vec![
+        lsp_types::CompletionItem {
+            label: "def ...".to_string(),
+            kind: Some(lsp_types::CompletionItemKind::SNIPPET),
+            insert_text_format: Some(lsp_types::InsertTextFormat::SNIPPET),
+            insert_text: Some("def ${1:func_name}(${2:arg1}):$0".to_string()),
+            ..Default::default()
+        }
+    ]
+});
+
 #[seq(query_name = "module", kind(symbol(
     lsp_document_symbols(user), 
     lsp_semantic_tokens(user),
     lsp_inlay_hints(user),
-    lsp_code_lens(user)
+    lsp_code_lens(user),
+    lsp_completion_items(user),
 )))]
 struct Module {
     functions: Vec<Function>,
@@ -85,11 +102,18 @@ impl BuildSemanticTokens for Module {
     }
 }
 
+impl BuildCompletionItems for Module {
+    fn build_completion_items(&self, _doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+        acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
+    }
+}
+
 #[seq(query_name = "function", kind(symbol(
     lsp_document_symbols( 
         code_gen(
             name = self::name,
             kind = auto_lsp::lsp_types::SymbolKind::FUNCTION,
+            childrens(self::body)
         )
     ),
     lsp_semantic_tokens(
@@ -102,12 +126,58 @@ impl BuildSemanticTokens for Module {
     lsp_inlay_hints(user),
     lsp_code_lens(user),
     comment(user),
-    scope(user)
+    scope(user),
+    lsp_completion_items(user),
 )))]
 struct Function {
     name: Identifier,
     parameters: Parameters,
     body: Body,
+}
+
+impl Scope for Function {
+    fn get_scope_range(&self) -> Vec<[usize; 2]> {
+        vec![]
+    }
+}
+
+impl BuildInlayHints for Function {
+    fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
+        let read = self.name.read();
+        acc.push(auto_lsp::lsp_types::InlayHint {
+            kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
+            label: auto_lsp::lsp_types::InlayHintLabel::String(
+                match read.get_text(doc.texter.text.as_bytes()) {
+                    Some(text) => text.to_string(),
+                    None => "".to_string(),
+                }
+            ),
+            position: read.get_start_position(doc),
+            tooltip: None,
+            text_edits: None,
+            padding_left: None,
+            padding_right: None,
+            data: None
+        });
+        self.body.read().build_inlay_hints(doc, acc);
+    }
+}
+
+impl BuildCodeLens for Function {
+    fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+        let read = self.name.read();
+        acc.push(lsp_types::CodeLens {
+            range: read.get_lsp_range(&doc),
+            command: None,
+            data: None,
+        })
+    }
+}
+
+impl BuildCompletionItems for Function {
+    fn build_completion_items(&self, _doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+        acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
+    }
 }
 
 #[seq(query_name = "parameters", kind(symbol(
@@ -124,10 +194,29 @@ impl Scope for Parameters {
 }
 
 #[seq(query_name = "body", kind(symbol(
-    lsp_inlay_hints(code_gen(query = true)),
+    lsp_document_symbols(user),
+    lsp_completion_items(user),
 )))]
 pub struct Body {
     pub statements: Vec<Statement>,
+}
+
+impl BuildDocumentSymbols for Body {
+    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
+        let mut symbols = vec![];
+        for statement in &self.statements {
+            if let Some(VecOrSymbol::Vec(nested_symbols)) = statement.read().get_document_symbols(doc) {
+                symbols.extend(nested_symbols);
+            }
+        }
+        Some(VecOrSymbol::Vec(symbols))
+    }
+}
+
+impl BuildCompletionItems for Body {
+    fn build_completion_items(&self, _doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+        acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
+    }
 }
 
 #[choice]
@@ -138,6 +227,7 @@ enum Statement {
 
 #[choice]
 enum SimpleStatement {
+    Expression(Expression),
     ExpressionStatement(ExpressionStatement),
     PassStatement(PassStatement),
 }
@@ -232,47 +322,9 @@ pub enum PrimaryExpression {
     None(None),
 }
 
-impl Scope for Function {
-    fn get_scope_range(&self) -> Vec<[usize; 2]> {
-        vec![]
-    }
-}
-
-impl BuildInlayHints for Function {
-    fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) {
-        let read = self.name.read();
-        acc.push(auto_lsp::lsp_types::InlayHint {
-            kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
-            label: auto_lsp::lsp_types::InlayHintLabel::String(
-                match read.get_text(doc.texter.text.as_bytes()) {
-                    Some(text) => text.to_string(),
-                    None => "".to_string(),
-                }
-            ),
-            position: read.get_start_position(doc),
-            tooltip: None,
-            text_edits: None,
-            padding_left: None,
-            padding_right: None,
-            data: None
-        });
-        self.body.read().build_inlay_hints(doc, acc);
-    }
-}
-
-impl BuildCodeLens for Function {
-    fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
-        let read = self.name.read();
-        acc.push(lsp_types::CodeLens {
-            range: read.get_lsp_range(&doc),
-            command: None,
-            data: None,
-        })
-    }
-}
-
 #[seq(query_name = "identifier", kind(symbol(
-    lsp_hover_info(user)
+    lsp_hover_info(user),
+    lsp_completion_items(user)
 )))]
 struct Identifier {}
 
@@ -289,6 +341,19 @@ impl GetHover for Identifier {
             }),
             range: None,
         })
+    }
+}
+
+impl BuildCompletionItems for Identifier {
+    fn build_completion_items(&self, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+        match self.get_parent_scope() {
+            Some(scope) => {
+                scope.read().build_completion_items(doc, acc);
+            },
+            None => {
+                acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
+            }
+        }
     }
 }
 
