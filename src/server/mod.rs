@@ -22,6 +22,7 @@
 //! struct Module {}
 //!
 //! configure_parsers!(
+//!     PARSER_LIST,
 //!     "python" => {
 //!         language: tree_sitter_python::LANGUAGE,
 //!         node_types: tree_sitter_python::NODE_TYPES,
@@ -46,6 +47,7 @@
 //! # #[seq(query_name = "module", kind(symbol()))]
 //! # struct Module {}
 //! # configure_parsers!(
+//!      PARSER_LIST,
 //! #    "python" => {
 //! #        language: tree_sitter_python::LANGUAGE,
 //! #        node_types: tree_sitter_python::NODE_TYPES,
@@ -61,7 +63,7 @@
 //!  use std::error::Error;
 //!   
 //!  let init_options = InitOptions {
-//!     parsers: &PARSERS,
+//!     parsers: &PARSER_LIST,
 //!     lsp_options: LspOptions {
 //!         ..Default::default()
 //!     }
@@ -71,13 +73,13 @@
 //!  Finally, create your main function and initialize a new session..
 //!
 //! ```no_run
-//! # use auto_lsp::python::PARSERS;
+//! # use auto_lsp::python::PYTHON_PARSERS;
 //! use std::error::Error;
 //! use auto_lsp::server::{Session, InitOptions, LspOptions};
 //!
 //! fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 //!   let init_options = InitOptions {
-//!         parsers: &PARSERS,
+//!         parsers: &PYTHON_PARSERS,
 //!         lsp_options: LspOptions {
 //!             ..Default::default()
 //!         }
