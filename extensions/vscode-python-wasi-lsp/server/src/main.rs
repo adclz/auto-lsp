@@ -16,6 +16,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             inlay_hints: true,
             hover_info: true,
             code_lens: true,
+            completions: true,
             ..Default::default()
         },
     })?;

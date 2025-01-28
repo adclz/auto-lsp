@@ -128,14 +128,30 @@ pub trait BuildCodeLens {
     fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide completion items
+/// A trait to be implemented by any [AstSymbol] that can provide completion items when manually invoked
 pub trait BuildCompletionItems {
     /// Completion items builder
     ///
     /// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
     ///
     /// Push completion items to the accumulator
-    fn build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document) {}
+    fn build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) {}
+}
+
+/// A trait to be implemented by any [AstSymbol] that can provide completion items when invoked by a character trigger
+pub trait BuildInvokedCompletionItems {
+    /// Completion items builder
+    ///
+    /// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
+    ///
+    /// Push completion items to the accumulator
+    fn build_invoked_completion_items(
+        &self,
+        trigger: &str,
+        doc: &Document,
+        acc: &mut Vec<CompletionItem>,
+    ) {
+    }
 }
 
 macro_rules! impl_build {
@@ -161,7 +177,8 @@ macro_rules! impl_build {
 impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
 impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_build!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
-impl_build!(BuildCompletionItems, build_completion_items(&self, acc: &mut Vec<CompletionItem>, doc: &Document));
+impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
+impl_build!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
 
 /// Special capabilities
 

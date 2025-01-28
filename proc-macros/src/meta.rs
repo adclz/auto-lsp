@@ -53,6 +53,7 @@ pub struct SymbolFeatures {
     pub lsp_inlay_hints: Option<Feature<InlayHintFeature>>,
     pub lsp_code_lens: Option<Feature<CodeLensFeature>>,
     pub lsp_completion_items: Option<Feature<CompletionItemFeature>>,
+    pub lsp_invoked_completion_items: Option<Feature<InvokedCompletionItemFeature>>,
     pub lsp_go_to_definition: Option<Feature<GotoDefinitionFeature>>,
     pub lsp_go_to_declaration: Option<Feature<GoToDeclarationFeature>>,
 }
@@ -74,6 +75,7 @@ pub struct ReferenceFeatures {
     pub lsp_inlay_hints: Option<ReferenceFeature>,
     pub lsp_code_lens: Option<ReferenceFeature>,
     pub lsp_completion_items: Option<ReferenceFeature>,
+    pub lsp_invoked_completion_items: Option<ReferenceFeature>,
     pub lsp_go_to_definition: Option<ReferenceFeature>,
     pub lsp_go_to_declaration: Option<ReferenceFeature>,
 }

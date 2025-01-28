@@ -2,6 +2,7 @@ use crate::core::ast::{AstSymbol, BuildInlayHints, GetSymbolData, IsComment, Vec
 use crate::core::ast::{BuildCodeLens, GetHover};
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
+use auto_lsp_core::ast::BuildCompletionItems;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
@@ -262,7 +263,7 @@ fn check_inlay_hints(foo_bar: (Workspace, Document)) {
     let mut hints = vec![];
     module.build_inlay_hints(&document, &mut hints);
 
-    assert_eq!(hints.len(), 4);
+    assert_eq!(hints.len(), 2);
 
     assert_eq!(hints[0].kind, Some(lsp_types::InlayHintKind::TYPE));
     assert_eq!(hints[1].kind, Some(lsp_types::InlayHintKind::TYPE));
@@ -290,6 +291,31 @@ fn check_code_lens(foo_bar: (Workspace, Document)) {
     assert_eq!(code_lens[1].range.start.character, 4);
     assert_eq!(code_lens[1].range.end.line, 4);
     assert_eq!(code_lens[1].range.end.character, 7);
+}
+
+#[rstest]
+fn check_global_completion_items(foo_bar: (Workspace, Document)) {
+    let ast = foo_bar.0.ast.as_ref().unwrap();
+    let document = &foo_bar.1;
+
+    // Module returns globally available completion items
+    let module = ast.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    let mut completion_items = vec![];
+    module.build_completion_items(&document, &mut completion_items);
+
+    assert_eq!(completion_items.len(), 1);
+    assert_eq!(completion_items[0].label, "def ...");
+
+    // Function should do the same
+    let function = module.functions[0].read();
+
+    let mut completion_items = vec![];
+    function.build_completion_items(&document, &mut completion_items);
+
+    assert_eq!(completion_items.len(), 1);
+    assert_eq!(completion_items[0].label, "def ...");
 }
 
 #[fixture]

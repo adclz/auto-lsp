@@ -14,6 +14,7 @@ pub struct Features<'a> {
     pub features_attributes: &'a ReferenceOrSymbolFeatures<'a>,
     pub lsp_code_lens: CodeLensBuilder<'a>,
     pub lsp_completion_items: CompletionItemsBuilder<'a>,
+    pub lsp_invoked_completion_items: InvokedCompletionItemsBuilder<'a>,
     pub lsp_document_symbols: DocumentSymbolBuilder<'a>,
     pub lsp_hover_info: HoverBuilder<'a>,
     pub lsp_inlay_hints: InlayHintsBuilder<'a>,
@@ -37,6 +38,7 @@ impl<'a> Features<'a> {
             features_attributes,
             lsp_code_lens: CodeLensBuilder::new(input_name, fields),
             lsp_completion_items: CompletionItemsBuilder::new(input_name, fields),
+            lsp_invoked_completion_items: InvokedCompletionItemsBuilder::new(input_name, fields),
             lsp_document_symbols: DocumentSymbolBuilder::new(input_name, fields),
             lsp_hover_info: HoverBuilder::new(input_name, fields),
             lsp_inlay_hints: InlayHintsBuilder::new(input_name, fields),
@@ -67,6 +69,9 @@ impl<'a> ToTokens for Features<'a> {
                 self.lsp_completion_items
                     .code_gen_reference(reference)
                     .to_tokens(tokens);
+                self.lsp_invoked_completion_items
+                    .code_gen_reference(reference)
+                    .to_tokens(tokens);
                 self.lsp_document_symbols
                     .code_gen_reference(reference)
                     .to_tokens(tokens);
@@ -93,6 +98,9 @@ impl<'a> ToTokens for Features<'a> {
                 self.comment.code_gen(symbol).to_tokens(tokens);
                 self.lsp_code_lens.code_gen(symbol).to_tokens(tokens);
                 self.lsp_completion_items.code_gen(symbol).to_tokens(tokens);
+                self.lsp_invoked_completion_items
+                    .code_gen(symbol)
+                    .to_tokens(tokens);
                 self.lsp_document_symbols.code_gen(symbol).to_tokens(tokens);
                 self.lsp_hover_info.code_gen(symbol).to_tokens(tokens);
                 self.lsp_inlay_hints.code_gen(symbol).to_tokens(tokens);
