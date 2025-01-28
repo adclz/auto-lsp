@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use lsp_types::{Diagnostic, Position};
+use lsp_types::Diagnostic;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::QueryCapture;
 
@@ -72,7 +72,7 @@ where
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
     /// Indicates whether building has started
-    start_building: bool,
+    delay_building: bool,
 }
 
 impl<'a, T> StackBuilder<'a, T>
@@ -87,7 +87,7 @@ where
             document,
             roots: vec![],
             stack: vec![],
-            start_building: false,
+            delay_building: false,
         }
     }
 
@@ -109,7 +109,7 @@ where
             .downcast_ref::<T>()
             .ok_or(builder_error!(
                 result.get_lsp_range(&self.document),
-                format!("Invalid cast {:?}", T::QUERY_NAMES[0])
+                format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
             ))?
             .try_into_builder(self.workspace, self.document)
     }
@@ -127,9 +127,14 @@ where
             self.document.texter.text.as_bytes(),
         );
 
+        // Limit the captures to the specified range.
+        // Note that tree sitter will capture all nodes since the beginning until the end of the range,
+        // which is why we use the delay_building flag to determine when to start building the AST.
         if let Some(range) = range {
             captures.set_byte_range(range.clone());
         }
+
+        self.delay_building = range.is_none();
 
         // Iterate over the captures.
         // Captures are sorted by their location in the tree, not their pattern.
@@ -139,39 +144,49 @@ where
 
             // To determine if we should start building the AST, we check if the current capture
             // is within the given range, we also check if T contains the query name .
-            if !self.start_building {
-                if let Some(range) = range {
-                    if capture.node.range().start_byte <= range.start
-                        && self
-                            .workspace
-                            .parsers
-                            .tree_sitter
-                            .queries
-                            .core
-                            .capture_names()[capture_index as usize]
-                            != T::QUERY_NAMES[0]
+            if !self.delay_building {
+                if let Some(range) = &range {
+                    if ((capture.node.range().start_byte > range.start as usize)
+                        || (capture.node.range().start_byte == range.start as usize))
+                        && T::QUERY_NAMES.contains(
+                            &self
+                                .workspace
+                                .parsers
+                                .tree_sitter
+                                .queries
+                                .core
+                                .capture_names()[capture.index as usize],
+                        )
                     {
-                        continue;
+                        self.delay_building = true;
                     } else {
-                        // Start building.
-                        self.start_building = true;
+                        continue;
                     }
                 }
             }
 
+            // Current parent
             let mut parent = self.stack.pop();
 
             loop {
                 match &parent {
+                    // If there's no parent, create a root node.
                     None => {
-                        self.create_root_node(&capture, capture_index);
-                        break;
+                        // There can only be one root node.
+                        if self.roots.is_empty() {
+                            self.create_root_node(&capture, capture_index);
+                            break;
+                        } else {
+                            return self;
+                        }
                     }
+                    // If there's a parent, checks if the parent's range intersects with the current capture.
                     Some(p) => {
                         if intersecting_ranges(
                             &p.get_rc().borrow().get_range(),
                             &capture.node.range(),
                         ) {
+                            // If it intersects, create a child node.
                             self.create_child_node(p, &capture);
                             break;
                         }
@@ -220,7 +235,7 @@ where
             None => self.workspace.diagnostics.push(builder_warning!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
-                    "Unknown query {:?}",
+                    "Syntax error: Unexpected {:?}",
                     self.workspace
                         .parsers
                         .tree_sitter
@@ -232,7 +247,7 @@ where
         }
     }
 
-    /// Creates a child node
+    /// Creates a child node and tries to add it to the parent node.
     fn create_child_node(&mut self, parent: &PendingSymbol, capture: &QueryCapture) {
         let add = parent
             .get_rc()
@@ -240,13 +255,15 @@ where
             .add(&capture, self.workspace, &self.document);
         match add {
             Err(e) => {
+                // Parent did not accept the child node and returned an error.
                 self.workspace.diagnostics.push(e);
             }
             Ok(None) => {
+                // Parent did not accept the child node.
                 self.workspace.diagnostics.push(builder_warning!(
                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                     format!(
-                        "Unknown query {:?}",
+                        "Syntax error: Unexpected {:?}",
                         self.workspace
                             .parsers
                             .tree_sitter
@@ -326,28 +343,21 @@ where
         &mut self,
         range: &Option<std::ops::Range<usize>>,
     ) -> Result<PendingSymbol, Diagnostic> {
+        // Root node is the last node in the stack.
         match self.roots.pop() {
             Some(node) => Ok(node),
             None => match range {
+                // Since there is no root node, we return an error indicating the expected query names.
                 Some(range) => {
                     let node = self
                         .document
                         .tree
                         .root_node()
-                        .descendant_for_byte_range(range.start, range.end)
+                        .named_descendant_for_byte_range(range.start, range.end)
                         .unwrap();
 
                     Err(builder_error!(
-                        lsp_types::Range {
-                            start: Position {
-                                line: node.start_position().row as u32,
-                                character: node.start_position().column as u32,
-                            },
-                            end: Position {
-                                line: node.end_position().row as u32,
-                                character: node.end_position().column as u32,
-                            },
-                        },
+                        tree_sitter_range_to_lsp_range(&node.range()),
                         match T::QUERY_NAMES.len() {
                             1 => format!("Expected {}", T::QUERY_NAMES[0]),
                             _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),

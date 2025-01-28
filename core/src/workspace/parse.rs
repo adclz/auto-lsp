@@ -21,7 +21,7 @@ impl Workspace {
         edit_ranges: Option<&Vec<(InputEdit, bool)>>,
         document: &Document,
     ) -> &mut Self {
-        // Clean diagnostics
+        // Clear diagnostics
         self.diagnostics.clear();
 
         // Get new diagnostics from tree sitter
@@ -88,76 +88,100 @@ impl Workspace {
         // Filter intersecting edits and update AST incrementally
         for (edit, is_ws) in filter_intersecting_edits(edit_ranges).iter() {
             let start_byte = edit.start_byte;
-            let old_end_byte = edit.old_end_byte;
-            let new_end_byte = edit.new_end_byte;
-
-            let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
-            if is_noop {
-                continue;
-            }
-
-            let node = document
-                .tree
-                .root_node()
-                .descendant_for_byte_range(edit.start_byte, edit.new_end_byte);
-
-            // Skip invalid nodes
-            if let Some(node) = node {
-                if let Some(node) = node.parent() {
-                    if node.is_error() {
-                        #[cfg(feature = "log")]
-                        {
-                            log::warn!("");
-                            log::warn!("Node has an invalid syntax, aborting incremental update");
-                        }
-                        continue;
-                    }
-                }
-                if node.is_extra() {
-                    #[cfg(feature = "log")]
-                    {
-                        log::info!("");
-                        log::info!("Node is extra, only update ranges");
-                    }
-                    continue;
-                }
-            }
 
             // Skip whitespace-only edits
             if *is_ws {
                 #[cfg(feature = "log")]
                 {
                     log::info!("");
-                    log::info!("Whitespace edit, only update ranges");
+                    log::info!("Whitespace edit");
                 }
                 continue;
             }
 
+            let previous_node_location = start_byte.wrapping_sub(1);
+
+            // Find the node's range to update
+            // Since we don't have lookahed, we need to find the parent
+            // of the node that was edited
+            let node = match document
+                .tree
+                .root_node()
+                .named_descendant_for_byte_range(previous_node_location, previous_node_location)
+                .or_else(|| {
+                    // if no named node found, try to find any node
+                    // since a non named node's parent is always a named node
+                    document
+                        .tree
+                        .root_node()
+                        .descendant_for_byte_range(previous_node_location, previous_node_location)
+                        .and_then(|f| f.parent())
+                }) {
+                Some(node) => node,
+                None => {
+                    // Rare case since tree sitter would return a root node if it can't find a descendant
+                    #[cfg(feature = "log")]
+                    {
+                        log::info!("");
+                        log::info!("Node not found for range: {:?}", edit);
+                    }
+                    continue;
+                }
+            };
+
+            // If the node is an error, skip it
+            if let Some(node) = node.parent() {
+                if node.is_error() {
+                    #[cfg(feature = "log")]
+                    {
+                        log::warn!("");
+                        log::warn!("Node has an invalid syntax, skip update");
+                    }
+                    continue;
+                }
+            }
+            // If the node is extra, skip it
+            if node.is_extra() {
+                #[cfg(feature = "log")]
+                {
+                    log::info!("");
+                    log::info!("Node is extra, skip update");
+                }
+                continue;
+            }
+
+            // If the root node implements [`crate::ast::IsCheck`] and does not have a check pending,
+            // set it as a parent check
             let parent_check = match root.read().must_check() && !root.read().has_check_pending() {
                 true => Some(root.to_weak()),
                 false => None,
             };
 
-            // Update AST incrementally
+            // Attempt to update AST incrementally
             let result = root.write().update(
-                start_byte,
-                (new_end_byte.wrapping_sub(old_end_byte)) as isize,
+                &std::ops::Range {
+                    start: node.start_byte(),
+                    end: node.end_byte(),
+                },
                 parent_check,
                 self,
                 document,
             );
             match result {
                 ControlFlow::Break(Err(e)) => {
+                    // Update failed, add error to diagnostics
                     self.diagnostics.push(e);
                 }
                 ControlFlow::Continue(()) => {
+                    // Could not locate the node to update
+                    // therefor we need to reparse the root node
                     #[cfg(feature = "log")]
                     {
                         log::info!("");
                         log::info!("No incremental update available, root node will be reparsed");
                         log::info!("");
                     }
-                    // clean checks, since we are going to reparse the root node
+                    // clear checks, since we are going to reparse the root node
                     self.unsolved_checks.clear();
                     self.unsolved_references.clear();
 
@@ -172,6 +196,7 @@ impl Workspace {
                         }
                     }
                 }
+                // Update succeeded
                 ControlFlow::Break(Ok(_)) => {}
             };
         }

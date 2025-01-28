@@ -165,7 +165,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol,
 {
-    /// ### Locate the symbol that needs to be updated.
+    /// ### Tries to locate a symbol and update it.
     /// - The symbol must be within the range of the edit.
     /// - No lower-level symbols (children) have already been updated.
     ///
@@ -175,8 +175,7 @@ where
     /// - [ControlFlow::Continue]: The symbol did not require updating.
     fn update(
         &mut self,
-        start: usize,
-        offset: isize,
+        range: &std::ops::Range<usize>,
         parent_check: Option<WeakSymbol>,
         workspace: &mut Workspace,
         document: &Document,
@@ -193,26 +192,30 @@ where
 {
     fn update(
         &mut self,
-        start: usize,
-        offset: isize,
+        range: &std::ops::Range<usize>,
         parent_check: Option<WeakSymbol>,
         workspace: &mut Workspace,
         document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         let read = self.read();
-        match read.is_inside_offset(start) && read.is_scope() {
+        match read.is_inside_offset(range.start) {
             true => {
+                // Check if the symbol must be checked and no check is pending
                 let check = match read.must_check() && !read.has_check_pending() {
                     true => Some(self.to_weak()),
                     false => None,
                 };
                 drop(read);
-                // Check if no lower level symbols could be updated.
 
-                self.write()
-                    .update(start, offset, check, workspace, document)?;
+                // Check if no lower level symbols could be updated.
+                self.write().update(range, check, workspace, document)?;
+
+                if !self.read().is_scope() {
+                    return ControlFlow::Continue(());
+                }
+
                 let parent = self.read().get_parent();
-                let range = self.read().get_range();
+                let this_node_range = self.read().get_range();
                 #[cfg(feature = "log")]
                 {
                     log::info!("");
@@ -220,27 +223,34 @@ where
                     log::info!("");
                 }
 
-                // Create the symbol
+                // Creates the symbol
                 let symbol = Symbol::new_and_check(
-                    match Y::create_symbol(workspace, document, Some(range)) {
+                    match Y::create_symbol(
+                        workspace,
+                        document,
+                        Some(std::ops::Range {
+                            start: this_node_range.start,
+                            end: range.end,
+                        }),
+                    ) {
                         Ok(symbol) => symbol,
                         Err(err) => return ControlFlow::Break(Err(err)),
                     },
                     workspace,
                 );
+
                 // One of the parent must be checked
                 if let Some(parent_check) = parent_check {
                     workspace.add_unsolved_check(&parent_check.to_dyn().unwrap());
                 }
 
                 // Collect all references that are about to be dropped
-
                 self.collect_references(workspace);
                 if let Some(parent) = parent {
                     symbol.write().set_parent(parent);
                 }
 
-                // Update the symbol
+                // Swap the symbol
                 *self = symbol;
                 ControlFlow::Break(Ok(()))
             }
@@ -259,14 +269,13 @@ where
 {
     fn update(
         &mut self,
-        start: usize,
-        offset: isize,
+        range: &std::ops::Range<usize>,
         parent_check: Option<WeakSymbol>,
         workspace: &mut Workspace,
         document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         match self {
-            Some(symbol) => symbol.update(start, offset, parent_check, workspace, document),
+            Some(symbol) => symbol.update(range, parent_check, workspace, document),
             None => ControlFlow::Continue(()),
         }
     }
@@ -282,14 +291,13 @@ where
 {
     fn update(
         &mut self,
-        start: usize,
-        offset: isize,
+        range: &std::ops::Range<usize>,
         parent_check: Option<WeakSymbol>,
         workspace: &mut Workspace,
         document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()> {
         for symbol in self.iter_mut() {
-            match symbol.update(start, offset, parent_check.clone(), workspace, document) {
+            match symbol.update(range, parent_check.clone(), workspace, document) {
                 ControlFlow::Break(result) => return ControlFlow::Break(result),
                 ControlFlow::Continue(()) => continue,
             }
@@ -302,8 +310,7 @@ where
 pub trait UpdateDynamic {
     fn update(
         &mut self,
-        start: usize,
-        offset: isize,
+        range: &std::ops::Range<usize>,
         parent_check: Option<WeakSymbol>,
         workspace: &mut Workspace,
         document: &Document,

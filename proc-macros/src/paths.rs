@@ -354,13 +354,12 @@ impl Default for Paths {
                 swap: Method {
                     sig: quote! { fn update(
                         &mut self,
-                        start: usize,
-                        offset: isize,
+                        range: &std::ops::Range<usize>,
                         parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
                         workspace: &mut auto_lsp::core::workspace::Workspace,
                         document: &auto_lsp::core::document::Document,
                     ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { update(start, offset, parent_check, workspace, document) },
+                    variant: quote! { update(&range, parent_check, workspace, document) },
                 },
             },
             static_swap: StaticSwap {
@@ -368,13 +367,12 @@ impl Default for Paths {
                 swap: Method {
                     sig: quote! { fn update(
                         &mut self,
-                        start: usize,
-                        offset: isize,
+                        range: &std::ops::Range<usize>,
                         parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
                         workspace: &mut auto_lsp::core::workspace::Workspace,
                         document: &auto_lsp::core::document::Document,
                     ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { update(start, offset, parent_check, workspace, document) },
+                    variant: quote! { update(&range, parent_check, workspace, document) },
                 },
             },
             edit_range: EditRange {

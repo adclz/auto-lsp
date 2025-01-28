@@ -202,7 +202,7 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
-                        self.#name.update(start, offset, parent_check.clone(), workspace, document)?;
+                        self.#name.update(&range, parent_check.clone(), workspace, document)?;
                     }
                 },
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),
@@ -335,10 +335,9 @@ impl<'a> StructBuilder<'a> {
                             auto_lsp,
                             builder_range,
                             format!(
-                                "Invalid {:?} for {:?}, {:?} is mandatory but received empty value",
+                                "Syntax error: Missing {:?} for {:?}",
                                 stringify!(#name), 
                                 stringify!(#input_name),
-                                stringify!(#name)
                             )
                         ))?
                         .try_downcast(workspace, document, stringify!(#field_type), builder_range, stringify!(#input_name))?, workspace);
