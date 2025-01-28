@@ -33,6 +33,7 @@ static COMMENT_QUERY: &'static str = "
 ";
 
 configure_parsers!(
+    PYTHON_PARSERS,
     "python" => {
         language: tree_sitter_python::LANGUAGE,
         node_types: tree_sitter_python::NODE_TYPES,

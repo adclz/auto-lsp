@@ -1,0 +1,49 @@
+use crate::core::ast::BuildCompletionItems;
+use crate::core::document::Document;
+use crate::core::workspace::Workspace;
+use lsp_types::Url;
+use rstest::{fixture, rstest};
+
+use super::python_workspace::*;
+
+#[fixture]
+fn foo_bar() -> (Workspace, Document) {
+    Workspace::from_utf8(
+        &PYTHON_PARSERS.get("python").unwrap(),
+        Url::parse("file:///test.py").unwrap(),
+        r#"# foo comment
+def foo(param1, param2: int, param3: int = 5):
+    pass
+
+def bar():
+    pass  
+"#
+        .into(),
+    )
+    .unwrap()
+}
+
+#[rstest]
+fn global_completion_items(foo_bar: (Workspace, Document)) {
+    let ast = foo_bar.0.ast.as_ref().unwrap();
+    let document = &foo_bar.1;
+
+    // Module returns globally available completion items
+    let module = ast.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    let mut completion_items = vec![];
+    module.build_completion_items(&document, &mut completion_items);
+
+    assert_eq!(completion_items.len(), 1);
+    assert_eq!(completion_items[0].label, "def ...");
+
+    // Function should do the same
+    let function = module.functions[0].read();
+
+    let mut completion_items = vec![];
+    function.build_completion_items(&document, &mut completion_items);
+
+    assert_eq!(completion_items.len(), 1);
+    assert_eq!(completion_items[0].label, "def ...");
+}

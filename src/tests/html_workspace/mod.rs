@@ -19,6 +19,7 @@ static COMMENT_QUERY: &'static str = "
 ";
 
 configure_parsers!(
+    HTML_PARSERS,
     "html" => {
         language: tree_sitter_html::LANGUAGE,
         node_types: tree_sitter_html::NODE_TYPES,
