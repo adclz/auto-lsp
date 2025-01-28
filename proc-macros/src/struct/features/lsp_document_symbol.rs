@@ -56,7 +56,7 @@ impl<'a> FeaturesCodeGen for DocumentSymbolBuilder<'a> {
                         vec.iter()
                             .map(|path| {
                                 let path_tokens = path_to_dot_tokens(path, None);
-                                quote! { #path_tokens.get_document_symbols(doc) }
+                                quote! { #path_tokens.read().get_document_symbols(doc) }
                             })
                             .collect::<Vec<_>>()
                     });
