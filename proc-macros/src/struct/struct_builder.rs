@@ -179,18 +179,7 @@ impl<'a> StructBuilder<'a> {
 
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
-            .stage_trait(&self.input_name, queryable);
-
-        builder
-            .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
             .stage_trait(&self.input_builder_name, queryable);
-
-        let names = self
-            .fields
-            .get_field_names()
-            .iter()
-            .map(|name| quote! { stringify!(#name) })
-            .collect::<Vec<_>>();
     }
 
     fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {

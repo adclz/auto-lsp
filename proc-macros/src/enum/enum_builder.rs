@@ -179,18 +179,10 @@ impl<'a> EnumBuilder<'a> {
 
         let concat: Vec<_> = self
             .fields
-            .variant_types_names
+            .variant_builder_names
             .iter()
             .map(|name| quote! { #name::QUERY_NAMES })
             .collect();
-
-        builder
-            .add(quote! { const QUERY_NAMES: &'static [&'static str] = {
-                    use #queryable;
-                    auto_lsp::constcat::concat_slices!([&'static str]: #(#concat),*)
-                };
-            })
-            .stage_trait(&self.input_name, queryable);
 
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = {
@@ -346,7 +338,6 @@ impl<'a> EnumBuilder<'a> {
         let queryable = &PATHS.queryable.path;
         let pending_symbol = &PATHS.pending_symbol;
 
-        let variant_types_names = &self.fields.variant_types_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
         let sig = &PATHS.symbol_builder_trait.new.sig;
@@ -357,13 +348,12 @@ impl<'a> EnumBuilder<'a> {
                 use #queryable;
                 let query_name = query.capture_names()[capture.index as usize];
                 #(
-                    if #variant_types_names::QUERY_NAMES.contains(&query_name) {
-                        match #variant_builder_names::#variant {
-                            Some(builder) => return Some(Self {
-                                unique_field: #pending_symbol::new(builder),
-                            }),
-                            None => return None,
-                        }
+                    if #variant_builder_names::QUERY_NAMES.contains(&query_name) {
+                        return #variant_builder_names::#variant.and_then(|b| {
+                            Some(Self {
+                                unique_field: #pending_symbol::new(b),
+                            })
+                        });
                     };
                 )*
                 None

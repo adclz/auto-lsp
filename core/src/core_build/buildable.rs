@@ -130,21 +130,6 @@ pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
 }
 
-pub trait Constructor<T: Buildable + Queryable> {
-    fn new(
-        url: Arc<Url>,
-        query: &tree_sitter::Query,
-        capture: &tree_sitter::QueryCapture,
-    ) -> Option<T> {
-        let query_name = query.capture_names()[capture.index as usize];
-        if T::QUERY_NAMES.contains(&query_name) {
-            T::new(url, query, capture)
-        } else {
-            None
-        }
-    }
-}
-
 pub trait AddSymbol {
     fn add<Y: Buildable + Queryable>(
         &mut self,
