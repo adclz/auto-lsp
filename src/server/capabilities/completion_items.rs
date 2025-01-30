@@ -1,3 +1,4 @@
+use crate::core::ast::{BuildCompletionItems, BuildInvokedCompletionItems};
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
 
 use crate::server::session::{Session, WORKSPACES};
@@ -20,8 +21,6 @@ impl Session {
             .offset_at(params.text_document_position.position)
             .unwrap();
 
-        eprintln!("!!!!!! offset: {}", offset);
-
         let item = match workspace.find_at_offset(offset) {
             Some(item) => item,
             None => {
@@ -29,20 +28,14 @@ impl Session {
             }
         };
 
-        eprintln!("!!!!!! FOUUUND");
-
         match params.context {
             Some(context) => match context.trigger_kind {
                 CompletionTriggerKind::INVOKED => {
-                    item.read().build_completion_items(document, &mut results)
+                    item.build_completion_items(document, &mut results)
                 }
                 CompletionTriggerKind::TRIGGER_CHARACTER => {
                     let trigger_character = context.trigger_character.unwrap();
-                    item.read().build_invoked_completion_items(
-                        &trigger_character,
-                        document,
-                        &mut results,
-                    )
+                    item.build_invoked_completion_items(&trigger_character, document, &mut results)
                 }
                 _ => (),
             },

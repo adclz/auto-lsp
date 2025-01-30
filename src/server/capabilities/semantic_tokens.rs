@@ -1,5 +1,5 @@
+use crate::core::ast::BuildSemanticTokens;
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
-
 use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 
 use crate::server::session::{Session, WORKSPACES};
@@ -22,7 +22,7 @@ impl Session {
         workspace
             .ast
             .iter()
-            .for_each(|p| p.read().build_semantic_tokens(&document, &mut builder));
+            .for_each(|p| p.build_semantic_tokens(&document, &mut builder));
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }
@@ -44,7 +44,7 @@ impl Session {
         workspace
             .ast
             .iter()
-            .for_each(|p| p.read().build_semantic_tokens(&document, &mut builder));
+            .for_each(|p| p.build_semantic_tokens(&document, &mut builder));
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }

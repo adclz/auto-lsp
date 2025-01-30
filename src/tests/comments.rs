@@ -1,4 +1,4 @@
-use crate::core::ast::IsComment;
+use crate::core::ast::Comment;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
 use auto_lsp_core::ast::GetSymbolData;

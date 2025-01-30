@@ -27,17 +27,17 @@
 //! # use auto_lsp::core::ast::*;
 //! # use auto_lsp::seq;
 //!
-//! #[seq(query_name = "document", kind(symbol()))]
+//! #[seq(query = "document")]
 //! struct Document {
 //!    functions: Vec<Function>
 //! }
 //!
-//! #[seq(query_name = "function", kind(symbol()))]
+//! #[seq(query = "function")]
 //! struct Function {
 //!    name: Name
 //! }
 //!
-//! #[seq(query_name = "name", kind(symbol()))]
+//! #[seq(query = "name")]
 //! struct Name {}  
 //! ```
 //!

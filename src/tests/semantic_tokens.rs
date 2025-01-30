@@ -1,9 +1,9 @@
+use super::python_workspace::*;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
+use auto_lsp_core::ast::BuildSemanticTokens;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
-
-use super::python_workspace::*;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
@@ -28,7 +28,10 @@ fn foo_bar_semantic_tokens(foo_bar: (Workspace, Document)) {
     let document = &foo_bar.1;
 
     let mut builder = auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder::new("".into());
-    ast.read().build_semantic_tokens(&document, &mut builder);
+    let module = ast.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    module.build_semantic_tokens(&document, &mut builder);
 
     let tokens = builder.build().data;
 

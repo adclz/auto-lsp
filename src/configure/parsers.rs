@@ -24,7 +24,7 @@ use auto_lsp_core::workspace::{Queries, TreeSitter};
 /// static COMMENT_QUERY: &'static str = "
 /// (comment) @comment
 /// ";
-/// #[seq(query_name = "module", kind(symbol()))]
+/// #[seq(query = "module")]
 /// struct Module {}
 ///
 /// configure_parsers!(

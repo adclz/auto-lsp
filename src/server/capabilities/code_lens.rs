@@ -1,6 +1,6 @@
-use lsp_types::{CodeLens, CodeLensParams};
-
+use crate::core::ast::BuildCodeLens;
 use crate::server::session::{Session, WORKSPACES};
+use lsp_types::{CodeLens, CodeLensParams};
 
 impl Session {
     /// Get code lens for a document.
@@ -17,9 +17,10 @@ impl Session {
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        workspace.ast.iter().for_each(|ast| {
-            ast.read().build_code_lens(&document, &mut results);
-        });
+        workspace
+            .ast
+            .as_ref()
+            .map(|a| a.build_code_lens(document, &mut results));
 
         Ok(Some(results))
     }

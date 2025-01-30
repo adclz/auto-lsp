@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+use std::ops::Deref;
+
 use lsp_types::{
     request::GotoDeclarationResponse, CompletionItem, Diagnostic, DocumentSymbol,
     GotoDefinitionResponse,
@@ -37,19 +39,7 @@ pub trait BuildDocumentSymbols {
 
 impl<T: AstSymbol> BuildDocumentSymbols for Vec<Symbol<T>> {
     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
-        let mut symbols = vec![];
-        for symbol in self.iter() {
-            match symbol.read().get_document_symbols(doc) {
-                Some(VecOrSymbol::Symbol(s)) => symbols.push(s),
-                Some(VecOrSymbol::Vec(v)) => symbols.extend(v),
-                None => continue,
-            }
-        }
-        if symbols.is_empty() {
-            None
-        } else {
-            Some(VecOrSymbol::Vec(symbols))
-        }
+        None
     }
 }
 
@@ -153,33 +143,6 @@ pub trait BuildInvokedCompletionItems {
     ) {
     }
 }
-
-macro_rules! impl_build {
-    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
-        impl<T: AstSymbol> $trait for Option<Symbol<T>> {
-            fn $fn_name(&self, $($param_name: $param_type),*) {
-                if let Some(node) = self.as_ref() {
-                    node.read().$fn_name($($param_name),*)
-                }
-            }
-        }
-
-        impl<T: AstSymbol> $trait for Vec<Symbol<T>> {
-            fn $fn_name(&self, $($param_name: $param_type),*) {
-                for symbol in self.iter() {
-                    symbol.read().$fn_name($($param_name),*)
-                }
-            }
-        }
-    };
-}
-
-impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
-impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
-impl_build!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
-impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
-impl_build!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
-
 /// Special capabilities
 
 /// Trait implemented by all [AstSymbol]
@@ -213,7 +176,7 @@ impl<T: AstSymbol> Locator for Vec<Symbol<T>> {
 }
 
 /// Trait implemented by all [AstSymbol]
-pub trait IsReference: GetSymbolData {
+pub trait IsReference {
     /// Check if the symbol is an reference
     ///
     /// References are symbols used to access other symbols.
@@ -237,7 +200,6 @@ pub trait Reference: IsReference {
         Ok(None)
     }
 }
-
 /// Trait implemented by all [AstSymbol]
 pub trait IsCheck {
     /// Tell this symbol has to be checked during the build process
@@ -284,7 +246,7 @@ pub trait Scope: IsScope {
 }
 
 /// Trait implemented by all [AstSymbol]
-pub trait IsComment {
+pub trait Comment {
     /// Tell this symbol is a comment
     ///
     /// This function is used when the **comment** query find a comment above this symbol to tell if the symbol can be commented
@@ -349,3 +311,49 @@ impl<T: AstSymbol> Finder for T {
         None
     }
 }
+
+macro_rules! impl_dyn_symbol {
+    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*) $( -> $return_type: ty)?) => {
+        impl $trait for DynSymbol {
+            fn $fn_name(&self, $($param_name: $param_type),*) $(-> $return_type)? {
+                self.read().$fn_name($($param_name),*)
+            }
+        }
+    };
+}
+
+impl_dyn_symbol!(GetHover, get_hover(&self, doc: &Document) -> Option<lsp_types::Hover>);
+impl_dyn_symbol!(GetGoToDefinition, go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse>);
+impl_dyn_symbol!(GetGoToDeclaration, go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse>);
+impl_dyn_symbol!(BuildDocumentSymbols, get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol>);
+impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
+impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
+impl_dyn_symbol!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
+impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>));
+impl_dyn_symbol!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
+
+macro_rules! impl_build {
+    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
+        impl<T: AstSymbol> $trait for Option<Symbol<T>> {
+            fn $fn_name(&self, $($param_name: $param_type),*) {
+                if let Some(node) = self.as_ref() {
+                    node.read().$fn_name($($param_name),*)
+                }
+            }
+        }
+
+        impl<T: AstSymbol> $trait for Vec<Symbol<T>> {
+            fn $fn_name(&self, $($param_name: $param_type),*) {
+                for symbol in self.iter() {
+                    symbol.read().$fn_name($($param_name),*)
+                }
+            }
+        }
+    };
+}
+
+impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
+impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
+impl_build!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
+impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
+impl_build!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));

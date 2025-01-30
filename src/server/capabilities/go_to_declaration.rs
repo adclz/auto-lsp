@@ -1,3 +1,4 @@
+use crate::core::ast::GetGoToDeclaration;
 use lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse};
 
 use crate::server::session::{Session, WORKSPACES};
@@ -23,7 +24,7 @@ impl Session {
         let item = workspace.find_at_offset(offset);
 
         match item {
-            Some(item) => Ok(item.read().go_to_declaration(document)),
+            Some(item) => Ok(item.go_to_declaration(document)),
             None => Ok(None),
         }
     }

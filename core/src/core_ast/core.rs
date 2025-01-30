@@ -20,23 +20,24 @@ pub trait AstSymbol:
     DowncastSync
     + Send
     + Sync
-    // capabilities.rs
+    // lsp
+    + GetGoToDeclaration
+    + GetGoToDefinition
+    + GetHover
     + BuildDocumentSymbols
-    + BuildSemanticTokens
-    + BuildInlayHints
     + BuildCodeLens
     + BuildCompletionItems
     + BuildInvokedCompletionItems
-    + GetHover
-    + GetGoToDefinition
-    + GetGoToDeclaration
+    + BuildInlayHints
+    + BuildSemanticTokens
     // special
-    + IsComment
-    + Scope
-    + Reference
     + Locator
     + Check
+    + Reference
+    + Scope
+    + Comment
     // update.rs
+    + GetSymbolData
     + Parent
     + UpdateDynamic
     + UpdateRange
@@ -70,7 +71,7 @@ pub trait AstSymbol:
                 None => return None,
             };
             let read = symbol.read();
-            if read.is_scope() {
+            if symbol.read().is_scope() {
                 return Some(symbol.clone());
             }
             parent = read.get_parent();

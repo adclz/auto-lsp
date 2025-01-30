@@ -1,20 +1,12 @@
 #![allow(unused)]
-use syn::{Ident, Type};
-
-use crate::features::*;
+use darling::util::Flag;
 use darling::{ast, util, FromDeriveInput, FromField, FromMeta};
+use syn::{Ident, Type};
 
 /// Struct input when `seq` macro is used
 #[derive(Debug, FromDeriveInput)]
 pub struct StructInput {
     pub data: ast::Data<util::Ignored, StructHelpers>,
-}
-
-/// Mandatory `query_name` field and `kind` field (reference or symbol)
-#[derive(Debug, FromMeta)]
-pub struct UserFeatures {
-    pub query_name: String,
-    pub kind: AstStructKind,
 }
 
 #[derive(FromField, Debug)]
@@ -24,63 +16,37 @@ pub struct StructHelpers {
     pub ty: Type,
 }
 
-/// Reference or Symbol kind
+/// Mandatory `query_name` field and `kind` field (reference or symbol)
 #[derive(Debug, FromMeta)]
-pub enum AstStructKind {
-    Reference(ReferenceFeatures),
-    Symbol(SymbolFeatures),
-}
-
-/// Reference or Symbol features
-#[derive(Debug, FromMeta)]
-pub enum Feature<T>
-where
-    T: Sized + FromMeta,
-{
-    User,
-    CodeGen(T),
-}
-
-#[derive(Debug, FromMeta)]
-pub struct SymbolFeatures {
-    pub scope: Option<Feature<ScopeFeature>>,
-    pub check: Option<Feature<CheckFeature>>,
-    pub comment: Option<Feature<CommentFeature>>,
-    // LSP
-    pub lsp_document_symbols: Option<Feature<DocumentSymbolFeature>>,
-    pub lsp_hover_info: Option<Feature<HoverFeature>>,
-    pub lsp_semantic_tokens: Option<Feature<SemanticTokenFeature>>,
-    pub lsp_inlay_hints: Option<Feature<InlayHintFeature>>,
-    pub lsp_code_lens: Option<Feature<CodeLensFeature>>,
-    pub lsp_completion_items: Option<Feature<CompletionItemFeature>>,
-    pub lsp_invoked_completion_items: Option<Feature<InvokedCompletionItemFeature>>,
-    pub lsp_go_to_definition: Option<Feature<GotoDefinitionFeature>>,
-    pub lsp_go_to_declaration: Option<Feature<GoToDeclarationFeature>>,
-}
-
-#[derive(Debug, FromMeta)]
-pub enum ReferenceFeature {
-    User,
-    Reference,
-    Disable,
-}
-
-#[derive(Debug, FromMeta)]
-pub struct ReferenceFeatures {
-    pub check: Option<ReferenceFeature>,
-    pub comment: Option<ReferenceFeature>,
-    pub lsp_document_symbols: Option<ReferenceFeature>,
-    pub lsp_hover_info: Option<ReferenceFeature>,
-    pub lsp_semantic_tokens: Option<ReferenceFeature>,
-    pub lsp_inlay_hints: Option<ReferenceFeature>,
-    pub lsp_code_lens: Option<ReferenceFeature>,
-    pub lsp_completion_items: Option<ReferenceFeature>,
-    pub lsp_invoked_completion_items: Option<ReferenceFeature>,
-    pub lsp_go_to_definition: Option<ReferenceFeature>,
-    pub lsp_go_to_declaration: Option<ReferenceFeature>,
-}
-
-pub enum ReferenceOrSymbolFeatures<'a> {
-    Reference(&'a ReferenceFeatures),
-    Symbol(&'a SymbolFeatures),
+pub struct DarlingInput {
+    /// The query name
+    pub query: String,
+    // Lsp
+    #[darling(default)]
+    pub declaration: Flag,
+    #[darling(default)]
+    pub definition: Flag,
+    #[darling(default)]
+    pub hover: Flag,
+    #[darling(default)]
+    pub document_symbols: Flag,
+    #[darling(default)]
+    pub code_lenses: Flag,
+    #[darling(default)]
+    pub completions: Flag,
+    #[darling(default)]
+    pub invoked_completions: Flag,
+    #[darling(default)]
+    pub inlay_hints: Flag,
+    #[darling(default)]
+    pub semantic_tokens: Flag,
+    // Special
+    #[darling(default)]
+    pub check: Flag,
+    #[darling(default)]
+    pub comment: Flag,
+    #[darling(default)]
+    pub scope: Flag,
+    #[darling(default)]
+    pub reference: Flag,
 }

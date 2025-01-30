@@ -105,7 +105,7 @@ nested_struct!(
             pub path: Path,
             pub find: Method
         },
-        pub is_comment: IsComment {
+        pub is_comment: Comment {
             pub path: Path,
             pub is_comment: Method
         },
@@ -300,8 +300,8 @@ impl Default for Paths {
                     variant: quote! { find(doc) },
                 },
             },
-            is_comment: IsComment {
-                path: core_ast(parse_quote!(IsComment)),
+            is_comment: Comment {
+                path: core_ast(parse_quote!(Comment)),
                 is_comment: Method {
                     sig: quote! { fn is_comment(&self) -> bool },
                     variant: quote! { is_comment() },

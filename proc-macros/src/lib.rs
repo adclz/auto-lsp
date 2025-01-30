@@ -32,7 +32,7 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 /// ## Basic usage
 ///
 /// ```ignore
-/// #[seq(query_name = "query_name", kind(symbol()))]
+/// #[seq(query = "query_name"]
 /// struct MyStruct {}
 /// ```
 ///
@@ -53,9 +53,7 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 /// ```ignore
 /// // When using `user`, the default trait implementation is removed.
 ///
-/// #[seq(query_name = "query_name", kind(symbol(
-///     lsp_document_symbols(user),
-/// )))]
+/// #[seq(query = "query_name", document_symbols]
 /// struct MyStruct {}
 ///
 /// impl BuildDocumentSymbols for Module {
@@ -66,7 +64,7 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 ///
 /// // With `codegen`, the default implementation is replaced by the code_gen implementation
 ///
-/// #[seq(query_name = "query_name2", kind(symbol(
+/// #[seq(query = "query_name2", kind(symbol(
 /// lsp_document_symbols(
 ///    code_gen(
 ///        name = self::name,
@@ -77,57 +75,6 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 ///
 /// ```
 ///
-/// ### reference
-///
-/// When the `kind` attribute is set to `reference`, the generated struct implements `AstSymbol` as well,
-///  and redirects most function calls to the referenced symbol.
-///
-/// By default, all capabilities are inactive.
-///
-/// The capabilites attributes have the same name as `symbol`, however their values are different.
-///
-///  - user: The default implementation is removed and the trait must be implemented manually.
-///  - reference: The symbol will redirect the function call to the referenced symbol.
-///  - disable: Disable the feature.
-///
-/// # Example
-///
-/// ```ignore
-/// // A simple reference.
-/// // This reference will call the referenced symbol's get_document_symbols function.
-///
-/// #[seq(query_name = "query_name", kind(reference(
-///     lsp_document_symbols(reference),
-/// )))]
-/// struct MyStruct {}
-///
-/// // Each symbol marked as reference must implement the Reference trait.
-///
-/// impl Reference for MyStruct {
-///     fn find(&self, doc: &Document) -> Result<Option<DynSymbol>, Diagnostic> {
-///         /* ... */
-///     }
-/// }
-///
-/// // A manual implementation of `BuildDocumentSymbols` is necessary.
-///
-/// #[seq(query_name = "query_name2", kind(reference(
-///     lsp_document_symbols(user),
-/// )))]
-/// struct MyStruct2 {}
-///
-/// impl BuildDocumentSymbols for Module {
-///     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
-///        /* ... */
-///     }
-/// }
-///
-/// // Document symbols are disabled.
-///
-/// #[seq(query_name = "query_name3", kind(reference(
-///     lsp_document_symbols(disable),
-/// )))]
-/// struct MyStruct3 {}
 /// ```
 ///
 #[proc_macro_attribute]
@@ -139,7 +86,7 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
         Err(e) => return e.into_compile_error().into(),
     };
 
-    let attributes = match UserFeatures::from_list(&attr_meta) {
+    let attributes = match DarlingInput::from_list(&attr_meta) {
         Ok(v) => v,
         Err(e) => return e.write_errors().into(),
     };
@@ -165,13 +112,12 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_builder_name = format_ident!("{}Builder", input_name);
 
     let fields = extract_fields(&derive_input.data);
-    let query_name = attributes.query_name;
+    let query_name = &attributes.query;
 
     let input_attr = input.attrs;
-    let tokens = match attributes.kind {
-        AstStructKind::Reference(reference_features) => StructBuilder::new(
-            &ReferenceOrSymbolFeatures::Reference(&reference_features),
-            &derive_input.data,
+    TokenStream::from(
+        StructBuilder::new(
+            &attributes,
             &input_attr,
             &input_name,
             &input_builder_name,
@@ -179,19 +125,7 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
             &fields,
         )
         .to_token_stream(),
-        AstStructKind::Symbol(symbol_features) => StructBuilder::new(
-            &ReferenceOrSymbolFeatures::Symbol(&symbol_features),
-            &derive_input.data,
-            &input_attr,
-            &input_name,
-            &input_builder_name,
-            &query_name,
-            &fields,
-        )
-        .to_token_stream(),
-    };
-
-    TokenStream::from(tokens)
+    )
 }
 
 /// A procedural macro for generating an AST symbol from an enum.

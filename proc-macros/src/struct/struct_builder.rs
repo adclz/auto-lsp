@@ -1,7 +1,7 @@
 #![allow(unused)]
 use super::{feature_builder::Features, field_builder::{FieldBuilder, FieldType, Fields}};
 use crate::{
-    ReferenceOrSymbolFeatures, StructHelpers,
+    DarlingInput,
     PATHS,
 };
 use darling::{ast, util};
@@ -29,11 +29,10 @@ pub struct StructBuilder<'a> {
 
 impl<'a> StructBuilder<'a> {
     pub fn new(
-        params: &'a ReferenceOrSymbolFeatures<'a>,
-        helpers: &'a ast::Data<util::Ignored, StructHelpers>,
+        darling_input: &'a DarlingInput,
         input_attr: &'a Vec<Attribute>,
         input_name: &'a Ident,
-        input_buider_name: &'a Ident,
+        input_builder_name: &'a Ident,
         query_name: &'a str,
         fields: &'a Fields,
     ) -> Self {
@@ -41,9 +40,9 @@ impl<'a> StructBuilder<'a> {
             input_name,
             input_attr,
             query_name,
-            input_builder_name: input_buider_name,
+            input_builder_name,
             fields,
-            features: Features::new(&params, &helpers, &input_name, &fields),
+            features: Features::new(&darling_input, &input_name, &fields),
         }
     }
 }

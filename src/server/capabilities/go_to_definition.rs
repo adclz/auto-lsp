@@ -1,3 +1,4 @@
+use crate::core::ast::GetGoToDefinition;
 use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
 
 use crate::server::session::{Session, WORKSPACES};
@@ -23,7 +24,7 @@ impl Session {
         let item = workspace.find_at_offset(offset);
 
         match item {
-            Some(item) => Ok(item.read().go_to_definition(document)),
+            Some(item) => Ok(item.go_to_definition(document)),
             None => Ok(None),
         }
     }

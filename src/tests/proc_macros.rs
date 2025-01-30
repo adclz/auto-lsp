@@ -8,7 +8,7 @@ use static_assertions::{assert_fields, assert_impl_all};
 
 #[test]
 fn simple_seq() {
-    #[seq(query_name = "module", kind(symbol()))]
+    #[seq(query = "module")]
     struct Module {}
 
     assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
@@ -24,12 +24,12 @@ fn simple_seq() {
 
 #[test]
 fn seq_with_field() {
-    #[seq(query_name = "module", kind(symbol()))]
+    #[seq(query = "module")]
     struct Module {
         function: Function,
     }
 
-    #[seq(query_name = "function", kind(symbol()))]
+    #[seq(query = "function")]
     struct Function {}
 
     assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
@@ -50,7 +50,7 @@ fn simple_choice() {
         A(A),
     }
 
-    #[seq(query_name = "module", kind(symbol()))]
+    #[seq(query = "module")]
     struct A {}
 
     assert_impl_all!(Choice: Send, Sync, Clone, Downcast, AstSymbol);
@@ -71,10 +71,10 @@ fn multiple_choices() {
         B(B),
     }
 
-    #[seq(query_name = "module1", kind(symbol()))]
+    #[seq(query = "module1")]
     struct A {}
 
-    #[seq(query_name = "module2", kind(symbol()))]
+    #[seq(query = "module2")]
     struct B {}
 
     assert_impl_all!(Choice: Send, Sync, Clone, Downcast, AstSymbol);
@@ -90,12 +90,12 @@ fn multiple_choices() {
 
 #[test]
 fn seq_with_optional() {
-    #[seq(query_name = "module", kind(symbol()))]
+    #[seq(query = "module")]
     struct Module {
         function: Option<Function>,
     }
 
-    #[seq(query_name = "function", kind(symbol()))]
+    #[seq(query = "function")]
     struct Function {}
 
     assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
@@ -111,7 +111,7 @@ fn seq_with_optional() {
 
 #[test]
 fn seq_with_recursive() {
-    #[seq(query_name = "module1", kind(symbol()))]
+    #[seq(query = "module1")]
     struct A {
         elems: Vec<A>,
     }

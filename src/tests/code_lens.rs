@@ -28,11 +28,8 @@ fn foo_bar_code_lens(foo_bar: (Workspace, Document)) {
     let ast = foo_bar.0.ast.as_ref().unwrap();
     let document = &foo_bar.1;
 
-    let module = ast.read();
-    let module = module.downcast_ref::<Module>().unwrap();
-
     let mut code_lens = vec![];
-    module.build_code_lens(&document, &mut code_lens);
+    ast.build_code_lens(&document, &mut code_lens);
 
     assert_eq!(code_lens.len(), 2);
 

@@ -1,3 +1,4 @@
+use crate::core::ast::BuildDocumentSymbols;
 use auto_lsp_core::ast::VecOrSymbol;
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
@@ -21,7 +22,7 @@ impl Session {
         let symbols = workspace
             .ast
             .iter()
-            .filter_map(|p| p.read().get_document_symbols(document))
+            .filter_map(|p| p.get_document_symbols(document))
             .collect::<Vec<_>>();
 
         Ok(Some(DocumentSymbolResponse::Nested(

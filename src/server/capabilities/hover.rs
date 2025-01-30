@@ -1,3 +1,4 @@
+use crate::core::ast::GetHover;
 use lsp_types::{Hover, HoverParams};
 
 use crate::server::session::{Session, WORKSPACES};
@@ -18,7 +19,7 @@ impl Session {
         let item = workspace.find_at_offset(offset);
 
         match item {
-            Some(item) => Ok(item.read().get_hover(document)),
+            Some(item) => Ok(item.get_hover(document)),
             None => Ok(None),
         }
     }

@@ -1,10 +1,14 @@
 use std::sync::LazyLock;
 
 use crate::{self as auto_lsp};
-use auto_lsp::core::ast::{AstSymbol, BuildCodeLens, Check, GetHover, GetSymbolData, Scope, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, VecOrSymbol};
+use auto_lsp::core::ast::{
+    AstSymbol, BuildCodeLens, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Check,
+    GetHover, GetSymbolData, Scope, VecOrSymbol,
+};
 use auto_lsp::core::document::Document;
-use auto_lsp::{configure_parsers, define_semantic_token_types, choice, seq};
+use auto_lsp::{choice, configure_parsers, define_semantic_token_types, seq};
 use auto_lsp_core::ast::BuildCompletionItems;
+use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
 
 static CORE_QUERY: &'static str = "
 (module) @module
@@ -51,24 +55,23 @@ define_semantic_token_types!(standard {
 
 /// Globally available completion items
 static GLOBAL_COMPLETION_ITEMS: LazyLock<Vec<lsp_types::CompletionItem>> = LazyLock::new(|| {
-    vec![
-        lsp_types::CompletionItem {
-            label: "def ...".to_string(),
-            kind: Some(lsp_types::CompletionItemKind::SNIPPET),
-            insert_text_format: Some(lsp_types::InsertTextFormat::SNIPPET),
-            insert_text: Some("def ${1:func_name}(${2:arg1}):$0".to_string()),
-            ..Default::default()
-        }
-    ]
+    vec![lsp_types::CompletionItem {
+        label: "def ...".to_string(),
+        kind: Some(lsp_types::CompletionItemKind::SNIPPET),
+        insert_text_format: Some(lsp_types::InsertTextFormat::SNIPPET),
+        insert_text: Some("def ${1:func_name}(${2:arg1}):$0".to_string()),
+        ..Default::default()
+    }]
 });
 
-#[seq(query_name = "module", kind(symbol(
-    lsp_document_symbols(user), 
-    lsp_semantic_tokens(user),
-    lsp_inlay_hints(user),
-    lsp_code_lens(user),
-    lsp_completion_items(user),
-)))]
+#[seq(
+    query = "module",
+    code_lenses,
+    document_symbols,
+    completions,
+    inlay_hints,
+    semantic_tokens
+)]
 struct Module {
     functions: Vec<Function>,
 }
@@ -89,17 +92,21 @@ impl BuildInlayHints for Module {
     }
 }
 
-impl BuildDocumentSymbols for Module {
-    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
-        self.functions.get_document_symbols(doc)
-    }
-}
-
 impl BuildSemanticTokens for Module {
-    fn build_semantic_tokens(&self, doc: &Document, builder: &mut auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder) {
+    fn build_semantic_tokens(
+        &self,
+        doc: &Document,
+        builder: &mut auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder,
+    ) {
         for function in &self.functions {
             function.read().build_semantic_tokens(doc, builder);
         }
+    }
+}
+
+impl BuildDocumentSymbols for Module {
+    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
+        self.functions.get_document_symbols(doc)
     }
 }
 
@@ -109,27 +116,15 @@ impl BuildCompletionItems for Module {
     }
 }
 
-#[seq(query_name = "function", kind(symbol(
-    lsp_document_symbols( 
-        code_gen(
-            name = self::name,
-            kind = auto_lsp::lsp_types::SymbolKind::FUNCTION,
-            childrens(self::body)
-        )
-    ),
-    lsp_semantic_tokens(
-        code_gen(
-            range = self::name,
-            token_types = TOKEN_TYPES,
-            token_type_index = "Function"
-        )
-    ),
-    lsp_inlay_hints(user),
-    lsp_code_lens(user),
-    comment(user),
-    scope(user),
-    lsp_completion_items(user),
-)))]
+#[seq(
+    query = "function",
+    code_lenses,
+    inlay_hints,
+    scope,
+    comment,
+    completions,
+    semantic_tokens
+)]
 struct Function {
     name: Identifier,
     parameters: Parameters,
@@ -151,16 +146,15 @@ impl BuildInlayHints for Function {
                 match read.get_text(doc.texter.text.as_bytes()) {
                     Some(text) => text.to_string(),
                     None => "".to_string(),
-                }
+                },
             ),
             position: read.get_start_position(doc),
             tooltip: None,
             text_edits: None,
             padding_left: None,
             padding_right: None,
-            data: None
+            data: None,
         });
-        self.body.read().build_inlay_hints(doc, acc);
     }
 }
 
@@ -181,9 +175,17 @@ impl BuildCompletionItems for Function {
     }
 }
 
-#[seq(query_name = "parameters", kind(symbol(
-    scope(user)
-)))]
+impl BuildSemanticTokens for Function {
+    fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {
+        builder.push(
+            self.name.read().get_lsp_range(doc),
+            TOKEN_TYPES.get_index("Function").unwrap() as u32,
+            0,
+        );
+    }
+}
+
+#[seq(query = "parameters", scope)]
 pub struct Parameters {
     parameters: Vec<Parameter>,
 }
@@ -194,10 +196,7 @@ impl Scope for Parameters {
     }
 }
 
-#[seq(query_name = "body", kind(symbol(
-    lsp_document_symbols(user),
-    lsp_completion_items(user),
-)))]
+#[seq(query = "body", document_symbols, completions)]
 pub struct Body {
     pub statements: Vec<Statement>,
 }
@@ -206,7 +205,9 @@ impl BuildDocumentSymbols for Body {
     fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
         let mut symbols = vec![];
         for statement in &self.statements {
-            if let Some(VecOrSymbol::Vec(nested_symbols)) = statement.read().get_document_symbols(doc) {
+            if let Some(VecOrSymbol::Vec(nested_symbols)) =
+                statement.read().get_document_symbols(doc)
+            {
                 symbols.extend(nested_symbols);
             }
         }
@@ -245,9 +246,7 @@ pub enum ExpressionStatement {
     Expression(Expression),
 }
 
-#[seq(query_name = "pass_statement", kind(symbol(
-    lsp_hover_info(user)
-)))]
+#[seq(query = "pass_statement", hover)]
 pub struct PassStatement {}
 
 impl GetHover for PassStatement {
@@ -257,25 +256,24 @@ impl GetHover for PassStatement {
                 kind: lsp_types::MarkupKind::Markdown,
                 value: r#"This is a pass statement
 
-[See python doc](https://docs.python.org/3/reference/simple_stmts.html#the-pass-statement)"#.into(),
+[See python doc](https://docs.python.org/3/reference/simple_stmts.html#the-pass-statement)"#
+                    .into(),
             }),
-            range: None
+            range: None,
         })
     }
 }
 
-#[seq(query_name = "any", kind(symbol()))]
-pub struct Any {
+#[seq(query = "any")]
+pub struct Any {}
 
-}
-
-#[seq(query_name = "augmented_assignment", kind(symbol()))]
+#[seq(query = "augmented_assignment")]
 pub struct AugmentedAssignment {
     left: Identifier,
     right: Any,
 }
 
-#[seq(query_name = "assignment", kind(symbol()))]
+#[seq(query = "assignment")]
 pub struct Assignment {
     left: Identifier,
     right: Any,
@@ -288,27 +286,45 @@ pub enum Expression {
 
 impl Expression {
     pub fn is_integer(&self) -> bool {
-        matches!(self, Expression::PrimaryExpression(PrimaryExpression::Integer(_)))
+        matches!(
+            self,
+            Expression::PrimaryExpression(PrimaryExpression::Integer(_))
+        )
     }
 
     pub fn is_float(&self) -> bool {
-        matches!(self, Expression::PrimaryExpression(PrimaryExpression::Float(_)))
+        matches!(
+            self,
+            Expression::PrimaryExpression(PrimaryExpression::Float(_))
+        )
     }
 
     pub fn is_true(&self) -> bool {
-        matches!(self, Expression::PrimaryExpression(PrimaryExpression::True(_)))
+        matches!(
+            self,
+            Expression::PrimaryExpression(PrimaryExpression::True(_))
+        )
     }
 
     pub fn is_false(&self) -> bool {
-        matches!(self, Expression::PrimaryExpression(PrimaryExpression::False(_)))
+        matches!(
+            self,
+            Expression::PrimaryExpression(PrimaryExpression::False(_))
+        )
     }
 
     pub fn is_string(&self) -> bool {
-        matches!(self, Expression::PrimaryExpression(PrimaryExpression::String(_)))
+        matches!(
+            self,
+            Expression::PrimaryExpression(PrimaryExpression::String(_))
+        )
     }
 
     pub fn is_none(&self) -> bool {
-        matches!(self, Expression::PrimaryExpression(PrimaryExpression::None(_)))
+        matches!(
+            self,
+            Expression::PrimaryExpression(PrimaryExpression::None(_))
+        )
     }
 }
 
@@ -323,10 +339,7 @@ pub enum PrimaryExpression {
     None(None),
 }
 
-#[seq(query_name = "identifier", kind(symbol(
-    lsp_hover_info(user),
-    lsp_completion_items(user)
-)))]
+#[seq(query = "identifier", hover, completions)]
 struct Identifier {}
 
 impl GetHover for Identifier {
@@ -336,9 +349,16 @@ impl GetHover for Identifier {
         Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
-                value: format!("{}hover {}", 
-                    if let Some(comment) = comment { format!("{}\n", comment) } else { "".to_string() },
-                    self.get_text(doc.texter.text.as_bytes()).unwrap()).into(),
+                value: format!(
+                    "{}hover {}",
+                    if let Some(comment) = comment {
+                        format!("{}\n", comment)
+                    } else {
+                        "".to_string()
+                    },
+                    self.get_text(doc.texter.text.as_bytes()).unwrap()
+                )
+                .into(),
             }),
             range: None,
         })
@@ -349,8 +369,8 @@ impl BuildCompletionItems for Identifier {
     fn build_completion_items(&self, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
         match self.get_parent_scope() {
             Some(scope) => {
-                scope.read().build_completion_items(doc, acc);
-            },
+                scope.build_completion_items(doc, acc);
+            }
             None => {
                 acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
             }
@@ -365,33 +385,33 @@ enum Parameter {
     TypedDefault(TypedDefaultParameter),
 }
 
-#[seq(query_name = "untyped_parameter", kind(symbol()))]
+#[seq(query = "untyped_parameter")]
 struct UntypedParameter {}
 
-#[seq(query_name = "typed_parameter", kind(symbol(
-    
-)))]
+#[seq(query = "typed_parameter")]
 struct TypedParameter {
     name: Identifier,
-    parameter_type: Type
+    parameter_type: Type,
 }
 
-#[seq(query_name = "typed_default_parameter", kind(symbol(
-    check(user)
-)))]
+#[seq(query = "typed_default_parameter", check)]
 struct TypedDefaultParameter {
     name: Identifier,
     parameter_type: Type,
-    value: Expression
+    value: Expression,
 }
 
 #[choice]
 enum Type {
-    Expression(Expression)
+    Expression(Expression),
 }
 
 impl Check for TypedDefaultParameter {
-    fn check(&self, doc: &Document, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> Result<(), ()> {
+    fn check(
+        &self,
+        doc: &Document,
+        diagnostics: &mut Vec<lsp_types::Diagnostic>,
+    ) -> Result<(), ()> {
         let source = doc.texter.text.as_bytes();
 
         match self.parameter_type.read().get_text(source).unwrap() {
@@ -423,7 +443,7 @@ impl Check for TypedDefaultParameter {
                     return Err(());
                 }
             },
-            _ => Err(())
+            _ => Err(()),
         }
     }
 }
@@ -437,8 +457,11 @@ impl TypedDefaultParameter {
             code: None,
             code_description: None,
             source: None,
-            message:  format!("Invalid value {} for type {}", 
-            self.value.read().get_text(source_code).unwrap(), self.parameter_type.read().get_text(source_code).unwrap()),
+            message: format!(
+                "Invalid value {} for type {}",
+                self.value.read().get_text(source_code).unwrap(),
+                self.parameter_type.read().get_text(source_code).unwrap()
+            ),
             related_information: None,
             tags: None,
             data: None,
@@ -446,20 +469,20 @@ impl TypedDefaultParameter {
     }
 }
 
-#[seq(query_name = "integer", kind(symbol()))]
+#[seq(query = "integer")]
 struct Integer {}
 
-#[seq(query_name = "float", kind(symbol()))]
+#[seq(query = "float")]
 struct Float {}
 
-#[seq(query_name = "string", kind(symbol()))]
+#[seq(query = "string")]
 struct String {}
 
-#[seq(query_name = "true", kind(symbol()))]
+#[seq(query = "true")]
 struct True {}
 
-#[seq(query_name = "false", kind(symbol()))]
+#[seq(query = "false")]
 struct False {}
 
-#[seq(query_name = "none", kind(symbol()))]
+#[seq(query = "none")]
 struct None {}

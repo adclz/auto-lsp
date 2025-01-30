@@ -1,6 +1,5 @@
-use std::sync::{Arc, Weak};
-
 use crate::workspace::Workspace;
+use std::sync::{Arc, Weak};
 
 use super::core::AstSymbol;
 use parking_lot::RwLock;

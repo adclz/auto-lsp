@@ -18,7 +18,7 @@
 //! # use auto_lsp::seq;
 //! static CORE_QUERY: &'static str = "(module) @module";
 //!
-//! #[seq(query_name = "module", kind(symbol()))]
+//! #[seq(query = "module")]
 //! struct Module {}
 //!
 //! configure_parsers!(
@@ -44,7 +44,7 @@
 //! # use auto_lsp::core::ast::*;
 //! # use auto_lsp::seq;
 //! # static CORE_QUERY: &'static str = "(module) @module";
-//! # #[seq(query_name = "module", kind(symbol()))]
+//! # #[seq(query = "module")]
 //! # struct Module {}
 //! # configure_parsers!(
 //!      PARSER_LIST,

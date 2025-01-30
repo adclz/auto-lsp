@@ -1,7 +1,7 @@
+use crate::core::ast::BuildDocumentSymbols;
+use crate::server::session::{Session, WORKSPACES};
 use auto_lsp_core::ast::VecOrSymbol;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
-
-use crate::server::session::{Session, WORKSPACES};
 
 impl Session {
     /// Request to get workspace symbols
@@ -25,7 +25,7 @@ impl Session {
 
             symbols.extend(
                 ast.iter()
-                    .filter_map(|p| p.read().get_document_symbols(&document))
+                    .filter_map(|p| p.get_document_symbols(&document))
                     .flat_map(|p| match p {
                         VecOrSymbol::Symbol(s) => vec![WorkspaceSymbol {
                             name: s.name,
