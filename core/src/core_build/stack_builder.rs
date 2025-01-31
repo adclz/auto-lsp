@@ -72,7 +72,7 @@ where
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
     /// Indicates whether building has started
-    delay_building: bool,
+    build: bool,
 }
 
 impl<'a, T> StackBuilder<'a, T>
@@ -87,7 +87,7 @@ where
             document,
             roots: vec![],
             stack: vec![],
-            delay_building: false,
+            build: false,
         }
     }
 
@@ -134,8 +134,6 @@ where
             captures.set_byte_range(range.clone());
         }
 
-        self.delay_building = range.is_none();
-
         // Iterate over the captures.
         // Captures are sorted by their location in the tree, not their pattern.
         while let Some((m, capture_index)) = captures.next() {
@@ -144,7 +142,7 @@ where
 
             // To determine if we should start building the AST, we check if the current capture
             // is within the given range, we also check if T contains the query name .
-            if !self.delay_building {
+            if !self.build {
                 if let Some(range) = &range {
                     if ((capture.node.range().start_byte > range.start as usize)
                         || (capture.node.range().start_byte == range.start as usize))
@@ -158,10 +156,22 @@ where
                                 .capture_names()[capture.index as usize],
                         )
                     {
-                        self.delay_building = true;
+                        self.build = true;
                     } else {
                         continue;
                     }
+                } else if T::QUERY_NAMES.contains(
+                    &self
+                        .workspace
+                        .parsers
+                        .tree_sitter
+                        .queries
+                        .core
+                        .capture_names()[capture.index as usize],
+                ) {
+                    self.build = true;
+                } else {
+                    continue;
                 }
             }
 
