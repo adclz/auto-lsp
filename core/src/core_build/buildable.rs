@@ -72,7 +72,13 @@ macro_rules! builder_warning {
     };
 }
 
+/// Trait implemented by all builders created with the #[seq] macro.
 pub trait Buildable: Downcast {
+    /// Creates a new instance of the builder.
+    ///
+    /// # Returns
+    /// - `Some(Self)` if a valid builder can be created for the given capture.
+    /// - `None` for enums if the corresponding variant is not found.
     fn new(
         url: Arc<Url>,
         query: &tree_sitter::Query,
@@ -81,6 +87,12 @@ pub trait Buildable: Downcast {
     where
         Self: Sized;
 
+    /// Attempts to add a symbol to the current builder using the provided capture.
+    ///
+    /// # Returns
+    /// - `Ok(Some([PendingSymbol]))` if a symbol is successfully added.
+    /// - `Ok(None)` if the capture does not match the expected query name.
+    /// - `Err(Diagnostic)` if an error occurs.
     fn add(
         &mut self,
         capture: &tree_sitter::QueryCapture,
@@ -121,16 +133,19 @@ pub trait Buildable: Downcast {
 
 impl_downcast!(Buildable);
 
-/// List of queries associated with a struct or enum.
+/// Trait representing the list of queries associated with a struct or enum.
 ///
-/// - struct has one query
-/// - enum has as many queries as variants
-///
+/// - Structs have a single query.
+/// - Enums have one query per variant.
 pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
 }
 
+/// A trait for adding symbols to builders created by the `#[seq]` macro.
 pub trait AddSymbol {
+    /// Adds a symbol to the builder.
+    ///
+    /// This method is invoked for each field in a [`Buildable`] when the [`Buildable::add`] method is called.
     fn add<Y: Buildable + Queryable>(
         &mut self,
         capture: &tree_sitter::QueryCapture,
@@ -261,9 +276,11 @@ impl AddSymbol for Vec<PendingSymbol> {
     }
 }
 
+/// Finalize trait to convert AST symbols to [`Symbol`]s.
 pub trait Finalize<T: AstSymbol> {
     type Output;
 
+    /// Converts the AST symbol to a [`Symbol`].
     fn finalize(self, workspace: &mut Workspace) -> Self::Output;
 }
 

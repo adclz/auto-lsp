@@ -3,6 +3,11 @@ use std::rc::Rc;
 
 use super::buildable::*;
 
+/// [`PendingSymbol`] and [`MaybePendingSymbol`] represent symbols being built during the construction process.
+///
+/// These symbols exist only temporarily while building and are not part of the final AST.
+
+/// A wrapper for a shared, mutable [`Buildable`] object.
 #[derive(Clone)]
 pub struct PendingSymbol(Rc<RefCell<dyn Buildable>>);
 
@@ -20,6 +25,14 @@ impl PendingSymbol {
     }
 }
 
+/// A wrapper that optionally holds a [`PendingSymbol`].
+///
+/// All [`Buildable`] objects store their fields as [`MaybePendingSymbol`]s.
+///
+/// When a field needs to be converted into a symbol, [`MaybePendingSymbol`] is converted to [`PendingSymbol`].
+///
+/// If the field is optional or a vector and the symbol is `None`, the conversion is skipped.  
+/// Otherwise, the conversion will return a diagnostic.
 #[derive(Clone)]
 pub struct MaybePendingSymbol(Option<PendingSymbol>);
 
@@ -41,11 +54,11 @@ impl MaybePendingSymbol {
     }
 
     pub fn as_ref(&self) -> Option<&PendingSymbol> {
-        self.0.as_ref().map(|pending| pending)
+        self.0.as_ref()
     }
 
     pub fn as_mut(&mut self) -> Option<&mut PendingSymbol> {
-        self.0.as_mut().map(|pending| pending)
+        self.0.as_mut()
     }
 
     pub fn into_inner(self) -> Option<PendingSymbol> {
