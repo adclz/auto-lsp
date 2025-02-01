@@ -60,7 +60,11 @@ miette = "7.4.0"
 
 [features]
 default = []
-deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
+deadlock_detection = [
+    "parking_lot/nightly",
+    "parking_lot/deadlock_detection",
+    "auto-lsp-core/deadlock_detection",
+]
 log = ["auto-lsp-core/log"]
 lsp_server = [
     "dep:serde",
