@@ -1,7 +1,7 @@
 use crate::{self as auto_lsp};
 use auto_lsp::{choice, seq};
 use auto_lsp_core::ast::AstSymbol;
-use auto_lsp_core::build::{Buildable, InvokeStackBuilder, Queryable, TryFromBuilder};
+use auto_lsp_core::build::{Buildable, InvokeParser, Queryable, TryFromBuilder};
 use downcast_rs::Downcast;
 use impls::impls;
 use static_assertions::{assert_fields, assert_impl_all};
@@ -13,7 +13,7 @@ fn simple_seq() {
 
     assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
     assert!(impls!(Module: TryFromBuilder<&'static ModuleBuilder>));
-    assert!(impls!(Module: InvokeStackBuilder<ModuleBuilder, Module>));
+    assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data);
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
@@ -34,7 +34,7 @@ fn seq_with_field() {
 
     assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
     assert!(impls!(Module: TryFromBuilder<&'static ModuleBuilder>));
-    assert!(impls!(Module: InvokeStackBuilder<ModuleBuilder, Module>));
+    assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
@@ -55,7 +55,7 @@ fn simple_choice() {
 
     assert_impl_all!(Choice: Send, Sync, Clone, Downcast, AstSymbol);
     assert!(impls!(Choice: TryFromBuilder<&'static ChoiceBuilder>));
-    assert!(impls!(Choice: InvokeStackBuilder<ChoiceBuilder, Choice>));
+    assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
     assert_impl_all!(ChoiceBuilder: Queryable, Buildable);
     assert_fields!(ChoiceBuilder: unique_field);
@@ -79,7 +79,7 @@ fn multiple_choices() {
 
     assert_impl_all!(Choice: Send, Sync, Clone, Downcast, AstSymbol);
     assert!(impls!(Choice: TryFromBuilder<&'static ChoiceBuilder>));
-    assert!(impls!(Choice: InvokeStackBuilder<ChoiceBuilder, Choice>));
+    assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
     assert_impl_all!(ChoiceBuilder: Queryable, Buildable);
     assert_fields!(ChoiceBuilder: unique_field);
@@ -100,7 +100,7 @@ fn seq_with_optional() {
 
     assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
     assert!(impls!(Module: TryFromBuilder<&'static ModuleBuilder>));
-    assert!(impls!(Module: InvokeStackBuilder<ModuleBuilder, Module>));
+    assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
@@ -118,7 +118,7 @@ fn seq_with_recursive() {
 
     assert_impl_all!(A: Send, Sync, Clone, Downcast, AstSymbol);
     assert!(impls!(A: TryFromBuilder<&'static ABuilder>));
-    assert!(impls!(A: InvokeStackBuilder<ABuilder, A>));
+    assert!(impls!(A: InvokeParser<ABuilder, A>));
     assert_fields!(A: _data, elems);
 
     assert_impl_all!(ABuilder: Queryable, Buildable);

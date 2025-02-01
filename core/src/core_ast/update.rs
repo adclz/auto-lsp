@@ -15,7 +15,7 @@ use lsp_types::Diagnostic;
 use crate::core_build::buildable::Buildable;
 use crate::core_build::buildable::Queryable;
 use crate::core_build::downcast::TryFromBuilder;
-use crate::core_build::stack_builder::InvokeStackBuilder;
+use crate::core_build::parse::InvokeParser;
 use crate::document::Document;
 use crate::workspace::Workspace;
 
@@ -187,7 +187,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + InvokeStackBuilder<T, Y>
+        + InvokeParser<T, Y>
         + CollectReferences,
 {
     fn update(
@@ -225,7 +225,7 @@ where
 
                 // Creates the symbol
                 let symbol = Symbol::new_and_check(
-                    match Y::create_symbol(
+                    match Y::parse_symbol(
                         workspace,
                         document,
                         Some(std::ops::Range {
@@ -264,7 +264,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + InvokeStackBuilder<T, Y>
+        + InvokeParser<T, Y>
         + CollectReferences,
 {
     fn update(
@@ -286,7 +286,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + InvokeStackBuilder<T, Y>
+        + InvokeParser<T, Y>
         + CollectReferences,
 {
     fn update(

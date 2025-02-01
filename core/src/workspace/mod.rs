@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     core_ast::symbol::{DynSymbol, WeakSymbol},
-    core_build::stack_builder::InvokeStackBuilderFn,
+    core_build::parse::InvokeParserFn,
     document::Document,
 };
 use lsp_types::{Diagnostic, Url};
@@ -23,7 +23,7 @@ pub struct Parsers {
     /// The [`TreeSitter`] parser configuration and queries.
     pub tree_sitter: TreeSitter,
     /// Function to invoke the AST parser.
-    pub ast_parser: InvokeStackBuilderFn,
+    pub ast_parser: InvokeParserFn,
 }
 
 /// Tree-sitter configuration for a [`Workspace`].

@@ -27,6 +27,8 @@ anyhow = "1.0.91"
 parking_lot = "0.12.3"
 stderrlog = "0.6.0"
 log = "0.4.22"
+thiserror = "2.0.11"
+miette = { version = "7.4.0", features = ["fancy"] }
 lsp-server = { version = "0.7.6", optional = true }
 serde = { version = "1.0.189", optional = true }
 serde_json = { version = "1.0.107", optional = true }
@@ -53,6 +55,8 @@ texter = "0.1.2"
 rayon = "1.10"
 anyhow = "1.0.91"
 regex = "1.11.1"
+thiserror = "2.0.11"
+miette = "7.4.0"
 
 [features]
 default = []

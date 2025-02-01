@@ -1,4 +1,5 @@
 use crate::core::ast::{AstSymbol, GetSymbolData};
+use crate::core::build::Parse;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
 use lsp_types::Url;
@@ -6,6 +7,17 @@ use rstest::{fixture, rstest};
 
 use super::html_workspace::*;
 use super::python_workspace::*;
+
+#[test]
+fn function() -> miette::Result<()> {
+    Function::parse(
+        r#"
+        def foo(param1, param2):
+            pass 
+        "#,
+        &PYTHON_PARSERS.get("python").unwrap(),
+    )
+}
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {

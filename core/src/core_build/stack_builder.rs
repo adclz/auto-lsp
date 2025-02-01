@@ -9,53 +9,9 @@ use super::buildable::*;
 use super::downcast::*;
 use super::symbol::*;
 use super::utils::{intersecting_ranges, tree_sitter_range_to_lsp_range};
-use crate::ast::DynSymbol;
 use crate::document::Document;
 use crate::workspace::Workspace;
 use crate::{builder_error, builder_warning, core_ast::core::AstSymbol};
-
-/// Trait for invoking the stack builder
-///
-/// This trait is implemented for all types that implement [`Buildable`] and [`Queryable`].
-pub trait InvokeStackBuilder<
-    T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
->
-{
-    /// Creates a symbol.
-    ///
-    /// This method internally initializes a stack builder to build the AST and derive a symbol
-    /// of type Y.
-    fn create_symbol(
-        workspace: &mut Workspace,
-        document: &Document,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Y, Diagnostic>;
-}
-
-impl<T, Y> InvokeStackBuilder<T, Y> for Y
-where
-    T: Buildable + Queryable,
-    Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
-{
-    fn create_symbol(
-        workspace: &mut Workspace,
-        document: &Document,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Y, Diagnostic> {
-        StackBuilder::<T>::new(workspace, document).create_symbol(&range)
-    }
-}
-
-/// Function signature for invoking the stack builder.
-///
-/// This type alias is useful for mapping language IDs to specific parsers,
-/// helping avoiding ambiguity.
-pub type InvokeStackBuilderFn = fn(
-    &mut Workspace,
-    &Document,
-    Option<std::ops::Range<usize>>,
-) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
 /// Stack builder for constructing Abstract Syntax Trees (ASTs).
 ///
