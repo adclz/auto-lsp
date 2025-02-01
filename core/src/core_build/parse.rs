@@ -108,7 +108,7 @@ pub trait Parse<
     /// # Returns
     /// - `Ok(())` if the code was successfully parsed and validated.
     /// - `Err(miette::Error)` if any parsing or validation errors occurred.
-    fn parse(test_code: &str, parsers: &'static Parsers) -> miette::Result<()>;
+    fn miette_parse(test_code: &str, parsers: &'static Parsers) -> miette::Result<()>;
 }
 
 impl<T, Y> Parse<T, Y> for Y
@@ -116,7 +116,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
-    fn parse(test_code: &str, parsers: &'static Parsers) -> miette::Result<()> {
+    fn miette_parse(test_code: &str, parsers: &'static Parsers) -> miette::Result<()> {
         let (mut workspace, document) = Workspace::from_utf8(
             parsers,
             Url::parse("file://test").unwrap(),

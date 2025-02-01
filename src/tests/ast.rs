@@ -10,7 +10,7 @@ use super::python_workspace::*;
 
 #[test]
 fn function() -> miette::Result<()> {
-    Function::parse(
+    Function::miette_parse(
         r#"
         def foo(param1, param2):
             pass 
