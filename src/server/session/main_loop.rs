@@ -55,6 +55,20 @@ impl Session {
             }
         }
     }
+
+    /// Send a notification to the client.
+    pub fn send_notification<N: lsp_types::notification::Notification>(
+        &self,
+        params: N::Params,
+    ) -> anyhow::Result<()> {
+        let params = serde_json::to_value(&params).unwrap();
+        let n = lsp_server::Notification {
+            method: N::METHOD.into(),
+            params,
+        };
+        self.connection.sender.send(Message::Notification(n))?;
+        Ok(())
+    }
 }
 
 /// Code taken from <https://github.com/oxlip-lang/oal/blob/b6741ff99f7c9338551e2067c0de7acd492fad00/oal-client/src/lsp/dispatcher.rs>

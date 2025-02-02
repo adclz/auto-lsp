@@ -12,7 +12,6 @@ pub mod documents;
 pub mod fs;
 pub mod init;
 pub mod main_loop;
-pub mod senders;
 
 /// List of workspaces and documents in the current session.
 pub(crate) static WORKSPACES: LazyLock<Mutex<HashMap<Url, (Workspace, Document)>>> =
