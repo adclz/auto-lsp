@@ -67,15 +67,16 @@ pub trait UpdateRange {
 ///
 /// - `start`: The position where the edit begins.
 /// - `offset`: The amount by which the symbol's range should be adjusted. Positive values
-///   extend the range, while negative values shrink it.
-fn edit(data: &mut SymbolData, start: usize, offset: isize) {
+///   extend the range, while negative values shrink it. The range is clamped to avoid
+///   negative values.
+pub(crate) fn edit(data: &mut SymbolData, start: usize, offset: isize) {
     if data.range.start >= start {
         // Entire range is after the offset; shift both start and end
-        data.range.start = (data.range.start as isize + offset) as usize;
-        data.range.end = (data.range.end as isize + offset) as usize;
+        data.range.start = ((data.range.start as isize + offset).max(0)) as usize;
+        data.range.end = ((data.range.end as isize + offset).max(0)) as usize;
     } else if data.range.end >= start {
         // The offset occurs within the range; adjust only the end
-        data.range.end = (data.range.end as isize + offset) as usize;
+        data.range.end = ((data.range.end as isize + offset).max(0)) as usize;
     }
 }
 
@@ -276,4 +277,119 @@ pub trait UpdateDynamic {
         workspace: &mut Workspace,
         document: &Document,
     ) -> ControlFlow<Result<(), Diagnostic>, ()>;
+}
+
+#[cfg(test)]
+mod range_tests {
+    use super::{edit, SymbolData};
+    use lsp_types::Url;
+    use std::sync::Arc;
+
+    fn symbol_data_mock(range: std::ops::Range<usize>) -> SymbolData {
+        SymbolData {
+            range,
+            url: Arc::new(Url::parse("file:///test").unwrap()),
+            parent: None,
+            comment: None,
+            referrers: None,
+            target: None,
+            check_pending: false,
+        }
+    }
+
+    #[test]
+    fn positive() {
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // start == range.start
+        edit(&mut data, 5, 5);
+        assert_eq!(data.range, std::ops::Range { start: 10, end: 15 });
+
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // start < range.start
+        edit(&mut data, 2, 5);
+        assert_eq!(data.range, std::ops::Range { start: 10, end: 15 });
+
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // start > range.start
+        edit(&mut data, 6, 5);
+        assert_eq!(data.range, std::ops::Range { start: 5, end: 15 });
+    }
+
+    #[test]
+    fn negative() {
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // start == range.start
+        edit(&mut data, 5, -5);
+        assert_eq!(data.range, std::ops::Range { start: 0, end: 5 });
+
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // start < range.start
+        edit(&mut data, 2, -5);
+        assert_eq!(data.range, std::ops::Range { start: 0, end: 5 });
+
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // start > range.start
+        edit(&mut data, 6, -5);
+        assert_eq!(data.range, std::ops::Range { start: 5, end: 5 });
+    }
+
+    #[test]
+    fn zero_offset() {
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // No changes when offset is 0
+        edit(&mut data, 5, 0);
+        assert_eq!(data.range, std::ops::Range { start: 5, end: 10 });
+    }
+
+    #[test]
+    fn empty_range() {
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 5 });
+
+        // Positive offset
+        edit(&mut data, 5, 5);
+        assert_eq!(data.range, std::ops::Range { start: 10, end: 10 });
+
+        // Negative offset
+        edit(&mut data, 5, -10);
+        assert_eq!(data.range, std::ops::Range { start: 0, end: 0 });
+    }
+
+    #[test]
+    fn extreme_offsets() {
+        let mut data = symbol_data_mock(std::ops::Range { start: 5, end: 10 });
+
+        // Very large positive offset
+        edit(&mut data, 0, 1_000);
+        assert_eq!(
+            data.range,
+            std::ops::Range {
+                start: 1_005,
+                end: 1_010
+            }
+        );
+
+        // Very large negative offset, clamped to zero
+        edit(&mut data, 0, -10_000);
+        assert_eq!(data.range, std::ops::Range { start: 0, end: 0 });
+    }
+
+    #[test]
+    fn overlapping_ranges() {
+        let mut data = symbol_data_mock(std::ops::Range { start: 10, end: 20 });
+
+        // Offset within the range
+        edit(&mut data, 15, 5);
+        assert_eq!(data.range, std::ops::Range { start: 10, end: 25 });
+
+        // Offset shrinks the range end
+        edit(&mut data, 15, -10);
+        assert_eq!(data.range, std::ops::Range { start: 10, end: 15 });
+    }
 }
