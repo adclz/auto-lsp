@@ -57,7 +57,7 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 /// struct MyStruct {}
 ///
 /// impl BuildDocumentSymbols for Module {
-///    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
+///    fn build_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
 ///        /* ... */
 ///    }
 /// }

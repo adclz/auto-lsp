@@ -1,12 +1,11 @@
-use crate::core::ast::BuildDocumentSymbols;
 use crate::server::session::{Session, WORKSPACES};
-use auto_lsp_core::ast::VecOrSymbol;
+use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
 impl Session {
     /// Request to get workspace symbols
     ///
-    /// This function will return all symbols found in the workspace recursively by calling the inner [`Session::get_document_symbols`]
+    /// This function will return all symbols found in the workspace recursively by calling the inner [`Session::build_document_symbols`]
     /// of every documents.
     pub fn get_workspace_symbols(
         &mut self,
@@ -23,35 +22,25 @@ impl Session {
         workspaces.iter().for_each(|(uri, (workspace, document))| {
             let ast = &workspace.ast;
 
+            let mut builder = DocumentSymbolsBuilder::default();
+
+            ast.iter()
+                .for_each(|p| p.read().build_document_symbols(document, &mut builder));
+
             symbols.extend(
-                ast.iter()
-                    .filter_map(|p| p.get_document_symbols(&document))
-                    .flat_map(|p| match p {
-                        VecOrSymbol::Symbol(s) => vec![WorkspaceSymbol {
-                            name: s.name,
-                            kind: s.kind,
-                            tags: None,
-                            container_name: None,
-                            location: OneOf::Left(Location {
-                                uri: uri.to_owned(),
-                                range: s.range,
-                            }),
-                            data: None,
-                        }],
-                        VecOrSymbol::Vec(v) => v
-                            .into_iter()
-                            .map(|s| WorkspaceSymbol {
-                                name: s.name,
-                                kind: s.kind,
-                                tags: None,
-                                container_name: None,
-                                location: OneOf::Left(Location {
-                                    uri: uri.to_owned(),
-                                    range: s.range,
-                                }),
-                                data: None,
-                            })
-                            .collect::<Vec<_>>(),
+                builder
+                    .finalize()
+                    .into_iter()
+                    .map(|p| WorkspaceSymbol {
+                        name: p.name,
+                        kind: p.kind,
+                        tags: None,
+                        container_name: None,
+                        location: OneOf::Left(Location {
+                            uri: uri.to_owned(),
+                            range: p.range,
+                        }),
+                        data: None,
                     })
                     .collect::<Vec<_>>(),
             );

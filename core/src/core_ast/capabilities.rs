@@ -10,47 +10,32 @@ use lsp_types::{
 use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
+use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
-
-/// Either a single symbol or a vector of symbols
-///
-/// According to the [LSP specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol),
-/// a [DocumentSymbol] has a `children` field that can only have nested symbols.
-///
-/// This can be problematic when dealing with sibling symbols that are not nested.
-///
-/// Therefore, this enum provides a way to return either a single symbol or a vector of symbols.
-pub enum VecOrSymbol {
-    Vec(Vec<DocumentSymbol>),
-    Symbol(DocumentSymbol),
-}
 
 /// A trait to be implemented by any [AstSymbol] that can provide document symbols
 pub trait BuildDocumentSymbols {
     /// Either return an optional single symbol or a vector of symbols, see [VecOrSymbol]
     ///
     /// [LSP DocumentSymbol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
-    ///
-    /// By default, `None`
-    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
-        None
+    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {}
+}
+
+/*impl<T: AstSymbol> BuildDocumentSymbols for Option<Symbol<T>> {
+    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
+        if let Some(symbol) = self.as_ref() {
+            symbol.read().build_document_symbols(doc, builder);
+        }
     }
 }
 
 impl<T: AstSymbol> BuildDocumentSymbols for Vec<Symbol<T>> {
-    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
-        None
-    }
-}
-
-impl From<VecOrSymbol> for Vec<DocumentSymbol> {
-    fn from(item: VecOrSymbol) -> Self {
-        match item {
-            VecOrSymbol::Vec(v) => v,
-            VecOrSymbol::Symbol(s) => vec![s],
+    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
+        for symbol in self.iter() {
+            symbol.read().build_document_symbols(doc, builder);
         }
     }
-}
+}*/
 
 /// A trait to be implemented by any [AstSymbol] that can provide hover information
 pub trait GetHover {
@@ -325,7 +310,7 @@ macro_rules! impl_dyn_symbol {
 impl_dyn_symbol!(GetHover, get_hover(&self, doc: &Document) -> Option<lsp_types::Hover>);
 impl_dyn_symbol!(GetGoToDefinition, go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse>);
 impl_dyn_symbol!(GetGoToDeclaration, go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse>);
-impl_dyn_symbol!(BuildDocumentSymbols, get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol>);
+impl_dyn_symbol!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder));
 impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
 impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_dyn_symbol!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
@@ -352,6 +337,7 @@ macro_rules! impl_build {
     };
 }
 
+impl_build!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder));
 impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
 impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_build!(BuildCodeLens, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));

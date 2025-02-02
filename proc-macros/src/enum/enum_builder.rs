@@ -271,8 +271,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_pattern_match_iter(
                 &self.fields,
-                &PATHS.lsp_document_symbols.get_document_symbols.sig,
-                &PATHS.lsp_document_symbols.get_document_symbols.variant,
+                &PATHS.lsp_document_symbols.build_document_symbols.sig,
+                &PATHS.lsp_document_symbols.build_document_symbols.variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_document_symbols.path);
     }

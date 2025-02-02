@@ -1,13 +1,15 @@
+#![allow(deprecated)]
 use std::sync::LazyLock;
 
 use crate::{self as auto_lsp};
 use auto_lsp::core::ast::{
     AstSymbol, BuildCodeLens, BuildDocumentSymbols, BuildInlayHints, BuildSemanticTokens, Check,
-    GetHover, GetSymbolData, Scope, VecOrSymbol,
+    GetHover, GetSymbolData, Scope,
 };
 use auto_lsp::core::document::Document;
 use auto_lsp::{choice, configure_parsers, define_semantic_token_types, seq};
 use auto_lsp_core::ast::BuildCompletionItems;
+use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
 
 static CORE_QUERY: &'static str = "
@@ -105,8 +107,8 @@ impl BuildSemanticTokens for Module {
 }
 
 impl BuildDocumentSymbols for Module {
-    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
-        self.functions.get_document_symbols(doc)
+    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
+        self.functions.build_document_symbols(doc, builder);
     }
 }
 
@@ -118,6 +120,7 @@ impl BuildCompletionItems for Module {
 
 #[seq(
     query = "function",
+    document_symbols,
     code_lenses,
     inlay_hints,
     scope,
@@ -134,6 +137,32 @@ struct Function {
 impl Scope for Function {
     fn get_scope_range(&self) -> Vec<[usize; 2]> {
         vec![]
+    }
+}
+
+impl BuildDocumentSymbols for Function {
+    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
+        let mut nested_builder = DocumentSymbolsBuilder::default();
+
+        self.body
+            .read()
+            .build_document_symbols(doc, &mut nested_builder);
+
+        builder.push_symbol(lsp_types::DocumentSymbol {
+            name: self
+                .name
+                .read()
+                .get_text(doc.texter.text.as_bytes())
+                .unwrap()
+                .to_string(),
+            kind: lsp_types::SymbolKind::FUNCTION,
+            range: self.name.read().get_lsp_range(doc),
+            selection_range: self.name.read().get_lsp_range(doc),
+            tags: None,
+            detail: None,
+            deprecated: None,
+            children: Some(nested_builder.finalize()),
+        });
     }
 }
 
@@ -202,16 +231,8 @@ pub struct Body {
 }
 
 impl BuildDocumentSymbols for Body {
-    fn get_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
-        let mut symbols = vec![];
-        for statement in &self.statements {
-            if let Some(VecOrSymbol::Vec(nested_symbols)) =
-                statement.read().get_document_symbols(doc)
-            {
-                symbols.extend(nested_symbols);
-            }
-        }
-        Some(VecOrSymbol::Vec(symbols))
+    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
+        self.statements.build_document_symbols(doc, builder);
     }
 }
 

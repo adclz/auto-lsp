@@ -67,7 +67,7 @@ nested_struct!(
         },
         pub lsp_document_symbols: LspDocumentSymbols {
             pub path: Path,
-            pub get_document_symbols: Method
+            pub build_document_symbols: Method
         },
         pub lsp_completion_items: LspCompletionItems {
             pub path: Path,
@@ -225,9 +225,9 @@ impl Default for Paths {
 
             lsp_document_symbols: LspDocumentSymbols {
                 path: core_ast(parse_quote!(BuildDocumentSymbols)),
-                get_document_symbols: Method {
-                    sig: quote! { fn get_document_symbols(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::core::ast::VecOrSymbol> },
-                    variant: quote! { get_document_symbols(doc) },
+                build_document_symbols: Method {
+                    sig: quote! { fn build_document_symbols(&self, doc: &auto_lsp::core::document::Document, builder: &mut auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder) },
+                    variant: quote! { build_document_symbols(doc, builder) },
                 },
             },
             lsp_code_lens: LspCodeLens {

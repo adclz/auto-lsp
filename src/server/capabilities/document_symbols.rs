@@ -1,5 +1,5 @@
 use crate::core::ast::BuildDocumentSymbols;
-use auto_lsp_core::ast::VecOrSymbol;
+use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
 use crate::server::session::{Session, WORKSPACES};
@@ -19,20 +19,13 @@ impl Session {
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let symbols = workspace
+        let mut builder = DocumentSymbolsBuilder::default();
+
+        workspace
             .ast
             .iter()
-            .filter_map(|p| p.get_document_symbols(document))
-            .collect::<Vec<_>>();
+            .for_each(|p| p.build_document_symbols(document, &mut builder));
 
-        Ok(Some(DocumentSymbolResponse::Nested(
-            symbols
-                .into_iter()
-                .flat_map(|s| match s {
-                    VecOrSymbol::Symbol(s) => vec![s],
-                    VecOrSymbol::Vec(v) => v,
-                })
-                .collect(),
-        )))
+        Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
     }
 }

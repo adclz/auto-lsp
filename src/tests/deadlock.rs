@@ -1,5 +1,3 @@
-#![warn(unused_must_use)]
-
 use super::python_workspace::*;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
@@ -38,7 +36,7 @@ fn read_write(foo_bar: (Workspace, Document)) {
     let ast = foo_bar.0.ast.unwrap();
 
     // not allowed in the same thread
-    let t = std::thread::spawn(move || {
+    let _t = std::thread::spawn(move || {
         let _read = ast.read();
         let _write = ast.write();
     });
@@ -105,9 +103,9 @@ fn nested_writer(foo_bar: (Workspace, Document)) {
     assert!(!has_deadlock());
 
     let _t2 = std::thread::spawn(move || {
-        let read = ast_clone.read();
-        let module = read.downcast_ref::<Module>().unwrap();
-        let write = module.functions[0].write();
+        let _read = ast_clone.read();
+        let _module = _read.downcast_ref::<Module>().unwrap();
+        let _write = _module.functions[0].write();
         std::thread::sleep(std::time::Duration::from_secs(10));
     });
 
