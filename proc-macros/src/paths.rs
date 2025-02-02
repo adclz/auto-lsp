@@ -117,9 +117,11 @@ nested_struct!(
             pub path: Path,
             pub get_scope_range: Method
         },
-        pub locator: Locator {
+        pub locator: Traverse {
             pub path: Path,
-            pub find_at_offset: Method
+            pub descendant_at: Method,
+            pub descendant_at_and_collect: Method,
+            pub traverse_and_collect: Method
         },
         pub parent: Parent {
             pub path: Path,
@@ -144,10 +146,6 @@ nested_struct!(
         pub edit_range: EditRange {
             pub path: Path,
             pub edit_range: Method
-        },
-        pub collect_references: CollectReferences {
-            pub path: Path,
-            pub collect_references: Method
         },
     }
 );
@@ -321,11 +319,19 @@ impl Default for Paths {
                     variant: quote! { get_scope_range() },
                 },
             },
-            locator: Locator {
-                path: core_ast(parse_quote!(Locator)),
-                find_at_offset: Method {
-                    sig: quote! { fn find_at_offset(&self, offset: usize) -> Option<auto_lsp::core::ast::DynSymbol> },
-                    variant: quote! { find_at_offset(offset) },
+            locator: Traverse {
+                path: core_ast(parse_quote!(Traverse)),
+                descendant_at: Method {
+                    sig: quote! { fn descendant_at(&self, offset: usize) -> Option<auto_lsp::core::ast::DynSymbol> },
+                    variant: quote! { descendant_at(offset) },
+                },
+                descendant_at_and_collect: Method {
+                    sig: quote! { fn descendant_at_and_collect(&self, offset: usize, collect_fn: fn(auto_lsp::core::ast::DynSymbol) -> bool, collect: &mut Vec<auto_lsp::core::ast::DynSymbol>) -> Option<auto_lsp::core::ast::DynSymbol> },
+                    variant: quote! { descendant_at_and_collect(offset, collect_fn, collect) },
+                },
+                traverse_and_collect: Method {
+                    sig: quote! { fn traverse_and_collect(&self, collect_fn: fn(auto_lsp::core::ast::DynSymbol) -> bool, collect: &mut Vec<auto_lsp::core::ast::DynSymbol>) },
+                    variant: quote! { traverse_and_collect(collect_fn, collect) },
                 },
             },
             parent: Parent {
@@ -380,13 +386,6 @@ impl Default for Paths {
                 edit_range: Method {
                     sig: quote! { fn edit_range(&self, start: usize, offset: isize) },
                     variant: quote! { edit_range(start, offset) },
-                },
-            },
-            collect_references: CollectReferences {
-                path: core_ast(parse_quote!(CollectReferences)),
-                collect_references: Method {
-                    sig: quote! { fn collect_references(&self, workspace: &mut auto_lsp::core::workspace::Workspace) },
-                    variant: quote! { collect_references(workspace) },
                 },
             },
         }

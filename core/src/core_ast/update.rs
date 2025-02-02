@@ -1,7 +1,6 @@
 //! This module provides traits for incrementally updating AST.
 //!
 //! The traits defined here enable:
-//! - [`CollectReferences`] Collecting references to AST symbols when a section will be dropped.
 //! - [`Parent`] Injecting parent relationships into symbols.
 //! - [`UpdateRange`] Modifying the range of symbols in response to edits.
 //! - [`UpdateStatic`] and [`UpdateDynamic`] Performing incremental updates on AST nodes based on offset changes.
@@ -22,39 +21,6 @@ use crate::workspace::Workspace;
 use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
-
-/// A trait for collecting references to an AST symbol.
-///
-/// This trait is used when a section of the AST is being deleted.
-/// It ensures that any references to symbols within the deleted section are collected
-/// and stored in [`Workspace`] for further processing.
-pub trait CollectReferences {
-    fn collect_references(&self, workspace: &mut Workspace);
-}
-
-impl<T: AstSymbol> CollectReferences for Symbol<T> {
-    fn collect_references(&self, workspace: &mut Workspace) {
-        if let Some(target) = &self.read().get_data().target {
-            workspace.add_unsolved_reference(&target.to_dyn().unwrap());
-        }
-    }
-}
-
-impl<T: AstSymbol> CollectReferences for Option<Symbol<T>> {
-    fn collect_references(&self, workspace: &mut Workspace) {
-        if let Some(symbol) = self.as_ref() {
-            symbol.collect_references(workspace);
-        }
-    }
-}
-
-impl<T: AstSymbol> CollectReferences for Vec<Symbol<T>> {
-    fn collect_references(&self, workspace: &mut Workspace) {
-        for symbol in self.iter() {
-            symbol.collect_references(workspace);
-        }
-    }
-}
 
 /// A trait for injecting a parent relationship into an AST symbol.
 ///
@@ -187,8 +153,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + InvokeParser<T, Y>
-        + CollectReferences,
+        + InvokeParser<T, Y>,
 {
     fn update(
         &mut self,
@@ -244,8 +209,6 @@ where
                     workspace.add_unsolved_check(&parent_check.to_dyn().unwrap());
                 }
 
-                // Collect all references that are about to be dropped
-                self.collect_references(workspace);
                 if let Some(parent) = parent {
                     symbol.write().set_parent(parent);
                 }
@@ -264,8 +227,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + InvokeParser<T, Y>
-        + CollectReferences,
+        + InvokeParser<T, Y>,
 {
     fn update(
         &mut self,
@@ -286,8 +248,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol
         + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-        + InvokeParser<T, Y>
-        + CollectReferences,
+        + InvokeParser<T, Y>,
 {
     fn update(
         &mut self,

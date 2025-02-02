@@ -31,7 +31,7 @@ pub trait AstSymbol:
     + BuildInlayHints
     + BuildSemanticTokens
     // special
-    + Locator
+    + Traverse
     + Check
     + Reference
     + Scope
@@ -41,7 +41,6 @@ pub trait AstSymbol:
     + Parent
     + UpdateDynamic
     + UpdateRange
-    + CollectReferences
 {
     /// Retrieves the data of the symbol.
     fn get_data(&self) -> &SymbolData;

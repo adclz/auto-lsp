@@ -21,7 +21,7 @@ impl Session {
             .offset_at(params.text_document_position.position)
             .unwrap();
 
-        let item = match workspace.find_at_offset(offset) {
+        let item = match workspace.descendant_at(offset) {
             Some(item) => item,
             None => {
                 return Ok(None);

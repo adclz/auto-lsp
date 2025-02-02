@@ -21,22 +21,6 @@ pub trait BuildDocumentSymbols {
     fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {}
 }
 
-/*impl<T: AstSymbol> BuildDocumentSymbols for Option<Symbol<T>> {
-    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
-        if let Some(symbol) = self.as_ref() {
-            symbol.read().build_document_symbols(doc, builder);
-        }
-    }
-}
-
-impl<T: AstSymbol> BuildDocumentSymbols for Vec<Symbol<T>> {
-    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
-        for symbol in self.iter() {
-            symbol.read().build_document_symbols(doc, builder);
-        }
-    }
-}*/
-
 /// A trait to be implemented by any [AstSymbol] that can provide hover information
 pub trait GetHover {
     /// Return hover information
@@ -131,32 +115,154 @@ pub trait BuildInvokedCompletionItems {
 /// Special capabilities
 
 /// Trait implemented by all [AstSymbol]
-pub trait Locator {
-    /// Find minimal symbol at the given offset
-    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol>;
+pub trait Traverse {
+    /// Finds minimal symbol at the given offset
+    fn descendant_at(&self, offset: usize) -> Option<DynSymbol>;
+
+    /// Finds minimal symbol at the given offset and collects all symbols matching the condition during the search
+    fn descendant_at_and_collect(
+        &self,
+        offset: usize,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) -> Option<DynSymbol>;
+
+    // Traverse all symbols starting from this one and collect all symbols matching the condition
+    fn traverse_and_collect(&self, collect_fn: fn(DynSymbol) -> bool, collect: &mut Vec<DynSymbol>);
 }
 
-impl<T: AstSymbol> Locator for Symbol<T> {
-    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+impl Traverse for DynSymbol {
+    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
+        if self.read().is_inside_offset(offset) {
+            self.read()
+                .descendant_at(offset)
+                .or_else(|| Some(self.clone()))
+        } else {
+            None
+        }
+    }
+
+    fn descendant_at_and_collect(
+        &self,
+        offset: usize,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) -> Option<DynSymbol> {
+        if self.read().is_inside_offset(offset) {
+            if collect_fn(self.clone()) {
+                collect.push(self.clone());
+            }
+            self.read()
+                .descendant_at_and_collect(offset, collect_fn, collect)
+        } else {
+            None
+        }
+    }
+
+    fn traverse_and_collect(
+        &self,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) {
+        if collect_fn(self.clone()) {
+            collect.push(self.clone());
+        }
+        self.read().traverse_and_collect(collect_fn, collect);
+    }
+}
+
+impl<T: AstSymbol> Traverse for Symbol<T> {
+    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
         match symbol.is_inside_offset(offset) {
-            true => symbol
-                .find_at_offset(offset)
-                .or_else(|| Some(self.to_dyn())),
+            true => symbol.descendant_at(offset).or_else(|| Some(self.to_dyn())),
             false => None,
+        }
+    }
+
+    fn descendant_at_and_collect(
+        &self,
+        offset: usize,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) -> Option<DynSymbol> {
+        let to_dyn = self.to_dyn();
+        let symbol = self.read();
+        match symbol.is_inside_offset(offset) {
+            true => {
+                if collect_fn(to_dyn.clone()) {
+                    collect.push(to_dyn);
+                }
+                symbol
+                    .descendant_at_and_collect(offset, collect_fn, collect)
+                    .or_else(|| Some(self.to_dyn()))
+            }
+            false => None,
+        }
+    }
+
+    fn traverse_and_collect(
+        &self,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) {
+        let symbol = self.read();
+        if collect_fn(self.to_dyn()) {
+            collect.push(self.to_dyn());
+        }
+        symbol.traverse_and_collect(collect_fn, collect);
+    }
+}
+
+impl<T: AstSymbol> Traverse for Option<Symbol<T>> {
+    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
+        self.as_ref()?.descendant_at(offset)
+    }
+
+    fn descendant_at_and_collect(
+        &self,
+        offset: usize,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) -> Option<DynSymbol> {
+        self.as_ref()?
+            .descendant_at_and_collect(offset, collect_fn, collect)
+    }
+
+    fn traverse_and_collect(
+        &self,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) {
+        if let Some(symbol) = self.as_ref() {
+            symbol.traverse_and_collect(collect_fn, collect);
         }
     }
 }
 
-impl<T: AstSymbol> Locator for Option<Symbol<T>> {
-    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        self.as_ref()?.find_at_offset(offset)
+impl<T: AstSymbol> Traverse for Vec<Symbol<T>> {
+    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
+        self.iter().find_map(|symbol| symbol.descendant_at(offset))
     }
-}
 
-impl<T: AstSymbol> Locator for Vec<Symbol<T>> {
-    fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
-        self.iter().find_map(|symbol| symbol.find_at_offset(offset))
+    fn descendant_at_and_collect(
+        &self,
+        offset: usize,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) -> Option<DynSymbol> {
+        self.iter()
+            .find_map(|symbol| symbol.descendant_at_and_collect(offset, collect_fn, collect))
+    }
+
+    fn traverse_and_collect(
+        &self,
+        collect_fn: fn(DynSymbol) -> bool,
+        collect: &mut Vec<DynSymbol>,
+    ) {
+        for symbol in self.iter() {
+            symbol.traverse_and_collect(collect_fn, collect);
+        }
     }
 }
 
@@ -277,7 +383,7 @@ impl<T: AstSymbol> Finder for T {
                 };
 
                 for (index, _) in area.match_indices(pattern) {
-                    if let Some(elem) = scope.find_at_offset(range[0] + index) {
+                    if let Some(elem) = scope.descendant_at(range[0] + index) {
                         if elem.read().get_range() != self.get_range() {
                             match elem.read().get_text(source_code.as_bytes()) {
                                 Some(a) => {

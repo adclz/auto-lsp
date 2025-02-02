@@ -35,7 +35,7 @@ impl Workspace {
             // Look if a named sibiling exists after the comment
             if let Some(next_named_sibling) = capture.node.next_named_sibling() {
                 // Find the AST symbol
-                if let Some(ast_node) = ast.read().find_at_offset(next_named_sibling.start_byte()) {
+                if let Some(ast_node) = ast.read().descendant_at(next_named_sibling.start_byte()) {
                     let range = std::ops::Range {
                         start: capture.node.range().start_byte,
                         end: capture.node.range().end_byte,

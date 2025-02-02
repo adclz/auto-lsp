@@ -168,9 +168,9 @@ impl Workspace {
     }
 
     /// Finds the symbol at the given offset in the AST.
-    pub fn find_at_offset(&self, offset: usize) -> Option<DynSymbol> {
+    pub fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
         let ast = self.ast.as_ref()?;
-        if let Some(symbol) = ast.read().find_at_offset(offset) {
+        if let Some(symbol) = ast.read().descendant_at(offset) {
             return Some(symbol);
         }
         if ast.read().is_inside_offset(offset) {

@@ -20,7 +20,7 @@ impl Session {
         let position = params.text_document_position.position;
 
         let offset = document.offset_at(position).unwrap();
-        let item = workspace.find_at_offset(offset);
+        let item = workspace.descendant_at(offset);
 
         match item {
             Some(item) => match item.read().get_referrers().as_ref() {

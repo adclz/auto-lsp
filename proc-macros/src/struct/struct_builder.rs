@@ -64,7 +64,6 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.impl_parent(&mut builder);
         self.impl_dynamic_swap(&mut builder);
         self.impl_edit_range(&mut builder);
-        self.impl_collect_references(&mut builder);
 
         // Implement other features
         builder.add(self.features.to_token_stream());
@@ -137,21 +136,41 @@ impl<'a> StructBuilder<'a> {
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.locator.find_at_offset.sig,
+                &PATHS.locator.descendant_at.sig,
                 Some(quote! {
                     use #symbol_trait;
-                    if (!self.is_inside_offset(offset)) {
-                        return None;
-                    }
                 }),
                 |_, _, name, _, _| {
                     quote! {
-                        if let Some(symbol) = self.#name.find_at_offset(offset) {
+                        if let Some(symbol) = self.#name.descendant_at(offset) {
                            return Some(symbol);
                         }
                     }
                 },
                 Some(quote! { None }),
+            )
+            .add_fn_iter(
+                &self.fields,
+                &PATHS.locator.descendant_at_and_collect.sig,
+                Some(quote! {
+                    use #symbol_trait;
+                }),
+                |_, _, name, _, _| {
+                    quote! {
+                        if let Some(symbol) = self.#name.descendant_at_and_collect(offset, collect_fn, collect) {
+                           return Some(symbol);
+                        }
+                    }
+                },
+                Some(quote! { None }),
+            )
+            .add_fn_iter(&self.fields, &PATHS.locator.traverse_and_collect.sig, None, 
+                |_, _, name, _, _| {
+                    quote! {
+                        self.#name.traverse_and_collect(collect_fn, collect);
+                    }
+                },
+            None
             )
             .stage_trait(&self.input_name, &PATHS.locator.path);
     }
@@ -213,22 +232,6 @@ impl<'a> StructBuilder<'a> {
                 None,
             )
             .stage_trait(&self.input_name, &PATHS.edit_range.path);
-    }
-
-    fn impl_collect_references(&self, builder: &mut FieldBuilder) {
-        builder
-            .add_fn_iter(
-                &self.fields,
-                &PATHS.collect_references.collect_references.sig,
-                None,
-                |_, _, name, _, _| {
-                    quote! {
-                        self.#name.collect_references(workspace);
-                    }
-                },
-                None,
-            )
-            .stage_trait(&self.input_name, &PATHS.collect_references.path);
     }
 
     fn struct_input_builder(&self, builder: &mut FieldBuilder) {

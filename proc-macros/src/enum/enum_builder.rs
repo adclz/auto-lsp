@@ -31,7 +31,6 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         self.impl_locator(&mut builder);
         self.impl_dynamic_swap(&mut builder);
         self.impl_edit_range(&mut builder);
-        self.impl_collect_references(&mut builder);
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
@@ -138,8 +137,18 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_pattern_match_iter(
                 &self.fields,
-                &PATHS.locator.find_at_offset.sig,
-                &PATHS.locator.find_at_offset.variant,
+                &PATHS.locator.descendant_at.sig,
+                &PATHS.locator.descendant_at.variant,
+            )
+            .add_pattern_match_iter(
+                &self.fields,
+                &PATHS.locator.descendant_at_and_collect.sig,
+                &PATHS.locator.descendant_at_and_collect.variant,
+            )
+            .add_pattern_match_iter(
+                &self.fields,
+                &PATHS.locator.traverse_and_collect.sig,
+                &PATHS.locator.traverse_and_collect.variant,
             )
             .stage_trait(&self.input_name, &PATHS.locator.path);
     }
@@ -162,16 +171,6 @@ impl<'a> EnumBuilder<'a> {
                 &PATHS.edit_range.edit_range.variant,
             )
             .stage_trait(&self.input_name, &PATHS.edit_range.path);
-    }
-
-    fn impl_collect_references(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                &self.fields,
-                &PATHS.collect_references.collect_references.sig,
-                &PATHS.collect_references.collect_references.variant,
-            )
-            .stage_trait(&self.input_name, &PATHS.collect_references.path);
     }
 
     fn impl_queryable(&self, builder: &mut VariantBuilder) {
