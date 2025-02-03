@@ -58,7 +58,7 @@ where
     where
         Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
     {
-        self.build(range);
+        self.build(range, false);
         let result = self.get_root_node(range)?;
         let result = result.get_rc().borrow();
         result
@@ -70,11 +70,39 @@ where
             .try_into_builder(self.workspace, self.document)
     }
 
+    /// Creates a symbol of type [`Y`] based on the specified range.
+    ///
+    /// This method builds the AST for the provided range (if any) and attempts to derive
+    /// a symbol from the root node.
+    pub(crate) fn create_symbols<Y>(
+        &mut self,
+        range: &Option<std::ops::Range<usize>>,
+    ) -> Result<Vec<Y>, Diagnostic>
+    where
+        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
+    {
+        self.build(range, true);
+        let results = self.get_root_nodes();
+        results
+            .iter()
+            .map(|result| {
+                let result = result.get_rc().borrow();
+                result
+                    .downcast_ref::<T>()
+                    .ok_or(builder_error!(
+                        result.get_lsp_range(&self.document),
+                        format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
+                    ))?
+                    .try_into_builder(self.workspace, self.document)
+            })
+            .collect()
+    }
+
     /// Builds the AST based on Tree-sitter query captures.
     ///
     /// If a range is specified, only the portion of the document within that range
     /// is processed. Captures are iterated in the order they appear in the tree.
-    fn build(&mut self, range: &Option<std::ops::Range<usize>>) -> &mut Self {
+    fn build(&mut self, range: &Option<std::ops::Range<usize>>, multiple: bool) -> &mut Self {
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
@@ -138,12 +166,17 @@ where
                 match &parent {
                     // If there's no parent, create a root node.
                     None => {
-                        // There can only be one root node.
-                        if self.roots.is_empty() {
+                        // There can only be one root node unless only_one_node is true.
+                        if multiple {
                             self.create_root_node(&capture, capture_index);
                             break;
                         } else {
-                            return self;
+                            if self.roots.is_empty() {
+                                self.create_root_node(&capture, capture_index);
+                                break;
+                            } else {
+                                return self;
+                            }
                         }
                     }
                     // If there's a parent, checks if the parent's range intersects with the current capture.
@@ -339,5 +372,9 @@ where
                 )),
             },
         }
+    }
+
+    fn get_root_nodes(&mut self) -> Vec<PendingSymbol> {
+        self.roots.clone()
     }
 }

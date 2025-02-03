@@ -28,6 +28,12 @@ pub trait InvokeParser<
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic>;
+
+    fn parse_symbols(
+        workspace: &mut Workspace,
+        document: &Document,
+        range: Option<std::ops::Range<usize>>,
+    ) -> Result<Vec<Y>, lsp_types::Diagnostic>;
 }
 
 impl<T, Y> InvokeParser<T, Y> for Y
@@ -41,6 +47,13 @@ where
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic> {
         StackBuilder::<T>::new(workspace, document).create_symbol(&range)
+    }
+    fn parse_symbols(
+        workspace: &mut Workspace,
+        document: &Document,
+        range: Option<std::ops::Range<usize>>,
+    ) -> Result<Vec<Y>, lsp_types::Diagnostic> {
+        StackBuilder::<T>::new(workspace, document).create_symbols(&range)
     }
 }
 
