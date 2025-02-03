@@ -3,12 +3,47 @@ use texter::error::Error;
 use texter::updateables::{ChangeContext, UpdateContext, Updateable};
 use tree_sitter::{InputEdit, Point, Tree};
 
+#[derive(Copy, Clone, Debug)]
+pub enum ChangeKind {
+    Delete,
+    Insert,
+    Replace,
+}
+
+impl<'a> From<&'a ChangeContext<'_>> for ChangeKind {
+    fn from(value: &'a ChangeContext) -> Self {
+        match value {
+            ChangeContext::Delete { .. } => Self::Delete,
+            ChangeContext::Insert { .. } => Self::Insert,
+            ChangeContext::Replace { .. } => Self::Replace,
+            ChangeContext::ReplaceFull { .. } => Self::Replace,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct Change {
+    pub kind: ChangeKind,
+    pub input_edit: InputEdit,
+    pub is_whitespace: bool,
+}
+
+impl<'a> From<(&'a ChangeContext<'_>, InputEdit, bool)> for Change {
+    fn from(value: (&'a ChangeContext, InputEdit, bool)) -> Self {
+        Self {
+            kind: value.0.into(),
+            input_edit: value.1,
+            is_whitespace: value.2,
+        }
+    }
+}
+
 /// A wrapper around a [`Tree`] that keeps track of the edits made to it.
 pub struct WrapTree<'a> {
     /// The tree being wrapped.
     pub tree: &'a mut Tree,
-    /// The edits made to the tree ([`InputEdit`], and is_whitespace bool).
-    edits: Option<Vec<(InputEdit, bool)>>,
+    /// The edits made to the tree.
+    edits: Option<Vec<Change>>,
 }
 
 impl<'a> From<&'a mut Tree> for WrapTree<'a> {
@@ -17,14 +52,18 @@ impl<'a> From<&'a mut Tree> for WrapTree<'a> {
     }
 }
 
-impl Updateable for WrapTree<'_> {
+impl<'a> Updateable for WrapTree<'a> {
     /// This implementation of `update` keeps track of the edits made to the tree.
     fn update(&mut self, ctx: UpdateContext) -> Result<(), Error> {
-        let new_edits = WrapTree::edit_from_ctx(ctx)?;
+        let new_edits = WrapTree::edit_from_ctx(&ctx)?;
         self.tree.edit(&new_edits.0);
         match self.edits {
-            Some(ref mut edits) => edits.push(new_edits),
-            None => self.edits = Some(vec![new_edits]),
+            Some(ref mut edits) => {
+                edits.push(((&ctx.change).into(), new_edits.0, new_edits.1).into())
+            }
+            None => {
+                self.edits = Some(vec![((&ctx.change).into(), new_edits.0, new_edits.1).into()])
+            }
         };
         Ok(())
     }
@@ -37,11 +76,11 @@ fn grid_into_point(value: GridIndex) -> Point {
     }
 }
 
-impl WrapTree<'_> {
+impl<'a> WrapTree<'a> {
     /// Returns the edits made to the tree since the last call to `get_edits`.
     ///
     /// This function consumes the `WrapTree` and returns the edits.
-    pub fn get_edits(&mut self) -> Vec<(InputEdit, bool)> {
+    pub fn get_edits(&'a mut self) -> Vec<Change> {
         self.edits.take().unwrap_or_default()
     }
 
@@ -50,7 +89,7 @@ impl WrapTree<'_> {
     /// The difference here is that this function returns a tuple ([`tree_sitter::InputEdit`], `bool`).
     ///
     /// Where [`tree_sitter::InputEdit`] is the edit to be made to the tree, and `bool` is whether the edit is whitespace.
-    fn edit_from_ctx(ctx: UpdateContext) -> anyhow::Result<(InputEdit, bool), Error> {
+    fn edit_from_ctx(ctx: &UpdateContext) -> anyhow::Result<(InputEdit, bool), Error> {
         let old_br = ctx.old_breaklines;
         let new_br = ctx.breaklines;
         let ie = match ctx.change {

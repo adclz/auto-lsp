@@ -209,7 +209,7 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
-                        self.#name.update(&range, parent_check.clone(), workspace, document)?;
+                        self.#name.update(edit, collect, workspace, document)?;
                     }
                 },
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),

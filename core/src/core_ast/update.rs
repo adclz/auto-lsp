@@ -15,6 +15,7 @@ use crate::core_build::buildable::Buildable;
 use crate::core_build::buildable::Queryable;
 use crate::core_build::downcast::TryFromBuilder;
 use crate::core_build::parse::InvokeParser;
+use crate::document::texter_impl::updateable::Change;
 use crate::document::Document;
 use crate::workspace::Workspace;
 
@@ -120,6 +121,11 @@ impl<T: AstSymbol> UpdateRange for Vec<Symbol<T>> {
     }
 }
 
+pub enum UpdateState {
+    Found,
+    Result(Result<(), Diagnostic>),
+}
+
 /// Trait to update an ast symbol incrementally
 ///
 /// This trait is implemented on all symbols.
@@ -142,11 +148,11 @@ where
     /// - [ControlFlow::Continue]: The symbol did not require updating.
     fn update(
         &mut self,
-        range: &std::ops::Range<usize>,
-        parent_check: Option<WeakSymbol>,
+        edit: Change,
+        collect: &mut Vec<DynSymbol>,
         workspace: &mut Workspace,
         document: &Document,
-    ) -> ControlFlow<Result<(), Diagnostic>, ()>;
+    ) -> ControlFlow<UpdateState>;
 }
 
 impl<T, Y> UpdateStatic<T, Y> for Symbol<Y>
@@ -158,65 +164,19 @@ where
 {
     fn update(
         &mut self,
-        range: &std::ops::Range<usize>,
-        parent_check: Option<WeakSymbol>,
+        edit: Change,
+        collect: &mut Vec<DynSymbol>,
         workspace: &mut Workspace,
         document: &Document,
-    ) -> ControlFlow<Result<(), Diagnostic>, ()> {
+    ) -> ControlFlow<UpdateState> {
         let read = self.read();
-        match read.is_inside_offset(range.start) {
+        match read.is_inside_offset(edit.input_edit.start_byte) {
             true => {
-                // Check if the symbol must be checked and no check is pending
-                let check = match read.must_check() && !read.has_check_pending() {
-                    true => Some(self.to_weak()),
-                    false => None,
-                };
                 drop(read);
-
-                // Check if no lower level symbols could be updated.
-                self.write().update(range, check, workspace, document)?;
-
-                if !self.read().is_scope() {
-                    return ControlFlow::Continue(());
-                }
-
-                let parent = self.read().get_parent();
-                let this_node_range = self.read().get_range();
-                #[cfg(feature = "log")]
-                {
-                    log::info!("");
-                    log::info!("Incremental update at {:?}", range);
-                    log::info!("");
-                }
-
-                // Creates the symbol
-                let symbol = Symbol::new_and_check(
-                    match Y::parse_symbol(
-                        workspace,
-                        document,
-                        Some(std::ops::Range {
-                            start: this_node_range.start,
-                            end: range.end,
-                        }),
-                    ) {
-                        Ok(symbol) => symbol,
-                        Err(err) => return ControlFlow::Break(Err(err)),
-                    },
-                    workspace,
-                );
-
-                // One of the parent must be checked
-                if let Some(parent_check) = parent_check {
-                    workspace.add_unsolved_check(&parent_check.to_dyn().unwrap());
-                }
-
-                if let Some(parent) = parent {
-                    symbol.write().set_parent(parent);
-                }
-
-                // Swap the symbol
-                *self = symbol;
-                ControlFlow::Break(Ok(()))
+                // Checks if no lower level symbols could be updated.
+                self.write().update(edit, collect, workspace, document)?;
+                // Returns that the symbol was found
+                return ControlFlow::Break(UpdateState::Found);
             }
             false => ControlFlow::Continue(()),
         }
@@ -232,14 +192,51 @@ where
 {
     fn update(
         &mut self,
-        range: &std::ops::Range<usize>,
-        parent_check: Option<WeakSymbol>,
+        edit: Change,
+        collect: &mut Vec<DynSymbol>,
         workspace: &mut Workspace,
         document: &Document,
-    ) -> ControlFlow<Result<(), Diagnostic>, ()> {
+    ) -> ControlFlow<UpdateState> {
         match self {
-            Some(symbol) => symbol.update(range, parent_check, workspace, document),
+            Some(symbol) => symbol.update(edit, collect, workspace, document),
             None => ControlFlow::Continue(()),
+        }
+    }
+}
+
+pub enum ChangeReport {
+    Insert(usize, &'static [&'static str]),
+    Remove(usize, &'static [&'static str]),
+}
+
+impl ChangeReport {
+    #[cfg(feature = "log")]
+    pub(crate) fn log(&self) {
+        match self {
+            ChangeReport::Insert(index, queries) => {
+                log::info!("");
+                log::info!(
+                    "Update: insert in vec[{}] {}",
+                    index,
+                    match queries.len() > 1 {
+                        true => format!("of one of {:?}", queries),
+                        false => format!("of {:?}", queries[0]),
+                    }
+                );
+                log::info!("");
+            }
+            ChangeReport::Remove(index, queries) => {
+                log::info!("");
+                log::info!(
+                    "Update: remove in vec[{}] {}",
+                    index,
+                    match queries.len() > 1 {
+                        true => format!("of one of {:?}", queries),
+                        false => format!("of {:?}", queries[0]),
+                    }
+                );
+                log::info!("");
+            }
         }
     }
 }
@@ -253,18 +250,88 @@ where
 {
     fn update(
         &mut self,
-        range: &std::ops::Range<usize>,
-        parent_check: Option<WeakSymbol>,
+        edit: Change,
+        collect: &mut Vec<DynSymbol>,
         workspace: &mut Workspace,
         document: &Document,
-    ) -> ControlFlow<Result<(), Diagnostic>, ()> {
-        for symbol in self.iter_mut() {
-            match symbol.update(range, parent_check.clone(), workspace, document) {
-                ControlFlow::Break(result) => return ControlFlow::Break(result),
-                ControlFlow::Continue(()) => continue,
+    ) -> ControlFlow<UpdateState> {
+        let mut affected: Option<usize> = None;
+        for (i, symbol) in self.iter_mut().enumerate() {
+            match symbol.update(edit, collect, workspace, document) {
+                ControlFlow::Continue(_) => continue,
+                ControlFlow::Break(UpdateState::Result(result)) => {
+                    return ControlFlow::Break(UpdateState::Result(result))
+                }
+                ControlFlow::Break(UpdateState::Found) => {
+                    affected = Some(i);
+                    break;
+                }
             }
         }
-        ControlFlow::Continue(())
+
+        match affected {
+            None => ControlFlow::Continue(()),
+            Some(start_index) => {
+                let parent = self[start_index].read().get_parent();
+
+                // Determine the range of affected nodes starting from start_index
+                let mut affected_count = 0;
+                for symbol in &self[start_index..] {
+                    let range = symbol.read().get_range();
+                    if edit.input_edit.start_byte <= range.start
+                        && edit.input_edit.new_end_byte >= range.end
+                    {
+                        affected_count += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                // If no additional nodes are affected, ensure the affected count is at least 1
+                if affected_count == 0 {
+                    affected_count = 1;
+                }
+
+                // Calculate start and end positions of the affected range
+                let start = self[start_index].read().get_range().start;
+                let end = self[start_index + affected_count - 1]
+                    .read()
+                    .get_range()
+                    .end;
+
+                // Remove deprecated symbols, starting from start_index
+                for i in (start_index..start_index + affected_count).rev() {
+                    workspace
+                        .changes
+                        .push(ChangeReport::Remove(i, T::QUERY_NAMES));
+                    self.remove(i);
+                }
+
+                // Parse and insert new symbols in the affected range
+                let symbols = match Y::parse_symbols(
+                    workspace,
+                    document,
+                    Some(std::ops::Range { start, end }),
+                ) {
+                    Ok(symbols) => symbols,
+                    Err(err) => return ControlFlow::Break(UpdateState::Result(Err(err))),
+                };
+
+                symbols.into_iter().enumerate().for_each(|(i, symbol)| {
+                    let symbol = Symbol::new_and_check(symbol, workspace);
+                    if let Some(parent) = &parent {
+                        symbol.write().set_parent(parent.clone());
+                    }
+
+                    self.insert(i + start_index, symbol);
+                    workspace
+                        .changes
+                        .push(ChangeReport::Insert(i + start_index, T::QUERY_NAMES));
+                });
+
+                ControlFlow::Break(UpdateState::Result(Ok(())))
+            }
+        }
     }
 }
 
@@ -272,11 +339,11 @@ where
 pub trait UpdateDynamic {
     fn update(
         &mut self,
-        range: &std::ops::Range<usize>,
-        parent_check: Option<WeakSymbol>,
+        edit: Change,
+        collect: &mut Vec<DynSymbol>,
         workspace: &mut Workspace,
         document: &Document,
-    ) -> ControlFlow<Result<(), Diagnostic>, ()>;
+    ) -> ControlFlow<UpdateState>;
 }
 
 #[cfg(test)]

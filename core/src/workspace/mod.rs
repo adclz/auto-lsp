@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    ast::ChangeReport,
     core_ast::symbol::{DynSymbol, WeakSymbol},
     core_build::parse::InvokeParserFn,
     document::Document,
@@ -69,6 +70,8 @@ pub struct Workspace {
     pub unsolved_checks: Vec<WeakSymbol>,
     /// References flagged as unresolved during analysis.
     pub unsolved_references: Vec<WeakSymbol>,
+    /// Changes report
+    pub changes: Vec<ChangeReport>,
 }
 
 impl Workspace {
@@ -113,6 +116,7 @@ impl Workspace {
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
+            changes: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
@@ -159,12 +163,17 @@ impl Workspace {
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
+            changes: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
         workspace.parse(None, &document);
 
         Ok((workspace, document))
+    }
+
+    pub fn get_changes(&self) -> &Vec<ChangeReport> {
+        &self.changes
     }
 
     /// Finds the symbol at the given offset in the AST.

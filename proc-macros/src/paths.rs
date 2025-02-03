@@ -360,12 +360,12 @@ impl Default for Paths {
                 swap: Method {
                     sig: quote! { fn update(
                         &mut self,
-                        range: &std::ops::Range<usize>,
-                        parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
+                        edit: auto_lsp::core::document::Change,
+                        collect: &mut Vec<auto_lsp::core::ast::DynSymbol>,
                         workspace: &mut auto_lsp::core::workspace::Workspace,
                         document: &auto_lsp::core::document::Document,
-                    ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { update(&range, parent_check, workspace, document) },
+                    ) -> std::ops::ControlFlow<auto_lsp::core::ast::UpdateState> },
+                    variant: quote! { update(edit, collect, workspace, document) },
                 },
             },
             static_swap: StaticSwap {
@@ -373,12 +373,12 @@ impl Default for Paths {
                 swap: Method {
                     sig: quote! { fn update(
                         &mut self,
-                        range: &std::ops::Range<usize>,
-                        parent_check: Option<auto_lsp::core::ast::WeakSymbol>,
+                        edit: auto_lsp::core::document::Change,
+                        collect: &mut Vec<auto_lsp::core::ast::DynSymbol>,
                         workspace: &mut auto_lsp::core::workspace::Workspace,
                         document: &auto_lsp::core::document::Document,
-                    ) -> std::ops::ControlFlow<Result<(), auto_lsp::lsp_types::Diagnostic>, ()> },
-                    variant: quote! { update(&range, parent_check, workspace, document) },
+                    ) -> std::ops::ControlFlow<auto_lsp::core::ast::UpdateState> },
+                    variant: quote! { update(change, collect, workspace, document) },
                 },
             },
             edit_range: EditRange {
@@ -389,5 +389,26 @@ impl Default for Paths {
                 },
             },
         }
+    }
+}
+
+struct FieldWrapper {
+    name: String,
+    ty: String,
+}
+
+impl quote::ToTokens for FieldWrapper {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        // Convert `name` to a valid Rust identifier
+        let name = syn::Ident::new(&self.name, proc_macro2::Span::call_site());
+        // Convert `ty` to a token stream
+        let ty: TokenStream = self
+            .ty
+            .parse()
+            .expect("Failed to parse type as TokenStream");
+
+        tokens.extend(quote! {
+            pub #name: #ty,
+        });
     }
 }

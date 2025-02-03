@@ -1,8 +1,9 @@
 use std::ops::ControlFlow;
 
-use tree_sitter::InputEdit;
-
-use crate::{ast::UpdateRange, document::Document};
+use crate::{
+    ast::{UpdateRange, UpdateState},
+    document::{texter_impl::updateable::Change, Document},
+};
 
 use super::Workspace;
 
@@ -16,13 +17,12 @@ impl Workspace {
     /// 2. Extracts syntax diagnostics from tree-sitter.
     /// 3. If no AST exists, it creates one from scratch.
     /// 4. If edit ranges are provided, updates the AST incrementally.
-    pub fn parse(
-        &mut self,
-        edit_ranges: Option<&Vec<(InputEdit, bool)>>,
-        document: &Document,
-    ) -> &mut Self {
+    pub fn parse(&mut self, edit_ranges: Option<&Vec<Change>>, document: &Document) -> &mut Self {
         // Clear diagnostics
         self.diagnostics.clear();
+
+        // Clear changes
+        self.changes.clear();
 
         // Get new diagnostics from tree sitter
         Workspace::get_tree_sitter_errors(
@@ -41,7 +41,7 @@ impl Workspace {
 
         let ast_parser = self.parsers.ast_parser;
 
-        // Create a new AST if none exists and return
+        // Create a new AST if none exists and returns
         let root = match self.ast.clone() {
             Some(root) => root,
             None => {
@@ -69,10 +69,15 @@ impl Workspace {
         };
 
         // Apply edit ranges to update AST nodes
-        for (edit, _) in edit_ranges {
-            let start_byte = edit.start_byte;
-            let old_end_byte = edit.old_end_byte;
-            let new_end_byte = edit.new_end_byte;
+        for Change {
+            kind: _,
+            input_edit,
+            is_whitespace: _,
+        } in edit_ranges
+        {
+            let start_byte = input_edit.start_byte;
+            let old_end_byte = input_edit.old_end_byte;
+            let new_end_byte = input_edit.new_end_byte;
 
             let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
             if is_noop {
@@ -86,20 +91,13 @@ impl Workspace {
         }
 
         // Filter intersecting edits and update AST incrementally
-        for (edit, is_ws) in filter_intersecting_edits(edit_ranges).iter() {
-            let start_byte = edit.start_byte;
-
-            // Skip whitespace-only edits
-            if *is_ws {
-                #[cfg(feature = "log")]
-                {
-                    log::info!("");
-                    log::info!("Whitespace edit");
-                }
-                continue;
-            }
-
-            let previous_node_location = start_byte.wrapping_sub(1);
+        for edit in filter_intersecting_edits(edit_ranges) {
+            let Change {
+                kind: _,
+                input_edit,
+                is_whitespace,
+            } = edit;
+            let start_byte = input_edit.start_byte;
 
             // Find the node's range to update
             // Since we don't have lookahed, we need to find the parent
@@ -107,23 +105,15 @@ impl Workspace {
             let node = match document
                 .tree
                 .root_node()
-                .named_descendant_for_byte_range(previous_node_location, previous_node_location)
-                .or_else(|| {
-                    // if no named node found, try to find any node
-                    // since a non named node's parent is always a named node
-                    document
-                        .tree
-                        .root_node()
-                        .descendant_for_byte_range(previous_node_location, previous_node_location)
-                        .and_then(|f| f.parent())
-                }) {
+                .descendant_for_byte_range(start_byte, input_edit.new_end_byte)
+            {
                 Some(node) => node,
                 None => {
                     // Rare case since tree sitter would return a root node if it can't find a descendant
                     #[cfg(feature = "log")]
                     {
                         log::info!("");
-                        log::info!("Node not found for range: {:?}", edit);
+                        log::info!("Node not found for range: {:?}", input_edit);
                     }
                     continue;
                 }
@@ -140,7 +130,7 @@ impl Workspace {
                     continue;
                 }
             }
-            // If the node is extra, skip it
+            // If the node is extra or unnamed, skip it
             if node.is_extra() {
                 #[cfg(feature = "log")]
                 {
@@ -150,31 +140,36 @@ impl Workspace {
                 continue;
             }
 
-            // If the root node implements [`crate::ast::IsCheck`] and does not have a check pending,
-            // set it as a parent check
-            let parent_check = match root.read().must_check() && !root.read().has_check_pending() {
-                true => Some(root.to_weak()),
-                false => None,
-            };
+            // Skip whitespace-only edits
+            if is_whitespace {
+                #[cfg(feature = "log")]
+                {
+                    log::info!("");
+                    log::info!("Whitespace edit");
+                }
+                continue;
+            }
+
+            let mut collect = vec![];
 
             // Attempt to update AST incrementally
-            let result = root.write().update(
-                &std::ops::Range {
-                    start: node.start_byte(),
-                    end: node.end_byte(),
-                },
-                parent_check,
-                self,
-                document,
-            );
+            let result = root.write().update(edit, &mut collect, self, document);
             match result {
-                ControlFlow::Break(Err(e)) => {
+                ControlFlow::Break(UpdateState::Result(Ok(()))) => {
+                    // Update succeeded
+                    #[cfg(feature = "log")]
+                    {
+                        log::info!("");
+                        log::info!("Incremental update succeeded");
+                    }
+                }
+                ControlFlow::Break(UpdateState::Result(Err(e))) => {
                     // Update failed, add error to diagnostics
                     self.diagnostics.push(e);
                 }
-                ControlFlow::Continue(()) => {
+                _ => {
                     // Could not locate the node to update
-                    // therefor we need to reparse the root node
+                    // therefore we need to reparse the root node
                     #[cfg(feature = "log")]
                     {
                         log::info!("");
@@ -196,8 +191,6 @@ impl Workspace {
                         }
                     }
                 }
-                // Update succeeded
-                ControlFlow::Break(Ok(_)) => {}
             };
         }
         self.set_comments(document)
@@ -205,7 +198,13 @@ impl Workspace {
             .resolve_references(document);
 
         #[cfg(feature = "log")]
-        self.log_unsolved();
+        {
+            self.changes.iter().for_each(|change| {
+                log::info!("");
+                change.log();
+            });
+            self.log_unsolved();
+        }
 
         return self;
     }
@@ -228,7 +227,7 @@ impl Workspace {
 }
 
 /// Filters intersecting edits and keeps only the largest non-overlapping ones.
-fn filter_intersecting_edits(params: &Vec<(InputEdit, bool)>) -> Vec<(InputEdit, bool)> {
+fn filter_intersecting_edits(params: &Vec<Change>) -> Vec<Change> {
     if params.is_empty() {
         return vec![];
     }
@@ -239,17 +238,18 @@ fn filter_intersecting_edits(params: &Vec<(InputEdit, bool)>) -> Vec<(InputEdit,
 
     // Sort by range
     let mut sorted_edits = params.clone();
-    sorted_edits.sort_by_key(|(edit, _)| edit.start_byte + edit.new_end_byte);
+    sorted_edits
+        .sort_by_key(|change| change.input_edit.start_byte + change.input_edit.new_end_byte);
 
     // Filter out overlapping edits
     let mut filtered = Vec::new();
-    let mut last_end = sorted_edits[0].0.new_end_byte;
+    let mut last_end = sorted_edits[0].input_edit.new_end_byte;
 
     for edit in sorted_edits {
         // Check if current edit starts after previous edit ends
-        if edit.0.start_byte >= last_end {
+        if edit.input_edit.start_byte >= last_end {
             filtered.push(edit);
-            last_end = edit.0.new_end_byte;
+            last_end = edit.input_edit.new_end_byte;
         }
     }
 
@@ -258,14 +258,17 @@ fn filter_intersecting_edits(params: &Vec<(InputEdit, bool)>) -> Vec<(InputEdit,
 
 #[cfg(test)]
 mod tests {
+    use crate::document::texter_impl::updateable::ChangeKind;
+
     use super::*;
     use tree_sitter::{InputEdit, Point};
 
     #[test]
     fn test_intersecting_edits() {
         let edits = vec![
-            (
-                InputEdit {
+            Change {
+                kind: ChangeKind::Replace,
+                input_edit: InputEdit {
                     start_byte: 0,
                     new_end_byte: 20,
                     old_end_byte: 0,
@@ -273,10 +276,11 @@ mod tests {
                     old_end_position: Point::default(),
                     new_end_position: Point::default(),
                 },
-                false,
-            ),
-            (
-                InputEdit {
+                is_whitespace: false,
+            },
+            Change {
+                kind: ChangeKind::Replace,
+                input_edit: InputEdit {
                     start_byte: 10,
                     new_end_byte: 30,
                     old_end_byte: 0,
@@ -284,10 +288,11 @@ mod tests {
                     old_end_position: Point::default(),
                     new_end_position: Point::default(),
                 },
-                false,
-            ),
-            (
-                InputEdit {
+                is_whitespace: false,
+            },
+            Change {
+                kind: ChangeKind::Replace,
+                input_edit: InputEdit {
                     start_byte: 20,
                     new_end_byte: 40,
                     old_end_byte: 0,
@@ -295,13 +300,13 @@ mod tests {
                     old_end_position: Point::default(),
                     new_end_position: Point::default(),
                 },
-                false,
-            ),
+                is_whitespace: false,
+            },
         ];
 
         let filtered = filter_intersecting_edits(&edits);
         assert_eq!(filtered.len(), 1);
-        assert_eq!(filtered[0].0.start_byte, 20);
-        assert_eq!(filtered[0].0.new_end_byte, 40);
+        assert_eq!(filtered[0].input_edit.start_byte, 20);
+        assert_eq!(filtered[0].input_edit.new_end_byte, 40);
     }
 }

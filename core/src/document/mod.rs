@@ -3,6 +3,7 @@ use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
 
 pub(crate) mod texter_impl;
+pub use texter_impl::updateable::{Change, ChangeKind};
 
 /// Represents a text document that combines plain text [`texter`] with its parsed syntax tree [`tree_sitter::Tree`].
 ///
@@ -40,7 +41,7 @@ impl Document {
         &mut self,
         parser: &mut tree_sitter::Parser,
         changes: &Vec<lsp_types::TextDocumentContentChangeEvent>,
-    ) -> anyhow::Result<Vec<(tree_sitter::InputEdit, bool)>> {
+    ) -> anyhow::Result<Vec<Change>> {
         let mut new_tree = WrapTree::from(&mut self.tree);
 
         for change in changes {
