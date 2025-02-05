@@ -1,7 +1,7 @@
 use std::ops::ControlFlow;
 
 use crate::{
-    ast::{UpdateRange, UpdateState},
+    ast::UpdateState,
     document::{texter_impl::updateable::Change, Document},
 };
 
@@ -68,26 +68,9 @@ impl Workspace {
             None => return self,
         };
 
-        // Apply edit ranges to update AST nodes
-        for Change {
-            kind: _,
-            input_edit,
-            is_whitespace: _,
-        } in edit_ranges
-        {
-            let start_byte = input_edit.start_byte;
-            let old_end_byte = input_edit.old_end_byte;
-            let new_end_byte = input_edit.new_end_byte;
-
-            let is_noop = old_end_byte == start_byte && new_end_byte == start_byte;
-            if is_noop {
-                continue;
-            }
-
-            root.edit_range(
-                start_byte,
-                (new_end_byte.wrapping_sub(old_end_byte)) as isize,
-            );
+        let mut collect = vec![];
+        for edit in edit_ranges {
+            root.write().adjust(*edit, &mut collect, self, document);
         }
 
         // Filter intersecting edits and update AST incrementally
@@ -96,6 +79,7 @@ impl Workspace {
                 kind: _,
                 input_edit,
                 is_whitespace,
+                ..
             } = edit;
             let start_byte = input_edit.start_byte;
 
@@ -130,7 +114,7 @@ impl Workspace {
                     continue;
                 }
             }
-            // If the node is extra or unnamed, skip it
+            // If the node is extra, skip it
             if node.is_extra() {
                 #[cfg(feature = "log")]
                 {
@@ -173,7 +157,7 @@ impl Workspace {
                     #[cfg(feature = "log")]
                     {
                         log::info!("");
-                        log::info!("No incremental update available, root node will be reparsed");
+                        log::info!("No incremental update available, root node will be parsed");
                         log::info!("");
                     }
                     // clear checks, since we are going to reparse the root node
@@ -277,6 +261,7 @@ mod tests {
                     new_end_position: Point::default(),
                 },
                 is_whitespace: false,
+                trim_start: 0,
             },
             Change {
                 kind: ChangeKind::Replace,
@@ -289,6 +274,7 @@ mod tests {
                     new_end_position: Point::default(),
                 },
                 is_whitespace: false,
+                trim_start: 0,
             },
             Change {
                 kind: ChangeKind::Replace,
@@ -301,6 +287,7 @@ mod tests {
                     new_end_position: Point::default(),
                 },
                 is_whitespace: false,
+                trim_start: 0,
             },
         ];
 

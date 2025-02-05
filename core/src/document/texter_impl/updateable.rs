@@ -3,7 +3,7 @@ use texter::error::Error;
 use texter::updateables::{ChangeContext, UpdateContext, Updateable};
 use tree_sitter::{InputEdit, Point, Tree};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ChangeKind {
     Delete,
     Insert,
@@ -21,11 +21,12 @@ impl<'a> From<&'a ChangeContext<'_>> for ChangeKind {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Change {
     pub kind: ChangeKind,
     pub input_edit: InputEdit,
     pub is_whitespace: bool,
+    pub trim_start: usize,
 }
 
 impl<'a> From<(&'a ChangeContext<'_>, InputEdit, bool)> for Change {
@@ -34,6 +35,11 @@ impl<'a> From<(&'a ChangeContext<'_>, InputEdit, bool)> for Change {
             kind: value.0.into(),
             input_edit: value.1,
             is_whitespace: value.2,
+            trim_start: match value.0 {
+                ChangeContext::Insert { text, .. } => trim_start_index(text),
+                ChangeContext::Replace { text, .. } => trim_start_index(text),
+                _ => 0,
+            },
         }
     }
 }
@@ -216,5 +222,52 @@ impl<'a> WrapTree<'a> {
             ),
         };
         Ok(ie)
+    }
+}
+
+fn trim_start_index(s: &str) -> usize {
+    s.char_indices()
+        .find(|&(_, c)| !c.is_whitespace())
+        .map_or(s.len(), |(idx, _)| idx)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_trim_start_index_no_whitespace() {
+        let s = "Hello, world!";
+        assert_eq!(trim_start_index(s), 0);
+    }
+
+    #[test]
+    fn test_trim_start_index_leading_whitespace() {
+        let s = "   Leading whitespace";
+        assert_eq!(trim_start_index(s), 3);
+    }
+
+    #[test]
+    fn test_trim_start_index_mixed_whitespace() {
+        let s = "\t\n  Mixed whitespace";
+        assert_eq!(trim_start_index(s), 4);
+    }
+
+    #[test]
+    fn test_trim_start_index_only_whitespace() {
+        let s = "   \t\n  ";
+        assert_eq!(trim_start_index(s), s.len());
+    }
+
+    #[test]
+    fn test_trim_start_index_empty_string() {
+        let s = "";
+        assert_eq!(trim_start_index(s), 0);
+    }
+
+    #[test]
+    fn test_trim_start_index_unicode_whitespace() {
+        let s = "\u{00A0}\u{2007}Unicode whitespace";
+        assert_eq!(trim_start_index(s), 5); // Unicode whitespace is two characters
     }
 }
