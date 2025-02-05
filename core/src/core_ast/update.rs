@@ -206,7 +206,6 @@ where
         match read.is_inside_offset(edit.input_edit.start_byte + edit.trim_start) {
             true => {
                 drop(read);
-                let range = self.read().get_range();
                 // Checks if no lower level symbols could be updated.
                 match self.write().update(edit, collect, workspace, document) {
                     // if result, return
