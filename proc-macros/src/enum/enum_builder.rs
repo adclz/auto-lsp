@@ -30,7 +30,6 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         self.impl_ast_symbol(&mut builder);
         self.impl_locator(&mut builder);
         self.impl_dynamic_swap(&mut builder);
-        self.impl_edit_range(&mut builder);
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
@@ -157,20 +156,15 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_pattern_match_iter(
                 &self.fields,
+                &PATHS.dynamic_swap.adjust.sig,
+                &PATHS.dynamic_swap.adjust.variant,
+            )
+            .add_pattern_match_iter(
+                &self.fields,
                 &PATHS.dynamic_swap.swap.sig,
                 &PATHS.dynamic_swap.swap.variant,
             )
             .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
-    }
-
-    fn impl_edit_range(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                &self.fields,
-                &PATHS.edit_range.edit_range.sig,
-                &PATHS.edit_range.edit_range.variant,
-            )
-            .stage_trait(&self.input_name, &PATHS.edit_range.path);
     }
 
     fn impl_queryable(&self, builder: &mut VariantBuilder) {

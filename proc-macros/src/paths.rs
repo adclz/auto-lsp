@@ -137,16 +137,13 @@ nested_struct!(
         },
         pub dynamic_swap: DynamicSwap {
             pub path: Path,
+            pub adjust: Method,
             pub swap: Method
         },
         pub static_swap: StaticSwap {
             pub path: Path,
             pub swap: Method
-        },
-        pub edit_range: EditRange {
-            pub path: Path,
-            pub edit_range: Method
-        },
+        }
     }
 );
 
@@ -357,6 +354,16 @@ impl Default for Paths {
             },
             dynamic_swap: DynamicSwap {
                 path: core_ast(parse_quote!(UpdateDynamic)),
+                adjust: Method {
+                    sig: quote! { fn adjust(
+                        &mut self,
+                        edit: auto_lsp::core::document::Change,
+                        collect: &mut Vec<auto_lsp::core::ast::DynSymbol>,
+                        workspace: &mut auto_lsp::core::workspace::Workspace,
+                        document: &auto_lsp::core::document::Document,
+                    )},
+                    variant: quote! { adjust(edit, collect, workspace, document) },
+                },
                 swap: Method {
                     sig: quote! { fn update(
                         &mut self,
@@ -378,37 +385,9 @@ impl Default for Paths {
                         workspace: &mut auto_lsp::core::workspace::Workspace,
                         document: &auto_lsp::core::document::Document,
                     ) -> std::ops::ControlFlow<auto_lsp::core::ast::UpdateState> },
-                    variant: quote! { update(change, collect, workspace, document) },
-                },
-            },
-            edit_range: EditRange {
-                path: core_ast(parse_quote!(UpdateRange)),
-                edit_range: Method {
-                    sig: quote! { fn edit_range(&self, start: usize, offset: isize) },
-                    variant: quote! { edit_range(start, offset) },
+                    variant: quote! { update(edit, collect, workspace, document) },
                 },
             },
         }
-    }
-}
-
-struct FieldWrapper {
-    name: String,
-    ty: String,
-}
-
-impl quote::ToTokens for FieldWrapper {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        // Convert `name` to a valid Rust identifier
-        let name = syn::Ident::new(&self.name, proc_macro2::Span::call_site());
-        // Convert `ty` to a token stream
-        let ty: TokenStream = self
-            .ty
-            .parse()
-            .expect("Failed to parse type as TokenStream");
-
-        tokens.extend(quote! {
-            pub #name: #ty,
-        });
     }
 }

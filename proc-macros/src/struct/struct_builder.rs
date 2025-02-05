@@ -63,7 +63,6 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.impl_locator(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_dynamic_swap(&mut builder);
-        self.impl_edit_range(&mut builder);
 
         // Implement other features
         builder.add(self.features.to_token_stream());
@@ -205,6 +204,17 @@ impl<'a> StructBuilder<'a> {
         builder
             .add_fn_iter(
                 &self.fields,
+                &PATHS.dynamic_swap.adjust.sig,
+                Some(quote! { use #static_update_trait; }),
+                |_, _, name, _, _| {
+                    quote! {
+                        self.#name.adjust(edit, collect, workspace, document);
+                    }
+                },
+                None
+            )
+            .add_fn_iter(
+                &self.fields,
                 &PATHS.dynamic_swap.swap.sig,
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
@@ -215,23 +225,6 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),
             )
             .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
-    }
-
-    fn impl_edit_range(&self, builder: &mut FieldBuilder) {
-        let static_update_trait = &PATHS.edit_range.path;
-        builder
-            .add_fn_iter(
-                &self.fields,
-                &PATHS.edit_range.edit_range.sig,
-                Some(quote! { use #static_update_trait; }),
-                |_, _, name, _, _| {
-                    quote! {
-                        self.#name.edit_range(start, offset);
-                    }
-                },
-                None,
-            )
-            .stage_trait(&self.input_name, &PATHS.edit_range.path);
     }
 
     fn struct_input_builder(&self, builder: &mut FieldBuilder) {

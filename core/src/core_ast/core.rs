@@ -40,7 +40,6 @@ pub trait AstSymbol:
     + GetSymbolData
     + Parent
     + UpdateDynamic
-    + UpdateRange
 {
     /// Retrieves the data of the symbol.
     fn get_data(&self) -> &SymbolData;
