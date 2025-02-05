@@ -27,6 +27,8 @@ pub mod inlay_hints;
 #[cfg(test)]
 pub mod proc_macros;
 #[cfg(test)]
+pub mod ranges;
+#[cfg(test)]
 pub mod semantic_tokens;
 #[cfg(test)]
 pub mod traverse;

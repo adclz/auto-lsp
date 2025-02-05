@@ -1,150 +1,14 @@
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
 use auto_lsp_core::ast::ChangeReport;
+use auto_lsp_core::ast::GetSymbolData;
+use auto_lsp_core::build::Queryable;
 use auto_lsp_core::document::ChangeKind;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
 use super::html_workspace::*;
 use super::python_workspace::*;
-
-#[fixture]
-fn divs() -> (Workspace, Document) {
-    Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
-        Url::parse("file:///sample_file.html").unwrap(),
-        r#"<div> </div>"#.into(),
-    )
-    .unwrap()
-}
-
-#[rstest]
-fn insert_whitespace(divs: (Workspace, Document)) {
-    let workspace = divs.0;
-    let mut document = divs.1;
-
-    let change = lsp_types::TextDocumentContentChangeEvent {
-        range: Some(lsp_types::Range {
-            start: lsp_types::Position {
-                line: 0,
-                character: 5,
-            },
-            end: lsp_types::Position {
-                line: 0,
-                character: 5,
-            },
-        }),
-        range_length: Some(1),
-        text: " ".into(),
-    };
-
-    let edits = document
-        .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
-            &vec![change],
-        )
-        .unwrap();
-
-    assert_eq!(edits.len(), 1);
-    assert!(matches!(edits[0].kind, ChangeKind::Insert));
-    assert!(edits[0].is_whitespace);
-}
-
-#[rstest]
-fn insert_newline(divs: (Workspace, Document)) {
-    let workspace = divs.0;
-    let mut document = divs.1;
-
-    let change = lsp_types::TextDocumentContentChangeEvent {
-        range: Some(lsp_types::Range {
-            start: lsp_types::Position {
-                line: 0,
-                character: 5,
-            },
-            end: lsp_types::Position {
-                line: 0,
-                character: 5,
-            },
-        }),
-        range_length: Some(1),
-        text: "\n".into(),
-    };
-
-    let edits = document
-        .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
-            &vec![change],
-        )
-        .unwrap();
-
-    assert_eq!(edits.len(), 1);
-    assert!(matches!(edits[0].kind, ChangeKind::Insert));
-    assert!(edits[0].is_whitespace);
-}
-
-#[rstest]
-fn insert_tabulation(divs: (Workspace, Document)) {
-    let workspace = divs.0;
-    let mut document = divs.1;
-
-    let change = lsp_types::TextDocumentContentChangeEvent {
-        range: Some(lsp_types::Range {
-            start: lsp_types::Position {
-                line: 0,
-                character: 5,
-            },
-            end: lsp_types::Position {
-                line: 0,
-                character: 5,
-            },
-        }),
-        range_length: Some(1),
-        text: "\t".into(),
-    };
-
-    let edits = document
-        .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
-            &vec![change],
-        )
-        .unwrap();
-
-    assert_eq!(edits.len(), 1);
-    assert!(matches!(edits[0].kind, ChangeKind::Insert));
-    assert!(edits[0].is_whitespace);
-}
-
-#[rstest]
-fn delete_whitespace(divs: (Workspace, Document)) {
-    let workspace = divs.0;
-    let mut document = divs.1;
-
-    let change = lsp_types::TextDocumentContentChangeEvent {
-        range: Some(lsp_types::Range {
-            start: lsp_types::Position {
-                line: 0,
-                character: 5,
-            },
-            end: lsp_types::Position {
-                line: 0,
-                character: 6,
-            },
-        }),
-        range_length: Some(1),
-        text: "".into(),
-    };
-
-    let edits = document
-        .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
-            &vec![change],
-        )
-        .unwrap();
-
-    assert_eq!(edits.len(), 1);
-    assert!(matches!(edits[0].kind, ChangeKind::Delete));
-    assert!(edits[0].is_whitespace);
-}
 
 #[fixture]
 fn empty() -> (Workspace, Document) {
@@ -252,18 +116,7 @@ fn replace_first_parameter_name(mut foo: (Workspace, Document)) {
     // param1 is at index 0
     assert!(matches!(
         workspace.changes[0],
-        ChangeReport::Remove(
-            0,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
-        )
-    ));
-
-    assert!(matches!(
-        workspace.changes[1],
-        ChangeReport::Insert(
-            0,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
-        )
+        ChangeReport::Replace(0, ParameterBuilder::QUERY_NAMES)
     ));
 }
 
@@ -272,20 +125,19 @@ fn remove_last_parameter(mut foo: (Workspace, Document)) {
     let mut workspace = foo.0;
     let document = &mut foo.1;
 
-    // Change "param3: int = 5" to ""
-    // This is a complete deletion
+    // Replace "param3: int = 5" to ""
     let change = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
             start: lsp_types::Position {
                 line: 0,
-                character: 31,
+                character: 29,
             },
             end: lsp_types::Position {
                 line: 0,
-                character: 43,
+                character: 45,
             },
         }),
-        range_length: Some(12),
+        range_length: Some(16),
         text: "".into(),
     };
 
@@ -303,18 +155,7 @@ fn remove_last_parameter(mut foo: (Workspace, Document)) {
     // param3 is at index 2
     assert!(matches!(
         workspace.changes[0],
-        ChangeReport::Remove(
-            2,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
-        )
-    ));
-
-    assert!(matches!(
-        workspace.changes[1],
-        ChangeReport::Insert(
-            2,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
-        )
+        ChangeReport::Remove(2, ParameterBuilder::QUERY_NAMES)
     ));
 }
 
@@ -332,7 +173,7 @@ fn replace_two_last_parameters(mut foo: (Workspace, Document)) {
             },
             end: lsp_types::Position {
                 line: 0,
-                character: 44
+                character: 44,
             },
         }),
         range_length: Some(28),
@@ -352,33 +193,73 @@ fn replace_two_last_parameters(mut foo: (Workspace, Document)) {
 
     assert!(matches!(
         workspace.changes[0],
-        ChangeReport::Remove(
-            2,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
-        )
+        ChangeReport::Remove(1, ParameterBuilder::QUERY_NAMES)
     ));
 
     assert!(matches!(
         workspace.changes[1],
-        ChangeReport::Remove(
-            1,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
-        )
+        ChangeReport::Remove(2, ParameterBuilder::QUERY_NAMES)
     ));
 
     assert!(matches!(
         workspace.changes[2],
-        ChangeReport::Insert(
-            1,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
-        )
+        ChangeReport::Insert(1, ParameterBuilder::QUERY_NAMES)
     ));
 
     assert!(matches!(
         workspace.changes[3],
-        ChangeReport::Insert(
-            2,
-            &["identifier", "typed_parameter", "typed_default_parameter"]
+        ChangeReport::Insert(2, ParameterBuilder::QUERY_NAMES)
+    ));
+}
+
+#[rstest]
+fn insert_bar(mut foo: (Workspace, Document)) {
+    let mut workspace = foo.0;
+    let document = &mut foo.1;
+
+    {
+        let ast = workspace.ast.as_mut().unwrap();
+        let ast = ast.read();
+        let module = ast.downcast_ref::<Module>().unwrap();
+        let function = &module.functions[0];
+        let function = function.read();
+        let pass = function.body.read();
+        assert_eq!(pass.get_range(), 51..55);
+    }
+
+    // add foo bar under def foo
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 1,
+                character: 8,
+            },
+            end: lsp_types::Position {
+                line: 1,
+                character: 8,
+            },
+        }),
+        range_length: Some(0),
+        text: "\ndef bar():\n    pass".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
         )
+        .unwrap();
+
+    assert_eq!(edits[0].kind, ChangeKind::Insert);
+    assert_eq!(edits[0].input_edit.start_byte, 55);
+    assert_eq!(edits[0].trim_start, 1);
+
+    workspace.parse(Some(&edits), document);
+
+    assert!(!workspace.changes.is_empty());
+
+    assert!(matches!(
+        workspace.changes[0],
+        ChangeReport::Insert(1, FunctionBuilder::QUERY_NAMES)
     ));
 }
