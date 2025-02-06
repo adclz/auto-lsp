@@ -23,38 +23,6 @@ use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
 
-/// A trait for injecting a parent relationship into an AST symbol.
-///
-/// This trait is used to establish parent-child relationships in the AST,
-/// ensuring that newly created symbols are properly linked to their parent nodes.
-///
-/// // TODO: Move to core_build/buildable.rs
-pub trait Parent {
-    fn inject_parent(&mut self, parent: WeakSymbol);
-}
-
-impl<T: AstSymbol> Parent for Symbol<T> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        self.write().set_parent(parent);
-    }
-}
-
-impl<T: AstSymbol> Parent for Option<Symbol<T>> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        if let Some(symbol) = self.as_mut() {
-            symbol.write().set_parent(parent);
-        }
-    }
-}
-
-impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        for symbol in self.iter_mut() {
-            symbol.write().set_parent(parent.clone());
-        }
-    }
-}
-
 pub enum ChangeReport {
     Replace(usize, &'static [&'static str]),
     Insert(usize, &'static [&'static str]),
@@ -277,8 +245,8 @@ fn create_insert_symbols<T, Y>(
 where
     T: Buildable + Queryable,
     Y: AstSymbol
-    + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
-    + InvokeParser<T, Y>,
+        + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
+        + InvokeParser<T, Y>,
 {
     // Parse the symbols in the given range
     let symbols = match Y::parse_symbols(workspace, document, Some(range.clone())) {
@@ -313,10 +281,11 @@ where
             reversed_changes.push(ChangeReport::Insert(target_pos, T::QUERY_NAMES));
         }
     }
-    workspace.changes.extend(&mut reversed_changes.into_iter().rev());
+    workspace
+        .changes
+        .extend(&mut reversed_changes.into_iter().rev());
     ControlFlow::Break(UpdateState::Result(Ok(())))
 }
-
 
 impl<T, Y> UpdateStatic<T, Y> for Vec<Symbol<Y>>
 where
@@ -501,15 +470,7 @@ where
                             end: self[end].read().get_range().end,
                         };
 
-                        create_insert_symbols(
-                            self,
-                            workspace,
-                            document,
-                            range,
-                            start,
-                            end,
-                            parent,
-                        )
+                        create_insert_symbols(self, workspace, document, range, start, end, parent)
                     }
                     (None, None) => ControlFlow::Continue(()),
                 };

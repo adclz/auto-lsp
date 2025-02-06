@@ -2,6 +2,7 @@ use super::capabilities::*;
 use super::data::*;
 use super::symbol::*;
 use super::update::*;
+use crate::build::Parent;
 use crate::document::Document;
 use downcast_rs::{impl_downcast, DowncastSync};
 use lsp_types::Position;

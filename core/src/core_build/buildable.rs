@@ -4,6 +4,7 @@ use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{Diagnostic, Position, Url};
 
 use crate::{
+    ast::WeakSymbol,
     core_ast::{core::AstSymbol, symbol::Symbol},
     document::Document,
     workspace::Workspace,
@@ -139,6 +140,38 @@ impl_downcast!(Buildable);
 /// - Enums have one query per variant.
 pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
+}
+
+/// A trait for injecting a parent relationship into an AST symbol.
+///
+/// This trait is used to establish parent-child relationships in the AST,
+/// ensuring that newly created symbols are properly linked to their parent nodes.
+///
+/// // TODO: Move to core_build/buildable.rs
+pub trait Parent {
+    fn inject_parent(&mut self, parent: WeakSymbol);
+}
+
+impl<T: AstSymbol> Parent for Symbol<T> {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
+        self.write().set_parent(parent);
+    }
+}
+
+impl<T: AstSymbol> Parent for Option<Symbol<T>> {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
+        if let Some(symbol) = self.as_mut() {
+            symbol.write().set_parent(parent);
+        }
+    }
+}
+
+impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
+    fn inject_parent(&mut self, parent: WeakSymbol) {
+        for symbol in self.iter_mut() {
+            symbol.write().set_parent(parent.clone());
+        }
+    }
 }
 
 /// A trait for adding symbols to builders created by the `#[seq]` macro.

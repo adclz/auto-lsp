@@ -332,7 +332,7 @@ impl Default for Paths {
                 },
             },
             parent: Parent {
-                path: core_ast(parse_quote!(Parent)),
+                path: core_build(parse_quote!(Parent)),
                 inject_parent: Method {
                     sig: quote! { fn inject_parent(&mut self, parent: auto_lsp::core::ast::WeakSymbol) },
                     variant: quote! { inject_parent(parent) },
