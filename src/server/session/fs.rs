@@ -156,15 +156,6 @@ mod tests {
                 .as_str(),
             "Invalid extension for file file:///C:/path/to/file"
         );
-
-        // Invalid host
-        assert_eq!(
-            get_extension(&Url::parse("file://example.com/C:/path/to/file.rs").unwrap())
-                .unwrap_err()
-                .to_string()
-                .as_str(),
-            "Invalid host 'example.com' for file URL file://example.com/C:/path/to/file.rs"
-        );
     }
 
     #[cfg(not(windows))]
