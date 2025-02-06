@@ -55,15 +55,43 @@ impl Session {
 }
 
 /// Get the extension of a file from a [`Url`] path
+#[cfg(windows)]
 pub(crate) fn get_extension(path: &Url) -> anyhow::Result<String> {
+    // Ensure the host is either empty or "localhost" on Windows
+    if let Some(host) = path.host_str() {
+        if !host.is_empty() && host != "localhost" {
+            return Err(anyhow::anyhow!(
+                "Invalid host '{}' for file URL {}",
+                host,
+                path
+            ));
+        }
+    }
+
     path.to_file_path()
-        .map_err(|_| anyhow::anyhow!("Failed to read file {}", path.to_string()))?
+        .map_err(|_| anyhow::anyhow!("Failed to read file URL {}", path))?
         .extension()
         .map_or_else(
             || {
                 Err(anyhow::anyhow!(format!(
                     "Invalid extension for file {}",
-                    path.to_string()
+                    path
+                )))
+            },
+            |ext| Ok(ext.to_string_lossy().to_string()),
+        )
+}
+
+#[cfg(not(windows))]
+pub(crate) fn get_extension(path: &Url) -> anyhow::Result<String> {
+    path.to_file_path()
+        .map_err(|_| anyhow::anyhow!("Failed to read file URL {}", path))?
+        .extension()
+        .map_or_else(
+            || {
+                Err(anyhow::anyhow!(format!(
+                    "Invalid extension for file {}",
+                    path
                 )))
             },
             |ext| Ok(ext.to_string_lossy().to_string()),
@@ -99,12 +127,50 @@ fn collect_workspace_files(
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn test_get_extension() {
-        use super::get_extension;
-        use lsp_types::Url;
+    use super::get_extension;
+    use lsp_types::Url;
 
-        // rs
+    #[cfg(windows)]
+    #[test]
+    fn test_get_extension_windows() {
+        // Valid Windows paths
+        assert_eq!(
+            get_extension(&Url::parse("file:///C:/path/to/file.rs").unwrap())
+                .unwrap()
+                .as_str(),
+            "rs"
+        );
+
+        assert_eq!(
+            get_extension(&Url::parse("file:///C:/path/to/file.with.multiple.dots").unwrap())
+                .unwrap()
+                .as_str(),
+            "dots"
+        );
+
+        // Empty extension
+        assert_eq!(
+            get_extension(&Url::parse("file:///C:/path/to/file").unwrap())
+                .unwrap_err()
+                .to_string()
+                .as_str(),
+            "Invalid extension for file file:///C:/path/to/file"
+        );
+
+        // Invalid host
+        assert_eq!(
+            get_extension(&Url::parse("file://example.com/C:/path/to/file.rs").unwrap())
+                .unwrap_err()
+                .to_string()
+                .as_str(),
+            "Invalid host 'example.com' for file URL file://example.com/C:/path/to/file.rs"
+        );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn test_get_extension_non_windows() {
+        // Valid Linux/Unix paths
         assert_eq!(
             get_extension(&Url::parse("file:///path/to/file.rs").unwrap())
                 .unwrap()
@@ -112,7 +178,6 @@ mod tests {
             "rs"
         );
 
-        // multiple dots
         assert_eq!(
             get_extension(&Url::parse("file:///path/to/file.with.multiple.dots").unwrap())
                 .unwrap()
@@ -120,13 +185,21 @@ mod tests {
             "dots"
         );
 
-        // empty
+        // Empty extension
         assert_eq!(
             get_extension(&Url::parse("file:///path/to/file").unwrap())
                 .unwrap_err()
                 .to_string()
                 .as_str(),
             "Invalid extension for file file:///path/to/file"
+        );
+
+        // Note: On non-Windows systems, the host is typically ignored, so this should work
+        assert_eq!(
+            get_extension(&Url::parse("file://localhost/path/to/file.rs").unwrap())
+                .unwrap()
+                .as_str(),
+            "rs"
         );
     }
 }
