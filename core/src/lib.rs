@@ -10,6 +10,7 @@ pub mod ast {
     pub use crate::core_ast::core::*;
     pub use crate::core_ast::data::*;
     pub use crate::core_ast::symbol::*;
+    #[cfg(feature = "incremental")]
     pub use crate::core_ast::update::*;
 }
 

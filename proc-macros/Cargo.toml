@@ -17,6 +17,7 @@ darling = "0.20.10"
 nested-struct = "0.1.0"
 
 [features]
+incremental = []
 
 [lib]
 proc-macro = true

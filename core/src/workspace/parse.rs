@@ -1,13 +1,30 @@
-use std::ops::ControlFlow;
-
-use crate::{
-    ast::UpdateState,
-    document::{texter_impl::updateable::Change, Document},
-};
+#![allow(unused)]
+use crate::document::{texter_impl::updateable::Change, Document};
 
 use super::Workspace;
 
 impl Workspace {
+    fn set_ast(&mut self, document: &Document) -> &mut Self {
+        self.unsolved_checks.clear();
+        self.unsolved_references.clear();
+
+        let ast_parser = self.parsers.ast_parser;
+
+        self.ast = match ast_parser(self, &document, None) {
+            Ok(ast) => Some(ast),
+            Err(e) => {
+                self.diagnostics.push(e);
+                None
+            }
+        };
+        self.set_comments(document)
+            .resolve_checks(document)
+            .resolve_references(document);
+        #[cfg(feature = "log")]
+        self.log_unsolved();
+
+        return self;
+    }
     /// Parses a document and updates the AST.
     ///
     /// This method assumes the document has already been updated and parsed by the tree-sitter parser.
@@ -21,6 +38,7 @@ impl Workspace {
         // Clear diagnostics
         self.diagnostics.clear();
 
+        #[cfg(feature = "incremental")]
         // Clear changes
         self.changes.clear();
 
@@ -39,114 +57,86 @@ impl Workspace {
             return self;
         }
 
-        let ast_parser = self.parsers.ast_parser;
-
         // Create a new AST if none exists and returns
         let root = match self.ast.clone() {
             Some(root) => root,
-            None => {
-                self.ast = match ast_parser(self, &document, None) {
-                    Ok(ast) => Some(ast),
-                    Err(e) => {
-                        self.diagnostics.push(e);
-                        None
-                    }
-                };
-                self.set_comments(document)
-                    .resolve_checks(document)
-                    .resolve_references(document);
-                #[cfg(feature = "log")]
-                self.log_unsolved();
-
-                return self;
-            }
+            None => return self.set_ast(document),
         };
 
-        // If no edit ranges, return
-        let edit_ranges = match edit_ranges {
-            Some(ranges) => ranges,
-            None => return self,
-        };
-
-        let mut collect = vec![];
-        for edit in edit_ranges {
-            root.write().adjust(*edit, &mut collect, self, document);
-        }
-
-        // Filter intersecting edits and update AST incrementally
-        for edit in filter_intersecting_edits(edit_ranges) {
-            let Change {
-                kind: _,
-                is_whitespace,
-                ..
-            } = edit;
-
-            // Skip whitespace-only edits
-            if is_whitespace {
-                #[cfg(feature = "log")]
-                {
-                    log::info!("");
-                    log::info!("Whitespace edit");
-                }
-                continue;
-            }
+        #[cfg(feature = "incremental")]
+        {
+            // If no edit ranges, return
+            let edit_ranges = match edit_ranges {
+                Some(ranges) => ranges,
+                None => return self,
+            };
 
             let mut collect = vec![];
+            for edit in edit_ranges {
+                root.write().adjust(*edit, &mut collect, self, document);
+            }
 
-            // Attempt to update AST incrementally
-            let result = root.write().update(edit, &mut collect, self, document);
-            match result {
-                ControlFlow::Break(UpdateState::Result(Ok(()))) => {
-                    // Update succeeded
+            // Filter intersecting edits and update AST incrementally
+            for edit in filter_intersecting_edits(edit_ranges) {
+                let Change {
+                    kind: _,
+                    is_whitespace,
+                    ..
+                } = edit;
+
+                // Skip whitespace-only edits
+                if is_whitespace {
                     #[cfg(feature = "log")]
                     {
                         log::info!("");
-                        log::info!("Incremental update succeeded");
+                        log::info!("Whitespace edit");
                     }
+                    continue;
                 }
-                ControlFlow::Break(UpdateState::Result(Err(e))) => {
-                    // Update failed, add error to diagnostics
-                    self.diagnostics.push(e);
-                }
-                _ => {
-                    // Could not locate the node to update
-                    // therefore we need to reparse the root node
-                    #[cfg(feature = "log")]
-                    {
-                        log::info!("");
-                        log::info!("No incremental update available, root node will be parsed");
-                        log::info!("");
-                    }
-                    // clear checks, since we are going to reparse the root node
-                    self.unsolved_checks.clear();
-                    self.unsolved_references.clear();
 
-                    let ast_builder = ast_parser(self, document, None);
-                    match ast_builder {
-                        Ok(new_root) => {
-                            self.ast = Some(new_root);
-                        }
-                        Err(e) => {
-                            self.diagnostics.push(e);
-                            self.ast = None;
+                let mut collect = vec![];
+
+                // Attempt to update AST incrementally
+                let result = root.write().update(edit, &mut collect, self, document);
+                match result {
+                    std::ops::ControlFlow::Break(crate::ast::UpdateState::Result(Ok(()))) => {
+                        // Update succeeded
+                        #[cfg(feature = "log")]
+                        {
+                            log::info!("");
+                            log::info!("Incremental update succeeded");
                         }
                     }
-                }
-            };
-        }
-        self.set_comments(document)
-            .resolve_checks(document)
-            .resolve_references(document);
+                    std::ops::ControlFlow::Break(crate::ast::UpdateState::Result(Err(e))) => {
+                        // Update failed, add error to diagnostics
+                        self.diagnostics.push(e);
+                    }
+                    _ => {
+                        // Could not locate the node to update
+                        // therefore we need to reparse the root node
+                        #[cfg(feature = "log")]
+                        {
+                            log::info!("");
+                            log::info!("No incremental update available, root node will be parsed");
+                            log::info!("");
+                        }
+                        self.set_ast(document);
+                    }
+                };
+            }
+            self.set_comments(document)
+                .resolve_checks(document)
+                .resolve_references(document);
 
-        #[cfg(feature = "log")]
-        {
-            self.changes.iter().for_each(|change| {
-                log::info!("");
-                change.log();
-            });
-            self.log_unsolved();
+            #[cfg(feature = "log")]
+            {
+                self.changes.iter().for_each(|change| {
+                    log::info!("");
+                    change.log();
+                });
+                self.log_unsolved();
+            }
         }
-
         return self;
     }
 
@@ -167,6 +157,7 @@ impl Workspace {
     }
 }
 
+#[cfg(feature = "incremental")]
 /// Filters intersecting edits and keeps only the largest non-overlapping ones.
 fn filter_intersecting_edits(params: &Vec<Change>) -> Vec<Change> {
     if params.is_empty() {
@@ -197,6 +188,7 @@ fn filter_intersecting_edits(params: &Vec<Change>) -> Vec<Change> {
     filtered
 }
 
+#[cfg(feature = "incremental")]
 #[cfg(test)]
 mod tests {
     use crate::document::texter_impl::updateable::ChangeKind;

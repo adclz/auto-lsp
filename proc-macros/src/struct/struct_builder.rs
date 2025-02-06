@@ -62,6 +62,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         // Implement core capabilities
         self.impl_locator(&mut builder);
         self.impl_parent(&mut builder);
+        #[cfg(feature = "incremental")]
         self.impl_dynamic_swap(&mut builder);
 
         // Implement other features
@@ -199,6 +200,7 @@ impl<'a> StructBuilder<'a> {
             .stage_trait(&self.input_builder_name, queryable);
     }
 
+    #[cfg(feature = "incremental")]
     fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {
         let static_update_trait = &PATHS.static_swap.path;
         builder

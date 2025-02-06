@@ -21,12 +21,14 @@ pub mod document_symbols;
 #[cfg(test)]
 pub mod hover;
 #[cfg(test)]
+#[cfg(feature = "incremental")]
 pub mod incremental;
 #[cfg(test)]
 pub mod inlay_hints;
 #[cfg(test)]
 pub mod proc_macros;
 #[cfg(test)]
+#[cfg(feature = "incremental")]
 pub mod ranges;
 #[cfg(test)]
 pub mod semantic_tokens;

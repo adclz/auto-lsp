@@ -135,11 +135,13 @@ nested_struct!(
             pub path: Path,
             pub check: Method
         },
+        #[cfg(feature = "incremental")]
         pub dynamic_swap: DynamicSwap {
             pub path: Path,
             pub adjust: Method,
             pub swap: Method
         },
+        #[cfg(feature = "incremental")]
         pub static_swap: StaticSwap {
             pub path: Path,
             pub swap: Method
@@ -352,6 +354,7 @@ impl Default for Paths {
                     variant: quote! { check(doc, diagnostics) },
                 },
             },
+            #[cfg(feature = "incremental")]
             dynamic_swap: DynamicSwap {
                 path: core_ast(parse_quote!(UpdateDynamic)),
                 adjust: Method {
@@ -375,6 +378,7 @@ impl Default for Paths {
                     variant: quote! { update(edit, collect, workspace, document) },
                 },
             },
+            #[cfg(feature = "incremental")]
             static_swap: StaticSwap {
                 path: core_ast(parse_quote!(UpdateStatic)),
                 swap: Method {

@@ -29,6 +29,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
 
         self.impl_ast_symbol(&mut builder);
         self.impl_locator(&mut builder);
+        #[cfg(feature = "incremental")]
         self.impl_dynamic_swap(&mut builder);
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
@@ -152,6 +153,7 @@ impl<'a> EnumBuilder<'a> {
             .stage_trait(&self.input_name, &PATHS.locator.path);
     }
 
+    #[cfg(feature = "incremental")]
     fn impl_dynamic_swap(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(

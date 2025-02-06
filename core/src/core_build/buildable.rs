@@ -146,8 +146,6 @@ pub trait Queryable {
 ///
 /// This trait is used to establish parent-child relationships in the AST,
 /// ensuring that newly created symbols are properly linked to their parent nodes.
-///
-/// // TODO: Move to core_build/buildable.rs
 pub trait Parent {
     fn inject_parent(&mut self, parent: WeakSymbol);
 }

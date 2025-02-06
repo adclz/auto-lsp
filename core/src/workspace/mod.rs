@@ -1,13 +1,11 @@
-use std::sync::Arc;
-
 use crate::{
-    ast::ChangeReport,
     core_ast::symbol::{DynSymbol, WeakSymbol},
     core_build::parse::InvokeParserFn,
     document::Document,
 };
 use lsp_types::{Diagnostic, Url};
 use parking_lot::RwLock;
+use std::sync::Arc;
 use texter::core::text::Text;
 use tree_sitter::{Language, Parser, Query};
 
@@ -71,7 +69,8 @@ pub struct Workspace {
     /// References flagged as unresolved during analysis.
     pub unsolved_references: Vec<WeakSymbol>,
     /// Changes report
-    pub changes: Vec<ChangeReport>,
+    #[cfg(feature = "incremental")]
+    pub changes: Vec<crate::ast::ChangeReport>,
 }
 
 impl Workspace {
@@ -116,6 +115,7 @@ impl Workspace {
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
+            #[cfg(feature = "incremental")]
             changes: vec![],
         };
 
@@ -163,6 +163,7 @@ impl Workspace {
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
+            #[cfg(feature = "incremental")]
             changes: vec![],
         };
 
@@ -172,7 +173,8 @@ impl Workspace {
         Ok((workspace, document))
     }
 
-    pub fn get_changes(&self) -> &Vec<ChangeReport> {
+    #[cfg(feature = "incremental")]
+    pub fn get_changes(&self) -> &Vec<crate::ast::ChangeReport> {
         &self.changes
     }
 
