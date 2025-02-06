@@ -63,6 +63,11 @@ impl Workspace {
             None => return self.set_ast(document),
         };
 
+        #[cfg(not(feature = "incremental"))]
+        {
+            self.set_ast(document);
+        }
+
         #[cfg(feature = "incremental")]
         {
             // If no edit ranges, return
