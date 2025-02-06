@@ -77,52 +77,9 @@ impl Workspace {
         for edit in filter_intersecting_edits(edit_ranges) {
             let Change {
                 kind: _,
-                input_edit,
                 is_whitespace,
                 ..
             } = edit;
-            let start_byte = input_edit.start_byte;
-
-            // Find the node's range to update
-            // Since we don't have lookahed, we need to find the parent
-            // of the node that was edited
-            let node = match document
-                .tree
-                .root_node()
-                .descendant_for_byte_range(start_byte, input_edit.new_end_byte)
-            {
-                Some(node) => node,
-                None => {
-                    // Rare case since tree sitter would return a root node if it can't find a descendant
-                    #[cfg(feature = "log")]
-                    {
-                        log::info!("");
-                        log::info!("Node not found for range: {:?}", input_edit);
-                    }
-                    continue;
-                }
-            };
-
-            // If the node is an error, skip it
-            if let Some(node) = node.parent() {
-                if node.is_error() {
-                    #[cfg(feature = "log")]
-                    {
-                        log::warn!("");
-                        log::warn!("Node has an invalid syntax, skip update");
-                    }
-                    continue;
-                }
-            }
-            // If the node is extra, skip it
-            if node.is_extra() {
-                #[cfg(feature = "log")]
-                {
-                    log::info!("");
-                    log::info!("Node is extra, skip update");
-                }
-                continue;
-            }
 
             // Skip whitespace-only edits
             if is_whitespace {

@@ -203,11 +203,16 @@ fn replace_two_last_parameters(mut foo: (Workspace, Document)) {
 
     assert!(matches!(
         workspace.changes[2],
-        ChangeReport::Insert(1, ParameterBuilder::QUERY_NAMES)
+        ChangeReport::Replace(0, ParameterBuilder::QUERY_NAMES)
     ));
 
     assert!(matches!(
         workspace.changes[3],
+        ChangeReport::Insert(1, ParameterBuilder::QUERY_NAMES)
+    ));
+
+    assert!(matches!(
+        workspace.changes[4],
         ChangeReport::Insert(2, ParameterBuilder::QUERY_NAMES)
     ));
 }
@@ -227,7 +232,7 @@ fn insert_bar(mut foo: (Workspace, Document)) {
         assert_eq!(pass.get_range(), 51..55);
     }
 
-    // add foo bar under def foo
+    // add bar under foo
     let change = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
             start: lsp_types::Position {
@@ -260,6 +265,114 @@ fn insert_bar(mut foo: (Workspace, Document)) {
 
     assert!(matches!(
         workspace.changes[0],
+        ChangeReport::Replace(0, FunctionBuilder::QUERY_NAMES)
+    ));
+
+    assert!(matches!(
+        workspace.changes[1],
+        ChangeReport::Insert(1, FunctionBuilder::QUERY_NAMES)
+    ));
+}
+
+#[fixture]
+fn foo_bar() -> (Workspace, Document) {
+    Workspace::from_utf8(
+        &PYTHON_PARSERS.get("python").unwrap(),
+        Url::parse("file:///test.py").unwrap(),
+        r#"def foo(param1, param2: int, param3: int = 5):
+    pass
+def bar():
+    pass"#
+            .into(),
+    )
+    .unwrap()
+}
+
+#[rstest]
+fn remove_bar(mut foo_bar: (Workspace, Document)) {
+    let mut workspace = foo_bar.0;
+    let document = &mut foo_bar.1;
+
+    // Remove bar
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 2,
+                character: 0,
+            },
+            end: lsp_types::Position {
+                line: 3,
+                character: 8,
+            },
+        }),
+        range_length: Some(18),
+        text: "".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits[0].kind, ChangeKind::Delete);
+    assert_eq!(edits[0].input_edit.start_byte, 56);
+    assert_eq!(edits[0].trim_start, 0);
+
+    workspace.parse(Some(&edits), document);
+
+    assert!(!workspace.changes.is_empty());
+
+    assert!(matches!(
+        workspace.changes[0],
+        ChangeReport::Remove(1, FunctionBuilder::QUERY_NAMES)
+    ));
+}
+
+#[rstest]
+fn insert_baz_between(mut foo_bar: (Workspace, Document)) {
+    let mut workspace = foo_bar.0;
+    let document = &mut foo_bar.1;
+
+    // insert baz under foo (between foo and bar)
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 1,
+                character: 8,
+            },
+            end: lsp_types::Position {
+                line: 1,
+                character: 8,
+            },
+        }),
+        range_length: Some(0),
+        text: "\ndef baz():\n    pass".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits[0].kind, ChangeKind::Insert);
+    assert_eq!(edits[0].input_edit.start_byte, 55);
+    assert_eq!(edits[0].trim_start, 1);
+
+    workspace.parse(Some(&edits), document);
+
+    assert!(!workspace.changes.is_empty());
+
+    assert!(matches!(
+        workspace.changes[0],
+        ChangeReport::Replace(0, FunctionBuilder::QUERY_NAMES)
+    ));
+
+    assert!(matches!(
+        workspace.changes[1],
         ChangeReport::Insert(1, FunctionBuilder::QUERY_NAMES)
     ));
 }

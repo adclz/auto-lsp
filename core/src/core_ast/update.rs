@@ -107,7 +107,6 @@ impl ChangeReport {
 
 pub enum UpdateState {
     Found,
-    InjectParent(Vec<DynSymbol>),
     Result(Result<(), Diagnostic>),
 }
 
@@ -212,13 +211,6 @@ where
                     ControlFlow::Break(UpdateState::Result(r)) => {
                         ControlFlow::Break(UpdateState::Result(r))
                     }
-                    // if inject parent, set parents and return Ok(())
-                    ControlFlow::Break(UpdateState::InjectParent(children)) => {
-                        children.iter().for_each(|f| {
-                            f.write().set_parent(self.to_weak());
-                        });
-                        ControlFlow::Break(UpdateState::Result(Ok(())))
-                    }
                     _ => ControlFlow::Break(UpdateState::Found),
                 }
             }
@@ -272,6 +264,59 @@ where
         }
     }
 }
+
+fn create_insert_symbols<T, Y>(
+    vec: &mut Vec<Symbol<Y>>,
+    workspace: &mut Workspace,
+    document: &Document,
+    range: std::ops::Range<usize>,
+    start_pos: usize,
+    end_pos: usize,
+    parent: Option<WeakSymbol>,
+) -> ControlFlow<UpdateState>
+where
+    T: Buildable + Queryable,
+    Y: AstSymbol
+    + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>
+    + InvokeParser<T, Y>,
+{
+    // Parse the symbols in the given range
+    let symbols = match Y::parse_symbols(workspace, document, Some(range.clone())) {
+        Ok(symbols) => symbols,
+        Err(err) => return ControlFlow::Break(UpdateState::Result(Err(err))),
+    };
+
+    let mut reversed_changes = vec![];
+
+    // Reverse iterate over symbols
+    for (i, symbol) in symbols.into_iter().enumerate().rev() {
+        let mut symbol = Symbol::new_and_check(symbol, workspace);
+
+        // Set the parent if provided
+        if let Some(parent) = &parent {
+            symbol.write().set_parent(parent.clone());
+        }
+
+        let target_pos = start_pos + i;
+
+        // Insert or replace symbol at target_pos
+        if target_pos < vec.len() {
+            if target_pos <= end_pos {
+                std::mem::swap(&mut vec[target_pos], &mut symbol);
+                reversed_changes.push(ChangeReport::Replace(target_pos, T::QUERY_NAMES));
+            } else {
+                vec.insert(target_pos, symbol);
+                reversed_changes.push(ChangeReport::Insert(target_pos, T::QUERY_NAMES));
+            }
+        } else {
+            vec.push(symbol);
+            reversed_changes.push(ChangeReport::Insert(target_pos, T::QUERY_NAMES));
+        }
+    }
+    workspace.changes.extend(&mut reversed_changes.into_iter().rev());
+    ControlFlow::Break(UpdateState::Result(Ok(())))
+}
+
 
 impl<T, Y> UpdateStatic<T, Y> for Vec<Symbol<Y>>
 where
@@ -356,9 +401,6 @@ where
                 ControlFlow::Break(UpdateState::Result(result)) => {
                     return ControlFlow::Break(UpdateState::Result(result));
                 }
-                ControlFlow::Break(UpdateState::InjectParent(parent)) => {
-                    return ControlFlow::Break(UpdateState::InjectParent(parent));
-                }
                 ControlFlow::Break(UpdateState::Found) => {
                     start_index = Some(i);
                     break;
@@ -366,110 +408,113 @@ where
             }
         }
 
-        let start_index = match start_index {
-            Some(index) => index,
-            None if self.is_empty() => {
-                // Special case: No nodes in the vector
-                let symbols = match Y::parse_symbols(
+        match start_index {
+            Some(start_index) => {
+                let parent = self[start_index].read().get_parent();
+
+                // Determine the number of affected nodes
+                let affected_count = self[start_index..]
+                    .iter()
+                    .take_while(|symbol| {
+                        let range = symbol.read().get_range();
+                        edit.input_edit.start_byte <= range.start
+                            && edit.input_edit.new_end_byte >= range.end
+                    })
+                    .count()
+                    .max(1);
+
+                // Calculate affected range
+                let start = self[start_index].read().get_range().start;
+                let end = self[start_index + affected_count - 1]
+                    .read()
+                    .get_range()
+                    .end;
+
+                create_insert_symbols(
+                    self,
                     workspace,
                     document,
-                    Some(edit.input_edit.start_byte..edit.input_edit.new_end_byte),
-                ) {
-                    Ok(symbols) => symbols,
-                    Err(err) => return ControlFlow::Break(UpdateState::Result(Err(err))),
-                };
-
-                let mut dyn_symbols: Vec<DynSymbol> = vec![];
-                symbols.into_iter().enumerate().for_each(|(i, symbol)| {
-                    let symbol = Symbol::new_and_check(symbol, workspace);
-
-                    dyn_symbols.push(symbol.to_dyn());
-
-                    self.insert(i, symbol);
-                    workspace
-                        .changes
-                        .push(ChangeReport::Insert(i, T::QUERY_NAMES));
-                });
-
-                return ControlFlow::Break(UpdateState::InjectParent(dyn_symbols));
+                    start..end,
+                    start_index,
+                    start_index + affected_count - 1,
+                    parent,
+                )
             }
             None => {
-                // Special case: Range is after the last node
-                let last_node = self.last().unwrap();
-                let last_range = last_node.read().get_range();
-                let parent = last_node.read().get_parent();
-
-                let start = last_range.end; // Start parsing from after the last node
+                // No direct match found, but we need to inject the symbol at the correct location
+                let start = edit.input_edit.start_byte + edit.trim_start;
                 let end = edit.input_edit.new_end_byte;
 
-                let symbols = match Y::parse_symbols(workspace, document, Some(start..end)) {
-                    Ok(symbols) => symbols,
-                    Err(err) => return ControlFlow::Break(UpdateState::Result(Err(err))),
-                };
+                // Identify nodes that are within the range of the edit and count those before the edit
+                let mut insert_position = None; // Default to the start if no nodes are found
+                let mut last_position = None;
 
-                symbols.into_iter().enumerate().for_each(|(_i, symbol)| {
-                    let symbol = Symbol::new_and_check(symbol, workspace);
+                for (index, node) in self.iter().enumerate() {
+                    let node_range = node.read().get_range();
 
-                    if let Some(parent) = &parent {
-                        symbol.write().set_parent(parent.clone());
+                    // Determine insert position (last node before the edit range)
+                    if node_range.end < start {
+                        insert_position = Some(index); // Increment to place after this node
                     }
 
-                    self.push(symbol); // Append to the vector
-                    workspace
-                        .changes
-                        .push(ChangeReport::Insert(self.len() - 1, T::QUERY_NAMES));
-                });
+                    // Determine last position (first node after the edit range)
+                    if node_range.start >= end && last_position.is_none() {
+                        last_position = Some(index);
+                        break; // No need to keep iterating after finding the first node after the range
+                    }
+                }
 
-                return ControlFlow::Break(UpdateState::Result(Ok(())));
+                return match (insert_position, last_position) {
+                    (Some(start), Some(end)) => {
+                        let parent = self.get(end).unwrap().read().get_parent();
+
+                        let range = std::ops::Range {
+                            start: self[start].read().get_range().start,
+                            end: self[end].read().get_range().start,
+                        };
+
+                        create_insert_symbols(
+                            self,
+                            workspace,
+                            document,
+                            range,
+                            start,
+                            end - 1,
+                            parent,
+                        )
+                    }
+                    (Some(start), None) => {
+                        let parent = self.get(start).unwrap().read().get_parent();
+
+                        let range = std::ops::Range {
+                            start: self[start].read().get_range().start,
+                            end: edit.input_edit.new_end_byte,
+                        };
+
+                        create_insert_symbols(self, workspace, document, range, start, 0, parent)
+                    }
+                    (None, Some(end)) => {
+                        let parent = self.get(end).unwrap().read().get_parent();
+
+                        let range = std::ops::Range {
+                            start: edit.input_edit.start_byte + edit.trim_start,
+                            end: self[end].read().get_range().end,
+                        };
+
+                        create_insert_symbols(
+                            self,
+                            workspace,
+                            document,
+                            range,
+                            start,
+                            end,
+                            parent,
+                        )
+                    }
+                    (None, None) => ControlFlow::Continue(()),
+                };
             }
-        };
-        let parent = self[start_index].read().get_parent();
-
-        // Determine the number of affected nodes
-        let affected_count = self[start_index..]
-            .iter()
-            .take_while(|symbol| {
-                let range = symbol.read().get_range();
-                edit.input_edit.start_byte <= range.start
-                    && edit.input_edit.new_end_byte >= range.end
-            })
-            .count()
-            .max(1);
-
-        // Calculate affected range
-        let start = self[start_index].read().get_range().start;
-        let end = self[start_index + affected_count - 1]
-            .read()
-            .get_range()
-            .end;
-
-        // Remove affected nodes
-        self.drain(start_index..start_index + affected_count);
-        // Parse and insert new symbols
-        let symbols = match Y::parse_symbols(workspace, document, Some(start..end)) {
-            Ok(symbols) => symbols,
-            Err(err) => return ControlFlow::Break(UpdateState::Result(Err(err))),
-        };
-
-        symbols.into_iter().enumerate().for_each(|(i, symbol)| {
-            let symbol = Symbol::new_and_check(symbol, workspace);
-            if let Some(parent) = &parent {
-                symbol.write().set_parent(parent.clone());
-            }
-
-            self.insert(i + start_index, symbol);
-            if (start_index..start_index + affected_count).contains(&(i + start_index)) {
-                workspace
-                    .changes
-                    .push(ChangeReport::Replace(i + start_index, T::QUERY_NAMES));
-            } else {
-                workspace
-                    .changes
-                    .push(ChangeReport::Insert(i + start_index, T::QUERY_NAMES));
-            }
-        });
-
-        ControlFlow::Break(UpdateState::Result(Ok(())))
+        }
     }
 }
 
