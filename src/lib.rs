@@ -23,10 +23,9 @@
 //!
 //! The corresponding AST definition in Rust:
 //!
-//! ```
+//! ```rust
 //! # use auto_lsp::core::ast::*;
 //! # use auto_lsp::seq;
-//!
 //! #[seq(query = "document")]
 //! struct Document {
 //!    functions: Vec<Function>
@@ -46,18 +45,17 @@
 //!  - Add your own logic for testing purposes, code_generation, etc.
 //!
 //! You can find more examples in the `tests` folder.
-//!
-//! ## Features
-//! - `deadlock_detection`: Enable [`parking_lot`]'s deadlock detection (not compatible with `wasm`).
-//! - `log`: Enable logging. (uses [`stderrlog`])
-//! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
-//! - `rayon`: Enable [`rayon`] support (not compatible with `wasm`).
-//! - `wasm`: Enable wasm support.
-//! - `html`: Enable the html workspace mock for testing purposes.
-//! - `python`: Enable the python workspace mock for testing purposes.
+use cfg_if::cfg_if;
 
-#[cfg(doc)]
-use lsp_server;
+cfg_if!(
+    if #[cfg(doc)] {
+        use crate::core::{ast::*, build::*, document::Document, workspace::Workspace};
+        use std::sync::Arc;
+        use parking_lot::RwLock;
+        use downcast_rs::*;
+    }
+);
+
 /// LSP server (enabled with feature `lsp_server`)
 #[cfg(any(feature = "lsp_server", test))]
 pub mod server;
@@ -103,9 +101,13 @@ pub use auto_lsp_macros::*;
 #[doc(hidden)]
 pub use constcat;
 pub use lsp_types;
+#[cfg(any(feature = "miette", test))]
+pub use miette;
 pub use parking_lot;
 #[cfg(feature = "rayon")]
 pub use rayon;
 #[cfg(any(feature = "lsp_server", test))]
 pub use texter;
+#[cfg(any(feature = "miette", test))]
+pub use thiserror;
 pub use tree_sitter;

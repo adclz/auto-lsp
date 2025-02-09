@@ -4,6 +4,7 @@ pub mod html_workspace;
 pub mod python_workspace;
 
 #[cfg(test)]
+#[cfg(feature = "miette")]
 pub mod ast;
 #[cfg(test)]
 pub mod code_lens;
