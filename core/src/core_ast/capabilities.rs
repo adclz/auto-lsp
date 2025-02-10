@@ -12,11 +12,10 @@ use super::data::*;
 use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
+use aho_corasick::AhoCorasick;
 
 /// [LSP DocumentSymbol specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
 pub trait BuildDocumentSymbols {
-    /// Push document symbols to the accumulator
-    ///
     /// ```rust
     /// # struct MySymbol{}
     ///  use auto_lsp_core::document::Document;
@@ -393,6 +392,7 @@ impl<T: AstSymbol> Traverse for Vec<Symbol<T>> {
     }
 }
 
+#[doc(hidden)]
 /// Trait implemented by all [AstSymbol]
 pub trait IsReference {
     /// Check if the symbol is an reference
@@ -418,6 +418,7 @@ pub trait Reference: IsReference {
         Ok(None)
     }
 }
+#[doc(hidden)]
 /// Trait implemented by all [AstSymbol]
 pub trait IsCheck {
     /// Tell this symbol has to be checked during the build process
@@ -475,56 +476,75 @@ pub trait Comment {
     }
 }
 
-/// Trait implemented by all [AstSymbol]
-pub trait Finder {
-    /// Find a symbol in a document
-    ///
-    /// This function first try to find the nearest scope that contains the symbol,
-    /// then it searches for the symbol in the scope via its text
-    ///
-    /// If a symbol is not found, it tries to get the parent scope and search again until a symbol is found or there's no more parent scope
-    fn find_in_file(&self, doc: &Document) -> Option<DynSymbol>;
+/// A trait for finding symbols within a specified range of a document using a pattern.
+///
+/// This trait provides a method to search for a symbol matching a given pattern
+/// within a specified range of a document. The search can either match the pattern
+/// exactly or partially, depending on the `exact_match` flag.
+pub trait FindPattern {
+    fn find_with_pattern(
+        &self,
+        doc: &Document,
+        pattern: &str,
+        range: std::ops::Range<usize>,
+        exact_match: bool,
+    ) -> Option<(DynSymbol, bool)>;
 }
 
-impl<T: AstSymbol> Finder for T {
-    fn find_in_file(&self, doc: &Document) -> Option<DynSymbol> {
+impl<T: AstSymbol + ?Sized> FindPattern for T {
+    /// Searches the document for a symbol matching the given pattern within the specified range.
+    ///
+    /// # Arguments
+    /// - `doc`: A reference to the document containing the source code.
+    /// - `pattern`: The pattern to search for.
+    /// - `range`: The range of the document (start and end indices) to search within.
+    /// - `exact_match`: If `true`, only returns results where the matched text exactly matches the pattern.
+    ///
+    /// # Returns
+    /// An `Option` containing a tuple:
+    /// - The found symbol (`DynSymbol`).
+    /// - A `bool` indicating whether the match was exact (`true`) or partial (`false`).
+    ///
+    /// Returns `None` if no matching symbol is found.
+    fn find_with_pattern(
+        &self,
+        doc: &Document,
+        pattern: &str,
+        range: std::ops::Range<usize>,
+        exact_match: bool,
+    ) -> Option<(DynSymbol, bool)> {
         let source_code = &doc.texter.text;
-        let pattern = match self.get_text(source_code.as_bytes()) {
+        let ac = AhoCorasick::new([pattern]).unwrap();
+
+        // Validate the range and slice the text
+        let area = match source_code.as_str().get(range.start..range.end) {
             Some(a) => a,
-            None => return None,
+            None => {
+                #[cfg(feature = "log")]
+                log::warn!("Invalid document range: {:?}", range);
+                return None;
+            }
         };
 
-        let mut curr = self.get_parent_scope();
-        while let Some(scope) = curr {
-            let scope = scope.read();
-            let ranges = scope.get_scope_range();
+        // Perform Aho-Corasick search
+        for mat in ac.find_iter(area) {
+            // Calculate the actual position in the document
+            let start_idx = range.start + mat.start();
+            let end_idx = range.end + mat.end();
 
-            for range in ranges {
-                let area = match source_code.as_str().get(range[0]..range[1]) {
-                    Some(a) => a,
-                    None => {
-                        #[cfg(feature = "log")]
-                        log::warn!("Invalid document range: {:?}", range);
-                        continue;
-                    }
-                };
+            // Early exact match check
+            if exact_match && &source_code[start_idx..end_idx] != pattern {
+                continue;
+            }
 
-                for (index, _) in area.match_indices(pattern) {
-                    if let Some(elem) = scope.descendant_at(range[0] + index) {
-                        if elem.read().get_range() != self.get_range() {
-                            match elem.read().get_text(source_code.as_bytes()) {
-                                Some(a) => {
-                                    if a == pattern {
-                                        return Some(elem.clone());
-                                    }
-                                }
-                                None => {}
-                            }
-                        }
-                    }
+            // Lookup the corresponding element
+            if let Some(elem) = self.descendant_at(start_idx) {
+                if elem.read().get_range() != self.get_range() {
+                    // Determine if the match is exact or partial
+                    let is_exact_match = &source_code[start_idx..end_idx] == pattern;
+                    return Some((elem.clone(), is_exact_match));
                 }
             }
-            curr = scope.get_parent_scope();
         }
         None
     }
