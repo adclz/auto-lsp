@@ -35,7 +35,7 @@ macro_rules! create_ast_symbol_trait {
                 + GetGoToDefinition
                 + GetHover
                 + BuildDocumentSymbols
-                + BuildCodeLens
+                + BuildCodeLenses
                 + BuildCompletionItems
                 + BuildInvokedCompletionItems
                 + BuildInlayHints

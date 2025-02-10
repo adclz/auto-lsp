@@ -224,7 +224,7 @@ impl Default for Paths {
                 },
             },
             lsp_code_lens: LspCodeLens {
-                path: core_ast(parse_quote!(BuildCodeLens)),
+                path: core_ast(parse_quote!(BuildCodeLenses)),
                 build_code_lens: Method {
                     sig: quote! { fn build_code_lens(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
                     variant: quote! { build_code_lens(doc, acc) },

@@ -1,4 +1,4 @@
-use crate::core::ast::BuildCodeLens;
+use crate::core::ast::BuildCodeLenses;
 use crate::server::session::{Session, WORKSPACES};
 use lsp_types::{CodeLens, CodeLensParams};
 

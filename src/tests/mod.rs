@@ -7,7 +7,7 @@ pub mod python_workspace;
 #[cfg(feature = "miette")]
 pub mod ast;
 #[cfg(test)]
-pub mod code_lens;
+pub mod code_lenses;
 #[cfg(test)]
 pub mod comments;
 #[cfg(test)]

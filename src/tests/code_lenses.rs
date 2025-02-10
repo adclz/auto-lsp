@@ -1,4 +1,4 @@
-use crate::core::ast::BuildCodeLens;
+use crate::core::ast::BuildCodeLenses;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
 use lsp_types::Url;
