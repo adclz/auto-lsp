@@ -151,16 +151,14 @@ impl<'a> ToTokens for Features<'a> {
         }
 
         if !self.darling_input.scope.is_present() {
-            let is_scope_path = &PATHS.is_scope.path;
-            let scope_path = &PATHS.scope.path;
+            let is_scope_path = &PATHS.scope.path;
 
             tokens.extend(quote! {
                 impl #is_scope_path for #input_name {}
-                impl #scope_path for #input_name {}
             });
         } else {
-            let is_scope_path = &PATHS.is_scope.path;
-            let is_scope_sig = &PATHS.is_scope.is_scope.sig;
+            let is_scope_path = &PATHS.scope.path;
+            let is_scope_sig = &PATHS.scope.is_scope.sig;
 
             tokens.extend(quote! {
                 impl #is_scope_path for #input_name {

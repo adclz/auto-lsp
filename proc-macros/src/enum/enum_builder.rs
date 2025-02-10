@@ -202,16 +202,8 @@ impl<'a> EnumBuilder<'a> {
         builder
             .add_pattern_match_iter(
                 &self.fields,
-                &PATHS.is_scope.is_scope.sig,
-                &PATHS.is_scope.is_scope.variant,
-            )
-            .stage_trait(&self.input_name, &PATHS.is_scope.path);
-
-        builder
-            .add_pattern_match_iter(
-                &self.fields,
-                &PATHS.scope.get_scope_range.sig,
-                &PATHS.scope.get_scope_range.variant,
+                &PATHS.scope.is_scope.sig,
+                &PATHS.scope.is_scope.variant,
             )
             .stage_trait(&self.input_name, &PATHS.scope.path);
     }

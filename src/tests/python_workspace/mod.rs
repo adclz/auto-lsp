@@ -134,12 +134,6 @@ struct Function {
     body: Body,
 }
 
-impl Scope for Function {
-    fn get_scope_range(&self) -> Vec<[usize; 2]> {
-        vec![]
-    }
-}
-
 impl BuildDocumentSymbols for Function {
     fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
         let mut nested_builder = DocumentSymbolsBuilder::default();
@@ -222,12 +216,6 @@ impl BuildSemanticTokens for Function {
 #[seq(query = "parameters", scope)]
 pub struct Parameters {
     parameters: Vec<Parameter>,
-}
-
-impl Scope for Parameters {
-    fn get_scope_range(&self) -> Vec<[usize; 2]> {
-        vec![]
-    }
 }
 
 #[seq(query = "body", document_symbols, completions)]

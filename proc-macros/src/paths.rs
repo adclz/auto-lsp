@@ -109,13 +109,9 @@ nested_struct!(
             pub path: Path,
             pub is_comment: Method
         },
-        pub is_scope: IsScope {
-            pub path: Path,
-            pub is_scope: Method
-        },
         pub scope: Scope {
             pub path: Path,
-            pub get_scope_range: Method
+            pub is_scope: Method
         },
         pub locator: Traverse {
             pub path: Path,
@@ -304,18 +300,11 @@ impl Default for Paths {
                     variant: quote! { is_comment() },
                 },
             },
-            is_scope: IsScope {
-                path: core_ast(parse_quote!(IsScope)),
+            scope: Scope {
+                path: core_ast(parse_quote!(Scope)),
                 is_scope: Method {
                     sig: quote! { fn is_scope(&self) -> bool },
                     variant: quote! { is_scope() },
-                },
-            },
-            scope: Scope {
-                path: core_ast(parse_quote!(Scope)),
-                get_scope_range: Method {
-                    sig: quote! { fn get_scope_range(&self) -> Vec<[usize; 2]> },
-                    variant: quote! { get_scope_range() },
                 },
             },
             locator: Traverse {

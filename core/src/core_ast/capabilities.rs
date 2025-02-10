@@ -443,24 +443,12 @@ pub trait Check: IsCheck {
 }
 
 /// Trait implemented by all [AstSymbol]
-pub trait IsScope {
+pub trait Scope {
     /// Tell this symbol is a scope
     ///
     /// By default, `false`
     fn is_scope(&self) -> bool {
         false
-    }
-}
-
-/// Trait to be implemented by any [AstSymbol] that is a scope
-pub trait Scope: IsScope {
-    /// When a symbol is a scope, it provides a list of ranges where its content is valid
-    ///
-    /// This is useful when trying to find a reference, a completion item, etc. because this delimits the search area
-    ///
-    /// By default, `Vec::new()`
-    fn get_scope_range(&self) -> Vec<[usize; 2]> {
-        Vec::new()
     }
 }
 
