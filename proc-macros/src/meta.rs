@@ -31,6 +31,8 @@ pub struct DarlingInput {
     #[darling(default)]
     pub document_symbols: Flag,
     #[darling(default)]
+    pub code_actions: Flag,
+    #[darling(default)]
     pub code_lenses: Flag,
     #[darling(default)]
     pub completions: Flag,

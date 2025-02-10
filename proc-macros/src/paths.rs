@@ -65,6 +65,10 @@ nested_struct!(
             pub path: Path,
             pub build_code_lens: Method
         },
+        pub lsp_code_actions: LspCodeActions {
+            pub path: Path,
+            pub build_code_actions: Method
+        },
         pub lsp_document_symbols: LspDocumentSymbols {
             pub path: Path,
             pub build_document_symbols: Method
@@ -228,6 +232,13 @@ impl Default for Paths {
                 build_code_lens: Method {
                     sig: quote! { fn build_code_lens(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
                     variant: quote! { build_code_lens(doc, acc) },
+                },
+            },
+            lsp_code_actions: LspCodeActions {
+                path: core_ast(parse_quote!(BuildCodeActions)),
+                build_code_actions: Method {
+                    sig: quote! { fn build_code_actions(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeAction>) },
+                    variant: quote! { build_code_actions(doc, acc) },
                 },
             },
             lsp_completion_items: LspCompletionItems {

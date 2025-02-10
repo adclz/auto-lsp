@@ -207,7 +207,8 @@ pub trait BuildCompletionItems {
     ///         label: "Completion Item".to_string(),
     ///         kind: Some(lsp_types::CompletionItemKind::FIELD),
     ///         ..Default::default()
-    ///    });
+    ///     });
+    ///   }
     ///}
     /// ```
     fn build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) {}
@@ -228,7 +229,8 @@ pub trait BuildInvokedCompletionItems {
     ///         label: "Completion Item".to_string(),
     ///         kind: Some(lsp_types::CompletionItemKind::FIELD),
     ///         ..Default::default()
-    ///    });
+    ///     });
+    ///   }
     ///}
     fn build_invoked_completion_items(
         &self,
@@ -237,6 +239,10 @@ pub trait BuildInvokedCompletionItems {
         acc: &mut Vec<CompletionItem>,
     ) {
     }
+}
+
+pub trait BuildCodeActions {
+    fn build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>) {}
 }
 
 /// Special capabilities
@@ -558,6 +564,7 @@ impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: 
 impl_dyn_symbol!(BuildCodeLenses, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>));
 impl_dyn_symbol!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
+impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));
 
 macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
@@ -585,3 +592,4 @@ impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut 
 impl_build!(BuildCodeLenses, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
 impl_build!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
+impl_build!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));

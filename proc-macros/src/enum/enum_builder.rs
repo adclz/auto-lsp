@@ -38,6 +38,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
 
         self.impl_check(&mut builder);
         self.impl_reference(&mut builder);
+        self.impl_code_actions(&mut builder);
         self.impl_code_lens(&mut builder);
         self.impl_completion_items(&mut builder);
         self.impl_invoked_completion_items(&mut builder);
@@ -216,6 +217,16 @@ impl<'a> EnumBuilder<'a> {
                 &PATHS.is_comment.is_comment.variant,
             )
             .stage_trait(&self.input_name, &PATHS.is_comment.path);
+    }
+
+    fn impl_code_actions(&self, builder: &mut VariantBuilder) {
+        builder
+            .add_pattern_match_iter(
+                &self.fields,
+                &PATHS.lsp_code_actions.build_code_actions.sig,
+                &PATHS.lsp_code_actions.build_code_actions.variant,
+            )
+            .stage_trait(&self.input_name, &PATHS.lsp_code_actions.path);
     }
 
     fn impl_code_lens(&self, builder: &mut VariantBuilder) {

@@ -40,6 +40,7 @@ macro_rules! create_ast_symbol_trait {
                 + BuildInvokedCompletionItems
                 + BuildInlayHints
                 + BuildSemanticTokens
+                + BuildCodeActions
                 // special
                 + Traverse
                 + Check

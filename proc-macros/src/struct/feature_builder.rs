@@ -52,6 +52,13 @@ impl<'a> ToTokens for Features<'a> {
             });
         }
 
+        if !self.darling_input.code_actions.is_present() {
+            let lsp_code_actions: &_ = &PATHS.lsp_code_actions.path;
+            tokens.extend(quote! {
+                impl #lsp_code_actions for #input_name {}
+            });
+        }
+
         if !self.darling_input.code_lenses.is_present() {
             let lsp_code_lens: &_ = &PATHS.lsp_code_lens.path;
             tokens.extend(quote! {

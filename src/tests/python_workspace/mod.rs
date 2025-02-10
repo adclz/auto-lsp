@@ -3,6 +3,7 @@ use auto_lsp::configure_parsers;
 
 pub mod ast;
 pub mod check;
+pub mod code_actions;
 pub mod code_lenses;
 pub mod completion_items;
 pub mod document_symbols;

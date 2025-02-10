@@ -161,6 +161,7 @@ pub static CORE_QUERY: &'static str = "
 
 #[seq(
     query = "module",
+    code_actions,
     code_lenses,
     completions,
     document_symbols,
@@ -460,6 +461,7 @@ pub struct WithStatement {
 #[seq(
     query = "function",
     comment,
+    code_actions,
     code_lenses,
     completions,
     document_symbols,
