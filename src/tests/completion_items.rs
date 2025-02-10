@@ -4,6 +4,7 @@ use crate::core::workspace::Workspace;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
+use super::python_workspace::ast::Module;
 use super::python_workspace::*;
 
 #[fixture]
@@ -39,7 +40,7 @@ fn global_completion_items(foo_bar: (Workspace, Document)) {
     assert_eq!(completion_items[0].label, "def ...");
 
     // Function should do the same
-    let function = module.functions[0].read();
+    let function = module.statements[0].read();
 
     let mut completion_items = vec![];
     function.build_completion_items(&document, &mut completion_items);

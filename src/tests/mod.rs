@@ -29,6 +29,9 @@ pub mod inlay_hints;
 #[cfg(test)]
 pub mod proc_macros;
 #[cfg(test)]
+#[cfg(feature = "miette")]
+pub mod python_ast;
+#[cfg(test)]
 #[cfg(feature = "incremental")]
 pub mod ranges;
 #[cfg(test)]

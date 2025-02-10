@@ -1,5 +1,8 @@
+use std::ops::Deref;
+
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
+use crate::python::ast::{CompoundStatement, ParameterBuilder, Statement, StatementBuilder};
 use auto_lsp_core::ast::ChangeReport;
 use auto_lsp_core::ast::GetSymbolData;
 use auto_lsp_core::build::Queryable;
@@ -8,7 +11,8 @@ use lsp_types::Url;
 use rstest::{fixture, rstest};
 
 use super::html_workspace::*;
-use super::python_workspace::*;
+use super::python_workspace::ast::Module;
+use super::python_workspace::PYTHON_PARSERS;
 
 #[fixture]
 fn empty() -> (Workspace, Document) {
@@ -226,10 +230,14 @@ fn insert_bar(mut foo: (Workspace, Document)) {
         let ast = workspace.ast.as_mut().unwrap();
         let ast = ast.read();
         let module = ast.downcast_ref::<Module>().unwrap();
-        let function = &module.functions[0];
+        let function = &module.statements[0];
         let function = function.read();
-        let pass = function.body.read();
-        assert_eq!(pass.get_range(), 51..55);
+        if let Statement::Compound(CompoundStatement::Function(foo)) = function.deref() {
+            let pass = foo.body.read();
+            assert_eq!(pass.get_range(), 51..55);
+        } else {
+            panic!("Expected function statement");
+        }
     }
 
     // add bar under foo
@@ -265,12 +273,12 @@ fn insert_bar(mut foo: (Workspace, Document)) {
 
     assert!(matches!(
         workspace.changes[0],
-        ChangeReport::Replace(0, FunctionBuilder::QUERY_NAMES)
+        ChangeReport::Replace(0, StatementBuilder::QUERY_NAMES)
     ));
 
     assert!(matches!(
         workspace.changes[1],
-        ChangeReport::Insert(1, FunctionBuilder::QUERY_NAMES)
+        ChangeReport::Insert(1, StatementBuilder::QUERY_NAMES)
     ));
 }
 
@@ -326,7 +334,7 @@ fn remove_bar(mut foo_bar: (Workspace, Document)) {
 
     assert!(matches!(
         workspace.changes[0],
-        ChangeReport::Remove(1, FunctionBuilder::QUERY_NAMES)
+        ChangeReport::Remove(1, StatementBuilder::QUERY_NAMES)
     ));
 }
 
@@ -368,11 +376,11 @@ fn insert_baz_between(mut foo_bar: (Workspace, Document)) {
 
     assert!(matches!(
         workspace.changes[0],
-        ChangeReport::Replace(0, FunctionBuilder::QUERY_NAMES)
+        ChangeReport::Replace(0, StatementBuilder::QUERY_NAMES)
     ));
 
     assert!(matches!(
         workspace.changes[1],
-        ChangeReport::Insert(1, FunctionBuilder::QUERY_NAMES)
+        ChangeReport::Insert(1, StatementBuilder::QUERY_NAMES)
     ));
 }

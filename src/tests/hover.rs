@@ -1,10 +1,14 @@
+use std::ops::Deref;
+
 use crate::core::ast::GetHover;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
+use crate::python::ast::{CompoundStatement, Statement};
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::python_workspace::*;
+use super::python_workspace::ast::Module;
+use super::python_workspace::PYTHON_PARSERS;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
@@ -31,29 +35,38 @@ fn foo_bar_hover(foo_bar: (Workspace, Document)) {
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
-    let foo = module.functions[0].read();
-    let foo_name = foo.name.read();
+    let foo = module.statements[0].read();
+    if let Statement::Compound(CompoundStatement::Function(foo)) = foo.deref() {
+        let foo_name = foo.name.read();
 
-    let foo_hover = foo_name.get_hover(&document).unwrap();
+        let foo_hover = foo_name.get_hover(&document).unwrap();
 
-    assert_eq!(
-        foo_hover.contents,
-        lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
-            kind: lsp_types::MarkupKind::PlainText,
-            value: "# foo comment\nhover foo".into(),
-        })
-    );
+        assert_eq!(
+            foo_hover.contents,
+            lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+                kind: lsp_types::MarkupKind::PlainText,
+                value: "# foo comment\nhover foo".into(),
+            })
+        );
+    } else {
+        panic!("Expected function statement");
+    }
 
-    let bar = module.functions[1].read();
-    let bar_name = bar.name.read();
+    let bar = module.statements[1].read();
 
-    let bar_hover = bar_name.get_hover(&document).unwrap();
+    if let Statement::Compound(CompoundStatement::Function(foo)) = bar.deref() {
+        let bar_name = foo.name.read();
 
-    assert_eq!(
-        bar_hover.contents,
-        lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
-            kind: lsp_types::MarkupKind::PlainText,
-            value: "hover bar".into(),
-        })
-    );
+        let bar_hover = bar_name.get_hover(&document).unwrap();
+
+        assert_eq!(
+            bar_hover.contents,
+            lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
+                kind: lsp_types::MarkupKind::PlainText,
+                value: "hover bar".into(),
+            })
+        );
+    } else {
+        panic!("Expected function statement");
+    }
 }

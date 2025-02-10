@@ -5,7 +5,8 @@ use auto_lsp_core::ast::GetSymbolData;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::python_workspace::*;
+use super::python_workspace::ast::Module;
+use super::python_workspace::PYTHON_PARSERS;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
@@ -35,7 +36,7 @@ fn foo_bar_comment(foo_bar: (Workspace, Document)) {
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
-    let function = module.functions[0].read();
+    let function = module.statements[0].read();
     assert!(function.is_comment());
     assert_eq!(
         function.get_comment(document.texter.text.as_bytes()),
@@ -67,14 +68,14 @@ fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
     let ast = ast.read();
 
     // foo has no comment
-    let foo = &ast.downcast_ref::<Module>().unwrap().functions[0];
+    let foo = &ast.downcast_ref::<Module>().unwrap().statements[0];
     assert!(foo
         .read()
         .get_comment(document.texter.text.as_bytes())
         .is_none());
 
     // bar has no comment
-    let bar = &ast.downcast_ref::<Module>().unwrap().functions[1];
+    let bar = &ast.downcast_ref::<Module>().unwrap().statements[1];
     assert!(bar
         .read()
         .get_comment(document.texter.text.as_bytes())
@@ -125,13 +126,13 @@ fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
     let ast = ast.read();
 
     // foo has comment
-    let foo = &ast.downcast_ref::<Module>().unwrap().functions[0];
+    let foo = &ast.downcast_ref::<Module>().unwrap().statements[0];
     assert_eq!(
         foo.read().get_comment(document.texter.text.as_bytes()),
         Some("# foo comment")
     );
 
-    let bar = &ast.downcast_ref::<Module>().unwrap().functions[1];
+    let bar = &ast.downcast_ref::<Module>().unwrap().statements[1];
     assert_eq!(
         bar.read().get_comment(document.texter.text.as_bytes()),
         Some("# bar comment")
@@ -164,14 +165,14 @@ fn remove_comments(mut foo_bar_with_comments: (Workspace, Document)) {
     let ast = ast.read();
 
     // foo has comment
-    let foo = &ast.downcast_ref::<Module>().unwrap().functions[0];
+    let foo = &ast.downcast_ref::<Module>().unwrap().statements[0];
     assert_eq!(
         foo.read().get_comment(document.texter.text.as_bytes()),
         Some("# foo comment")
     );
 
     // bar has comment
-    let bar = &ast.downcast_ref::<Module>().unwrap().functions[1];
+    let bar = &ast.downcast_ref::<Module>().unwrap().statements[1];
     assert_eq!(
         bar.read().get_comment(document.texter.text.as_bytes()),
         Some("# bar comment")
@@ -222,13 +223,13 @@ fn remove_comments(mut foo_bar_with_comments: (Workspace, Document)) {
     let ast = ast.read();
 
     // foo has no comment
-    let foo = &ast.downcast_ref::<Module>().unwrap().functions[0];
+    let foo = &ast.downcast_ref::<Module>().unwrap().statements[0];
     assert!(foo
         .read()
         .get_comment(document.texter.text.as_bytes())
         .is_none());
 
-    let bar = &ast.downcast_ref::<Module>().unwrap().functions[1];
+    let bar = &ast.downcast_ref::<Module>().unwrap().statements[1];
     assert!(bar
         .read()
         .get_comment(document.texter.text.as_bytes())

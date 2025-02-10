@@ -1,9 +1,12 @@
-use super::python_workspace::*;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
 use auto_lsp_core::ast::BuildSemanticTokens;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
+
+use super::python_workspace::ast::Module;
+use super::python_workspace::*;
+use crate::python::semantic_tokens::TOKEN_TYPES;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {

@@ -1,10 +1,12 @@
-use super::python_workspace::*;
 use crate::core::document::Document;
 use crate::core::workspace::Workspace;
 use lsp_types::Url;
 use parking_lot::Mutex;
 use rstest::{fixture, rstest};
 use std::time::Duration;
+
+use super::python_workspace::ast::Module;
+use super::python_workspace::PYTHON_PARSERS;
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
@@ -105,7 +107,7 @@ fn nested_writer(foo_bar: (Workspace, Document)) {
     let _t2 = std::thread::spawn(move || {
         let _read = ast_clone.read();
         let _module = _read.downcast_ref::<Module>().unwrap();
-        let _write = _module.functions[0].write();
+        let _write = _module.statements[0].write();
         std::thread::sleep(std::time::Duration::from_secs(10));
     });
 

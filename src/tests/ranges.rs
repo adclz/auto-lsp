@@ -6,6 +6,7 @@ use lsp_types::Url;
 use rstest::{fixture, rstest};
 
 use super::html_workspace::*;
+use super::python_workspace::ast::Module;
 use super::python_workspace::*;
 
 #[fixture]
@@ -176,7 +177,7 @@ fn add_space_after_pass(foo: (Workspace, Document)) {
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();
     let module = ast.downcast_ref::<Module>().unwrap();
-    let foo = &module.functions[0];
+    let foo = &module.statements[0];
     assert_eq!(foo.read().get_range(), 0..55);
     drop(ast);
 
@@ -211,7 +212,7 @@ fn add_space_after_pass(foo: (Workspace, Document)) {
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();
     let module = ast.downcast_ref::<Module>().unwrap();
-    let foo = &module.functions[0];
+    let foo = &module.statements[0];
     assert_eq!(foo.read().get_range(), 0..55);
 }
 
@@ -238,7 +239,7 @@ fn add_space_between(foo_bar: (Workspace, Document)) {
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();
     let module = ast.downcast_ref::<Module>().unwrap();
-    let foo = &module.functions[1];
+    let foo = &module.statements[1];
     assert_eq!(foo.read().get_range(), 57..76);
     drop(ast);
 
@@ -274,6 +275,6 @@ fn add_space_between(foo_bar: (Workspace, Document)) {
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();
     let module = ast.downcast_ref::<Module>().unwrap();
-    let foo = &module.functions[1];
+    let foo = &module.statements[1];
     assert_eq!(foo.read().get_range(), 58..77);
 }

@@ -4,6 +4,7 @@ use crate::core::workspace::Workspace;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
+use super::python_workspace::ast::Module;
 use super::python_workspace::*;
 
 #[fixture]
