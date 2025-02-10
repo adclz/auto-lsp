@@ -1,11 +1,11 @@
 #![allow(unused)]
 
-use std::ops::Deref;
-
+use cfg_if::cfg_if;
 use lsp_types::{
     request::GotoDeclarationResponse, CompletionItem, Diagnostic, DocumentSymbol,
     GotoDefinitionResponse,
 };
+use std::ops::Deref;
 
 use super::core::AstSymbol;
 use super::data::*;
@@ -13,97 +13,224 @@ use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
 
-/// A trait to be implemented by any [AstSymbol] that can provide document symbols
+/// [LSP DocumentSymbol specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
 pub trait BuildDocumentSymbols {
-    /// Either return an optional single symbol or a vector of symbols, see [VecOrSymbol]
+    /// Push document symbols to the accumulator
     ///
-    /// [LSP DocumentSymbol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
-    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {}
+    /// ```rust
+    /// # struct MySymbol{}
+    ///  use auto_lsp_core::document::Document;
+    ///  use auto_lsp_core::ast::BuildDocumentSymbols;
+    ///  use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
+    ///
+    /// impl BuildDocumentSymbols for MySymbol {
+    ///    fn build_document_symbols(&self, doc: &Document, acc: &mut DocumentSymbolsBuilder) {
+    ///       acc.push_symbol(lsp_types::DocumentSymbol {
+    ///         name: "Function Name".to_string(),
+    ///         kind: lsp_types::SymbolKind::FUNCTION,
+    ///         tags: None,
+    ///         detail: None,
+    ///         deprecated: None,
+    ///         range: lsp_types::Range::default(),
+    ///         selection_range: lsp_types::Range::default(),
+    ///         children: None,
+    ///       });
+    ///    }
+    /// }
+    fn build_document_symbols(&self, doc: &Document, acc: &mut DocumentSymbolsBuilder) {}
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide hover information
+/// [LSP Hover specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover)
 pub trait GetHover {
-    /// Return hover information
+    /// Returns a hover information or `None`
     ///
-    /// [LSP Hover](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover)
+    /// ```rust
+    /// # struct MySymbol{}
+    /// # use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::GetHover;
     ///
-    /// By default, `None`
+    /// impl GetHover for MySymbol {
+    ///     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
+    ///        Some(lsp_types::Hover {
+    ///             contents: lsp_types::HoverContents::Markup(
+    ///                 lsp_types::MarkupContent {
+    ///                     kind: lsp_types::MarkupKind::Markdown,
+    ///                     value: "Hello, World!".to_string(),
+    ///                 }
+    ///             ),
+    ///             range: None
+    ///        })
+    ///     }
+    /// }
+    ///
+    /// ```
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         None
     }
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide goto definition information
+/// [LSP GotoDefinitionResponse specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_definition)
 pub trait GetGoToDefinition {
-    /// Return a goto definition information
+    /// Return a goto definition information or `None`
     ///
-    /// [LSP GotoDefinitionResponse](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_definition)
+    /// ```rust
+    /// # struct MySymbol{}
+    /// #
+    /// use lsp_types::Url;
+    /// use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::GetGoToDefinition;
     ///
-    /// By default, `None`
+    /// impl GetGoToDefinition for MySymbol {
+    ///    fn go_to_definition(&self, doc: &Document) -> Option<lsp_types::GotoDefinitionResponse> {
+    ///       Some(lsp_types::GotoDefinitionResponse::Scalar(lsp_types::Location::new(
+    ///          Url::parse("file:///path/to/file").unwrap(),
+    ///         lsp_types::Range::default()
+    ///      )))
+    ///   }
+    /// }
     fn go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse> {
         None
     }
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide goto declaration information
+/// [LSP GotoDeclarationResponse specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_declaration)
 pub trait GetGoToDeclaration {
-    /// Return a goto declaration information
+    /// Return a goto declaration information or `None`
     ///
-    /// [LSP GotoDeclarationResponse](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_declaration)
+    /// ```rust
+    /// # struct MySymbol{}
+    /// use lsp_types::Url;
+    /// use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::GetGoToDeclaration;
     ///
-    /// By default, `None`
+    /// impl GetGoToDeclaration for MySymbol {
+    ///    fn go_to_declaration(&self, doc: &Document) -> Option<lsp_types::request::GotoDeclarationResponse> {
+    ///       Some(lsp_types::request::GotoDeclarationResponse::Scalar(lsp_types::Location::new(
+    ///          Url::parse("file:///path/to/file").unwrap(),
+    ///          lsp_types::Range::default()
+    ///      )))
+    ///   }
+    /// }
     fn go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse> {
         None
     }
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide goto type definition information
+/// [LSP SemanticTokens specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens)
 pub trait BuildSemanticTokens {
     /// Semantic tokens builder
     ///
-    /// [LSP BuildSemanticTokens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens)
+    /// ```rust
+    /// # struct MySymbol{}
+    /// #
+    /// use lsp_types::Url;
+    /// use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::BuildSemanticTokens;
+    /// use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
     ///
-    /// Use [SemanticTokensBuilder] to build the semantic tokens
+    /// impl BuildSemanticTokens for MySymbol {
+    ///   fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {
+    ///      builder.push(
+    ///         lsp_types::Range::default(),
+    ///         10,
+    ///         0
+    ///     );
+    ///   }
+    /// }
+    ///
+    ///
     fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {}
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide inlay hints
+/// [LSP InlayHints specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_inlayHints)
 pub trait BuildInlayHints {
     /// Inlay hints builder
     ///
-    /// [LSP InlayHint](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_inlayHints)
+    /// ```rust
+    /// # struct MySymbol{}
+    /// #
+    /// use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::BuildInlayHints;
     ///
-    /// Push inlay hints to the accumulator
+    /// impl BuildInlayHints for MySymbol {
+    ///   fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {
+    ///     acc.push(lsp_types::InlayHint {
+    ///         kind: Some(lsp_types::InlayHintKind::PARAMETER),
+    ///         label: lsp_types::InlayHintLabel::String("Hint".to_string()),
+    ///         position: lsp_types::Position::default(),
+    ///         tooltip: None,
+    ///         text_edits: None,
+    ///         padding_left: None,
+    ///         padding_right: None,
+    ///         data: None,
+    ///     });
+    ///     }
+    /// }
+    /// ```
     fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {}
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide code lens
+/// [LSP BuildCodeLens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
 pub trait BuildCodeLens {
     /// Code lens builder
     ///
-    /// [LSP BuildCodeLens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
+    /// ```rust
+    /// # struct MySymbol{}
+    /// #
+    /// use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::BuildCodeLens;
     ///
-    /// Push code lens to the accumulator
+    /// impl BuildCodeLens for MySymbol {
+    ///   fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+    ///     acc.push(lsp_types::CodeLens {
+    ///         range: lsp_types::Range::default(),
+    ///         command: None,
+    ///         data: None,
+    ///     });
+    ///   }
+    /// }
+    /// ```
     fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide completion items when manually invoked
+/// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
 pub trait BuildCompletionItems {
     /// Completion items builder
     ///
-    /// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
+    ///```rust
+    /// # struct MySymbol{}
+    /// use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::BuildCompletionItems;
     ///
-    /// Push completion items to the accumulator
+    /// impl BuildCompletionItems for MySymbol {
+    ///   fn build_completion_items(&self, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+    ///     acc.push(lsp_types::CompletionItem {
+    ///         label: "Completion Item".to_string(),
+    ///         kind: Some(lsp_types::CompletionItemKind::FIELD),
+    ///         ..Default::default()
+    ///    });
+    ///}
+    /// ```
     fn build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) {}
 }
 
-/// A trait to be implemented by any [AstSymbol] that can provide completion items when invoked by a character trigger
+/// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
 pub trait BuildInvokedCompletionItems {
     /// Completion items builder
     ///
-    /// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
+    ///```rust
+    /// # struct MySymbol{}
+    /// use auto_lsp_core::document::Document;
+    /// use auto_lsp_core::ast::BuildInvokedCompletionItems;
     ///
-    /// Push completion items to the accumulator
+    /// impl BuildInvokedCompletionItems for MySymbol {
+    ///   fn build_invoked_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+    ///     acc.push(lsp_types::CompletionItem {
+    ///         label: "Completion Item".to_string(),
+    ///         kind: Some(lsp_types::CompletionItemKind::FIELD),
+    ///         ..Default::default()
+    ///    });
+    ///}
     fn build_invoked_completion_items(
         &self,
         trigger: &str,
