@@ -8,23 +8,24 @@ pub static COMMENT_QUERY: &'static str = "
 pub static CORE_QUERY: &'static str = "
 (module) @module
 (import_statement) @import_statement
+
 (import_prefix) @import_prefix
 (relative_import) @relative_import
-(future_import_statement) @future_import_statement
-(import_from_statement) @import_from_statement
-; (vec_import_list) @vec_import_list
-; (import_list) @import_list
+(future_import_statement
+    \"import\" (_) @import_list
+) @future_import_statement
+
+(import_from_statement
+    \"import\" (_) @import_list
+) @import_from_statement
 
 (aliased_import) @aliased_import
 (wildcard_import) @wildcard_import
-; (print_chevron) @print_chevron
-; (print) @print
-(chevron) @chevron
 
 ; Statements
 
+(print_statement) @print_statement
 (assert_statement) @assert_statement
-(expression_statement) @expression_statement
 (named_expression) @named_expression
 (return_statement) @return_statement
 (delete_statement) @delete_statement
@@ -38,16 +39,17 @@ pub static CORE_QUERY: &'static str = "
 (else_clause) @else_clause
 
 (match_statement) @match_statement
-; (match_block) @match_block
 (case_clause) @case_clause
 
 (for_statement) @for_statement
 (while_statement) @while_statement
-(try_statement) @try_statement
 
-(except_clause) @except_clause
+(try_statement
+	body: (_)
+    . (_) ? @try_statement_body
+) @try_statement
 
-; (value_alias) @value_alias
+(except_clause) @except_clause 
 (except_group_clause) @except_group_clause
 (finally_clause) @finally_clause
 
@@ -60,7 +62,7 @@ pub static CORE_QUERY: &'static str = "
 (lambda_parameters) @lambda_parameters
 
 (list_splat) @list_splat
-(dictionary_splat) @dicitionary_splat
+(dictionary_splat) @dictionary_splat
 (global_statement) @global_statement
 (nonlocal_statement) @nonlocal_statement
 (exec_statement) @exec_statement
@@ -76,7 +78,7 @@ pub static CORE_QUERY: &'static str = "
 (decorator) @decorator
 (block) @block
 
-; (expression_list) @expression_list
+(expression_list) @expression_list
 (dotted_name) @dotted_name
 
 (union_pattern) @union_pattern
@@ -100,10 +102,26 @@ pub static CORE_QUERY: &'static str = "
 ; (and) @and
 ; (or) @or
 
+(binary_operator 
+    [
+        \"+\" 
+        \"-\"
+        \"*\"
+        \"@\"
+        \"/\"
+        \"%\"
+        \"//\"
+        \"**\"
+        \"|\"
+        \"&\"
+        \"^\"
+        \"<<\"
+        \">>\"
+    ] @bin_operator
+)
 (binary_operator) @binary_operator
+
 (unary_operator) @unary_operator
-(comparison_operator) @comparison_operator
-; (operators) @operators
 
 (lambda) @lambda
 ; (lambda_within_for_clause) @lambda_within_for_clause
@@ -111,7 +129,25 @@ pub static CORE_QUERY: &'static str = "
 (assignment) @assignment
 (augmented_assignment) @augmented_assignment
 
-; (operator) @operator
+(comparison_operator
+    [
+        \"<\"
+        \"<=\"
+        \"==\"
+        \"!=\"
+        \">=\"
+        \">\"
+        \"<>\"
+        \"in\"
+        \"not in\"
+        \"is\"
+        \"is not\"
+    ] @cmp_operator
+) 
+(comparison_operator) @comparison_operator
+
+(pattern_list) @pattern_list
+
 (yield) @yield
 
 (attribute) @attribute
@@ -217,27 +253,22 @@ pub struct FutureImportStatement {
     import_list: ImportList,
 }
 
-#[choice]
-pub enum ImportListOrVecImportList {
-    ImportList(ImportList),
-    VecImportList(VecImportList),
-}
-
 #[seq(query = "import_from_statement")]
 pub struct ImportFromStatement {
-    module_name: DottedName,
-    import_list: ImportList,
-    wildcard_or_import: WildcardOrImportListOrVecImportList,
-}
-#[choice]
-pub enum WildcardOrImportListOrVecImportList {
-    Wildcard(WildcardImport),
-    VecImportList(VecImportList),
+    from: RelativeOrDottedName,
+    import: WildcardOrImportList,
 }
 
-#[seq(query = "vec_import_list")]
-pub struct VecImportList {
-    import_list: Vec<ImportList>,
+#[choice]
+pub enum RelativeOrDottedName {
+    RelativeImport(RelativeImport),
+    DottedName(DottedName),
+}
+
+#[choice]
+pub enum WildcardOrImportList {
+    Wildcard(WildcardImport),
+    ImportList(ImportList),
 }
 
 #[choice]
@@ -246,13 +277,11 @@ pub enum RelativeImportOrDottedName {
     DottedName(DottedName),
 }
 
-// inline
 #[seq(query = "import_list")]
 pub struct ImportList {
     name: Vec<ImportName>,
 }
 
-// inline
 #[choice]
 pub enum ImportName {
     AliasedImport(AliasedImport),
@@ -268,41 +297,23 @@ pub struct AliasedImport {
 #[seq(query = "wildcard_import")]
 pub struct WildcardImport {}
 
-#[choice]
-pub enum PrintStatement {
-    PrintChevron(PrintChevron),
-    Print(Print),
-}
-
-#[seq(query = "print_chevron")]
-pub struct PrintChevron {
-    chevron: Chevron,
-    expressions: Vec<Expression>,
-}
-
-#[seq(query = "print")]
-pub struct Print {
-    expression: Expression,
-}
-
-#[seq(query = "chevron")]
-pub struct Chevron {
-    expression: Expression,
+#[seq(query = "print_statement")]
+pub struct PrintStatement {
+    arguments: Vec<Expression>,
 }
 
 #[seq(query = "assert_statement")]
 pub struct AssertStatement {
-    expression: Expression,
-    message: Option<Expression>,
+    expressions: Vec<Expression>,
 }
 
-#[seq(query = "expression_statement")]
-pub struct ExpressionStatement {
-    expression: Expression,
-    expressions: Vec<Expression>,
-    assignment: Assignment,
-    augmented_assignment: AugmentedAssignment,
-    yield_: Yield,
+#[choice]
+pub enum ExpressionStatement {
+    Expression(Expression),
+    ExpressionList(ExpressionList),
+    Assignment(Assignment),
+    AugmentedAssignment(AugmentedAssignment),
+    Yield(Yield),
 }
 
 #[seq(query = "named_expression")]
@@ -319,7 +330,7 @@ pub enum IdentifierOrKeyword {
 
 #[seq(query = "return_statement")]
 pub struct ReturnStatement {
-    expression: Option<Expressions>,
+    expression: Vec<Expressions>,
 }
 
 #[seq(query = "delete_statement")]
@@ -336,7 +347,7 @@ pub enum Expressions {
 
 #[seq(query = "raise_statement")]
 pub struct RaiseStatement {
-    expression: Vec<Expression>,
+    expression: Expressions,
     from_: Option<Expression>,
 }
 
@@ -358,14 +369,14 @@ pub enum CompoundStatement {
     WithStatement(WithStatement),
     Function(Function),
     Class(Class),
-    DecoratoratedDefinition(DecoratoratedDefinition),
+    DecoratedDefinition(DecoratedDefinition),
     MatchStatement(MatchStatement),
 }
 
 #[seq(query = "if_statement")]
 pub struct IfStatement {
     condition: Expression,
-    consequence: SimpleStatement,
+    consequence: Block,
     elif: Vec<ElifClause>,
     alternative: Option<ElseClause>,
 }
@@ -373,89 +384,84 @@ pub struct IfStatement {
 #[seq(query = "elif_clause")]
 pub struct ElifClause {
     condition: Expression,
-    body: SimpleStatement,
+    consequence: Block,
 }
 
 #[seq(query = "else_clause")]
 pub struct ElseClause {
-    body: SimpleStatement,
+    body: Block,
 }
 
 #[seq(query = "match_statement")]
 pub struct MatchStatement {
     match_: Vec<Expression>,
-    blocks: Vec<MatchBlock>,
-}
-
-#[seq(query = "match_block")]
-pub struct MatchBlock {
-    clauses: Vec<CaseClause>,
+    blocks: Block,
 }
 
 #[seq(query = "case_clause")]
 pub struct CaseClause {
-    case: CasePattern,
-    if_clause: Option<IfClause>,
-    consequence: SimpleStatement,
+    case: Vec<CasePattern>,
+    guard: Option<IfClause>,
+    consequence: Block,
 }
 
 #[seq(query = "for_statement")]
 pub struct ForStatement {
     left: LeftHandSide,
-    right: ExpressionList,
-    body: SimpleStatement,
+    right: Vec<Expression>,
+    body: Block,
     alternative: Option<ElseClause>,
 }
 
 #[seq(query = "while_statement")]
 pub struct WhileStatement {
     condition: Expression,
-    body: SimpleStatement,
+    body: Block,
     alternative: Option<ElseClause>,
 }
 
 #[seq(query = "try_statement")]
 pub struct TryStatement {
-    body: SimpleStatement,
-    clause: OneOfExceptClauseOrExceptGroupClauseOrFinallyClause,
+    body: Block,
+    clauses: Vec<TryStatementClauses>,
+    finally: FinallyClause,
+}
+
+#[seq(query = "try_statement_body")]
+pub struct TryStatementClauses {
+    clause: ExceptClauses,
+    else_: Option<ElseClause>,
+    finally: Option<FinallyClause>,
 }
 
 #[choice]
-pub enum OneOfExceptClauseOrExceptGroupClauseOrFinallyClause {
+pub enum ExceptClauses {
     ExceptClause(ExceptClause),
     ExceptGroupClause(ExceptGroupClause),
-    FinallyClause(FinallyClause),
 }
 
 #[seq(query = "except_clause")]
 pub struct ExceptClause {
-    except: Expression,
-    value_alias: Option<ValueAlias>,
-    body: SimpleStatement,
-}
-
-#[seq(query = "value_alias")]
-pub struct ValueAlias {
-    value: Expression,
-    as_: Option<Expression>,
+    except: Vec<Expression>,
+    block: Block,
 }
 
 #[seq(query = "except_group_clause")]
 pub struct ExceptGroupClause {
     except: Expression,
     as_: Option<Expression>,
-    body: SimpleStatement,
+    body: Block,
 }
 
 #[seq(query = "finally_clause")]
 pub struct FinallyClause {
-    body: SimpleStatement,
+    body: Block,
 }
 
 #[seq(query = "with_statement")]
 pub struct WithStatement {
     clause: Expression,
-    body: SimpleStatement,
+    body: Block,
 }
 
 #[seq(
@@ -563,7 +569,7 @@ pub enum Args {
 }
 
 #[seq(query = "decorated_definition")]
-pub struct DecoratoratedDefinition {
+pub struct DecoratedDefinition {
     decorators: Vec<Decorator>,
     definition: OneOfFunctionOrClass,
 }
@@ -582,6 +588,7 @@ pub struct Decorator {
 #[seq(query = "block", completions, document_symbols)]
 pub struct Block {
     statements: Vec<Statement>,
+    clauses: Vec<CaseClause>,
 }
 
 #[seq(query = "expression_list")]
@@ -812,9 +819,12 @@ pub struct Or {
 #[seq(query = "binary_operator")]
 pub struct BinaryOperator {
     left: PrimaryExpression,
-    operator: Operator,
+    operator: BinOperator,
     right: PrimaryExpression,
 }
+
+#[seq(query = "bin_operator")]
+pub struct BinOperator {}
 
 #[seq(query = "unary_operator")]
 pub struct UnaryOperator {
@@ -826,11 +836,12 @@ pub struct UnaryOperator {
 #[seq(query = "comparison_operator")]
 pub struct ComparisonOperator {
     left: PrimaryExpression,
-    operators: Vec<Operators>,
+    operators: Vec<CmpOperator>,
+    right: PrimaryExpression,
 }
 
-#[seq(query = "operators")]
-pub struct Operators {}
+#[seq(query = "cmp_operator")]
+pub struct CmpOperator {}
 
 #[seq(query = "lambda")]
 pub struct Lambda {
