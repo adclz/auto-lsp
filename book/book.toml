@@ -21,7 +21,7 @@ expand = true
 
 [preprocessor.keeper]
 command = "mdbook-keeper"
-manifest_dir = "../"
+manifest_dir = "./"
 is_workspace = true
 build_features = ["miette", "rayon", "lsp_server"]
 externs = ["auto_lsp", "auto_lsp"]

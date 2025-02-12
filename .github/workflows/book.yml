@@ -36,7 +36,7 @@ jobs:
         run: cargo install mdbook-keeper
 
       - name: Build Book
-        run: mdbook build
+        run: mdbook build book
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
