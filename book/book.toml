@@ -1,0 +1,31 @@
+[book]
+authors = ["Clauzel Adrien"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Auto-LSP"
+
+[output.html]
+git-repository-url = "https://github.com/tree-sitter/tree-sitter"
+git-repository-icon = "fa-github"
+
+[output.html.search]
+limit-results = 20
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 2
+boost-paragraph = 1
+expand = true
+
+[preprocessor]
+
+[preprocessor.keeper]
+command = "mdbook-keeper"
+manifest_dir = "../"
+is_workspace = true
+build_features = ["miette", "rayon", "lsp_server"]
+externs = ["auto_lsp", "auto_lsp"]
+
+[preprocessor.admonish]
+command = "mdbook-admonish"
+assets_version = "3.0.2"    # do not edit: managed by `mdbook-admonish install`
