@@ -1,11 +1,11 @@
-name: Deploy Docs
+name: Deploy Book
 on:
   push:
     branches: [main]
     paths: [book/**]
 
 jobs:
-  deploy-docs:
+  deploy-book:
     runs-on: ubuntu-latest
 
     permissions:
@@ -36,7 +36,7 @@ jobs:
         run: cargo install mdbook-keeper
 
       - name: Build Book
-        run: mdbook build docs
+        run: mdbook build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
