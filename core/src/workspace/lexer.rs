@@ -9,11 +9,7 @@ impl Workspace {
     /// This function traverses the syntax tree in a depth-first manner to find error nodes:
     /// - If a node `has_error()` but none of its children have errors, it is collected
     /// - If a node `has_error()` and some children have errors, traverse those children
-    pub(crate) fn get_tree_sitter_errors(
-        node: &Node,
-        source_code: &[u8],
-        errors: &mut Vec<Diagnostic>,
-    ) {
+    pub fn get_tree_sitter_errors(node: &Node, source_code: &[u8], errors: &mut Vec<Diagnostic>) {
         let mut cursor = node.walk();
 
         if node.has_error() {
