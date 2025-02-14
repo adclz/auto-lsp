@@ -2,4 +2,22 @@
 
 [Introduction](./index.md)
 
-# User Guide
+ - [AST and Queries](ast-and-queries/index.md)
+   - [Core Query](ast-and-queries/core-query.md)
+   - [Seq macro](ast-and-queries/seq.md)
+   - [Choice macro](ast-and-queries/choice.md)
+ - [The AST tree](the-ast-tree/index.md)
+   - [Interacting with the tree](the-ast-tree/interacting-with-the-tree.md)
+   - [Tree Life Cycle](the-ast-tree/tree-life-cycle.md)
+ - [Workspace and Documents](workspace-and-document/index.md)
+   - [Configuring Parsers](workspace-and-document/configuring-parsers.md)
+   - [Creating a workspace](workspace-and-document/creating-a-workspace.md)
+   - [Configuring Document Links](workspace-and-document/configuring-document-links.md)
+   - [Configuring Semantic Tokens](workspace-and-document/configuring-semantic-tokens.md)
+ - [LSP server]()
+   - [Configuring a server](lsp-server/configuring-a-server.md)
+   - [Configuring a client](lsp-server/configuring-a-client.md)
+ - [Tests]()
+   - [Logging](tests/logging.md)
+   - [Miette](tests/miette.md)
+- [Targets](targets/index.md)

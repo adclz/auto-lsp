@@ -8,6 +8,8 @@ title = "Auto-LSP"
 [output.html]
 git-repository-url = "https://github.com/adclz/auto-lsp"
 git-repository-icon = "fa-github"
+additional-css = ["assets/mdbook-admonish.css"]
+additional-js = ["assets/mermaid.min.js", "assets/mermaid-init.js"]
 
 [output.html.search]
 limit-results = 20
@@ -19,13 +21,9 @@ expand = true
 
 [preprocessor]
 
-[preprocessor.keeper]
-command = "mdbook-keeper"
-manifest_dir = "./"
-is_workspace = true
-build_features = ["miette", "rayon", "lsp_server"]
-externs = ["auto_lsp", "auto_lsp"]
-
 [preprocessor.admonish]
 command = "mdbook-admonish"
 assets_version = "3.0.2"    # do not edit: managed by `mdbook-admonish install`
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
