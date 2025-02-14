@@ -1,5 +1,72 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.3.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.2.0...auto-lsp-core-v0.3.0)
+
+### Features
+
+- *(core_build/parse)* Enable invoking parsers from any symbol with miette error reporting - ([18dafd4](https://github.com/adclz/auto-lsp/commit/18dafd48ba380511d04421a7b9ba7bf8101d46c9))
+- *(deadlock_detection)* Add deadlock detection feature and tests - ([bef0e20](https://github.com/adclz/auto-lsp/commit/bef0e204f79b71b84c26ff4367db439fc4c87155))
+- *(document_symbols)* Introduce DocumentSymbolsBuilder for cleaner symbol creation - ([73b282c](https://github.com/adclz/auto-lsp/commit/73b282cd644564ee932347a61c51bbd51524a7e0))
+- *(parse)* Add miette report - ([c29416a](https://github.com/adclz/auto-lsp/commit/c29416a33230575d10d90b416d761132d869c1fd))
+- *(parse)* Add parse_symbols method for symbol extraction - ([430ed9d](https://github.com/adclz/auto-lsp/commit/430ed9dd6e326c5cdebea27f7728e3ae28fe64df))
+- *(traverse)* Introduce Traverse trait - ([c60f1fd](https://github.com/adclz/auto-lsp/commit/c60f1fd0ebeac019436e0ae0b9e01e3b3caa3286))
+- *(update)* Add incremental cargo feature - ([ee4a639](https://github.com/adclz/auto-lsp/commit/ee4a639526d60c8546bd5a2bf5f47f472f2692b1))
+- *(update)* Add more cases for incremntal updates - ([a2a2efa](https://github.com/adclz/auto-lsp/commit/a2a2efa76fd130c0dc0e91293ea6075ffa899325))
+- *(update)* Enhance Change struct with trim_start field and add trim_start_index function - ([dccaf0d](https://github.com/adclz/auto-lsp/commit/dccaf0d259c93e832e73b3c6cbf9dc0dd1357b1b))
+- *(update)* Implement incremental updates with vectors and ChangeReport struct - ([1c9c37e](https://github.com/adclz/auto-lsp/commit/1c9c37ed203c8c8a5daff19dff36fc10f05878f3))
+- LSP Code actions - ([53b39d2](https://github.com/adclz/auto-lsp/commit/53b39d2e1d6c2a622dfae9cf24df36bd6474eb9b))
+- Completion items - ([1631484](https://github.com/adclz/auto-lsp/commit/1631484ba78d6be0edbe04df6b80eb76322b7133))
+- Find_at_offset method in Workspace struct - ([c011a3c](https://github.com/adclz/auto-lsp/commit/c011a3c46b2a2e016930be74c0b25b80103ef36f))
+- Add regex support for document link extraction - ([4a95271](https://github.com/adclz/auto-lsp/commit/4a95271fb4a7fa7c25cb412bc7a9694a72616d69))
+- Enhance comments support - ([a2d6995](https://github.com/adclz/auto-lsp/commit/a2d6995d14ee7423c831c259780b8054d2b8cb29))
+- Add update method for Document - ([b296099](https://github.com/adclz/auto-lsp/commit/b296099cc538bcf7a36aa9be45dcd6440ebc2500))
+
+### Bug Fixes
+
+- Parse AST when incremental flag is unset - ([1a31c1b](https://github.com/adclz/auto-lsp/commit/1a31c1b8328fce7ea4ea3beb60114b6144facf8b))
+- Remove assertions feature and related checks from proc-macros and core - ([71d55fc](https://github.com/adclz/auto-lsp/commit/71d55fc4f87b331358d3d3aeccaff22b3f7283d5))
+- Empty documents - ([9d9fcfb](https://github.com/adclz/auto-lsp/commit/9d9fcfbd3975ed99efda2a038a8e63c01425d6df))
+- Use scopes to determine if node should be updated - ([6d35728](https://github.com/adclz/auto-lsp/commit/6d3572877784a974d274169bd287e94c48da7c4e))
+- Reparsing of root node when incremental is not available - ([b4b1223](https://github.com/adclz/auto-lsp/commit/b4b1223d842335324c808122f2065b2071635c00))
+- Workspace checks - ([19d09d4](https://github.com/adclz/auto-lsp/commit/19d09d400636d89758ad23384fdb2dfa40b0adcb))
+
+### Refactor
+
+- *(update)* Merge traits and enhance vector updates - ([e2329bc](https://github.com/adclz/auto-lsp/commit/e2329bcf90931c480a9adefb064e1b8c275ebe76))
+- Make get_tree_sitter_errors public - ([793c797](https://github.com/adclz/auto-lsp/commit/793c797c95808bea93e8902d1ea817558d194451))
+- Rename BuildCodeLens trait to BuildCodeLenses - ([0d220d0](https://github.com/adclz/auto-lsp/commit/0d220d0a2594e0b1c02cff2aa80953472a331afc))
+- Rename IsScope trait to Scope and remove get_scope_range method - ([d1504bc](https://github.com/adclz/auto-lsp/commit/d1504bcc036fd8a6a211e079896f3352fe62c30c))
+- FindPattern trait with AhoCorasick - ([a7d7160](https://github.com/adclz/auto-lsp/commit/a7d716014be648bf91d941254191894b75f0e02e))
+- Relocate Parent trait to core_build module - ([5fb9bd0](https://github.com/adclz/auto-lsp/commit/5fb9bd074a15d34af078da149979575e1987b95c))
+- Rename parse method to miette_parse for clarity - ([e54f477](https://github.com/adclz/auto-lsp/commit/e54f4777e99785100bab22bc0b4fa6865fd59fbd))
+- Update conditions for initiating AST construction - ([f0da3e0](https://github.com/adclz/auto-lsp/commit/f0da3e076f53bf137a0b8f462229ee0d3bf077ab))
+- Simplify code generation for features and #seq proc macro attributes - ([9704ebe](https://github.com/adclz/auto-lsp/commit/9704ebeda5c9dee49c94e91911956d387d66dd10))
+- Remove unused Constructor trait and Queryable impl on AstSymbol - ([9f01673](https://github.com/adclz/auto-lsp/commit/9f01673b34c87f69511446d84f42cc7f5615cf65))
+- Incremental updates - ([013f870](https://github.com/adclz/auto-lsp/commit/013f870bbc59620496821a8b99c662a9cdbc7a53))
+- Rename build_inlay_hint - ([9781c91](https://github.com/adclz/auto-lsp/commit/9781c9128dce135fcef08e927165a1efe7612d04))
+- Logging in core crate - ([1863970](https://github.com/adclz/auto-lsp/commit/1863970035e2deff189fcb612c58e06f61821749))
+- Move texter_impl to core/document - ([a14fb00](https://github.com/adclz/auto-lsp/commit/a14fb00752ef7b5698697b6d1e56388668dec3f0))
+- Eliminate redundant function calls in Workspace - ([da6964a](https://github.com/adclz/auto-lsp/commit/da6964a43933dcb3bf50dffd855100b0c62226be))
+
+### Documentation
+
+- Doc(update) - ([31950e3](https://github.com/adclz/auto-lsp/commit/31950e3e5926b58370bc10db1d4eeeeff5e6e2ac))
+- Add examples for LSp traits - ([0943335](https://github.com/adclz/auto-lsp/commit/094333531559b3f66aaa19a2decd16a46f89369f))
+- Add missing doc for core_build modules - ([55daad4](https://github.com/adclz/auto-lsp/commit/55daad47f91eabe64f5f359931b5f0bd33cc1e34))
+
+### Testing
+
+- *(update)* Add tests for range-based edits - ([cec62b9](https://github.com/adclz/auto-lsp/commit/cec62b950048dab54ffed69ad3beccb0c3b71df6))
+
+### Miscellaneous Tasks
+
+- Improve doc - ([cb8e513](https://github.com/adclz/auto-lsp/commit/cb8e5135b1295db0a16eee1ef79ac2b53b0bd4be))
+- Fmt - ([6daa0cb](https://github.com/adclz/auto-lsp/commit/6daa0cb08cacafcb68e9f515ee9c724a6d9699d0))
+
+# Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
