@@ -77,11 +77,6 @@ pub struct RegexToDocumentLink {
     ) -> lsp_types::DocumentLink,
 }
 
-/// Options for [`lsp_types::DocumentLink`]
-pub struct DocumentLinksOption {
-    pub with_regex: RegexToDocumentLink,
-}
-
 /// List of options for the LSP server capabilties [`lsp_types::ServerCapabilities`]
 ///
 /// Use `..Default::default()` to set the rest of the options to false
@@ -102,7 +97,7 @@ pub struct LspOptions {
     pub document_symbols: bool,
     pub definition_provider: bool,
     pub declaration_provider: bool,
-    pub document_links: Option<DocumentLinksOption>,
+    pub document_links: Option<RegexToDocumentLink>,
     pub folding_ranges: bool,
     pub hover_info: bool,
     pub references: bool,

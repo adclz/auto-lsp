@@ -16,8 +16,7 @@ impl Session {
             .lsp_options
             .document_links
             .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("Document links regex not found"))?
-            .with_regex;
+            .ok_or_else(|| anyhow::anyhow!("Document links regex not found"))?;
 
         let re = &with_regex.regex;
         let to_document_link = &with_regex.to_document_link;
