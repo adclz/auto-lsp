@@ -5,8 +5,7 @@ use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, Workspa
 impl Session {
     /// Request to get workspace symbols
     ///
-    /// This function will return all symbols found in the workspace recursively by calling the inner [`Session::build_document_symbols`]
-    /// of every documents.
+    /// This function will return all symbols found in the workspace recursively
     pub fn get_workspace_symbols(
         &mut self,
         params: WorkspaceSymbolParams,

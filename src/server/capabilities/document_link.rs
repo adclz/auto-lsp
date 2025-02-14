@@ -5,7 +5,7 @@ impl Session {
     /// Get document links for a document.
     ///
     /// To find a document link, we need the comment [`tree_sitter::Query`] to find all comments,
-    /// then we use the regex from the [`crate::server::DocumentLinksOption`] to find the links,
+    /// then we use the regex from the [`crate::server::RegexToDocumentLink`] to find the links,
     /// and finally we pass matches to the **to_document_link** function.
     pub fn get_document_links(
         &mut self,

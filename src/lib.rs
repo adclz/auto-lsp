@@ -1,8 +1,17 @@
 #![allow(rustdoc::private_intra_doc_links)]
-//! # Auto LSP
+//!<div align="center" style="margin-bottom: 50px">
+//!  <h1>Auto LSP</h1>
+//!  <p>
+//!    A Rust crate for creating <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract Syntax Trees</a> (AST)
+//! and <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a> (LSP) servers powered by <a href="https://tree-sitter.github.io/tree-sitter/">Tree-sitter</a> queries
+//!  </p>
 //!
-//! A Rust crate for creating [Abstract Syntax Trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (AST)
-//! and [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) (LSP) servers.
+//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml)
+//! [![Book](https://img.shields.io/badge/📚-book-blue)](https://adclz.github.io/auto-lsp/)
+//! [![crates.io](https://img.shields.io/crates/v/auto-lsp)](https://crates.io/crates/auto-lsp)
+//! ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
+//!
+//!</div>
 //!
 //! `auto_lsp` is designed to be as language-agnostic as possible, allowing any Tree-sitter grammar to be used.
 //!
@@ -37,24 +46,24 @@
 //! }
 //!
 //! #[seq(query = "name")]
-//! struct Name {}  
+//! struct Name {}
 //! ```
 //!
 //! Now that you have your AST defined, you can:
-//!  - Implement the [LSP traits](core::ast) and create a LSP server (with the `lsp_server` feature).
+//!  - Implement [traits](core::ast) and create a LSP server (with the `lsp_server` feature).
 //!  - Add your own logic for testing purposes, code_generation, etc.
 //!
 //! You can find more examples in the `tests` folder.
-use cfg_if::cfg_if;
-
-cfg_if!(
-    if #[cfg(doc)] {
-        use crate::core::{ast::*, build::*, document::Document, workspace::Workspace};
-        use std::sync::Arc;
-        use parking_lot::RwLock;
-        use downcast_rs::*;
-    }
-);
+//! # Features
+//! - `deadlock_detection`: Enable [`parking_lot`]'s deadlock detection (not compatible with `wasm`).
+//! - `log`: Enable logging. (uses [`stderrlog`])
+//! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
+//! - `rayon`: Enable [`rayon`] support (not compatible with `wasm`).
+//! - `wasm`: Enable wasm support.
+//! - `html`: Enable the html workspace mock for testing purposes.
+//! - `python`: Enable the python workspace mock for testing purposes.
+//! - `incremental`: Enable incremental parsing.
+//! - `miette`: Enable [`miette`] error handling.
 
 /// LSP server (enabled with feature `lsp_server`)
 #[cfg(any(feature = "lsp_server", test))]

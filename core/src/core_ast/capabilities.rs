@@ -44,8 +44,8 @@ pub trait GetHover {
     /// Returns a hover information or `None`
     ///
     /// ```rust
-    /// # struct MySymbol{}
-    /// # use auto_lsp_core::document::Document;
+    /// # struct MySymbol {}
+    /// use auto_lsp_core::document::Document;
     /// use auto_lsp_core::ast::GetHover;
     ///
     /// impl GetHover for MySymbol {
@@ -61,7 +61,6 @@ pub trait GetHover {
     ///        })
     ///     }
     /// }
-    ///
     /// ```
     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
         None
@@ -74,7 +73,6 @@ pub trait GetGoToDefinition {
     ///
     /// ```rust
     /// # struct MySymbol{}
-    /// #
     /// use lsp_types::Url;
     /// use auto_lsp_core::document::Document;
     /// use auto_lsp_core::ast::GetGoToDefinition;
@@ -121,7 +119,6 @@ pub trait BuildSemanticTokens {
     ///
     /// ```rust
     /// # struct MySymbol{}
-    /// #
     /// use lsp_types::Url;
     /// use auto_lsp_core::document::Document;
     /// use auto_lsp_core::ast::BuildSemanticTokens;
@@ -147,7 +144,6 @@ pub trait BuildInlayHints {
     ///
     /// ```rust
     /// # struct MySymbol{}
-    /// #
     /// use auto_lsp_core::document::Document;
     /// use auto_lsp_core::ast::BuildInlayHints;
     ///
@@ -169,13 +165,12 @@ pub trait BuildInlayHints {
     fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {}
 }
 
-/// [LSP BuildCodeLenses](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
+/// [LSP BuildCodeLenses specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
 pub trait BuildCodeLenses {
     /// Code lens builder
     ///
     /// ```rust
     /// # struct MySymbol{}
-    /// #
     /// use auto_lsp_core::document::Document;
     /// use auto_lsp_core::ast::BuildCodeLenses;
     ///
@@ -192,7 +187,7 @@ pub trait BuildCodeLenses {
     fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
 }
 
-/// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
+/// [LSP CompletionItem specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
 pub trait BuildCompletionItems {
     /// Completion items builder
     ///
@@ -214,7 +209,7 @@ pub trait BuildCompletionItems {
     fn build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) {}
 }
 
-/// [LSP CompletionItem](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
+/// [LSP CompletionItem specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
 pub trait BuildInvokedCompletionItems {
     /// Completion items builder
     ///
@@ -241,13 +236,14 @@ pub trait BuildInvokedCompletionItems {
     }
 }
 
+/// [LSP CodeAction specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction)
 pub trait BuildCodeActions {
     fn build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>) {}
 }
 
 /// Special capabilities
 
-/// Trait implemented by all [AstSymbol]
+/// Tree traversal
 pub trait Traverse {
     /// Finds minimal symbol at the given offset
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol>;
@@ -400,7 +396,6 @@ impl<T: AstSymbol> Traverse for Vec<Symbol<T>> {
 }
 
 #[doc(hidden)]
-/// Trait implemented by all [AstSymbol]
 pub trait IsReference {
     /// Check if the symbol is an reference
     ///
@@ -412,7 +407,7 @@ pub trait IsReference {
     }
 }
 
-/// Trait to be implemented by any [AstSymbol] to find a reference
+/// Finding a target symbol
 pub trait Reference: IsReference {
     /// Find the target symbol
     ///
@@ -426,7 +421,6 @@ pub trait Reference: IsReference {
     }
 }
 #[doc(hidden)]
-/// Trait implemented by all [AstSymbol]
 pub trait IsCheck {
     /// Tell this symbol has to be checked during the build process
     ///
@@ -436,7 +430,7 @@ pub trait IsCheck {
     }
 }
 
-/// Trait to be implemented by any [AstSymbol] to perform a check
+/// Checking a symbol
 pub trait Check: IsCheck {
     /// Perform a check on the symbol during the last step of build process
     ///
@@ -449,7 +443,7 @@ pub trait Check: IsCheck {
     }
 }
 
-/// Trait implemented by all [AstSymbol]
+/// Delimiting a symbol's scope
 pub trait Scope {
     /// Tell this symbol is a scope
     ///
@@ -459,7 +453,7 @@ pub trait Scope {
     }
 }
 
-/// Trait implemented by all [AstSymbol]
+/// Allowing a symbol to be commented
 pub trait Comment {
     /// Tell this symbol is a comment
     ///

@@ -32,7 +32,7 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 /// ## Basic usage
 ///
 /// ```ignore
-/// #[seq(query = "query_name"]
+/// #[seq(query = "query_name")]
 /// struct MyStruct {}
 /// ```
 ///
@@ -53,29 +53,20 @@ const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
 /// ```ignore
 /// // When using `user`, the default trait implementation is removed.
 ///
-/// #[seq(query = "query_name", document_symbols]
+/// #[seq(query = "query_name", document_symbols)]
 /// struct MyStruct {}
 ///
 /// impl BuildDocumentSymbols for Module {
-///    fn build_document_symbols(&self, doc: &Document) -> Option<VecOrSymbol> {
+///    fn build_document_symbols(&self, doc: &Document)  {
 ///        /* ... */
 ///    }
 /// }
 ///
 /// // With `codegen`, the default implementation is replaced by the code_gen implementation
 ///
-/// #[seq(query = "query_name2", kind(symbol(
-/// lsp_document_symbols(
-///    code_gen(
-///        name = self::name,
-///        kind = auto_lsp::lsp_types::SymbolKind::FUNCTION,
-///    )
-/// ))))]
+/// #[seq(query = "query_name2", symbols)]
 /// struct MyStruct2 {}
 ///
-/// ```
-///
-/// ```
 ///
 #[proc_macro_attribute]
 pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {

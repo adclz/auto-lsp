@@ -61,9 +61,10 @@ You can find more examples in the `src/tests` folder.
 - `lsp_server`: Enable the LSP server (uses [`lsp_server`](https://crates.io/crates/lsp-server)).
 - `rayon`: Enable [`rayon`](https://crates.io/crates/rayon) support (not compatible with `wasm`).
 - `wasm`: Enable wasm support.
-- `html`: Enable the python workspace mock for testing purposes.
-- `python`: Enable the html workspace mock for testing purposes.
+- `html`: Enable the html workspace mock for testing purposes.
+- `python`: Enable the python workspace mock for testing purposes.
 - `incremental`: Enable incremental updates.
+- `miette`: Enable [`miette`](https://crates.io/crates/miette) error handling.
 
 # Documentation
 

@@ -16,6 +16,7 @@ create_ast_symbol_trait!(super::update::UpdateDynamic);
 #[cfg(not(feature = "incremental"))]
 create_ast_symbol_trait!();
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! create_ast_symbol_trait {
     ($($extra: path)?) => {

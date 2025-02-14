@@ -73,7 +73,7 @@ macro_rules! builder_warning {
     };
 }
 
-/// Trait implemented by all builders created with the #[seq] macro.
+/// Trait implemented by all builders created with the seq macro.
 pub trait Buildable: Downcast {
     /// Creates a new instance of the builder.
     ///

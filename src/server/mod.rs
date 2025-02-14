@@ -10,8 +10,6 @@
 //! ## Minimal example
 //! The first step is to configure parsers using the [crate::configure_parsers] macro.
 //!
-//! The client is responsible for specifying how different file extensions are linked to specific parsers.
-//!  
 //! ```rust
 //! # use auto_lsp::configure_parsers;
 //! # use auto_lsp::core::ast::*;
@@ -36,9 +34,8 @@
 //! );
 //! ```
 //!
-//!  Next, define the server's capabilities using the [crate::server::capabilities] module.
-//!  
-//!  [`crate::server::InitOptions`]  has only one mandatory field, `parsers`, which is a map of file extensions to parsers previously created.
+//!  Next, define the server's capabilities.
+//!
 //!  ```rust
 //! # use auto_lsp::configure_parsers;
 //! # use auto_lsp::core::ast::*;
@@ -47,7 +44,7 @@
 //! # #[seq(query = "module")]
 //! # struct Module {}
 //! # configure_parsers!(
-//!      PARSER_LIST,
+//! #     PARSER_LIST,
 //! #    "python" => {
 //! #        language: tree_sitter_python::LANGUAGE,
 //! #        node_types: tree_sitter_python::NODE_TYPES,
@@ -61,7 +58,7 @@
 //! # );
 //!  use auto_lsp::server::{InitOptions, LspOptions};
 //!  use std::error::Error;
-//!   
+//!
 //!  let init_options = InitOptions {
 //!     parsers: &PARSER_LIST,
 //!     lsp_options: LspOptions {
@@ -70,7 +67,7 @@
 //!  };
 //!  ```
 //!
-//!  Finally, create your main function and initialize a new session..
+//!  Finally, create your main function and initialize a new session.
 //!
 //! ```no_run
 //! # use auto_lsp::python::PYTHON_PARSERS;
