@@ -1,4 +1,3 @@
-use std::env::set_var;
 use std::error::Error;
 
 use auto_lsp::server::{InitOptions, LspOptions, Session};
@@ -6,7 +5,6 @@ use auto_lsp::server::{InitOptions, LspOptions, Session};
 use auto_lsp::python::PYTHON_PARSERS;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
-    set_var("RUST_BACKTRACE", "full");
     let mut session = Session::create(InitOptions {
         parsers: &PYTHON_PARSERS,
         lsp_options: LspOptions {

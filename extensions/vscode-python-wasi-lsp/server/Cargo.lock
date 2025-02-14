@@ -36,9 +36,11 @@ checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 name = "auto-lsp"
 version = "0.2.0"
 dependencies = [
+ "aho-corasick",
  "anyhow",
  "auto-lsp-core",
  "auto-lsp-macros",
+ "cfg-if",
  "constcat",
  "crossbeam-channel",
  "downcast-rs",
@@ -47,6 +49,7 @@ dependencies = [
  "lsp-types",
  "parking_lot",
  "phf",
+ "rayon",
  "regex",
  "serde",
  "serde_json",
@@ -63,7 +66,9 @@ dependencies = [
 name = "auto-lsp-core"
 version = "0.2.0"
 dependencies = [
+ "aho-corasick",
  "anyhow",
+ "cfg-if",
  "downcast-rs",
  "log",
  "lsp-types",
