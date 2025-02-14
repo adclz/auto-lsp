@@ -23,13 +23,21 @@ use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
 
+/// Reports the outcome of a change operation on a symbol vector.
+///
+/// This enum is used to track and log changes such as insertions, removals, or replacements.
 pub enum ChangeReport {
-    Replace(usize, &'static [&'static str]),
+    /// An insertion occurred at a specific index.
     Insert(usize, &'static [&'static str]),
+    /// An item was removed from a specific index.
     Remove(usize, &'static [&'static str]),
+    /// An item was replaced at a specific index.
+    Replace(usize, &'static [&'static str]),
 }
 
 impl ChangeReport {
+    /// Logs the change report for debugging and tracking purposes.
+    /// Only enabled when the `log` feature is active.
     #[cfg(feature = "log")]
     pub(crate) fn log(&self) {
         match self {
@@ -73,6 +81,9 @@ impl ChangeReport {
     }
 }
 
+/// Represents the state of an update operation.
+///
+/// This enum tracks whether a symbol was found and if the update was successful.
 pub enum UpdateState {
     Found,
     Result(Result<(), Diagnostic>),
@@ -233,7 +244,8 @@ where
     }
 }
 
-fn create_insert_symbols<T, Y>(
+/// Inserts symbols into a vector at the specified range.
+fn generate_symbols<T, Y>(
     vec: &mut Vec<Symbol<Y>>,
     workspace: &mut Workspace,
     document: &Document,
@@ -399,7 +411,7 @@ where
                     .get_range()
                     .end;
 
-                create_insert_symbols(
+                generate_symbols(
                     self,
                     workspace,
                     document,
@@ -442,15 +454,7 @@ where
                             end: self[end].read().get_range().start,
                         };
 
-                        create_insert_symbols(
-                            self,
-                            workspace,
-                            document,
-                            range,
-                            start,
-                            end - 1,
-                            parent,
-                        )
+                        generate_symbols(self, workspace, document, range, start, end - 1, parent)
                     }
                     (Some(start), None) => {
                         let parent = self.get(start).unwrap().read().get_parent();
@@ -460,7 +464,7 @@ where
                             end: edit.input_edit.new_end_byte,
                         };
 
-                        create_insert_symbols(self, workspace, document, range, start, 0, parent)
+                        generate_symbols(self, workspace, document, range, start, 0, parent)
                     }
                     (None, Some(end)) => {
                         let parent = self.get(end).unwrap().read().get_parent();
@@ -470,7 +474,7 @@ where
                             end: self[end].read().get_range().end,
                         };
 
-                        create_insert_symbols(self, workspace, document, range, start, end, parent)
+                        generate_symbols(self, workspace, document, range, start, end, parent)
                     }
                     (None, None) => ControlFlow::Continue(()),
                 };
