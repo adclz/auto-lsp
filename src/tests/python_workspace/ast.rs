@@ -7,17 +7,23 @@ pub static COMMENT_QUERY: &'static str = "
 
 pub static CORE_QUERY: &'static str = "
 (module) @module
-(import_statement) @import_statement
 
 (import_prefix) @import_prefix
 (relative_import) @relative_import
+(import_statement
+    \"import\" (_) @import_list
+) @import_statement
+
 (future_import_statement
     \"import\" (_) @import_list
 ) @future_import_statement
 
+(import_from_statement) @import_from_statement
+
 (import_from_statement
-    \"import\" (_) @import_list
-) @import_from_statement
+     \"import\" (_) ? @import_list
+    	(#not-eq? @import_list \"*\" )
+)
 
 (aliased_import) @aliased_import
 (wildcard_import) @wildcard_import
@@ -44,16 +50,14 @@ pub static CORE_QUERY: &'static str = "
 (for_statement) @for_statement
 (while_statement) @while_statement
 
-(try_statement
-	body: (_)
-    . (_) ? @try_statement_body
-) @try_statement
+(try_statement) @try_statement
 
 (except_clause) @except_clause 
 (except_group_clause) @except_group_clause
 (finally_clause) @finally_clause
 
 (with_statement) @with_statement
+(with_item) @with_item
 
 ; Function
 
@@ -121,7 +125,9 @@ pub static CORE_QUERY: &'static str = "
 )
 (binary_operator) @binary_operator
 
-(unary_operator) @unary_operator
+(unary_operator
+    operator: [\"-\" \"+\" \"~\"] @un_operator
+) @unary_operator
 
 (lambda) @lambda
 ; (lambda_within_for_clause) @lambda_within_for_clause
@@ -193,6 +199,9 @@ pub static CORE_QUERY: &'static str = "
 (integer) @integer
 (float) @float
 (identifier) @identifier
+(true) @true
+(false) @false
+(none) @none
 ";
 
 #[seq(
@@ -236,7 +245,7 @@ pub enum SimpleStatement {
 
 #[seq(query = "import_statement")]
 pub struct ImportStatement {
-    import_list: ImportList,
+    import_list: Vec<ImportList>,
 }
 
 #[seq(query = "import_prefix")]
@@ -250,13 +259,13 @@ pub struct RelativeImport {
 
 #[seq(query = "future_import_statement")]
 pub struct FutureImportStatement {
-    import_list: ImportList,
+    import_list: Vec<ImportList>,
 }
 
 #[seq(query = "import_from_statement")]
 pub struct ImportFromStatement {
     from: RelativeOrDottedName,
-    import: WildcardOrImportList,
+    import: Vec<WildcardOrImportList>,
 }
 
 #[choice]
@@ -347,7 +356,7 @@ pub enum Expressions {
 
 #[seq(query = "raise_statement")]
 pub struct RaiseStatement {
-    expression: Expressions,
+    expression: Option<Expressions>,
     from_: Option<Expression>,
 }
 
@@ -423,13 +432,7 @@ pub struct WhileStatement {
 #[seq(query = "try_statement")]
 pub struct TryStatement {
     body: Block,
-    clauses: Vec<TryStatementClauses>,
-    finally: FinallyClause,
-}
-
-#[seq(query = "try_statement_body")]
-pub struct TryStatementClauses {
-    clause: ExceptClauses,
+    except_clauses: Vec<ExceptClauses>,
     else_: Option<ElseClause>,
     finally: Option<FinallyClause>,
 }
@@ -460,8 +463,13 @@ pub struct FinallyClause {
 
 #[seq(query = "with_statement")]
 pub struct WithStatement {
-    clause: Expression,
+    clause: Vec<WithItem>,
     body: Block,
+}
+
+#[seq(query = "with_item")]
+pub struct WithItem {
+    value: Expression,
 }
 
 #[seq(
@@ -497,7 +505,7 @@ pub struct ListSplat {
     expressions: Expression,
 }
 
-#[seq(query = "dicitionary_splat")]
+#[seq(query = "dictionary_splat")]
 pub struct DictionarySplat {
     expression: Expression,
 }
@@ -540,7 +548,7 @@ pub struct Class {
 
 #[seq(query = "type_parameter")]
 pub struct TypeParameter {
-    type_: Vec<Type>,
+    types: Vec<Type>,
 }
 
 #[seq(query = "parenthesized_list_splat")]
@@ -790,7 +798,7 @@ pub enum PrimaryExpression {
     ParenthesizedExpression(ParenthesizedExpression),
     GeneratorExpression(GeneratorExpression),
     Ellipsis(Ellipsis),
-    ListSplatPattern(ListSplatPattern),
+    ListSplat(ListSplat),
 }
 
 #[seq(query = "not_operator")]
@@ -828,9 +836,12 @@ pub struct BinOperator {}
 
 #[seq(query = "unary_operator")]
 pub struct UnaryOperator {
-    operator: Operator,
+    operator: UnOperator,
     expression: PrimaryExpression,
 }
+
+#[seq(query = "un_operator")]
+pub struct UnOperator {}
 
 // todo
 #[seq(query = "comparison_operator")]
@@ -925,8 +936,14 @@ pub struct Attribute {
 
 #[seq(query = "subscript")]
 pub struct Subscript {
-    object: PrimaryExpression,
-    subscript: Vec<Expression>,
+    value: PrimaryExpression,
+    subscript: Vec<ExpressionOrSlice>,
+}
+
+#[choice]
+enum ExpressionOrSlice {
+    Expression(Expression),
+    Slice(Slice),
 }
 
 #[seq(query = "slice")]
@@ -983,7 +1000,7 @@ struct SplatType {
 #[seq(query = "generic_type")]
 struct GenericType {
     type_: Identifier,
-    parameter: TypedParameter,
+    parameter: TypeParameter,
 }
 
 #[seq(query = "union_type")]
@@ -1035,7 +1052,7 @@ enum CollectionElements {
 
 #[seq(query = "dictionary")]
 struct Dictionary {
-    pair: OneOfPairOrDictionarySplat,
+    pair: Vec<OneOfPairOrDictionarySplat>,
 }
 
 #[choice]
@@ -1088,7 +1105,13 @@ enum OneOfForIfClause {
 
 #[seq(query = "parenthesized_expression")]
 pub struct ParenthesizedExpression {
-    expression: Expression,
+    expression: ExpressionOrYield,
+}
+
+#[choice]
+pub enum ExpressionOrYield {
+    Expression(Expression),
+    Yield(Yield),
 }
 
 #[seq(query = "for_in_clause")]
