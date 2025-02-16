@@ -35,8 +35,4 @@ let (workspace, document) = Workspace::from_texter(
 
 ## Updating a workspace
 
-If you want to update a workspace, you can use the `update` method.
-
-`update` takes a list of `edits` made to the document and a reference to the document itself.
-
-Make sure the document has been updated before calling `update`.
+WIP

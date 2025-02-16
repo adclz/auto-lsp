@@ -6,16 +6,15 @@ LSP Server is only available in the `lsp_server` feature.
 
 ## Starting a server
 
-`auto-lsp` uses [`lsp_server`]() from rust analyzer and [`crossbeam`]() to launch the server.
+`auto-lsp` uses [`lsp_server`](https://crates.io/crates/lsp_server) from rust analyzer and [`crossbeam`](https://docs.rs/crossbeam/latest/crossbeam/) to launch the server.
 
-To configure the `lsp_server`, you need to use the `create` method from the `Session` struct wich takes 2 arguments.
+To configure the `lsp_server`, you need to use the `create` method from the [`Session`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.Session.html) struct wich takes 2 arguments.
 
-- `Parsers`: A list of parsers (previously defined with the `configure_parsers!` macro)
-- `LspOptions`: Options to configure the LSP server.
+- `Parsers`: A list of parsers (previously defined with the [`configure_parsers!`](/workspace-and-document/configuring-parsers.html) macro)
+- `LspOptions`: Options to configure the LSP server, see [LSP Options](#lsp-options).
 
 ```rust
-
-To start a session, you need to provide the `InitOptions` struct to the `Session::create` method.
+To start a session, you need to provide the InitOptions struct.
 
 ```rust
 use std::error::Error;
@@ -44,7 +43,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
 ## LSP Options
 
-The `LspOptions` struct contains various settings to enable or disable different LSP features like diagnostics, document symbols, and more.
+The [`LspOptions`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.LspOptions.html) struct contains various settings to enable or disable different LSP features like diagnostics, document symbols, and more.
 
 Depending on how your AST is structured, all requests are fullfiled automatically.
 
@@ -52,7 +51,7 @@ Just 2 options require specific implementations:
 
 ### Document Links
 
-Document Links requires a [`RegexToDocumentLink`] struct.
+Configuring Document Links requires a [`RegexToDocumentLink`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.RegexToDocumentLink.html) struct.
 
 ```rust
 use auto_lsp::server::{RegexToDocumentLink, Session};
@@ -90,7 +89,8 @@ RegexToDocumentLink {
 
 ### Semantic Tokens
 
-Semantic Tokens that are defined previously with the `define_semantic_token_types!` and `define_semantic_token_modifiers!` macros
+Semantic Tokens that are defined previously with the [`define_semantic_token_types!`](workspace-and-document/configuring-semantic-tokens.md)
+and `define_semantic_token_modifiers!` macros
 must be provided to the LSP Server.
 
 ```rust

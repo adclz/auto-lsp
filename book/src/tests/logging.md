@@ -17,4 +17,4 @@ Logs show in real time:
  - Incremental updates locations.
  - Number of unsolved checks.
 
-<img src="https://raw.githubusercontent.com/adclz/auto-lsp/refs/heads/main/assets/logs.png">
+<img src="logs.png">

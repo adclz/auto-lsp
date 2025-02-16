@@ -49,4 +49,4 @@ fn function() -> miette::Result<()> {
 
 This code will return the following error when running tests:
 
-<img src="https://raw.githubusercontent.com/adclz/auto-lsp/refs/heads/main/assets/miette.png">
+<img src="miette.png">
