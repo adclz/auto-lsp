@@ -262,13 +262,19 @@ where
                 self.workspace.diagnostics.push(builder_warning!(
                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                     format!(
-                        "Syntax error: Unexpected {:?}",
+                        "Syntax error: Unexpected {:?} in {:?}",
                         self.workspace
                             .parsers
                             .tree_sitter
                             .queries
                             .core
                             .capture_names()[capture.index as usize],
+                        self.workspace
+                            .parsers
+                            .tree_sitter
+                            .queries
+                            .core
+                            .capture_names()[parent.get_rc().borrow().get_query_index()],
                     )
                 ));
                 #[cfg(feature = "log")]
