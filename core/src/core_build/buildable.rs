@@ -186,45 +186,6 @@ pub trait AddSymbol {
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
 }
 
-impl AddSymbol for PendingSymbol {
-    fn add<Y: Buildable + Queryable>(
-        &mut self,
-        capture: &tree_sitter::QueryCapture,
-        workspace: &mut Workspace,
-        parent_name: &str,
-        field_name: &str,
-    ) -> Result<Option<PendingSymbol>, Diagnostic> {
-        let name =
-            workspace.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
-        if Y::QUERY_NAMES.contains(&name) {
-            match Y::new(
-                workspace.url.clone(),
-                &workspace.parsers.tree_sitter.queries.core,
-                capture,
-            ) {
-                Some(node) => {
-                    let node = PendingSymbol::new(node);
-                    *self = node.clone();
-                    return Ok(None);
-                }
-                None => {
-                    return Err(builder_error!(
-                        tree_sitter_range_to_lsp_range(&capture.node.range()),
-                        format!(
-                            "Invalid {:?} for {:?}, expected: {:?}, received: {:?}",
-                            field_name,
-                            parent_name,
-                            name,
-                            Y::QUERY_NAMES
-                        )
-                    ))
-                }
-            }
-        }
-        Ok(None)
-    }
-}
-
 impl AddSymbol for MaybePendingSymbol {
     fn add<Y: Buildable + Queryable>(
         &mut self,
@@ -233,6 +194,9 @@ impl AddSymbol for MaybePendingSymbol {
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
+        if self.is_some() {
+            return Ok(None);
+        }
         let name =
             workspace.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
