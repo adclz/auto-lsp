@@ -63,7 +63,6 @@ pub static CORE_QUERY: &'static str = "
 
 (function_definition) @function
 (parameters) @parameters
-(lambda_parameters) @lambda_parameters
 
 (list_splat) @list_splat
 (dictionary_splat) @dictionary_splat
@@ -103,9 +102,6 @@ pub static CORE_QUERY: &'static str = "
 (as_pattern) @as_pattern
 (not_operator) @not_operator
 
-; (and) @and
-; (or) @or
-
 (binary_operator 
     [
         \"+\" 
@@ -125,14 +121,28 @@ pub static CORE_QUERY: &'static str = "
 )
 (binary_operator) @binary_operator
 
+(boolean_operator
+	operator: \"and\" @and
+)
+
+(boolean_operator
+	operator: \"or\" @or
+)
+
+(boolean_operator) @boolean_operator
+
 (unary_operator
     operator: [\"-\" \"+\" \"~\"] @un_operator
 ) @unary_operator
 
 (lambda) @lambda
-; (lambda_within_for_clause) @lambda_within_for_clause
+(lambda_parameters) @lambda_parameters
 
 (assignment) @assignment
+(augmented_assignment
+    operator: _ @augmented_operator
+)
+
 (augmented_assignment) @augmented_assignment
 
 (comparison_operator
@@ -182,7 +192,6 @@ pub static CORE_QUERY: &'static str = "
 (dictionary_comprehension) @dictionary_comprehension
 (set_comprehension) @set_comprehension
 (generator_expression) @generator_expression
-; (comprehension_clause) @comprehension_clause
 
 (parenthesized_expression) @parenthesized_expression
 (for_in_clause) @for_in_clause
@@ -495,11 +504,6 @@ pub struct Parameters {
     parameters: Vec<Parameter>,
 }
 
-#[seq(query = "lambda_parameters")]
-pub struct LambdaParameters {
-    parameters: Vec<Parameters>,
-}
-
 #[seq(query = "list_splat")]
 pub struct ListSplat {
     expressions: Expression,
@@ -803,32 +807,33 @@ pub enum PrimaryExpression {
 
 #[seq(query = "not_operator")]
 pub struct NotOperator {
-    expression: Expression,
+    argument: Expression,
+}
+
+#[seq(query = "boolean_operator")]
+pub struct BooleanOperator {
+    left: Expression,
+    operator: AndOr,
+    right: Expression,
 }
 
 #[choice]
-pub enum BooleanOperator {
+pub enum AndOr {
     And(And),
     Or(Or),
 }
 
 #[seq(query = "and")]
-pub struct And {
-    left: PrimaryExpression,
-    right: PrimaryExpression,
-}
+pub struct And {}
 
 #[seq(query = "or")]
-pub struct Or {
-    left: PrimaryExpression,
-    right: PrimaryExpression,
-}
+pub struct Or {}
 
 #[seq(query = "binary_operator")]
 pub struct BinaryOperator {
-    left: PrimaryExpression,
+    left: Expression,
     operator: BinOperator,
-    right: PrimaryExpression,
+    right: Expression,
 }
 
 #[seq(query = "bin_operator")]
@@ -843,12 +848,17 @@ pub struct UnaryOperator {
 #[seq(query = "un_operator")]
 pub struct UnOperator {}
 
-// todo
+
 #[seq(query = "comparison_operator")]
 pub struct ComparisonOperator {
     left: PrimaryExpression,
-    operators: Vec<CmpOperator>,
-    right: PrimaryExpression,
+    cmp: Vec<OperatorOrExpression>
+}
+
+#[choice]
+pub enum OperatorOrExpression {
+    Operator(CmpOperator),
+    Expression(PrimaryExpression),
 }
 
 #[seq(query = "cmp_operator")]
@@ -856,42 +866,31 @@ pub struct CmpOperator {}
 
 #[seq(query = "lambda")]
 pub struct Lambda {
-    parameters: Option<Parameters>,
+    parameters: Option<LambdaParameters>,
     body: Expression,
 }
 
-#[seq(query = "lambda_within_for_clause")]
-pub struct LambdaWithinForClause {
-    parameters: Option<Parameters>,
-    body: ExpressionWithinForClause,
-}
-
-#[choice]
-enum ExpressionWithinForClause {
-    Expression(Expression),
-    Lambda(LambdaWithinForClause),
+#[seq(query = "lambda_parameters")]
+pub struct LambdaParameters {
+    parameters: Vec<Parameter>,
 }
 
 #[seq(query = "assignment")]
 pub struct Assignment {
     left: LeftHandSide,
-    right: RightAssignment,
-}
-
-#[choice]
-enum RightAssignment {
-    RightHandSide(RightHandSide),
+    type_: Option<Type>,
+    right_hand_side: Option<RightHandSide>
 }
 
 #[seq(query = "augmented_assignment")]
 pub struct AugmentedAssignment {
     left: LeftHandSide,
-    operator: Operator,
+    operator: AugmentedOperator,
     right: RightHandSide,
 }
 
-#[seq(query = "operator")]
-pub struct Operator {}
+#[seq(query = "augmented_operator")]
+pub struct AugmentedOperator {}
 
 // inline
 #[choice]
@@ -911,7 +910,7 @@ pub struct PatternList {
 pub enum RightHandSide {
     Expression(Expression),
     Expressions(Expressions),
-    Assignement(Assignment),
+    Assignment(Assignment),
     AugmentedAssignment(AugmentedAssignment),
     PatternList(PatternList),
     Yield(Yield),
@@ -919,7 +918,7 @@ pub enum RightHandSide {
 
 #[seq(query = "yield")]
 struct Yield {
-    yield_: OneOfExpressionOrExpressions,
+    yield_: Option<OneOfExpressionOrExpressions>
 }
 
 #[choice]
@@ -959,11 +958,11 @@ pub struct Ellipsis {}
 #[seq(query = "call")]
 struct Call {
     function: PrimaryExpression,
-    arguments: Vec<GenereratorOrArgumentList>,
+    arguments: Vec<GeneratorOrArgumentList>,
 }
 
 #[choice]
-pub enum GenereratorOrArgumentList {
+pub enum GeneratorOrArgumentList {
     Generator(GeneratorExpression),
     ArgumentList(ArgumentList),
 }
@@ -1070,35 +1069,33 @@ struct Pair {
 #[seq(query = "list_comprehension")]
 pub struct ListComprehension {
     body: Expression,
-    clauses: ComprehensionClauses,
+    for_clause: ForInClause,
+    clauses: Vec<ForOrifClause>
 }
 
 #[seq(query = "dictionary_comprehension")]
 pub struct DictionaryComprehension {
     body: Pair,
-    clauses: ComprehensionClauses,
+    for_clause: ForInClause,
+    clauses: Vec<ForOrifClause>
 }
 
 #[seq(query = "set_comprehension")]
 pub struct SetComprehension {
     body: Expression,
-    clauses: ComprehensionClauses,
+    for_clause: ForInClause,
+    clauses: Vec<ForOrifClause>
 }
 
 #[seq(query = "generator_expression")]
 pub struct GeneratorExpression {
     body: Expression,
-    clauses: ComprehensionClauses,
-}
-
-#[seq(query = "comprehension_clause")]
-pub struct ComprehensionClauses {
     for_clause: ForInClause,
-    next: Vec<OneOfForIfClause>,
+    clauses: Vec<ForOrifClause>
 }
 
 #[choice]
-enum OneOfForIfClause {
+enum ForOrifClause {
     ForClause(ForInClause),
     IfClause(IfClause),
 }
