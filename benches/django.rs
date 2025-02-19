@@ -6,7 +6,7 @@ use lsp_types::Url;
 
 use auto_lsp::{self as auto_lsp};
 
-fn parse_django(c: &mut Criterion) {
+pub fn parse_django(c: &mut Criterion) {
     let text = include_str!("django.py").to_string();
     #[cfg(feature = "python")]
     c.bench_function("parse_django", move |b| {
@@ -18,5 +18,3 @@ fn parse_django(c: &mut Criterion) {
         });
     });
 }
-
-criterion_group!(benches, parse_django);
