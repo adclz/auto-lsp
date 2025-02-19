@@ -1,7 +1,7 @@
 #[cfg(feature = "python")]
 use auto_lsp::python::PYTHON_PARSERS;
 use auto_lsp_core::workspace::Workspace;
-use criterion::{criterion_group, Criterion};
+use criterion::Criterion;
 use lsp_types::Url;
 
 use auto_lsp::{self as auto_lsp};
