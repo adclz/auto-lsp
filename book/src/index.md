@@ -50,14 +50,14 @@ struct Name {}
 ```
 
 Now that you have your AST defined, you can:
- - Implement the [AST traits](/creating-an-ast/seq.html#seq-attributes) and create a LSP server (with the `lsp_server` feature).
+ - Implement the [AST traits](/auto-lsp/creating-an-ast/seq.html#seq-attributes) and create a LSP server (with the `lsp_server` feature).
  - Add your own logic for testing purposes, code_generation, etc.
 
 ## Simplicity
 
 `auto-lsp` only has 2 macros to define an AST:
- - [`#seq`](/ast-and-queries/seq.html)
- - [`#choice`](/ast-and-queries/choice.html).
+ - [`#seq`](/auto-lsp/ast-and-queries/seq.html)
+ - [`#choice`](/auto-lsp/ast-and-queries/choice.html).
 
 All symbols are thread-safe and have their own parse function via blanket implementations. This means any symbol can be used as a root node, allowing you to:
 
