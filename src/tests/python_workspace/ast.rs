@@ -79,22 +79,23 @@ pub static CORE_QUERY: &'static str = "
 
 (decorated_definition) @decorated_definition
 (decorator) @decorator
-(block) @block
 
 (expression_list) @expression_list
 (dotted_name) @dotted_name
 
 (union_pattern) @union_pattern
 (dict_pattern) @dict_pattern
-; (key_value_pattern) @key_value_pattern
+(dict_pattern
+	(_
+    	key: _
+        value :_
+    ) @key_value_pattern
+)
 (keyword_pattern) @keyword_pattern
 
 (splat_pattern) @splat_pattern
 (class_pattern) @class_pattern
 (complex_pattern) @complex_pattern
-
-(tuple_pattern) @tuple_pattern
-(list_pattern) @list_pattern
 
 (default_parameter) @default_parameter
 (typed_default_parameter) @typed_default_parameter
@@ -182,8 +183,10 @@ pub static CORE_QUERY: &'static str = "
 
 (keyword_argument) @keyword_argument
 (list) @list
+(list_pattern) @list_pattern
 (set) @set
 (tuple) @tuple
+(tuple_pattern) @tuple_pattern
 
 (dictionary) @dictionary
 (pair) @pair
@@ -201,6 +204,10 @@ pub static CORE_QUERY: &'static str = "
 
 (concatenated_string) @concatenated_string
 (string) @string
+(string_start) @string_start
+(string_end) @string_end
+(escape_interpolation) @escape_interpolation
+(escape_sequence) @escape_sequence
 (interpolation) @interpolation
 (format_specifier) @format_specifier
 (type_conversion) @type_conversion
@@ -394,7 +401,7 @@ pub enum CompoundStatement {
 #[seq(query = "if_statement")]
 pub struct IfStatement {
     condition: Expression,
-    consequence: Block,
+    consequence:  Vec<Statement>,
     elif: Vec<ElifClause>,
     alternative: Option<ElseClause>,
 }
@@ -402,45 +409,45 @@ pub struct IfStatement {
 #[seq(query = "elif_clause")]
 pub struct ElifClause {
     condition: Expression,
-    consequence: Block,
+    consequence: Vec<Statement>,
 }
 
 #[seq(query = "else_clause")]
 pub struct ElseClause {
-    body: Block,
+    body: Vec<Statement>,
 }
 
 #[seq(query = "match_statement")]
 pub struct MatchStatement {
     match_: Vec<Expression>,
-    blocks: Block,
+    clauses: Vec<CaseClause>,
 }
 
 #[seq(query = "case_clause")]
 pub struct CaseClause {
     case: Vec<CasePattern>,
     guard: Option<IfClause>,
-    consequence: Block,
+    consequence:  Vec<Statement>,
 }
 
 #[seq(query = "for_statement")]
 pub struct ForStatement {
     left: LeftHandSide,
     right: Vec<Expression>,
-    body: Block,
+    body: Vec<Statement>,
     alternative: Option<ElseClause>,
 }
 
 #[seq(query = "while_statement")]
 pub struct WhileStatement {
     condition: Expression,
-    body: Block,
+    body: Vec<Statement>,
     alternative: Option<ElseClause>,
 }
 
 #[seq(query = "try_statement")]
 pub struct TryStatement {
-    body: Block,
+    body: Vec<Statement>,
     except_clauses: Vec<ExceptClauses>,
     else_: Option<ElseClause>,
     finally: Option<FinallyClause>,
@@ -455,25 +462,25 @@ pub enum ExceptClauses {
 #[seq(query = "except_clause")]
 pub struct ExceptClause {
     except: Vec<Expression>,
-    block: Block,
+    block: Vec<Statement>,
 }
 
 #[seq(query = "except_group_clause")]
 pub struct ExceptGroupClause {
     except: Expression,
     as_: Option<Expression>,
-    body: Block,
+    body: Vec<Statement>,
 }
 
 #[seq(query = "finally_clause")]
 pub struct FinallyClause {
-    body: Block,
+    body: Vec<Statement>,
 }
 
 #[seq(query = "with_statement")]
 pub struct WithStatement {
     clause: Vec<WithItem>,
-    body: Block,
+    body: Vec<Statement>,
 }
 
 #[seq(query = "with_item")]
@@ -496,7 +503,7 @@ struct Function {
     type_parameters: Option<TypeParameter>,
     parameters: Parameters,
     return_type: Option<Type>,
-    body: Block,
+    body: Vec<Statement>,
 }
 
 #[seq(query = "parameters")]
@@ -547,7 +554,7 @@ pub struct Class {
     name: Identifier,
     type_parameters: Option<TypeParameter>,
     arguments: Option<ArgumentList>,
-    body: Block,
+    body: Vec<Statement>,
 }
 
 #[seq(query = "type_parameter")]
@@ -597,12 +604,6 @@ pub struct Decorator {
     expression: Expression,
 }
 
-#[seq(query = "block", completions, document_symbols)]
-pub struct Block {
-    statements: Vec<Statement>,
-    clauses: Vec<CaseClause>,
-}
-
 #[seq(query = "expression_list")]
 pub struct ExpressionList {
     expressions: Vec<Expression>,
@@ -621,10 +622,30 @@ pub enum CasePattern {
 }
 
 #[choice]
+pub enum ExpressionOrCasePattern {
+    Expression(Expression),
+    CasePattern(CasePattern),
+}
+
+#[choice]
+pub enum ExpressionOrIdentifier {
+    Expression(Expression),
+    Identifier(Identifier),
+}
+
+#[seq(query = "case_pattern_as")]
+pub struct CasePatternAs {
+    case_pattern: CasePattern,
+    as_: Identifier,
+}
+
+#[choice]
 pub enum SimplePattern {
     ClassPattern(ClassPattern),
     SplatPattern(SplatPattern),
     UnionPattern(UnionPattern),
+    ListPattern(ListPattern),
+    TuplePattern(TuplePattern),
     DictPattern(DictPattern),
     String(String),
     ConcatenatedString(ConcatenatedString),
@@ -639,7 +660,7 @@ pub enum SimplePattern {
 
 #[seq(query = "union_pattern")]
 pub struct UnionPattern {
-    patterns: Vec<CasePattern>,
+    patterns: Vec<SimplePattern>,
 }
 
 #[seq(query = "dict_pattern")]
@@ -714,12 +735,18 @@ pub enum Pattern {
 
 #[seq(query = "tuple_pattern")]
 pub struct TuplePattern {
-    elements: Vec<Pattern>,
+    elements: Vec<PatternOrCasePattern>,
 }
 
 #[seq(query = "list_pattern")]
 pub struct ListPattern {
-    elements: Vec<Pattern>,
+    elements: Vec<PatternOrCasePattern>,
+}
+
+#[choice]
+pub enum PatternOrCasePattern {
+    Pattern(Pattern),
+    CasePattern(CasePattern)
 }
 
 #[seq(query = "default_parameter")]
@@ -759,8 +786,8 @@ pub enum DictionarySplatPattern {
 
 #[seq(query = "as_pattern")]
 pub struct AsPattern {
-    expression: Expression,
-    right: Expression,
+    expression: ExpressionOrCasePattern,
+    right: ExpressionOrIdentifier,
 }
 
 #[choice]
@@ -901,7 +928,6 @@ enum LeftHandSide {
 
 #[seq(query = "pattern_list")]
 pub struct PatternList {
-    pattern: Pattern,
     next: Vec<Pattern>,
 }
 
@@ -1136,7 +1162,29 @@ struct ConcatenatedString {
 }
 
 #[seq(query = "string")]
-struct String {}
+struct String {
+    start: StringStart,
+    content: Vec<InterpolationOrStringContent>,
+    end: StringEnd,
+}
+
+#[seq(query = "string_start")]
+struct StringStart {}
+
+#[seq(query = "string_end")]
+struct StringEnd {}
+
+#[choice]
+pub enum InterpolationOrStringContent {
+    Interpolation(Interpolation),
+    StringContent(StringContent),
+}
+
+#[choice]
+pub enum StringContent {
+    EscapeInterpolation(EscapeInterpolation),
+    EscapeSequence(EscapeSequence),
+}
 
 #[seq(query = "interpolation")]
 struct Interpolation {
@@ -1152,6 +1200,13 @@ enum FExpression {
     PatternList(PatternList),
     Yield(Yield),
 }
+
+#[seq(query = "escape_interpolation")]
+struct EscapeInterpolation {}
+
+#[seq(query = "escape_sequence")]
+struct EscapeSequence {}
+
 
 #[seq(query = "format_specifier")]
 struct FormatSpecifier {

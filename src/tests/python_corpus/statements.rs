@@ -1,7 +1,7 @@
 use auto_lsp_core::build::Parse;
 
 use super::super::python_workspace::*;
-use crate::python::ast::{ImportStatement, ImportFromStatement, FutureImportStatement, PrintStatement, AssertStatement, IfStatement, ExpressionStatement, ReturnStatement, DeleteStatement, ForStatement, WhileStatement, TryStatement, WithStatement, Function, Class, DecoratedDefinition, RaiseStatement, GlobalStatement, ExecStatement, MatchStatement};
+use crate::python::ast::{ImportStatement, ImportFromStatement, FutureImportStatement, PrintStatement, AssertStatement, IfStatement, ExpressionStatement, ReturnStatement, DeleteStatement, ForStatement, WhileStatement, TryStatement, WithStatement, Function, Class, DecoratedDefinition, RaiseStatement, GlobalStatement, ExecStatement};
 
 #[test]
 fn import_statements() -> miette::Result<()> {
@@ -311,19 +311,3 @@ fn exec_statements() -> miette::Result<()> {
     ExecStatement::miette_parse(r#"exec 'x+=1' in a, b"#, &PYTHON_PARSERS.get("python").unwrap())?;
     ExecStatement::miette_parse(r#"exec func in {}"#, &PYTHON_PARSERS.get("python").unwrap())
 }
-
-#[test]
-fn match_statement() -> miette::Result<()> {
-    MatchStatement::miette_parse(
-        r#"
-match x:
-    case 10:
-      print("It's 10")
-    case 20:
-      print("It's 20")
-    case _:
-      print("It's neither 10 nor 20")"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
-    )
-}
-

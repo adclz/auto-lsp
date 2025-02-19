@@ -1,5 +1,5 @@
 #![allow(deprecated)]
-use super::ast::{Block, Function, Module};
+use super::ast::{Function, Module};
 use auto_lsp_core::ast::{AstSymbol, BuildDocumentSymbols};
 use auto_lsp_core::document::Document;
 use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
@@ -10,19 +10,11 @@ impl BuildDocumentSymbols for Module {
     }
 }
 
-impl BuildDocumentSymbols for Block {
-    fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
-        self.statements.build_document_symbols(doc, builder);
-    }
-}
-
 impl BuildDocumentSymbols for Function {
     fn build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) {
         let mut nested_builder = DocumentSymbolsBuilder::default();
 
-        self.body
-            .read()
-            .build_document_symbols(doc, &mut nested_builder);
+        self.body.build_document_symbols(doc, &mut nested_builder);
 
         builder.push_symbol(lsp_types::DocumentSymbol {
             name: self

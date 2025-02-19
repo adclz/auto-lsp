@@ -1,6 +1,6 @@
 use std::sync::LazyLock;
 
-use super::ast::{Block, Function, Module};
+use super::ast::{Function, Module};
 use crate::{self as auto_lsp};
 use auto_lsp::core::ast::BuildCompletionItems;
 use auto_lsp_core::document::Document;
@@ -23,12 +23,6 @@ impl BuildCompletionItems for Module {
 }
 
 impl BuildCompletionItems for Function {
-    fn build_completion_items(&self, _doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
-        acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
-    }
-}
-
-impl BuildCompletionItems for Block {
     fn build_completion_items(&self, _doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
         acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
     }

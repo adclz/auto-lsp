@@ -233,7 +233,7 @@ fn insert_bar(mut foo: (Workspace, Document)) {
         let function = &module.statements[0];
         let function = function.read();
         if let Statement::Compound(CompoundStatement::Function(foo)) = function.deref() {
-            let pass = foo.body.read();
+            let pass = foo.body[0].read();
             assert_eq!(pass.get_range(), 51..55);
         } else {
             panic!("Expected function statement");
