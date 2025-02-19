@@ -56,8 +56,8 @@ Now that you have your AST defined, you can:
 ## Simplicity
 
 `auto-lsp` only has 2 macros to define an AST:
- - [`#seq`](/creating-an-ast/seq.html)
- - [`#choice`](/creating-an-ast/choice.html).
+ - [`#seq`](/ast-and-queries/seq.html)
+ - [`#choice`](/ast-and-queries/choice.html).
 
 All symbols are thread-safe and have their own parse function via blanket implementations. This means any symbol can be used as a root node, allowing you to:
 
