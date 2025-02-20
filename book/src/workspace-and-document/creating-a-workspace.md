@@ -33,6 +33,49 @@ let (workspace, document) = Workspace::from_texter(
 ).unwrap();
 ```
 
+## Updating a document
+
+Use `document.update()` to process document changes:
+
+`update` takes two parameters:
+ - The tree-sitter parser instance.
+ - A list of `lsp_types::TextDocumentChangeEvent` changes.
+
+```rust
+let change = lsp_types::TextDocumentContentChangeEvent {
+    range: Some(lsp_types::Range {
+        start: lsp_types::Position {
+            line: 0,
+            character: 0,
+        },
+        end: lsp_types::Position {
+            line: 0,
+            character: 0,
+        },
+    }),
+    range_length: Some(26),
+    text: "<div></div>".into(),
+};
+
+// Apply changes and get edits
+// this list can then be passed to a Workspace
+let edits = document
+    .update(
+        &mut workspace.parsers.tree_sitter.parser.write(),
+        &vec![change],
+    )
+    .unwrap();
+
+```
+
 ## Updating a workspace
 
-WIP
+After document changes, update the workspace using the `parse` method.
+
+```admonish
+If you have not enabled the `incremental` feature, you can pass `None`.
+```
+
+```rust
+workspace.parse(Some(&edits), &document);
+```

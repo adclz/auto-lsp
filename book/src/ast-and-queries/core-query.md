@@ -92,3 +92,16 @@ struct Body {
     /* ... */
 }
 ```
+
+# Aliased nodes
+
+When creating a new tree-sitter grammar, be cautious with aliased nodes.
+
+Tree-sitter allows a single node type to represent multiple different syntax structures through aliasing. 
+
+However, this creates a problem: you can only write one query definition per node type, and tree-sitter doesn't provide a way to determine if a node is using its primary type or an alias.
+
+This limitation means that if you use aliased nodes, your AST might not accurately represent the different syntactic structures in your code.
+
+
+[#2567](https://github.com/tree-sitter/tree-sitter/discussions/2567#discussioncomment-8144839)

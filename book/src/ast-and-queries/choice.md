@@ -28,3 +28,39 @@ struct Statement {}
 #[seq(query = "expression")]
 struct Expression {}
 ```
+
+# Pattern Matching
+
+The `#[choice]` attribute generates standard Rust enums that fully support pattern matching. This makes it easy to work with nested AST structures.
+
+For example, consider an expression that can contain nested types:
+
+```rust
+#[choice]
+pub enum Expression {
+    PrimaryExpression(PrimaryExpression),
+    Identifier(Identifier),
+}
+
+#[choice]
+pub enum PrimaryExpression {
+     Integer(Integer),
+     Bool(Bool)
+}
+```
+
+You can pattern match through multiple layers using standard Rust match expressions:
+
+
+```rust
+impl Expression {
+    pub fn is_integer(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::Integer(_)))
+    }
+
+    pub fn is_bool(&self) -> bool {
+        matches!(self, Expression::PrimaryExpression(PrimaryExpression::Bool(_)))
+    }
+}
+
+```

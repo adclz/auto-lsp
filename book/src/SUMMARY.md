@@ -9,6 +9,7 @@
  - [The AST tree](the-ast-tree/index.md)
    - [Interacting with the tree](the-ast-tree/interacting-with-the-tree.md)
    - [Tree Life Cycle](the-ast-tree/tree-life-cycle.md)
+   - [Lexer](the-ast-tree/lexer.md)
  - [Workspace and Documents](workspace-and-document/index.md)
    - [Configuring Parsers](workspace-and-document/configuring-parsers.md)
    - [Creating a workspace](workspace-and-document/creating-a-workspace.md)
