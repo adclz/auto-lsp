@@ -6,7 +6,7 @@ use rstest::{fixture, rstest};
 
 use super::python_workspace::ast::Module;
 use super::python_workspace::*;
-use crate::python::semantic_tokens::TOKEN_TYPES;
+use crate::python::semantic_tokens::{DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
 
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
@@ -43,8 +43,14 @@ fn foo_bar_semantic_tokens(foo_bar: (Workspace, Document)) {
 
     assert_eq!(
         tokens[0].token_type,
-        TOKEN_TYPES.get_index("Function").unwrap() as u32
+        SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
     );
+
+    assert_eq!(
+        tokens[0].token_modifiers_bitset,
+        SUPPORTED_MODIFIERS.iter().position(|x| *x == DECLARATION).unwrap() as u32,
+    );
+
     // foo is at line 1
     assert_eq!(tokens[0].delta_line, 1);
     // char 4
@@ -53,7 +59,12 @@ fn foo_bar_semantic_tokens(foo_bar: (Workspace, Document)) {
 
     assert_eq!(
         tokens[1].token_type,
-        TOKEN_TYPES.get_index("Function").unwrap() as u32
+        SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
+    );
+
+    assert_eq!(
+        tokens[1].token_modifiers_bitset,
+        SUPPORTED_MODIFIERS.iter().position(|x| *x == DECLARATION).unwrap() as u32,
     );
     // bar is at line 3
     assert_eq!(tokens[1].delta_line, 3);
