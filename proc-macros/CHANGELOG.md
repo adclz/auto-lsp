@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.2...auto-lsp-macros-v0.1.3)
+
+### Refactor
+
+- *(completion-items)* Scoped-based and triggered completion items - ([e358a24](https://github.com/adclz/auto-lsp/commit/e358a247bef9529a9b2db3f27d24039c717a9b0f))
+
+
 ## [0.1.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.1...auto-lsp-macros-v0.1.2)
 
 ### Features

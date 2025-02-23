@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.3.0...auto-lsp-v0.4.0)
+
+### Features
+
+- *(semantic-tokens)* Enhance token type and modifier definitions - ([1f586e7](https://github.com/adclz/auto-lsp/commit/1f586e7e3f065ea91ea3b8bedbc3bc8598f0081e))
+
+### Bug Fixes
+
+- *(bench)* Remove flamegraph profiler for windows - ([3f89ad4](https://github.com/adclz/auto-lsp/commit/3f89ad465b4f5275ef5e2f36fdce774decf8565c))
+- *(incremental)* Ensure correct symbol generation when vector has only one end node - ([fb40915](https://github.com/adclz/auto-lsp/commit/fb40915256afaddfb73ba5dac3990a8679e28da5))
+- *(python)* Function return type - ([b483a63](https://github.com/adclz/auto-lsp/commit/b483a63c1af57739b8e242673420c91b1a7bac9c))
+
+### Refactor
+
+- *(completion-items)* Scoped-based and triggered completion items - ([e358a24](https://github.com/adclz/auto-lsp/commit/e358a247bef9529a9b2db3f27d24039c717a9b0f))
+- *(tests)* Enhance python AST and add tree sitter corpus - ([e205710](https://github.com/adclz/auto-lsp/commit/e2057103b45ceb1bde47e30f7f8bc2a4fce08b21))
+
+### Documentation
+
+- Update book - ([4e94f9b](https://github.com/adclz/auto-lsp/commit/4e94f9bd50ebc0ad8483094cd98dd944f8ed9c64))
+- Fix dead links - ([729fc49](https://github.com/adclz/auto-lsp/commit/729fc49d699dfe36193139f1c4d1db203db67d52))
+- Update links - ([ebbbc0c](https://github.com/adclz/auto-lsp/commit/ebbbc0cbc4786c3c3d033ce99e692a4356059081))
+
+### Testing
+
+- *(python)* Add pattern matching tests and clean up unused code - ([5de7cfb](https://github.com/adclz/auto-lsp/commit/5de7cfbf4e6ff4ef1473ee0bac24d17ac013d190))
+- Python expressions - ([97e09c8](https://github.com/adclz/auto-lsp/commit/97e09c8709163451e985ebe76179b2692bccbe07))
+
+
 ## [0.3.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.2.0...auto-lsp-v0.3.0)
 
 ### Features
