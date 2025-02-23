@@ -384,3 +384,126 @@ fn insert_baz_between(mut foo_bar: (Workspace, Document)) {
         ChangeReport::Insert(1, StatementBuilder::QUERY_NAMES)
     ));
 }
+
+#[fixture]
+fn string_filter() -> (Workspace, Document) {
+    Workspace::from_utf8(
+        &PYTHON_PARSERS.get("python").unwrap(),
+        Url::parse("file:///test.py").unwrap(),
+        r#"def stringfilter(func):
+
+    """
+    Decorator for filters which should only receive strings. The object
+    passed as the first positional argument will be converted to a string.
+    """
+
+
+
+    def _dec(first, *args, **kwargs):
+        first = str(first)
+        result = func(first, *args, **kwargs)
+        if isinstance(first, SafeData) and getattr(unwrap(func), "is_safe", False):
+            result = mark_safe(result)
+        return result
+
+    return _dec"#
+            .into(),
+    )
+        .unwrap()
+}
+
+#[rstest]
+fn insert_between(mut string_filter: (Workspace, Document)) {
+    let mut workspace = string_filter.0;
+    let document = &mut string_filter.1;
+
+    {
+        let ast = workspace.ast.as_mut().unwrap();
+        let ast = ast.read();
+        let module = ast.downcast_ref::<Module>().unwrap();
+        // string filter fn
+        let function = &module.statements[0];
+        let function = function.read();
+        if let Statement::Compound(CompoundStatement::Function(string_builder)) = function.deref() {
+            assert_eq!(string_builder.body.len(), 3);
+        } else {
+            panic!("Expected function statement");
+        }
+    }
+
+    // Insert "    a" right after string
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 8,
+                character: 0,
+            },
+            end: lsp_types::Position {
+                line: 8,
+                character: 0,
+            },
+        }),
+        range_length: Some(0),
+        text: "    a".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits[0].kind, ChangeKind::Insert);
+
+    workspace.parse(Some(&edits), document);
+
+    assert!(!workspace.changes.is_empty());
+
+    // Replaces the string
+    assert!(matches!(
+        workspace.changes[0],
+        ChangeReport::Replace(0, StatementBuilder::QUERY_NAMES)
+    ));
+
+    // Inserts a
+    assert!(matches!(
+        workspace.changes[1],
+        ChangeReport::Insert(1, StatementBuilder::QUERY_NAMES)
+    ));
+
+    // Insert another a after a
+    let change = lsp_types::TextDocumentContentChangeEvent {
+        range: Some(lsp_types::Range {
+            start: lsp_types::Position {
+                line: 8,
+                character: 5,
+            },
+            end: lsp_types::Position {
+                line: 8,
+                character: 5,
+            },
+        }),
+        range_length: Some(0),
+        text: "a".into(),
+    };
+
+    let edits = document
+        .update(
+            &mut workspace.parsers.tree_sitter.parser.write(),
+            &vec![change],
+        )
+        .unwrap();
+
+    assert_eq!(edits[0].kind, ChangeKind::Insert);
+
+    workspace.parse(Some(&edits), document);
+
+    assert!(!workspace.changes.is_empty());
+
+    // Replaces a with aa
+    assert!(matches!(
+        workspace.changes[0],
+        ChangeReport::Replace(1, StatementBuilder::QUERY_NAMES)
+    ));
+}

@@ -474,7 +474,7 @@ where
                             end: self[end].read().get_range().end,
                         };
 
-                        generate_symbols(self, workspace, document, range, start, end, parent)
+                        generate_symbols(self, workspace, document, range, end, end, parent)
                     }
                     (None, None) => ControlFlow::Continue(()),
                 };
