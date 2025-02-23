@@ -38,7 +38,7 @@ macro_rules! create_ast_symbol_trait {
                 + BuildDocumentSymbols
                 + BuildCodeLenses
                 + BuildCompletionItems
-                + BuildInvokedCompletionItems
+                + BuildTriggeredCompletionItems
                 + BuildInlayHints
                 + BuildSemanticTokens
                 + BuildCodeActions

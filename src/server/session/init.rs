@@ -85,14 +85,14 @@ pub struct RegexToDocumentLink {
 /// ```rust
 /// # use auto_lsp::server::LspOptions;
 /// let options = LspOptions {
-///    completions: true,
+///    document_symbols: true,
 ///    diagnostics: true,
 ///    ..Default::default()
 /// };
 /// ```
 #[derive(Default)]
 pub struct LspOptions {
-    pub completions: bool,
+    pub completions: Option<lsp_types::CompletionOptions>,
     pub diagnostics: bool,
     pub document_symbols: bool,
     pub definition_provider: bool,
@@ -266,14 +266,7 @@ impl Session {
                     }),
                     false => None,
                 },
-                completion_provider: match init_options.lsp_options.completions {
-                    true => Some(lsp_types::CompletionOptions {
-                        trigger_characters: None,
-                        resolve_provider: Some(false),
-                        ..Default::default()
-                    }),
-                    false => None,
-                },
+                completion_provider: init_options.lsp_options.completions.clone(),
                 definition_provider: match init_options.lsp_options.definition_provider {
                     true => Some(OneOf::Left(true)),
                     false => None,

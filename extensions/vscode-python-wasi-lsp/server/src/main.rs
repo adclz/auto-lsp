@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use auto_lsp::lsp_types::CompletionOptions;
 use auto_lsp::server::{InitOptions, LspOptions, Session};
 
 use auto_lsp::python::PYTHON_PARSERS;
@@ -14,7 +15,10 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             inlay_hints: true,
             hover_info: true,
             code_lens: true,
-            completions: true,
+            completions: Some(CompletionOptions {
+                trigger_characters: Some(vec![".".to_string()]),
+                ..Default::default()
+            }),
             ..Default::default()
         },
     })?;

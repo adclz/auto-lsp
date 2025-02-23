@@ -79,7 +79,7 @@ nested_struct!(
         },
         pub lsp_invoked_completion_items: LspInvokedCompletionItems {
             pub path: Path,
-            pub build_invoked_completion_items: Method
+            pub build_triggered_completion_items: Method
         },
         pub lsp_go_to_definition: LspGoToDefinition {
             pub path: Path,
@@ -249,10 +249,10 @@ impl Default for Paths {
                 },
             },
             lsp_invoked_completion_items: LspInvokedCompletionItems {
-                path: core_ast(parse_quote!(BuildInvokedCompletionItems)),
-                build_invoked_completion_items: Method {
-                    sig: quote! { fn build_invoked_completion_items(&self, trigger: &str, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>) },
-                    variant: quote! { build_invoked_completion_items(trigger, doc, acc) },
+                path: core_ast(parse_quote!(BuildTriggeredCompletionItems)),
+                build_triggered_completion_items: Method {
+                    sig: quote! { fn build_triggered_completion_items(&self, trigger: &str, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>) },
+                    variant: quote! { build_triggered_completion_items(trigger, doc, acc) },
                 },
             },
             lsp_go_to_definition: LspGoToDefinition {

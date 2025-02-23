@@ -210,24 +210,26 @@ pub trait BuildCompletionItems {
 }
 
 /// [LSP CompletionItem specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
-pub trait BuildInvokedCompletionItems {
+pub trait BuildTriggeredCompletionItems {
     /// Completion items builder
     ///
     ///```rust
     /// # struct MySymbol{}
     /// use auto_lsp_core::document::Document;
-    /// use auto_lsp_core::ast::BuildInvokedCompletionItems;
+    /// use auto_lsp_core::ast::BuildTriggeredCompletionItems;
     ///
-    /// impl BuildInvokedCompletionItems for MySymbol {
-    ///   fn build_invoked_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
-    ///     acc.push(lsp_types::CompletionItem {
-    ///         label: "Completion Item".to_string(),
-    ///         kind: Some(lsp_types::CompletionItemKind::FIELD),
-    ///         ..Default::default()
-    ///     });
+    /// impl BuildTriggeredCompletionItems for MySymbol {
+    ///   fn build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+    ///     if trigger == "." {
+    ///         acc.push(lsp_types::CompletionItem {
+    ///             label: "Completion Item".to_string(),
+    ///             kind: Some(lsp_types::CompletionItemKind::FIELD),
+    ///             ..Default::default()
+    ///         });
+    ///      }
     ///   }
     ///}
-    fn build_invoked_completion_items(
+    fn build_triggered_completion_items(
         &self,
         trigger: &str,
         doc: &Document,
@@ -474,7 +476,7 @@ pub trait FindPattern {
     fn find_with_pattern(
         &self,
         doc: &Document,
-        pattern: &str,
+        ac: &AhoCorasick,
         range: std::ops::Range<usize>,
         exact_match: bool,
     ) -> Option<(DynSymbol, bool)>;
@@ -485,7 +487,7 @@ impl<T: AstSymbol + ?Sized> FindPattern for T {
     ///
     /// # Arguments
     /// - `doc`: A reference to the document containing the source code.
-    /// - `pattern`: The pattern to search for.
+    /// - `ac`: The pattern to search for.
     /// - `range`: The range of the document (start and end indices) to search within.
     /// - `exact_match`: If `true`, only returns results where the matched text exactly matches the pattern.
     ///
@@ -498,12 +500,11 @@ impl<T: AstSymbol + ?Sized> FindPattern for T {
     fn find_with_pattern(
         &self,
         doc: &Document,
-        pattern: &str,
+        ac: &AhoCorasick,
         range: std::ops::Range<usize>,
         exact_match: bool,
     ) -> Option<(DynSymbol, bool)> {
         let source_code = &doc.texter.text;
-        let ac = AhoCorasick::new([pattern]).unwrap();
 
         // Validate the range and slice the text
         let area = match source_code.as_str().get(range.start..range.end) {
@@ -515,23 +516,26 @@ impl<T: AstSymbol + ?Sized> FindPattern for T {
             }
         };
 
-        // Perform Aho-Corasick search
-        for mat in ac.find_iter(area) {
-            // Calculate the actual position in the document
-            let start_idx = range.start + mat.start();
-            let end_idx = range.end + mat.end();
-
-            // Early exact match check
-            if exact_match && &source_code[start_idx..end_idx] != pattern {
-                continue;
+        if exact_match {
+            for mat in ac.find_iter(area) {
+                let start_idx = range.start + mat.start();
+                let end_idx = range.end + mat.end();
+                // Lookup the corresponding element
+                if let Some(elem) = self.descendant_at(start_idx) {
+                    if elem.read().get_range() != self.get_range() {
+                        return Some((elem.clone(), true));
+                    }
+                }
             }
-
-            // Lookup the corresponding element
-            if let Some(elem) = self.descendant_at(start_idx) {
-                if elem.read().get_range() != self.get_range() {
-                    // Determine if the match is exact or partial
-                    let is_exact_match = &source_code[start_idx..end_idx] == pattern;
-                    return Some((elem.clone(), is_exact_match));
+        } else {
+            for mat in ac.find_overlapping_iter(area) {
+                let start_idx = range.start + mat.start();
+                let end_idx = range.end + mat.end();
+                // Lookup the corresponding element
+                if let Some(elem) = self.descendant_at(start_idx) {
+                    if elem.read().get_range() != self.get_range() {
+                        return Some((elem.clone(), false));
+                    }
                 }
             }
         }
@@ -557,7 +561,7 @@ impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Documen
 impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_dyn_symbol!(BuildCodeLenses, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>));
-impl_dyn_symbol!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
+impl_dyn_symbol!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
 impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));
 
 macro_rules! impl_build {
@@ -585,5 +589,5 @@ impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, bu
 impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
 impl_build!(BuildCodeLenses, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
-impl_build!(BuildInvokedCompletionItems, build_invoked_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
+impl_build!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
 impl_build!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));

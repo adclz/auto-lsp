@@ -69,14 +69,14 @@ impl Document {
 
         self.tree
             .root_node()
-            .descendant_for_point_range(position, position)
+            .named_descendant_for_point_range(position, position)
     }
 
     /// Converts a byte offset in the document to its corresponding position (line and character).
     pub fn position_at(&self, offset: usize) -> Option<lsp_types::Position> {
         self.tree
             .root_node()
-            .descendant_for_byte_range(offset, offset)
+            .named_descendant_for_byte_range(offset, offset)
             .map(|pos| lsp_types::Position {
                 line: pos.start_position().row as u32,
                 character: pos.start_position().column as u32,
@@ -87,7 +87,7 @@ impl Document {
     pub fn range_at(&self, offset: usize) -> Option<lsp_types::Range> {
         self.tree
             .root_node()
-            .descendant_for_byte_range(offset, offset)
+            .named_descendant_for_byte_range(offset, offset)
             .map(|pos| lsp_types::Range {
                 start: lsp_types::Position {
                     line: pos.start_position().row as u32,
@@ -102,7 +102,7 @@ impl Document {
 
     /// Converts a position (line and character) in the document to its corresponding byte offset.
     pub fn offset_at(&self, position: lsp_types::Position) -> Option<usize> {
-        match self.tree.root_node().descendant_for_point_range(
+        match self.tree.root_node().named_descendant_for_point_range(
             Point {
                 row: position.line as usize,
                 column: position.character as usize,

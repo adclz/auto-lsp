@@ -37,7 +37,7 @@ pub struct DarlingInput {
     #[darling(default)]
     pub completions: Flag,
     #[darling(default)]
-    pub invoked_completions: Flag,
+    pub triggered_completions: Flag,
     #[darling(default)]
     pub inlay_hints: Flag,
     #[darling(default)]

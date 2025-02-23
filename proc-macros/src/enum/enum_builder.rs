@@ -255,11 +255,11 @@ impl<'a> EnumBuilder<'a> {
                 &self.fields,
                 &PATHS
                     .lsp_invoked_completion_items
-                    .build_invoked_completion_items
+                    .build_triggered_completion_items
                     .sig,
                 &PATHS
                     .lsp_invoked_completion_items
-                    .build_invoked_completion_items
+                    .build_triggered_completion_items
                     .variant,
             )
             .stage_trait(&self.input_name, &PATHS.lsp_invoked_completion_items.path);

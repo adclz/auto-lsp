@@ -73,10 +73,10 @@ impl<'a> ToTokens for Features<'a> {
             });
         }
 
-        if !self.darling_input.invoked_completions.is_present() {
-            let invoked_completions = &PATHS.lsp_invoked_completion_items.path;
+        if !self.darling_input.triggered_completions.is_present() {
+            let triggered_completions = &PATHS.lsp_invoked_completion_items.path;
             tokens.extend(quote! {
-                impl #invoked_completions for #input_name {}
+                impl #triggered_completions for #input_name {}
             });
         }
 
