@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.3.0...auto-lsp-core-v0.4.0)
+
+### Bug Fixes
+
+- *(incremental)* Ensure correct symbol generation when vector has only one end node - ([fb40915](https://github.com/adclz/auto-lsp/commit/fb40915256afaddfb73ba5dac3990a8679e28da5))
+
+### Refactor
+
+- *(build)* Add parent context in error message - ([4e62199](https://github.com/adclz/auto-lsp/commit/4e62199142fddd5385247aded0dc9964ea4dd33d))
+- *(completion-items)* Scoped-based and triggered completion items - ([e358a24](https://github.com/adclz/auto-lsp/commit/e358a247bef9529a9b2db3f27d24039c717a9b0f))
+- *(core_build)* Remove unused add method - ([633b7cd](https://github.com/adclz/auto-lsp/commit/633b7cde3b0957617a7850c69a322efd9f8dde98))
+
+
 ## [0.3.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.2.0...auto-lsp-core-v0.3.0)
 
 ### Features
