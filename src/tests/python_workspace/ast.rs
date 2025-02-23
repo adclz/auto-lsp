@@ -62,6 +62,9 @@ pub static CORE_QUERY: &'static str = "
 ; Function
 
 (function_definition) @function
+(function_definition
+	return_type: (_) @return_type
+)
 (parameters) @parameters
 
 (list_splat) @list_splat
@@ -401,7 +404,7 @@ pub enum CompoundStatement {
 #[seq(query = "if_statement")]
 pub struct IfStatement {
     condition: Expression,
-    consequence:  Vec<Statement>,
+    consequence: Vec<Statement>,
     elif: Vec<ElifClause>,
     alternative: Option<ElseClause>,
 }
@@ -427,7 +430,7 @@ pub struct MatchStatement {
 pub struct CaseClause {
     case: Vec<CasePattern>,
     guard: Option<IfClause>,
-    consequence:  Vec<Statement>,
+    consequence: Vec<Statement>,
 }
 
 #[seq(query = "for_statement")]
@@ -490,6 +493,7 @@ pub struct WithItem {
 
 #[seq(
     query = "function",
+    scope,
     comment,
     code_actions,
     code_lenses,
@@ -502,8 +506,13 @@ struct Function {
     name: Identifier,
     type_parameters: Option<TypeParameter>,
     parameters: Parameters,
-    return_type: Option<Type>,
+    return_type: Option<ReturnType>,
     body: Vec<Statement>,
+}
+
+#[seq(query = "return_type")]
+struct ReturnType {
+    type_: Type,
 }
 
 #[seq(query = "parameters")]
@@ -746,7 +755,7 @@ pub struct ListPattern {
 #[choice]
 pub enum PatternOrCasePattern {
     Pattern(Pattern),
-    CasePattern(CasePattern)
+    CasePattern(CasePattern),
 }
 
 #[seq(query = "default_parameter")]
@@ -875,11 +884,10 @@ pub struct UnaryOperator {
 #[seq(query = "un_operator")]
 pub struct UnOperator {}
 
-
 #[seq(query = "comparison_operator")]
 pub struct ComparisonOperator {
     left: PrimaryExpression,
-    cmp: Vec<OperatorOrExpression>
+    cmp: Vec<OperatorOrExpression>,
 }
 
 #[choice]
@@ -906,7 +914,7 @@ pub struct LambdaParameters {
 pub struct Assignment {
     left: LeftHandSide,
     type_: Option<Type>,
-    right_hand_side: Option<RightHandSide>
+    right_hand_side: Option<RightHandSide>,
 }
 
 #[seq(query = "augmented_assignment")]
@@ -944,7 +952,7 @@ pub enum RightHandSide {
 
 #[seq(query = "yield")]
 struct Yield {
-    yield_: Option<OneOfExpressionOrExpressions>
+    yield_: Option<OneOfExpressionOrExpressions>,
 }
 
 #[choice]
@@ -1096,28 +1104,28 @@ struct Pair {
 pub struct ListComprehension {
     body: Expression,
     for_clause: ForInClause,
-    clauses: Vec<ForOrifClause>
+    clauses: Vec<ForOrifClause>,
 }
 
 #[seq(query = "dictionary_comprehension")]
 pub struct DictionaryComprehension {
     body: Pair,
     for_clause: ForInClause,
-    clauses: Vec<ForOrifClause>
+    clauses: Vec<ForOrifClause>,
 }
 
 #[seq(query = "set_comprehension")]
 pub struct SetComprehension {
     body: Expression,
     for_clause: ForInClause,
-    clauses: Vec<ForOrifClause>
+    clauses: Vec<ForOrifClause>,
 }
 
 #[seq(query = "generator_expression")]
 pub struct GeneratorExpression {
     body: Expression,
     for_clause: ForInClause,
-    clauses: Vec<ForOrifClause>
+    clauses: Vec<ForOrifClause>,
 }
 
 #[choice]
@@ -1207,7 +1215,6 @@ struct EscapeInterpolation {}
 #[seq(query = "escape_sequence")]
 struct EscapeSequence {}
 
-
 #[seq(query = "format_specifier")]
 struct FormatSpecifier {
     specifiers: Vec<Specifier>,
@@ -1228,7 +1235,7 @@ struct Integer {}
 #[seq(query = "float")]
 struct Float {}
 
-#[seq(query = "identifier", hover)]
+#[seq(query = "identifier", hover, triggered_completions)]
 struct Identifier {}
 
 #[choice]
