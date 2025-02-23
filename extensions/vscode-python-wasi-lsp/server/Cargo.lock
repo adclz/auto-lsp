@@ -34,7 +34,7 @@ checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 
 [[package]]
 name = "auto-lsp"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -64,7 +64,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -82,7 +82,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-macros"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "darling",
  "nested-struct",
