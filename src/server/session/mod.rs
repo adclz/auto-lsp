@@ -3,15 +3,16 @@ use std::{collections::HashMap, sync::LazyLock};
 use crate::server::session::init::TextFn;
 use auto_lsp_core::document::Document;
 use auto_lsp_core::workspace::Workspace;
-use init::InitOptions;
 use lsp_server::{Connection, IoThreads};
 use lsp_types::Url;
+use options::InitOptions;
 use parking_lot::Mutex;
 
 pub mod documents;
 pub mod fs;
 pub mod init;
 pub mod main_loop;
+pub mod options;
 
 /// List of workspaces and documents in the current session.
 pub(crate) static WORKSPACES: LazyLock<Mutex<HashMap<Url, (Workspace, Document)>>> =

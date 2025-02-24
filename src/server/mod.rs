@@ -95,5 +95,5 @@ pub(crate) mod capabilities;
 /// Session handling
 mod session;
 
-pub use session::init::*;
+pub use session::options::*;
 pub use session::Session;
