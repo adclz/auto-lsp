@@ -28,7 +28,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         self.enum_input(&mut builder);
 
         self.impl_ast_symbol(&mut builder);
-        self.impl_locator(&mut builder);
+        self.impl_traverse(&mut builder);
         #[cfg(feature = "incremental")]
         self.impl_dynamic_swap(&mut builder);
         self.impl_indented_display(&mut builder);
@@ -135,24 +135,24 @@ impl<'a> EnumBuilder<'a> {
             .stage_trait(&self.input_name, &PATHS.reference.path);
     }
 
-    fn impl_locator(&self, builder: &mut VariantBuilder) {
+    fn impl_traverse(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
                 &self.fields,
-                &PATHS.locator.descendant_at.sig,
-                &PATHS.locator.descendant_at.variant,
+                &PATHS.traverse.descendant_at.sig,
+                &PATHS.traverse.descendant_at.variant,
             )
             .add_pattern_match_iter(
                 &self.fields,
-                &PATHS.locator.descendant_at_and_collect.sig,
-                &PATHS.locator.descendant_at_and_collect.variant,
+                &PATHS.traverse.descendant_at_and_collect.sig,
+                &PATHS.traverse.descendant_at_and_collect.variant,
             )
             .add_pattern_match_iter(
                 &self.fields,
-                &PATHS.locator.traverse_and_collect.sig,
-                &PATHS.locator.traverse_and_collect.variant,
+                &PATHS.traverse.traverse_and_collect.sig,
+                &PATHS.traverse.traverse_and_collect.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.locator.path);
+            .stage_trait(&self.input_name, &PATHS.traverse.path);
     }
 
     #[cfg(feature = "incremental")]

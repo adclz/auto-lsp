@@ -60,7 +60,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.impl_ast_symbol(&mut builder);
 
         // Implement core capabilities
-        self.impl_locator(&mut builder);
+        self.impl_traverse(&mut builder);
         self.impl_parent(&mut builder);
         #[cfg(feature = "incremental")]
         self.impl_dynamic_swap(&mut builder);
@@ -132,12 +132,12 @@ impl<'a> StructBuilder<'a> {
             .stage_trait(&self.input_name, &PATHS.symbol_trait.path);
     }
 
-    fn impl_locator(&self, builder: &mut FieldBuilder) {
+    fn impl_traverse(&self, builder: &mut FieldBuilder) {
         let symbol_trait = &PATHS.symbol_trait.path;
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.locator.descendant_at.sig,
+                &PATHS.traverse.descendant_at.sig,
                 Some(quote! {
                     use #symbol_trait;
                 }),
@@ -152,7 +152,7 @@ impl<'a> StructBuilder<'a> {
             )
             .add_fn_iter(
                 &self.fields,
-                &PATHS.locator.descendant_at_and_collect.sig,
+                &PATHS.traverse.descendant_at_and_collect.sig,
                 Some(quote! {
                     use #symbol_trait;
                 }),
@@ -165,7 +165,7 @@ impl<'a> StructBuilder<'a> {
                 },
                 Some(quote! { None }),
             )
-            .add_fn_iter(&self.fields, &PATHS.locator.traverse_and_collect.sig, None, 
+            .add_fn_iter(&self.fields, &PATHS.traverse.traverse_and_collect.sig, None, 
                 |_, _, name, _, _| {
                     quote! {
                         self.#name.traverse_and_collect(collect_fn, collect);
@@ -173,7 +173,7 @@ impl<'a> StructBuilder<'a> {
                 },
             None
             )
-            .stage_trait(&self.input_name, &PATHS.locator.path);
+            .stage_trait(&self.input_name, &PATHS.traverse.path);
     }
 
     fn impl_parent(&self, builder: &mut FieldBuilder) {
