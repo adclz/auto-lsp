@@ -1,6 +1,7 @@
 use super::capabilities::*;
 use super::data::*;
 use super::symbol::*;
+use super::display::*;
 use crate::build::Parent;
 use crate::create_ast_symbol_trait;
 use crate::document::Document;
@@ -8,6 +9,7 @@ use downcast_rs::{impl_downcast, DowncastSync};
 use lsp_types::Position;
 use lsp_types::Range;
 use lsp_types::Url;
+use std::fmt::Display;
 use std::sync::Arc;
 
 #[cfg(feature = "incremental")]
@@ -51,6 +53,8 @@ macro_rules! create_ast_symbol_trait {
                 // update.rs
                 + GetSymbolData
                 + Parent
+                + Display
+                + IndentedDisplay
                 + $($extra)?
                 {
                 /// Retrieves the data of the symbol.

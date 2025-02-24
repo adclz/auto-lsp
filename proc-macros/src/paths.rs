@@ -145,6 +145,14 @@ nested_struct!(
         pub static_swap: StaticSwap {
             pub path: Path,
             pub swap: Method
+        },
+        pub display: Display {
+            pub path: Path,
+            pub fmt: Method
+        },
+        pub indented_display: IndentedDisplay {
+            pub path: Path,
+            pub fmt_with_indent: Method,
         }
     }
 );
@@ -392,6 +400,20 @@ impl Default for Paths {
                     variant: quote! { update(edit, collect, workspace, document) },
                 },
             },
+            display: Display {
+                path: parse_quote!(std::fmt::Display),
+                fmt: Method {
+                    sig: quote! { fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result },
+                    variant: quote! { fmt(f) },
+                },
+            },
+            indented_display: IndentedDisplay {
+                path: core_ast(parse_quote!(IndentedDisplay)),
+                fmt_with_indent: Method {
+                    sig: quote! { fn fmt_with_indent(&self, f: &mut std::fmt::Formatter, indent: usize) -> std::fmt::Result },
+                    variant: quote! { fmt_with_indent(f, indent) },
+                },
+            }
         }
     }
 }

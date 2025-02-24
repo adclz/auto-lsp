@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use crate::{self as auto_lsp};
 use auto_lsp::{choice, seq};
 use auto_lsp_core::ast::AstSymbol;
@@ -11,7 +12,7 @@ fn simple_seq() {
     #[seq(query = "module")]
     struct Module {}
 
-    assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
+    assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(impls!(Module: TryFromBuilder<&'static ModuleBuilder>));
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data);
@@ -32,7 +33,7 @@ fn seq_with_field() {
     #[seq(query = "function")]
     struct Function {}
 
-    assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
+    assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(impls!(Module: TryFromBuilder<&'static ModuleBuilder>));
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
@@ -53,7 +54,7 @@ fn simple_choice() {
     #[seq(query = "module")]
     struct A {}
 
-    assert_impl_all!(Choice: Send, Sync, Clone, Downcast, AstSymbol);
+    assert_impl_all!(Choice: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(impls!(Choice: TryFromBuilder<&'static ChoiceBuilder>));
     assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
@@ -77,7 +78,7 @@ fn multiple_choices() {
     #[seq(query = "module2")]
     struct B {}
 
-    assert_impl_all!(Choice: Send, Sync, Clone, Downcast, AstSymbol);
+    assert_impl_all!(Choice: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(impls!(Choice: TryFromBuilder<&'static ChoiceBuilder>));
     assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
@@ -98,7 +99,7 @@ fn seq_with_optional() {
     #[seq(query = "function")]
     struct Function {}
 
-    assert_impl_all!(Module: Send, Sync, Clone, Downcast, AstSymbol);
+    assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(impls!(Module: TryFromBuilder<&'static ModuleBuilder>));
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
@@ -116,7 +117,7 @@ fn seq_with_recursive() {
         elems: Vec<A>,
     }
 
-    assert_impl_all!(A: Send, Sync, Clone, Downcast, AstSymbol);
+    assert_impl_all!(A: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(impls!(A: TryFromBuilder<&'static ABuilder>));
     assert!(impls!(A: InvokeParser<ABuilder, A>));
     assert_fields!(A: _data, elems);

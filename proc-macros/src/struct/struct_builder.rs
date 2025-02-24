@@ -7,7 +7,7 @@ use crate::{
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
-use syn::{Attribute, Path};
+use syn::{parse_quote, Attribute, Path};
 
 /// Builder for generating the AST symbol from a struct.
 /// 
@@ -64,6 +64,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         self.impl_parent(&mut builder);
         #[cfg(feature = "incremental")]
         self.impl_dynamic_swap(&mut builder);
+        self.impl_indented_display(&mut builder);
 
         // Implement other features
         builder.add(self.features.to_token_stream());
@@ -227,6 +228,48 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),
             )
             .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
+    }
+
+    fn impl_indented_display(&self, builder: &mut FieldBuilder) {
+        let  input_name = &self.input_name;
+        let indented_display = &PATHS.indented_display.path;
+        builder
+            .add(quote! {
+                fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    use #indented_display;
+                    self.fmt_with_indent(f, 0)
+                }
+            })
+            .stage_trait(&self.input_name, &PATHS.display.path)
+            .add_fn_iter(
+                &self.fields,
+                &PATHS.indented_display.fmt_with_indent.sig,
+                Some(quote! {
+                    use #indented_display;
+                    writeln!(f, "{}{:?}", " ".repeat(indent + 2), stringify!(#input_name))?; 
+                }),
+                |kind, _, name, type_, _| {
+                     match kind {
+                        FieldType::Vec => 
+                            quote! { 
+                                writeln!(f, "{}{}: Vec<{:?}>[{}]", " ".repeat(indent + 4), stringify!(#name), stringify!(#type_), self.#name.len())?;
+                                self.#name.fmt_with_indent(f, indent + 4)?;
+                             },
+                        FieldType::Option => 
+                            quote! { 
+                                writeln!(f, "{}{}: Option<{:?}>[{}]", " ".repeat(indent + 4), stringify!(#name), stringify!(#type_), self.#name.is_some())?;
+                                self.#name.fmt_with_indent(f, indent + 4)?;
+                         },
+                        _ =>  
+                            quote! {  
+                                writeln!(f, "{}{}: <{:?}>", " ".repeat(indent + 4), stringify!(#name), stringify!(#type_))?;
+                                self.#name.fmt_with_indent(f, indent + 4)?;
+                             }
+                    }
+                },
+                Some(quote! { Ok(()) })
+            )
+            .stage_trait(&self.input_name, &PATHS.indented_display.path);
     }
 
     fn struct_input_builder(&self, builder: &mut FieldBuilder) {

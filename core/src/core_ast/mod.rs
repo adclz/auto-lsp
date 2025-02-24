@@ -4,3 +4,4 @@ pub mod data;
 pub mod symbol;
 #[cfg(feature = "incremental")]
 pub mod update;
+pub mod display;

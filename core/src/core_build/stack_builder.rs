@@ -61,13 +61,16 @@ where
         self.build(range, false);
         let result = self.get_root_node(range)?;
         let result = result.get_rc().borrow();
-        result
+        let result = result
             .downcast_ref::<T>()
             .ok_or(builder_error!(
                 result.get_lsp_range(&self.document),
                 format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
             ))?
-            .try_into_builder(self.workspace, self.document)
+            .try_into_builder(self.workspace, self.document)?;
+        #[cfg(feature = "log")]
+        log::debug!("\n{}", result);
+        Ok(result)
     }
 
     /// Creates a symbol of type [`Y`] based on the specified range.
@@ -83,7 +86,7 @@ where
     {
         self.build(range, true);
         let results = self.get_root_nodes();
-        results
+        let results = results
             .iter()
             .map(|result| {
                 let result = result.get_rc().borrow();
@@ -95,7 +98,12 @@ where
                     ))?
                     .try_into_builder(self.workspace, self.document)
             })
-            .collect()
+            .collect::<Result<Vec<Y>, Diagnostic>>()?;
+        #[cfg(feature = "log")]
+        for result in &results {
+            log::debug!("\n{}", result);
+        }
+        Ok(results)
     }
 
     /// Builds the AST based on Tree-sitter query captures.
@@ -207,24 +215,6 @@ where
             &capture,
         );
 
-        #[cfg(feature = "log")]
-        {
-            let node_char_start = tree_sitter_range_to_lsp_range(&capture.node.range())
-                .start
-                .character as usize;
-
-            log::debug!(
-                "{}├──{:?} [root]",
-                " ".repeat(node_char_start as usize),
-                self.workspace
-                    .parsers
-                    .tree_sitter
-                    .queries
-                    .core
-                    .capture_names()[capture.index as usize]
-            );
-        }
-
         match node.take() {
             Some(builder) => {
                 let node = PendingSymbol::new(builder);
@@ -277,71 +267,15 @@ where
                             .capture_names()[parent.get_rc().borrow().get_query_index()],
                     )
                 ));
-                #[cfg(feature = "log")]
-                {
-                    let parent_char_start = parent
-                        .get_rc()
-                        .borrow()
-                        .get_lsp_range(&self.document)
-                        .start
-                        .character as usize;
-
-                    let node_char_start = capture.node.start_position().column;
-
-                    log::warn!(
-                        " {}└──{}{:?} [unknown]",
-                        " ".repeat(parent_char_start as usize),
-                        "─".repeat(
-                            (node_char_start)
-                                .checked_sub(parent_char_start + 3)
-                                .or(Some(0))
-                                .unwrap(),
-                        ),
-                        self.workspace
-                            .parsers
-                            .tree_sitter
-                            .queries
-                            .core
-                            .capture_names()[capture.index as usize],
-                    );
-                }
             }
             Ok(Some(node)) => {
                 self.stack.push(parent.clone());
                 self.stack.push(node.clone());
-                #[cfg(feature = "log")]
-                {
-                    let parent_char_start = parent
-                        .get_rc()
-                        .borrow()
-                        .get_lsp_range(&self.document)
-                        .start
-                        .character as usize;
-
-                    let node_char_start = capture.node.start_position().column;
-
-                    log::debug!(
-                        "{}└──{}{:?}",
-                        " ".repeat(parent_char_start as usize),
-                        "─".repeat(
-                            (node_char_start)
-                                .checked_sub(parent_char_start + 3)
-                                .or(Some(0))
-                                .unwrap(),
-                        ),
-                        self.workspace
-                            .parsers
-                            .tree_sitter
-                            .queries
-                            .core
-                            .capture_names()[capture.index as usize],
-                    );
-                }
             }
         };
     }
 
-    /// Attempt to retrive root node, initially created with [`Self::create_root_node`].
+    /// Attempt to retrieve root node, initially created with [`Self::create_root_node`].
     ///
     /// If no root node exists, an error is returned indicating the expected query names.
     fn get_root_node(
