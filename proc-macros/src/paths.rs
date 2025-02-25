@@ -23,6 +23,8 @@ pub struct Method {
     pub variant: TokenStream,
 }
 
+unsafe impl Sync for Paths {}
+
 nested_struct!(
     pub struct Paths {
         pub symbol: Path,

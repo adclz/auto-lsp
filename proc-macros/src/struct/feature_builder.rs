@@ -3,16 +3,23 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 
 use super::field_builder::Fields;
-use crate::{DarlingInput, PATHS};
+use crate::{DarlingInput, Paths};
 pub struct Features<'a> {
+    paths: &'a Paths,
     darling_input: &'a DarlingInput,
     input_name: &'a Ident,
     fields: &'a Fields,
 }
 
 impl<'a> Features<'a> {
-    pub fn new(darling_input: &'a DarlingInput, input_name: &'a Ident, fields: &'a Fields) -> Self {
+    pub fn new(
+        paths: &'a Paths,
+        darling_input: &'a DarlingInput,
+        input_name: &'a Ident,
+        fields: &'a Fields,
+    ) -> Self {
         Self {
+            paths,
             darling_input,
             input_name,
             fields,
@@ -25,70 +32,70 @@ impl ToTokens for Features<'_> {
         let input_name = self.input_name;
 
         if !self.darling_input.declaration.is_present() {
-            let declaration = &PATHS.lsp_go_to_declaration.path;
+            let declaration = &self.paths.lsp_go_to_declaration.path;
             tokens.extend(quote! {
                 impl #declaration for #input_name {}
             });
         }
 
         if !self.darling_input.definition.is_present() {
-            let definition = &PATHS.lsp_go_to_definition.path;
+            let definition = &self.paths.lsp_go_to_definition.path;
             tokens.extend(quote! {
                 impl #definition for #input_name {}
             });
         }
 
         if !self.darling_input.hover.is_present() {
-            let hover = &PATHS.lsp_hover_info.path;
+            let hover = &self.paths.lsp_hover_info.path;
             tokens.extend(quote! {
                 impl #hover for #input_name {}
             });
         }
 
         if !self.darling_input.document_symbols.is_present() {
-            let document_symbols = &PATHS.lsp_document_symbols.path;
+            let document_symbols = &self.paths.lsp_document_symbols.path;
             tokens.extend(quote! {
                 impl #document_symbols for #input_name {}
             });
         }
 
         if !self.darling_input.code_actions.is_present() {
-            let lsp_code_actions: &_ = &PATHS.lsp_code_actions.path;
+            let lsp_code_actions: &_ = &self.paths.lsp_code_actions.path;
             tokens.extend(quote! {
                 impl #lsp_code_actions for #input_name {}
             });
         }
 
         if !self.darling_input.code_lenses.is_present() {
-            let lsp_code_lens: &_ = &PATHS.lsp_code_lens.path;
+            let lsp_code_lens: &_ = &self.paths.lsp_code_lens.path;
             tokens.extend(quote! {
                 impl #lsp_code_lens for #input_name {}
             });
         }
 
         if !self.darling_input.completions.is_present() {
-            let lsp_completion_items = &PATHS.lsp_completion_items.path;
+            let lsp_completion_items = &self.paths.lsp_completion_items.path;
             tokens.extend(quote! {
                 impl #lsp_completion_items for #input_name {}
             });
         }
 
         if !self.darling_input.triggered_completions.is_present() {
-            let triggered_completions = &PATHS.lsp_invoked_completion_items.path;
+            let triggered_completions = &self.paths.lsp_invoked_completion_items.path;
             tokens.extend(quote! {
                 impl #triggered_completions for #input_name {}
             });
         }
 
         if !self.darling_input.inlay_hints.is_present() {
-            let inlay_hints = &PATHS.lsp_inlay_hint.path;
+            let inlay_hints = &self.paths.lsp_inlay_hint.path;
             tokens.extend(quote! {
                 impl #inlay_hints for #input_name {}
             });
         }
 
         if !self.darling_input.semantic_tokens.is_present() {
-            let semantic_tokens = &PATHS.lsp_semantic_token.path;
+            let semantic_tokens = &self.paths.lsp_semantic_token.path;
             tokens.extend(quote! {
                 impl #semantic_tokens for #input_name {}
             });
@@ -97,16 +104,16 @@ impl ToTokens for Features<'_> {
         // Special
 
         if !self.darling_input.check.is_present() {
-            let is_check = &PATHS.is_check.path;
-            let check = &PATHS.check.path;
+            let is_check = &self.paths.is_check.path;
+            let check = &self.paths.check.path;
 
             tokens.extend(quote! {
                 impl #is_check for #input_name {}
                 impl #check for #input_name {}
             });
         } else {
-            let is_check = &PATHS.is_check.path;
-            let must_check = &PATHS.is_check.must_check.sig;
+            let is_check = &self.paths.is_check.path;
+            let must_check = &self.paths.is_check.must_check.sig;
 
             tokens.extend(quote! {
                 impl #is_check for #input_name {
@@ -118,14 +125,14 @@ impl ToTokens for Features<'_> {
         }
 
         if !self.darling_input.comment.is_present() {
-            let is_comment = &PATHS.is_comment.path;
+            let is_comment = &self.paths.is_comment.path;
 
             tokens.extend(quote! {
                 impl #is_comment for #input_name {}
             });
         } else {
-            let is_comment = &PATHS.is_comment.path;
-            let is_comment_sig = &PATHS.is_comment.is_comment.sig;
+            let is_comment = &self.paths.is_comment.path;
+            let is_comment_sig = &self.paths.is_comment.is_comment.sig;
 
             tokens.extend(quote! {
                 impl #is_comment for #input_name {
@@ -137,16 +144,16 @@ impl ToTokens for Features<'_> {
         }
 
         if !self.darling_input.reference.is_present() {
-            let is_reference_path = &PATHS.is_reference.path;
-            let reference_path = &PATHS.reference.path;
+            let is_reference_path = &self.paths.is_reference.path;
+            let reference_path = &self.paths.reference.path;
 
             tokens.extend(quote! {
                 impl #is_reference_path for #input_name {}
                 impl #reference_path for #input_name {}
             });
         } else {
-            let is_reference_path = &PATHS.is_reference.path;
-            let is_reference_sig = &PATHS.is_reference.is_reference.sig;
+            let is_reference_path = &self.paths.is_reference.path;
+            let is_reference_sig = &self.paths.is_reference.is_reference.sig;
 
             tokens.extend(quote! {
                 impl #is_reference_path for #input_name {
@@ -158,14 +165,14 @@ impl ToTokens for Features<'_> {
         }
 
         if !self.darling_input.scope.is_present() {
-            let is_scope_path = &PATHS.scope.path;
+            let is_scope_path = &self.paths.scope.path;
 
             tokens.extend(quote! {
                 impl #is_scope_path for #input_name {}
             });
         } else {
-            let is_scope_path = &PATHS.scope.path;
-            let is_scope_sig = &PATHS.scope.is_scope.sig;
+            let is_scope_path = &self.paths.scope.path;
+            let is_scope_sig = &self.paths.scope.is_scope.sig;
 
             tokens.extend(quote! {
                 impl #is_scope_path for #input_name {

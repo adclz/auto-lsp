@@ -267,7 +267,7 @@ impl ToTokens for VariantBuilder {
     }
 }
 
-impl<'a> From<VariantBuilder> for Vec<TokenStream> {
+impl From<VariantBuilder> for Vec<TokenStream> {
     fn from(builder: VariantBuilder) -> Self {
         builder.staged
     }

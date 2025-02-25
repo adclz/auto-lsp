@@ -2,7 +2,7 @@
 use super::{feature_builder::Features, field_builder::{FieldBuilder, FieldType, Fields}};
 use crate::{
     DarlingInput,
-    PATHS,
+    Paths
 };
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
@@ -17,6 +17,8 @@ use syn::{parse_quote, Attribute, Path};
 ///     - The implementation of all capabilitties and `AstSymbol` traits. 
 ///     - The builder struct (named `input_builder_name`) that is used to create the AST symbol.
 pub struct StructBuilder<'a> {
+    // Paths
+    pub paths: &'a Paths,
     // Input data
     pub input_attr: &'a Vec<Attribute>,
     pub input_name: &'a Ident,
@@ -29,6 +31,7 @@ pub struct StructBuilder<'a> {
 
 impl<'a> StructBuilder<'a> {
     pub fn new(
+        paths: &'a Paths,
         darling_input: &'a DarlingInput,
         input_attr: &'a Vec<Attribute>,
         input_name: &'a Ident,
@@ -37,12 +40,13 @@ impl<'a> StructBuilder<'a> {
         fields: &'a Fields,
     ) -> Self {
         Self {
+            paths,
             input_name,
             input_attr,
             query_name,
             input_builder_name,
             fields,
-            features: Features::new(darling_input, input_name, fields),
+            features: Features::new(paths, darling_input, input_name, fields),
         }
     }
 }
@@ -89,7 +93,7 @@ impl ToTokens for StructBuilder<'_> {
         });
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
-        builder.stage_trait(self.input_builder_name, &PATHS.symbol_builder_trait.path);
+        builder.stage_trait(self.input_builder_name, &self.paths.symbol_builder_trait.path);
 
         // Implement `TryFromBuilder`
         self.impl_try_from(&mut builder);
@@ -103,8 +107,8 @@ impl ToTokens for StructBuilder<'_> {
 
 impl StructBuilder<'_> {
     fn struct_input(&self, builder: &mut FieldBuilder) {
-        let symbol = &PATHS.symbol;
-        let symbol_data = &PATHS.symbol_data;
+        let symbol = &self.paths.symbol;
+        let symbol_data = &self.paths.symbol_data;
 
         builder
             .add(quote! { _data: #symbol_data })
@@ -123,21 +127,21 @@ impl StructBuilder<'_> {
     }
 
     fn impl_ast_symbol(&self, builder: &mut FieldBuilder) {
-        let get_data = &PATHS.symbol_trait.get_data.sig;
-        let get_mut_data = &PATHS.symbol_trait.get_mut_data.sig;
+        let get_data = &self.paths.symbol_trait.get_data.sig;
+        let get_mut_data = &self.paths.symbol_trait.get_mut_data.sig;
 
         builder
             .add(quote! { #get_data { &self._data } })
             .add(quote! { #get_mut_data { &mut self._data } })
-            .stage_trait(self.input_name, &PATHS.symbol_trait.path);
+            .stage_trait(self.input_name, &self.paths.symbol_trait.path);
     }
 
     fn impl_traverse(&self, builder: &mut FieldBuilder) {
-        let symbol_trait = &PATHS.symbol_trait.path;
+        let symbol_trait = &self.paths.symbol_trait.path;
         builder
             .add_fn_iter(
                 self.fields,
-                &PATHS.traverse.descendant_at.sig,
+                &self.paths.traverse.descendant_at.sig,
                 Some(quote! {
                     use #symbol_trait;
                 }),
@@ -152,7 +156,7 @@ impl StructBuilder<'_> {
             )
             .add_fn_iter(
                 self.fields,
-                &PATHS.traverse.descendant_at_and_collect.sig,
+                &self.paths.traverse.descendant_at_and_collect.sig,
                 Some(quote! {
                     use #symbol_trait;
                 }),
@@ -165,7 +169,7 @@ impl StructBuilder<'_> {
                 },
                 Some(quote! { None }),
             )
-            .add_fn_iter(self.fields, &PATHS.traverse.traverse_and_collect.sig, None, 
+            .add_fn_iter(self.fields, &self.paths.traverse.traverse_and_collect.sig, None, 
                 |_, _, name, _, _| {
                     quote! {
                         self.#name.traverse_and_collect(collect_fn, collect);
@@ -173,14 +177,14 @@ impl StructBuilder<'_> {
                 },
             None
             )
-            .stage_trait(self.input_name, &PATHS.traverse.path);
+            .stage_trait(self.input_name, &self.paths.traverse.path);
     }
 
     fn impl_parent(&self, builder: &mut FieldBuilder) {
         builder
             .add_fn_iter(
                 self.fields,
-                &PATHS.parent.inject_parent.sig,
+                &self.paths.parent.inject_parent.sig,
                 None,
                 |_, _, name, _, _| {
                     quote! {
@@ -189,11 +193,11 @@ impl StructBuilder<'_> {
                 },
                 None,
             )
-            .stage_trait(self.input_name, &PATHS.parent.path);
+            .stage_trait(self.input_name, &self.paths.parent.path);
     }
 
     fn impl_queryable(&self, builder: &mut FieldBuilder) {
-        let queryable = &PATHS.queryable.path;
+        let queryable = &self.paths.queryable.path;
         let query_name = self.query_name;
 
         builder
@@ -203,11 +207,11 @@ impl StructBuilder<'_> {
 
     #[cfg(feature = "incremental")]
     fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {
-        let static_update_trait = &PATHS.static_swap.path;
+        let static_update_trait = &self.paths.static_swap.path;
         builder
             .add_fn_iter(
                 &self.fields,
-                &PATHS.dynamic_swap.adjust.sig,
+                &self.paths.dynamic_swap.adjust.sig,
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
@@ -218,7 +222,7 @@ impl StructBuilder<'_> {
             )
             .add_fn_iter(
                 &self.fields,
-                &PATHS.dynamic_swap.swap.sig,
+                &self.paths.dynamic_swap.swap.sig,
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
                     quote! {
@@ -227,12 +231,12 @@ impl StructBuilder<'_> {
                 },
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),
             )
-            .stage_trait(&self.input_name, &PATHS.dynamic_swap.path);
+            .stage_trait(&self.input_name, &self.paths.dynamic_swap.path);
     }
 
     fn impl_indented_display(&self, builder: &mut FieldBuilder) {
         let  input_name = &self.input_name;
-        let indented_display = &PATHS.indented_display.path;
+        let indented_display = &self.paths.indented_display.path;
         builder
             .add(quote! {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -240,10 +244,10 @@ impl StructBuilder<'_> {
                     self.fmt_with_indent(f, 0)
                 }
             })
-            .stage_trait(self.input_name, &PATHS.display.path)
+            .stage_trait(self.input_name, &self.paths.display.path)
             .add_fn_iter(
                 self.fields,
-                &PATHS.indented_display.fmt_with_indent.sig,
+                &self.paths.indented_display.fmt_with_indent.sig,
                 Some(quote! {
                     use #indented_display;
                     writeln!(f, "{}{:?}", " ".repeat(indent + 2), stringify!(#input_name))?; 
@@ -269,12 +273,12 @@ impl StructBuilder<'_> {
                 },
                 Some(quote! { Ok(()) })
             )
-            .stage_trait(self.input_name, &PATHS.indented_display.path);
+            .stage_trait(self.input_name, &self.paths.indented_display.path);
     }
 
     fn struct_input_builder(&self, builder: &mut FieldBuilder) {
-        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
-        let pending_symbol = &PATHS.pending_symbol;
+        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+        let pending_symbol = &self.paths.pending_symbol;
 
         builder
             .add(quote! { url: std::sync::Arc<auto_lsp::lsp_types::Url> })
@@ -289,8 +293,8 @@ impl StructBuilder<'_> {
     }
 
     fn fn_new(&self, builder: &mut FieldBuilder) {
-        let maybe_pending_symbol = &PATHS.maybe_pending_symbol;
-        let sig = &PATHS.symbol_builder_trait.new.sig;
+        let maybe_pending_symbol = &self.paths.maybe_pending_symbol;
+        let sig = &self.paths.symbol_builder_trait.new.sig;
 
         let fields = FieldBuilder::default()
             .add_iter(self.fields, |ty, _, name, _, _| match ty {
@@ -318,10 +322,10 @@ impl StructBuilder<'_> {
 
     fn fn_add(&self, builder: &mut FieldBuilder) {
         let input_name = &self.input_name;
-        let add_symbol_trait = &PATHS.add_symbol_trait;
+        let add_symbol_trait = &self.paths.add_symbol_trait;
         builder.add_fn_iter(
             self.fields,
-            &PATHS.symbol_builder_trait.add.sig,
+            &self.paths.symbol_builder_trait.add.sig,
             Some(quote! { use #add_symbol_trait; }),
             |_, _, name, field_type, builder| {
                 quote! {
@@ -341,13 +345,13 @@ impl StructBuilder<'_> {
         let input_name = self.input_name;
         let input_builder_name = &self.input_builder_name;
 
-        let try_from_builder = &PATHS.try_from_builder;
+        let try_from_builder = &self.paths.try_from_builder;
 
-        let symbol_data = &PATHS.symbol_data;
-        let workspace = &PATHS.workspace;
-        let try_downcast = &PATHS.try_downcast_trait;
-        let finalize = &PATHS.finalize_trait;
-        let symbol = &PATHS.symbol;
+        let symbol_data = &self.paths.symbol_data;
+        let workspace = &self.paths.workspace;
+        let try_downcast = &self.paths.try_downcast_trait;
+        let finalize = &self.paths.finalize_trait;
+        let symbol = &self.paths.symbol;
 
         let _builder = FieldBuilder::default()
             .add(quote! {
@@ -380,7 +384,7 @@ impl StructBuilder<'_> {
             .stage()
             .to_token_stream();
 
-        let builder_trait = &PATHS.symbol_builder_trait.path;
+        let builder_trait = &self.paths.symbol_builder_trait.path;
 
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #input_name {
