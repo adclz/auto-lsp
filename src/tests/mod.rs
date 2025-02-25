@@ -23,6 +23,8 @@ pub mod document_symbols;
 #[cfg(test)]
 pub mod hover;
 #[cfg(test)]
+pub mod html_corpus;
+#[cfg(test)]
 #[cfg(feature = "incremental")]
 pub mod incremental;
 #[cfg(test)]

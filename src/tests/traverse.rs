@@ -32,24 +32,34 @@ fn descendant(nested_divs: (Workspace, Document)) {
 
     let guard = ast.read();
     let document = guard.downcast_ref::<HtmlDocument>().unwrap();
-    let div1 = &document.tags[0];
+    let div1 = &document.tags[1];
 
-    if let Node::Element(div1) = div1.read().deref() {
+    if let Node::Element(Element::FullTag(div1)) = div1.read().deref() {
         assert_eq!(div1.get_range().start, 16);
         let div2 = &div1.elements[0].read();
-        assert_eq!(div2.get_range().start, 26);
-        let div3 = &div2.elements[0].read();
-        assert_eq!(div3.get_range().start, 41);
-        let div4 = &div3.elements[0].read();
-        assert_eq!(div4.get_range().start, 59);
+        if let Node::Element(Element::FullTag(div2)) = div2.deref() {
+            assert_eq!(div2.get_range().start, 26);
+            let div3 = &div2.elements[0].read();
+            if let Node::Element(Element::FullTag(div3)) = div3.deref() {
+                assert_eq!(div3.get_range().start, 41);
+                let div4 = &div3.elements[0].read();
+                if let Node::Element(Element::FullTag(div4)) = div4.deref() {
+                    assert_eq!(div4.get_range().start, 59);
+                } else {
+                    panic!("Expected FullTag Element");
+                }
+            } else {
+                panic!("Expected FullTag Element");
+            }
+        } else {
+            panic!("Expected FullTag Element");
+        };
     } else {
-        panic!("Expected Element");
+        panic!("Expected FullTag Element");
     };
 
-    // Find the last div
+    // Find the last element
     let descendant = ast.read().descendant_at(59);
-
-    assert!(descendant.as_ref().unwrap().read().is::<Element>());
     assert_eq!(descendant.as_ref().unwrap().read().get_range().start, 59);
 }
 
@@ -72,7 +82,6 @@ fn descendant_at_and_collect(nested_divs: (Workspace, Document)) {
         &mut collected,
     );
 
-    assert!(descendant.as_ref().unwrap().read().is::<Element>());
     assert_eq!(descendant.as_ref().unwrap().read().get_range().start, 59);
 
     assert_eq!(collected.len(), 4);
@@ -90,9 +99,15 @@ fn traverse_and_collect(nested_divs: (Workspace, Document)) {
     let mut collected = vec![];
     ast.traverse_and_collect(|d| d.read().is::<TagName>(), &mut collected);
 
-    assert_eq!(collected.len(), 4);
+    assert_eq!(collected.len(), 8);
     assert_eq!(collected[0].read().get_text(source_code), Some("div"));
     assert_eq!(collected[1].read().get_text(source_code), Some("div"));
     assert_eq!(collected[2].read().get_text(source_code), Some("div"));
     assert_eq!(collected[3].read().get_text(source_code), Some("div"));
+
+    // end tags
+    assert_eq!(collected[4].read().get_text(source_code), Some("div"));
+    assert_eq!(collected[5].read().get_text(source_code), Some("div"));
+    assert_eq!(collected[6].read().get_text(source_code), Some("div"));
+    assert_eq!(collected[7].read().get_text(source_code), Some("div"));
 }

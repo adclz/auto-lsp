@@ -60,7 +60,7 @@ where
 /// Function signature for invoking the stack builder.
 ///
 /// This type alias is useful for mapping language IDs to specific parsers,
-/// helping avoiding ambiguity.
+/// avoiding ambiguity.
 pub type InvokeParserFn = fn(
     &mut Workspace,
     &Document,

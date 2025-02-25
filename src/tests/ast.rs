@@ -6,6 +6,7 @@ use rstest::{fixture, rstest};
 
 use super::html_workspace::*;
 
+
 #[fixture]
 fn sample_file() -> (Workspace, Document) {
     Workspace::from_utf8(
@@ -15,7 +16,7 @@ fn sample_file() -> (Workspace, Document) {
 <script></script>
 <style></style>
 <div>
-	<span> </span>
+    <span> </span>
     <br/>
 </div>"#
             .into(),
@@ -37,19 +38,21 @@ fn html_ast(sample_file: (Workspace, Document)) {
     let html = ast.downcast_ref::<HtmlDocument>().unwrap();
     let tags = &html.tags;
 
-    // Should contain Script, Style, and Element
+    // Should contain DocType, Script, Style, and Element
 
-    assert_eq!(tags.len(), 3);
-    assert!(matches!(*tags[0].read(), Node::Script(_)));
-    assert!(matches!(*tags[1].read(), Node::Style(_)));
-    assert!(matches!(*tags[2].read(), Node::Element(_)));
+    assert_eq!(tags.len(), 4);
+    assert!(matches!(*tags[0].read(), Node::DocType(_)));
+    assert!(matches!(*tags[1].read(), Node::Script(_)));
+    assert!(matches!(*tags[2].read(), Node::Style(_)));
+    assert!(matches!(*tags[3].read(), Node::Element(Element::FullTag(_))));
 
-    let tag_3 = tags[2].read();
+    let tag_3 = tags[3].read();
 
     // Checks if Element node is a div
 
-    if let Node::Element(ref element) = *tag_3 {
-        let tag_name = element.tag_name.read();
+    if let Node::Element(Element::FullTag(ref element)) = *tag_3 {
+        let start_tag = element.start_tag.read();
+        let tag_name = start_tag.tag_name.read();
         assert_eq!(
             tag_name.get_text(document.texter.text.as_bytes()).unwrap(),
             "div"
@@ -62,27 +65,31 @@ fn html_ast(sample_file: (Workspace, Document)) {
 
         // Tag name should be span
 
-        assert_eq!(
-            elements[0]
-                .read()
-                .tag_name
-                .read()
-                .get_text(document.texter.text.as_bytes())
-                .unwrap(),
-            "span"
-        );
+        if let Node::Element(Element::FullTag(ref element)) = *elements[0].read() {
+            let start_tag = element.start_tag.read();
+            let tag_name = start_tag.tag_name.read();
+
+            assert_eq!(
+                tag_name.get_text(document.texter.text.as_bytes()).unwrap(),
+                "span"
+            );
+        } else {
+            panic!("Expected Element node");
+        }
 
         // Tag name should be br
 
-        assert_eq!(
-            elements[1]
-                .read()
-                .tag_name
-                .read()
-                .get_text(document.texter.text.as_bytes())
-                .unwrap(),
-            "br"
-        );
+        if let Node::Element(Element::SelfClosingTag(ref element)) = *elements[1].read() {
+            assert_eq!(
+                element.tag_name
+                    .read()
+                    .get_text(document.texter.text.as_bytes())
+                    .unwrap(),
+                "br"
+            );
+        } else {
+            panic!("Expected Element node");
+        }
     } else {
         panic!("Expected Element node");
     }
