@@ -63,7 +63,6 @@
 //! - `html`: Enable the html workspace mock for testing purposes.
 //! - `python`: Enable the python workspace mock for testing purposes.
 //! - `incremental`: Enable incremental parsing.
-//! - `miette`: Enable [`miette`] error handling.
 
 /// LSP server (enabled with feature `lsp_server`)
 #[cfg(any(feature = "lsp_server", test))]
@@ -107,16 +106,13 @@ pub mod configure;
 // Re-export of [`seq`] and [`choice`] macros
 pub use auto_lsp_macros::*;
 
+pub use ariadne;
 #[doc(hidden)]
 pub use constcat;
 pub use lsp_types;
-#[cfg(any(feature = "miette", test))]
-pub use miette;
 pub use parking_lot;
 #[cfg(feature = "rayon")]
 pub use rayon;
 #[cfg(any(feature = "lsp_server", test))]
 pub use texter;
-#[cfg(any(feature = "miette", test))]
-pub use thiserror;
 pub use tree_sitter;

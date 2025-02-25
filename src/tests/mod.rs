@@ -4,7 +4,6 @@ pub mod html_workspace;
 pub mod python_workspace;
 
 #[cfg(test)]
-#[cfg(feature = "miette")]
 pub mod ast;
 #[cfg(test)]
 pub mod code_actions;
@@ -31,7 +30,6 @@ pub mod inlay_hints;
 #[cfg(test)]
 pub mod proc_macros;
 #[cfg(test)]
-#[cfg(feature = "miette")]
 pub mod python_corpus;
 #[cfg(test)]
 #[cfg(feature = "incremental")]

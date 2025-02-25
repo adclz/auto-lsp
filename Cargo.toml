@@ -29,8 +29,8 @@ stderrlog = "0.6.0"
 log = "0.4.22"
 cfg-if = "1.0.0"
 aho-corasick = "1.1.3"
+ariadne = { version = "0.5.0", features = ["auto-color"] }
 thiserror = { version = "2.0.11", optional = true }
-miette = { version = "7.4.0", features = ["fancy"], optional = true }
 lsp-server = { version = "0.7.6", optional = true }
 serde = { version = "1.0.189", optional = true }
 serde_json = { version = "1.0.107", optional = true }
@@ -57,10 +57,9 @@ texter = "0.1.2"
 rayon = "1.10"
 anyhow = "1.0.91"
 regex = "1.11.1"
-thiserror = "2.0.11"
-miette = "7.4.0"
 cfg-if = "1.0.0"
 aho-corasick = "1.1.3"
+ariadne = "0.5.0"
 
 [features]
 default = []
@@ -79,7 +78,6 @@ lsp_server = [
     "dep:crossbeam-channel",
     "dep:texter",
 ]
-miette = ["auto-lsp-core/miette", "dep:miette", "dep:thiserror"]
 rayon = ["auto-lsp-core/rayon", "dep:rayon"]
 wasm = ["parking_lot/nightly"]
 python = ["dep:tree-sitter-python"]
@@ -106,8 +104,6 @@ rstest = "0.24.0"
 tempfile = "3.15.0"
 static_assertions = "1.1.0"
 impls = "1.0.3"
-miette = "7.4.0"
-thiserror = "2.0.11"
 
 [[bench]]
 name = "main"

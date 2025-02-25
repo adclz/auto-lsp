@@ -1,11 +1,11 @@
-use auto_lsp_core::build::Parse;
+use auto_lsp_core::build::TryParse;
 
 use super::super::python_workspace::*;
 use crate::python::ast::{IfStatement, MatchStatement};
 
 #[test]
-fn matching_specific_values() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn matching_specific_values() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match command.split():
     case ["quit"]:
         print("Goodbye!")
@@ -21,8 +21,8 @@ fn matching_specific_values() -> miette::Result<()> {
 }
 
 #[test]
-fn matching_multiple_values() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn matching_multiple_values() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match command.split():
     case ["drop", *objects]:
         for obj in objects:
@@ -32,8 +32,8 @@ fn matching_multiple_values() -> miette::Result<()> {
 }
 
 #[test]
-fn adding_a_wildcard() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn adding_a_wildcard() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match command.split():
 # ^ conditional
     case ["quit"]: ... # Code omitted for brevity
@@ -46,8 +46,8 @@ fn adding_a_wildcard() -> miette::Result<()> {
 }
 
 #[test]
-fn or_patterns() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn or_patterns() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match command.split():
     case ["north"] | ["go", "north"]:
         current_room = current_room.neighbor("north")
@@ -59,8 +59,8 @@ fn or_patterns() -> miette::Result<()> {
 }
 
 #[test]
-fn as_patterns() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn as_patterns() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match command.split():
     case ["go", ("north" | "south" | "east" | "west") as direction]:
         current_room = current_room.neighbor(direction)"#,
@@ -69,8 +69,8 @@ fn as_patterns() -> miette::Result<()> {
 }
 
 #[test]
-fn if_guards() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn if_guards() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match 0:
     case 0 if False:
         x = False
@@ -81,8 +81,8 @@ fn if_guards() -> miette::Result<()> {
 }
 
 #[test]
-fn literals() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn literals() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match xxx:
     case 3 | -3:
       pass
@@ -102,8 +102,8 @@ fn literals() -> miette::Result<()> {
 }
 
 #[test]
-fn coma_separated_cases() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn coma_separated_cases() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match x,:
     case *x,:
         y = 0
@@ -113,8 +113,8 @@ fn coma_separated_cases() -> miette::Result<()> {
 }
 
 #[test]
-fn case_terminating_in_comma() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn case_terminating_in_comma() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match ..., ...:
     case a, b:
         return locals()
@@ -124,8 +124,8 @@ fn case_terminating_in_comma() -> miette::Result<()> {
 }
 
 #[test]
-fn multiple_match_patterns() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn multiple_match_patterns() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match ..., ...:
     case a, b:
         return locals()
@@ -135,8 +135,8 @@ fn multiple_match_patterns() -> miette::Result<()> {
 }
 
 #[test]
-fn walrus_match() -> miette::Result<()> {
-    IfStatement::miette_parse(
+fn walrus_match() -> Result<(), ()> {
+    IfStatement::try_parse(
         r#"if match := re.fullmatch(r"(-)?(\d+:)?\d?\d:\d\d(\.\d*)?", time, flags=re.ASCII):
     return 42
 "#,
@@ -145,8 +145,8 @@ fn walrus_match() -> miette::Result<()> {
 }
 
 #[test]
-fn matching_objects() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn matching_objects() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match event.get():
     case Click(position=(x, y)):
         handle_click_at(x, y)
@@ -165,8 +165,8 @@ fn matching_objects() -> miette::Result<()> {
 }
 
 #[test]
-fn positional_arguments() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn positional_arguments() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match event.get():
     case Click((x, y)):
         handle_click_at(x, y)"#,
@@ -175,8 +175,8 @@ fn positional_arguments() -> miette::Result<()> {
 }
 
 #[test]
-fn constant_and_enums() -> miette::Result<()> {
-    MatchStatement::miette_parse(
+fn constant_and_enums() -> Result<(), ()> {
+    MatchStatement::try_parse(
         r#"match event.get():
     case Click((x, y), button=Button.LEFT):  # This is a left click
         handle_click_at(x, y)

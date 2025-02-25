@@ -1,11 +1,14 @@
 use crate::ast::DynSymbol;
 use crate::document::Document;
+use crate::workspace::Parsers;
 use crate::workspace::Workspace;
 use crate::{
     ast::AstSymbol,
     build::{Buildable, Queryable, TryFromBuilder},
 };
-use cfg_if::cfg_if;
+use ariadne::Fmt;
+use ariadne::{ColorGenerator, Label, Report, ReportKind, Source};
+use lsp_types::Url;
 
 use super::stack_builder::StackBuilder;
 /// Trait for invoking the stack builder
@@ -64,113 +67,89 @@ pub type InvokeParserFn = fn(
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
-cfg_if!(
-    if #[cfg(feature = "miette")] {
-        use crate::workspace::Parsers;
-        use lsp_types::Url;
-        use miette::{diagnostic, miette, Diagnostic, Result, Severity, SourceOffset};
-        use thiserror::Error;
+pub type TryParseResult<E = AriadneReport> = Result<(), E>;
 
-        #[derive(Debug, Error, Diagnostic)]
-        #[error("{} error(s)", .related.len())]
-        struct Errors {
-            #[source_code]
-            src: String,
-            #[related]
-            related: Vec<Error>,
-        }
+#[derive(Debug)]
+pub struct AriadneReport {
+    pub result: Report<'static>,
+    pub cache: Source<&'static str>,
+}
 
-        #[derive(Debug, Error, Diagnostic)]
-        #[error("{message}")]
-        #[diagnostic()]
-        struct Error {
-            message: String,
-            #[label("{message}")]
-            location: SourceOffset,
-            severity: Option<Severity>,
-        }
+pub trait TryParse<
+    T: Buildable + Queryable,
+    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+>
+{
+    /// Parses the provided test code and validates the AST symbol construction.
+    ///
+    /// # Arguments
+    /// - `test_code`: The code to be parsed and analyzed.
+    /// - `parsers`: A reference to the parsers for syntax tree generation.
+    ///
+    /// # Returns
+    /// - `Ok(())` if the code was successfully parsed and validated.
+    /// - `Err(Result<(), ()>)` if any parsing or validation errors occurred.
+    fn try_parse(test_code: &'static str, parsers: &'static Parsers) -> Result<(), ()>;
+}
 
-        impl From<(&String, &lsp_types::Diagnostic)> for Error {
-            fn from(input: (&String, &lsp_types::Diagnostic)) -> Self {
-                let diag = input.1;
-                Self {
-                    message: diag.message.clone(),
-                    location: SourceOffset::from_location(
-                        &input.0,
-                        diag.range.start.line as usize,
-                        diag.range.end.character as usize,
-                    ),
-                    severity: diag.severity.map(|f| match f {
-                        lsp_types::DiagnosticSeverity::ERROR => Severity::Error,
-                        lsp_types::DiagnosticSeverity::WARNING => Severity::Warning,
-                        lsp_types::DiagnosticSeverity::INFORMATION => Severity::Advice,
-                        lsp_types::DiagnosticSeverity::HINT => Severity::Advice,
-                        _ => Severity::Error,
-                    }),
-                }
+impl<T, Y> TryParse<T, Y> for Y
+where
+    T: Buildable + Queryable,
+    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
+{
+    fn try_parse(test_code: &'static str, parsers: &'static Parsers) -> Result<(), ()> {
+        let source = Source::from(test_code);
+
+        let (mut workspace, document) = match Workspace::from_utf8(
+            parsers,
+            Url::parse("file://test.txt").unwrap(),
+            test_code.into(),
+        ) {
+            Ok(workspace) => workspace,
+            Err(err) => {
+                Report::build(ReportKind::Error, 0..source.len())
+                    .with_message(err.to_string())
+                    .finish()
+                    .print(source)
+                    .unwrap();
+                return Err(());
             }
-        }
+        };
 
-        pub trait Parse<
-            T: Buildable + Queryable,
-            Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-        >
-        {
-            /// Parses the provided test code and validates the AST symbol construction.
-            ///
-            /// # Arguments
-            /// - `test_code`: The code to be parsed and analyzed.
-            /// - `parsers`: A reference to the parsers for syntax tree generation.
-            ///
-            /// # Returns
-            /// - `Ok(())` if the code was successfully parsed and validated.
-            /// - `Err(miette::Error)` if any parsing or validation errors occurred.
-            fn miette_parse(test_code: &str, parsers: &'static Parsers) -> miette::Result<()>;
-        }
+        let result: Result<Y, lsp_types::Diagnostic> =
+            Y::parse_symbol(&mut workspace, &document, None);
 
-        impl<T, Y> Parse<T, Y> for Y
-        where
-            T: Buildable + Queryable,
-            Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
-        {
-            fn miette_parse(test_code: &str, parsers: &'static Parsers) -> miette::Result<()> {
-                let (mut workspace, document) = Workspace::from_utf8(
-                    parsers,
-                    Url::parse("file://test").unwrap(),
-                    test_code.into(),
-                )
-                .map_err(|e| {
-                    miette!(
-                        severity = Severity::Error,
-                        "Failed to initialize workspace: {e}"
-                    )
-                })?;
+        match &workspace.diagnostics.is_empty() {
+            false => {
+                let mut colors = ColorGenerator::new();
+                let mut report = Report::build(ReportKind::Error, 0..source.len()).with_message(
+                    format!("Parsing failed: {} error(s)", workspace.diagnostics.len()),
+                );
 
-                let mut errors = Errors {
-                    src: document.texter.text.clone(),
-                    related: vec![],
-                };
+                for diagnostic in &workspace.diagnostics {
+                    let range = diagnostic.range;
+                    let start_line = source.line(range.start.line as usize).unwrap().offset();
+                    let end_line = source.line(range.end.line as usize).unwrap().offset();
+                    let start = start_line + range.start.character as usize;
+                    let end = end_line + range.end.character as usize;
 
-                let result: Result<Y, lsp_types::Diagnostic> =
-                    Y::parse_symbol(&mut workspace, &document, None);
+                    let curr_color = colors.next();
 
-                if let Err(diag) = &result {
-                    errors
-                        .related
-                        .push(Error::from((&document.texter.text, diag)));
+                    report.add_label(
+                        Label::new(start..end)
+                            .with_message(format!("{}", diagnostic.message.clone().fg(curr_color)))
+                            .with_color(curr_color),
+                    );
                 }
 
-                for diag in &workspace.diagnostics {
-                    errors
-                        .related
-                        .push(Error::from((&document.texter.text, diag)));
+                if let Ok(ast) = result {
+                    report.add_note(format!("\n\n {}", ast.to_string()));
                 }
 
-                match errors.related.is_empty() {
-                    false => Err(errors.into()),
-                    true => Ok(()),
-                }
+                report.finish().print(source).unwrap();
+                Err(())
             }
+            true => Ok(()),
         }
     }
-);
+}

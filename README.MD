@@ -64,7 +64,6 @@ You can find more examples in the `src/tests` folder.
 - `html`: Enable the html workspace mock for testing purposes.
 - `python`: Enable the python workspace mock for testing purposes.
 - `incremental`: Enable incremental updates.
-- `miette`: Enable [`miette`](https://crates.io/crates/miette) error handling.
 
 # Documentation
 

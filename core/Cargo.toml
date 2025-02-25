@@ -20,11 +20,10 @@ anyhow = { workspace = true }
 regex = { workspace = true }
 cfg-if = { workspace = true }
 aho-corasick = { workspace = true }
+ariadne = { workspace = true, features = ["auto-color"] }
 const-str = { version = "0.3.1", optional = true }
 const_panic = { version = "0.2.11", optional = true }
 log = { workspace = true, optional = true }
-miette = { workspace = true, features = ["fancy"], optional = true }
-thiserror = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
 
 [features]
@@ -32,4 +31,3 @@ log = ["dep:log"]
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
 incremental = []
 rayon = ["dep:rayon"]
-miette = ["dep:miette", "dep:thiserror"]
