@@ -23,7 +23,7 @@ impl<T: AstSymbol> Symbol<T> {
 
     /// Convert the [Symbol] to a [DynSymbol]
     pub fn to_dyn(&self) -> DynSymbol {
-        DynSymbol::from_symbol(&self)
+        DynSymbol::from_symbol(self)
     }
 
     /// Convert the [Symbol] to a [WeakSymbol]
@@ -104,7 +104,7 @@ impl WeakSymbol {
 
     /// Upgrade the [WeakSymbol] to a [DynSymbol]
     pub fn to_dyn(&self) -> Option<DynSymbol> {
-        self.0.upgrade().map(|arc| DynSymbol(arc))
+        self.0.upgrade().map(DynSymbol)
     }
 
     pub(crate) fn get_ptr(&self) -> &Weak<RwLock<dyn AstSymbol>> {

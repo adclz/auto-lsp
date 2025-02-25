@@ -285,12 +285,11 @@ mod tests {
                 Variant1(u8),
                 Variant2(String),
             }
-        }
-        .into();
+        };
 
         let input: DeriveInput = syn::parse2(data).unwrap();
         let data = &input.data;
-        let variants = extract_variants(&data);
+        let variants = extract_variants(data);
 
         assert_eq!(variants.variant_names.len(), 2);
         assert_eq!("Variant1", variants.variant_names[0].to_string());
@@ -321,7 +320,7 @@ mod tests {
 
         let input: DeriveInput = syn::parse2(data).unwrap();
         let data = &input.data;
-        let variants = extract_variants(&data);
+        let variants = extract_variants(data);
 
         builder.add_iter(&variants, |name, _type, _| {
             quote! {

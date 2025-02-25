@@ -19,13 +19,13 @@ impl Session {
                 let uri = &file.uri;
                 let workspace = WORKSPACES.lock();
 
-                if workspace.contains_key(&uri) {
+                if workspace.contains_key(uri) {
                     // The file is already in the workspace
                     // We can ignore this change
                     return Ok(());
                 };
 
-                let language_id = get_extension(&uri)?;
+                let language_id = get_extension(uri)?;
 
                 let file_path = uri
                     .to_file_path()
@@ -43,16 +43,16 @@ impl Session {
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
                 let mut open_file = File::open(file_path)?;
 
-                if workspace.contains_key(&uri) {
+                if workspace.contains_key(uri) {
                     // The file is already in the workspace
                     // We compare the stored document with the new file content
                     // If there's a single byte difference, we replace the document
                     if (is_file_content_different(
                         &open_file,
-                        &workspace.get(&uri).unwrap().1.texter.text,
+                        &workspace.get(uri).unwrap().1.texter.text,
                     ))? {
                         workspace.remove(uri);
-                        let language_id = get_extension(&uri)?;
+                        let language_id = get_extension(uri)?;
 
                         let mut buffer = String::new();
                         open_file.read_to_string(&mut buffer)?;
@@ -88,7 +88,7 @@ fn is_file_content_different(file: &File, content: &str) -> std::io::Result<bool
 
         // Compare the file's chunk with the corresponding slice of the content
         if content_bytes.len() < index + bytes_read
-            || &content_bytes[index..index + bytes_read] != &buffer[..bytes_read]
+            || content_bytes[index..index + bytes_read] != buffer[..bytes_read]
         {
             return Ok(true); // There's a difference
         }
@@ -124,21 +124,17 @@ mod tests {
         drop(tmp_file);
         let tmp_file = File::open(&file_path).unwrap();
 
-        assert_eq!(
-            is_file_content_different(&tmp_file, "Hello, World!").unwrap(),
-            false
+        assert!(
+            !is_file_content_different(&tmp_file, "Hello, World!").unwrap()
         );
-        assert_eq!(
-            is_file_content_different(&tmp_file, "Hello, World").unwrap(),
-            true
+        assert!(
+            is_file_content_different(&tmp_file, "Hello, World").unwrap()
         );
-        assert_eq!(
-            is_file_content_different(&tmp_file, "Hello,_World!").unwrap(),
-            true
+        assert!(
+            is_file_content_different(&tmp_file, "Hello,_World!").unwrap()
         );
-        assert_eq!(
-            is_file_content_different(&tmp_file, "Hello, World!!").unwrap(),
-            true
+        assert!(
+            is_file_content_different(&tmp_file, "Hello, World!!").unwrap()
         );
     }
 }

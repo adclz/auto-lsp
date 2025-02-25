@@ -33,8 +33,7 @@ impl GetHover for Identifier {
                         "".to_string()
                     },
                     self.get_text(doc.texter.text.as_bytes()).unwrap()
-                )
-                .into(),
+                ),
             }),
             range: None,
         })

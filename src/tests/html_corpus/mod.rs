@@ -5,14 +5,14 @@ use crate::html::HtmlDocument;
 
 #[test]
 fn tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(r#"<span>Hello</span>"#, &HTML_PARSERS.get("html").unwrap())
+    HtmlDocument::try_parse(r#"<span>Hello</span>"#, HTML_PARSERS.get("html").unwrap())
 }
 
 #[test]
 fn tags_with_attributes() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<input value=yes class="a" data-💩></input>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -26,7 +26,7 @@ fn nested_tags() -> Result<(), ()> {
   Multi-line
   text
 </div>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -34,7 +34,7 @@ fn nested_tags() -> Result<(), ()> {
 fn void_tags() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<form><img src="something.png"><br><input type=submit value=Ok /></form>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -42,7 +42,7 @@ fn void_tags() -> Result<(), ()> {
 fn void_tags_at_eof() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<img src="something.png">"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -54,7 +54,7 @@ fn custom_tags() -> Result<(), ()> {
     Hello
   </atom-text-editor>
 </something:different>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -75,7 +75,7 @@ fn raw_text_elements() -> Result<(), ()> {
 
 <script>
 </SCRIPT>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -85,7 +85,7 @@ fn all_caps_doctype() -> Result<(), ()> {
         r#"<!DOCTYPE html PUBLIC
   "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -96,7 +96,7 @@ fn li_elements_without_close_tags() -> Result<(), ()> {
   <li>One
   <li>Two
 </ul>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -110,7 +110,7 @@ fn dt_and_dl_elements_without_close_tags() -> Result<(), ()> {
   <dt>Milk
   <dd>White cold drink
 </dl>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -122,7 +122,7 @@ fn p_elements_without_close_tags() -> Result<(), ()> {
 <p>Three
 <p>Four
 <h1>Five</h1>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -130,7 +130,7 @@ fn p_elements_without_close_tags() -> Result<(), ()> {
 fn ruby_annotation_elements_without_close_tags() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<ruby>東<rb>京<rt>とう<rt>きょう</ruby>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -147,7 +147,7 @@ fn col_group_elements_without_end_tags() -> Result<(), ()> {
     <th>Orange</th>
   </tr>
 </table>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -162,7 +162,7 @@ fn tr_td_th_elements_without_end_tags() -> Result<(), ()> {
     <td>Three
     <td>Four
 </table>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -170,7 +170,7 @@ fn tr_td_th_elements_without_end_tags() -> Result<(), ()> {
 fn named_entities_in_tag_content() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<p>Lorem ipsum &nbsp; dolor sit &copy; amet.</p>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -178,7 +178,7 @@ fn named_entities_in_tag_content() -> Result<(), ()> {
 fn numeric_entities_in_tag_content() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<p>Lorem ipsum &#160; dolor sit &#8212; amet.</p>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -186,7 +186,7 @@ fn numeric_entities_in_tag_content() -> Result<(), ()> {
 fn multiple_entities_in_tag_content() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<p>Lorem ipsum &#xA0; dolor &#xa0; sit &nbsp; amet.</p>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }
 
@@ -194,6 +194,6 @@ fn multiple_entities_in_tag_content() -> Result<(), ()> {
 fn omitted_end_tags() -> Result<(), ()> {
     HtmlDocument::try_parse(
         r#"<!doctype html><html><head>"#,
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
     )
 }

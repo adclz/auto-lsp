@@ -11,7 +11,7 @@ use super::python_workspace::*;
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -36,7 +36,7 @@ fn global_completion_items(foo_bar: (Workspace, Document)) {
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut completion_items = vec![];
-    module.build_completion_items(&document, &mut completion_items);
+    module.build_completion_items(document, &mut completion_items);
 
     assert_eq!(completion_items.len(), 1);
     assert_eq!(completion_items[0].label, "def ...");
@@ -45,7 +45,7 @@ fn global_completion_items(foo_bar: (Workspace, Document)) {
     let function = module.statements[0].read();
 
     let mut completion_items = vec![];
-    function.build_completion_items(&document, &mut completion_items);
+    function.build_completion_items(document, &mut completion_items);
 
     assert_eq!(completion_items.len(), 1);
     assert_eq!(completion_items[0].label, "def ...");
@@ -83,7 +83,7 @@ fn triggered_completion_items(foo_bar: (Workspace, Document)) {
     let node = workspace.ast.as_ref().unwrap().descendant_at(75).unwrap();
 
     let mut completion_items = vec![];
-    node.build_triggered_completion_items(".".into(), &document, &mut completion_items);
+    node.build_triggered_completion_items(".", &document, &mut completion_items);
 
     assert_eq!(completion_items.len(), 1);
     assert_eq!(completion_items[0].label, "triggered! ...");

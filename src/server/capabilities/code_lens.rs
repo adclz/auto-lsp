@@ -17,10 +17,9 @@ impl Session {
             .get(&uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        workspace
+        if let Some(a) = workspace
             .ast
-            .as_ref()
-            .map(|a| a.build_code_lens(document, &mut results));
+            .as_ref() { a.build_code_lens(document, &mut results) }
 
         Ok(Some(results))
     }

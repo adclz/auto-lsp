@@ -3,9 +3,9 @@ use std::rc::Rc;
 
 use super::buildable::*;
 
-/// [`PendingSymbol`] and [`MaybePendingSymbol`] represent symbols being built during the construction process.
-///
-/// These symbols exist only temporarily while building and are not part of the final AST.
+// [`PendingSymbol`] and [`MaybePendingSymbol`] represent symbols being built during the construction process.
+//
+// These symbols exist only temporarily while building and are not part of the final AST.
 
 /// A wrapper for a shared, mutable [`Buildable`] object.
 #[derive(Clone)]

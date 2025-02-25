@@ -21,7 +21,7 @@ impl<'a> EnumBuilder<'a> {
     }
 }
 
-impl<'a> ToTokens for EnumBuilder<'a> {
+impl ToTokens for EnumBuilder<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let mut builder = VariantBuilder::default();
 
@@ -69,7 +69,7 @@ impl<'a> ToTokens for EnumBuilder<'a> {
         });
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
-        builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
+        builder.stage_trait(self.input_builder_name, &PATHS.symbol_builder_trait.path);
 
         self.impl_try_from(&mut builder);
 
@@ -77,82 +77,82 @@ impl<'a> ToTokens for EnumBuilder<'a> {
     }
 }
 
-impl<'a> EnumBuilder<'a> {
+impl EnumBuilder<'_> {
     fn enum_input(&self, builder: &mut VariantBuilder) {
         builder
-            .add_iter(&self.fields, |name, _type, _builder| {
+            .add_iter(self.fields, |name, _type, _builder| {
                 quote! { #name(#_type) }
             })
-            .stage_enum(&self.input_name);
+            .stage_enum(self.input_name);
     }
 
     fn impl_ast_symbol(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.symbol_trait.get_data.sig,
                 &PATHS.symbol_trait.get_data.variant,
             )
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.symbol_trait.get_mut_data.sig,
                 &PATHS.symbol_trait.get_mut_data.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.symbol_trait.path);
+            .stage_trait(self.input_name, &PATHS.symbol_trait.path);
     }
 
     fn impl_check(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.is_check.must_check.sig,
                 &PATHS.is_check.must_check.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.is_check.path);
+            .stage_trait(self.input_name, &PATHS.is_check.path);
 
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.check.check.sig,
                 &PATHS.check.check.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.check.path);
+            .stage_trait(self.input_name, &PATHS.check.path);
     }
 
     fn impl_reference(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.is_reference.is_reference.sig,
                 &PATHS.is_reference.is_reference.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.is_reference.path)
+            .stage_trait(self.input_name, &PATHS.is_reference.path)
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.reference.find.sig,
                 &PATHS.reference.find.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.reference.path);
+            .stage_trait(self.input_name, &PATHS.reference.path);
     }
 
     fn impl_traverse(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.traverse.descendant_at.sig,
                 &PATHS.traverse.descendant_at.variant,
             )
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.traverse.descendant_at_and_collect.sig,
                 &PATHS.traverse.descendant_at_and_collect.variant,
             )
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.traverse.traverse_and_collect.sig,
                 &PATHS.traverse.traverse_and_collect.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.traverse.path);
+            .stage_trait(self.input_name, &PATHS.traverse.path);
     }
 
     #[cfg(feature = "incremental")]
@@ -174,17 +174,17 @@ impl<'a> EnumBuilder<'a> {
     fn impl_indented_display(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.display.fmt.sig,
                 &PATHS.display.fmt.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.display.path)
+            .stage_trait(self.input_name, &PATHS.display.path)
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.indented_display.fmt_with_indent.sig,
                 &PATHS.indented_display.fmt_with_indent.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.indented_display.path);
+            .stage_trait(self.input_name, &PATHS.indented_display.path);
     }
 
     fn impl_queryable(&self, builder: &mut VariantBuilder) {
@@ -203,73 +203,73 @@ impl<'a> EnumBuilder<'a> {
                     auto_lsp::constcat::concat_slices!([&'static str]: #(#concat),*)
                 };
             })
-            .stage_trait(&self.input_builder_name, queryable);
+            .stage_trait(self.input_builder_name, queryable);
     }
 
     fn impl_parent(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.parent.inject_parent.sig,
                 &PATHS.parent.inject_parent.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.parent.path);
+            .stage_trait(self.input_name, &PATHS.parent.path);
     }
 
     fn impl_scope(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.scope.is_scope.sig,
                 &PATHS.scope.is_scope.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.scope.path);
+            .stage_trait(self.input_name, &PATHS.scope.path);
     }
 
     fn impl_comment(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.is_comment.is_comment.sig,
                 &PATHS.is_comment.is_comment.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.is_comment.path);
+            .stage_trait(self.input_name, &PATHS.is_comment.path);
     }
 
     fn impl_code_actions(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_code_actions.build_code_actions.sig,
                 &PATHS.lsp_code_actions.build_code_actions.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_code_actions.path);
+            .stage_trait(self.input_name, &PATHS.lsp_code_actions.path);
     }
 
     fn impl_code_lens(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_code_lens.build_code_lens.sig,
                 &PATHS.lsp_code_lens.build_code_lens.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_code_lens.path);
+            .stage_trait(self.input_name, &PATHS.lsp_code_lens.path);
     }
 
     fn impl_completion_items(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_completion_items.build_completion_items.sig,
                 &PATHS.lsp_completion_items.build_completion_items.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_completion_items.path);
+            .stage_trait(self.input_name, &PATHS.lsp_completion_items.path);
     }
 
     fn impl_invoked_completion_items(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS
                     .lsp_invoked_completion_items
                     .build_triggered_completion_items
@@ -279,74 +279,74 @@ impl<'a> EnumBuilder<'a> {
                     .build_triggered_completion_items
                     .variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_invoked_completion_items.path);
+            .stage_trait(self.input_name, &PATHS.lsp_invoked_completion_items.path);
     }
 
     fn impl_document_symbol(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_document_symbols.build_document_symbols.sig,
                 &PATHS.lsp_document_symbols.build_document_symbols.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_document_symbols.path);
+            .stage_trait(self.input_name, &PATHS.lsp_document_symbols.path);
     }
 
     fn impl_hover_info(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_hover_info.get_hover.sig,
                 &PATHS.lsp_hover_info.get_hover.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_hover_info.path);
+            .stage_trait(self.input_name, &PATHS.lsp_hover_info.path);
     }
 
     fn impl_inlay_hint(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_inlay_hint.build_inlay_hints.sig,
                 &PATHS.lsp_inlay_hint.build_inlay_hints.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_inlay_hint.path);
+            .stage_trait(self.input_name, &PATHS.lsp_inlay_hint.path);
     }
 
     fn impl_semantic_tokens(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_semantic_token.build_semantic_tokens.sig,
                 &PATHS.lsp_semantic_token.build_semantic_tokens.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_semantic_token.path);
+            .stage_trait(self.input_name, &PATHS.lsp_semantic_token.path);
     }
 
     fn impl_go_to_definition(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_go_to_definition.go_to_definition.sig,
                 &PATHS.lsp_go_to_definition.go_to_definition.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_go_to_definition.path);
+            .stage_trait(self.input_name, &PATHS.lsp_go_to_definition.path);
     }
 
     fn impl_go_to_declaration(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.lsp_go_to_declaration.go_to_declaration.sig,
                 &PATHS.lsp_go_to_declaration.go_to_declaration.variant,
             )
-            .stage_trait(&self.input_name, &PATHS.lsp_go_to_declaration.path);
+            .stage_trait(self.input_name, &PATHS.lsp_go_to_declaration.path);
     }
 
     fn struct_input_builder(&self, builder: &mut VariantBuilder) {
         let pending_symbol: &syn::Path = &PATHS.pending_symbol;
         builder
             .add(quote! { pub unique_field: #pending_symbol })
-            .stage_struct(&self.input_builder_name);
+            .stage_struct(self.input_builder_name);
     }
 
     fn fn_new(&self, builder: &mut VariantBuilder) {

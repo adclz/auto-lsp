@@ -10,7 +10,7 @@ use super::python_workspace::*;
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -33,7 +33,7 @@ fn foo_bar_inlay_hints(foo_bar: (Workspace, Document)) {
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut hints = vec![];
-    module.build_inlay_hints(&document, &mut hints);
+    module.build_inlay_hints(document, &mut hints);
 
     assert_eq!(hints.len(), 2);
 

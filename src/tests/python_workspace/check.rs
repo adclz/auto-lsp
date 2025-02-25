@@ -16,28 +16,28 @@ impl Check for TypedDefaultParameter {
                 true => Ok(()),
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    return Err(());
+                    Err(())
                 }
             },
             "float" => match self.value.read().is_float() {
                 true => Ok(()),
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    return Err(());
+                    Err(())
                 }
             },
             "str" => match self.value.read().is_string() {
                 true => Ok(()),
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    return Err(());
+                    Err(())
                 }
             },
             "bool" => match self.value.read().is_true() || self.value.read().is_false() {
                 true => Ok(()),
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    return Err(());
+                    Err(())
                 }
             },
             _ => Err(()),

@@ -15,7 +15,7 @@ impl Workspace {
         if node.has_error() {
             if node.children(&mut cursor).any(|f| f.has_error()) {
                 for child in node.children(&mut cursor) {
-                    Self::get_tree_sitter_errors(&child, &source_code, errors);
+                    Self::get_tree_sitter_errors(&child, source_code, errors);
                 }
             } else {
                 errors.push(format_error(node, source_code));

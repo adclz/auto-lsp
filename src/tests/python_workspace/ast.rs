@@ -1,11 +1,11 @@
 use crate::{self as auto_lsp};
 use auto_lsp::{choice, seq};
 
-pub static COMMENT_QUERY: &'static str = "
+pub static COMMENT_QUERY: &str = "
 (comment) @comment
 ";
 
-pub static CORE_QUERY: &'static str = "
+pub static CORE_QUERY: &str = "
 (module) @module
 
 (import_prefix) @import_prefix

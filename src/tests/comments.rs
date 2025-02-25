@@ -11,7 +11,7 @@ use super::python_workspace::PYTHON_PARSERS;
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -47,7 +47,7 @@ fn foo_bar_comment(foo_bar: (Workspace, Document)) {
 #[fixture]
 fn foo_bar_no_comments() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def foo(param1, param2: int, param3: int = 5):
     pass
@@ -142,7 +142,7 @@ fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
 #[fixture]
 fn foo_bar_with_comments() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):

@@ -42,12 +42,12 @@ impl<'a> StructBuilder<'a> {
             query_name,
             input_builder_name,
             fields,
-            features: Features::new(&darling_input, &input_name, &fields),
+            features: Features::new(darling_input, input_name, fields),
         }
     }
 }
 
-impl<'a> ToTokens for StructBuilder<'a> {
+impl ToTokens for StructBuilder<'_> {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         // generate ast item
 
@@ -89,7 +89,7 @@ impl<'a> ToTokens for StructBuilder<'a> {
         });
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
-        builder.stage_trait(&self.input_builder_name, &PATHS.symbol_builder_trait.path);
+        builder.stage_trait(self.input_builder_name, &PATHS.symbol_builder_trait.path);
 
         // Implement `TryFromBuilder`
         self.impl_try_from(&mut builder);
@@ -101,14 +101,14 @@ impl<'a> ToTokens for StructBuilder<'a> {
     }
 }
 
-impl<'a> StructBuilder<'a> {
+impl StructBuilder<'_> {
     fn struct_input(&self, builder: &mut FieldBuilder) {
         let symbol = &PATHS.symbol;
         let symbol_data = &PATHS.symbol_data;
 
         builder
             .add(quote! { _data: #symbol_data })
-            .add_iter(&self.fields, |ty, _, name, field_type, _| match ty {
+            .add_iter(self.fields, |ty, _, name, field_type, _| match ty {
                 FieldType::Normal => quote! {
                     pub #name: #symbol<#field_type>
                 },
@@ -119,7 +119,7 @@ impl<'a> StructBuilder<'a> {
                     pub #name: Option<#symbol<#field_type>>
                 },
             })
-            .stage_struct(&self.input_name);
+            .stage_struct(self.input_name);
     }
 
     fn impl_ast_symbol(&self, builder: &mut FieldBuilder) {
@@ -129,14 +129,14 @@ impl<'a> StructBuilder<'a> {
         builder
             .add(quote! { #get_data { &self._data } })
             .add(quote! { #get_mut_data { &mut self._data } })
-            .stage_trait(&self.input_name, &PATHS.symbol_trait.path);
+            .stage_trait(self.input_name, &PATHS.symbol_trait.path);
     }
 
     fn impl_traverse(&self, builder: &mut FieldBuilder) {
         let symbol_trait = &PATHS.symbol_trait.path;
         builder
             .add_fn_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.traverse.descendant_at.sig,
                 Some(quote! {
                     use #symbol_trait;
@@ -151,7 +151,7 @@ impl<'a> StructBuilder<'a> {
                 Some(quote! { None }),
             )
             .add_fn_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.traverse.descendant_at_and_collect.sig,
                 Some(quote! {
                     use #symbol_trait;
@@ -165,7 +165,7 @@ impl<'a> StructBuilder<'a> {
                 },
                 Some(quote! { None }),
             )
-            .add_fn_iter(&self.fields, &PATHS.traverse.traverse_and_collect.sig, None, 
+            .add_fn_iter(self.fields, &PATHS.traverse.traverse_and_collect.sig, None, 
                 |_, _, name, _, _| {
                     quote! {
                         self.#name.traverse_and_collect(collect_fn, collect);
@@ -173,13 +173,13 @@ impl<'a> StructBuilder<'a> {
                 },
             None
             )
-            .stage_trait(&self.input_name, &PATHS.traverse.path);
+            .stage_trait(self.input_name, &PATHS.traverse.path);
     }
 
     fn impl_parent(&self, builder: &mut FieldBuilder) {
         builder
             .add_fn_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.parent.inject_parent.sig,
                 None,
                 |_, _, name, _, _| {
@@ -189,7 +189,7 @@ impl<'a> StructBuilder<'a> {
                 },
                 None,
             )
-            .stage_trait(&self.input_name, &PATHS.parent.path);
+            .stage_trait(self.input_name, &PATHS.parent.path);
     }
 
     fn impl_queryable(&self, builder: &mut FieldBuilder) {
@@ -198,7 +198,7 @@ impl<'a> StructBuilder<'a> {
 
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
-            .stage_trait(&self.input_builder_name, queryable);
+            .stage_trait(self.input_builder_name, queryable);
     }
 
     #[cfg(feature = "incremental")]
@@ -240,9 +240,9 @@ impl<'a> StructBuilder<'a> {
                     self.fmt_with_indent(f, 0)
                 }
             })
-            .stage_trait(&self.input_name, &PATHS.display.path)
+            .stage_trait(self.input_name, &PATHS.display.path)
             .add_fn_iter(
-                &self.fields,
+                self.fields,
                 &PATHS.indented_display.fmt_with_indent.sig,
                 Some(quote! {
                     use #indented_display;
@@ -269,7 +269,7 @@ impl<'a> StructBuilder<'a> {
                 },
                 Some(quote! { Ok(()) })
             )
-            .stage_trait(&self.input_name, &PATHS.indented_display.path);
+            .stage_trait(self.input_name, &PATHS.indented_display.path);
     }
 
     fn struct_input_builder(&self, builder: &mut FieldBuilder) {
@@ -280,11 +280,11 @@ impl<'a> StructBuilder<'a> {
             .add(quote! { url: std::sync::Arc<auto_lsp::lsp_types::Url> })
             .add(quote! { query_index: usize })
             .add(quote! { range: std::ops::Range<usize> })
-            .add_iter(&self.fields, |ty, _, name, _, _| match ty {
+            .add_iter(self.fields, |ty, _, name, _, _| match ty {
                 FieldType::Vec => quote! { #name: Vec<#pending_symbol> },
                 _ => quote! { #name: #maybe_pending_symbol },
             })
-            .stage_struct(&self.input_builder_name)
+            .stage_struct(self.input_builder_name)
             .to_token_stream();
     }
 
@@ -293,7 +293,7 @@ impl<'a> StructBuilder<'a> {
         let sig = &PATHS.symbol_builder_trait.new.sig;
 
         let fields = FieldBuilder::default()
-            .add_iter(&self.fields, |ty, _, name, _, _| match ty {
+            .add_iter(self.fields, |ty, _, name, _, _| match ty {
                 FieldType::Vec => quote! { #name: vec![] },
                 _ => quote! { #name: #maybe_pending_symbol::none() },
             })
@@ -320,7 +320,7 @@ impl<'a> StructBuilder<'a> {
         let input_name = &self.input_name;
         let add_symbol_trait = &PATHS.add_symbol_trait;
         builder.add_fn_iter(
-            &self.fields,
+            self.fields,
             &PATHS.symbol_builder_trait.add.sig,
             Some(quote! { use #add_symbol_trait; }),
             |_, _, name, field_type, builder| {
@@ -354,7 +354,7 @@ impl<'a> StructBuilder<'a> {
                 use #try_downcast;
                 use #finalize;
             })
-            .add_iter(&self.fields,
+            .add_iter(self.fields,
                 |ty, _, name, field_type, _| match ty  {
                 FieldType::Normal  => quote! {
                     let #name = #symbol::new_and_check(builder

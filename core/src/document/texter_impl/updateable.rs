@@ -58,17 +58,17 @@ impl<'a> From<&'a mut Tree> for WrapTree<'a> {
     }
 }
 
-impl<'a> Updateable for WrapTree<'a> {
+impl Updateable for WrapTree<'_> {
     /// This implementation of `update` keeps track of the edits made to the tree.
     fn update(&mut self, ctx: UpdateContext) -> Result<(), Error> {
         let new_edits = WrapTree::edit_from_ctx(&ctx)?;
         self.tree.edit(&new_edits.0);
         match self.edits {
             Some(ref mut edits) => {
-                edits.push(((&ctx.change).into(), new_edits.0, new_edits.1).into())
+                edits.push(((&ctx.change), new_edits.0, new_edits.1).into())
             }
             None => {
-                self.edits = Some(vec![((&ctx.change).into(), new_edits.0, new_edits.1).into()])
+                self.edits = Some(vec![((&ctx.change), new_edits.0, new_edits.1).into()])
             }
         };
         Ok(())

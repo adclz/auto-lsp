@@ -291,10 +291,7 @@ impl<T: AstSymbol> Finalize<T> for Option<T> {
     type Output = Option<Symbol<T>>;
 
     fn finalize(self, workspace: &mut Workspace) -> Self::Output {
-        match self {
-            Some(symbol) => Some(Symbol::new_and_check(symbol, workspace)),
-            None => None,
-        }
+        self.map(|symbol| Symbol::new_and_check(symbol, workspace))
     }
 }
 

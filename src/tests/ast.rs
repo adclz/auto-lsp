@@ -10,7 +10,7 @@ use super::html_workspace::*;
 #[fixture]
 fn sample_file() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///sample_file.html").unwrap(),
         r#"<!DOCTYPE html>
 <script></script>

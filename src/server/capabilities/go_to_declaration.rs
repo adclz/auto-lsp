@@ -15,7 +15,7 @@ impl Session {
         let workspace = WORKSPACES.lock();
 
         let (workspace, document) = workspace
-            .get(&uri)
+            .get(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let position = params.text_document_position_params.position;

@@ -20,7 +20,7 @@ impl<'a> Features<'a> {
     }
 }
 
-impl<'a> ToTokens for Features<'a> {
+impl ToTokens for Features<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let input_name = self.input_name;
 

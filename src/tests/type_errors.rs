@@ -8,7 +8,7 @@ use super::python_workspace::*;
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -25,7 +25,7 @@ def bar():
 #[fixture]
 fn foo_bar_with_type_error() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
         def foo(param1, param2: int = "string"):
@@ -65,7 +65,7 @@ fn foo_has_type_error(
 #[fixture]
 fn foo_with_type_error() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def foo(p: int = "x"): pass "#.into(),
     )

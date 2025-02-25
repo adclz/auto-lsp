@@ -10,7 +10,7 @@ impl Workspace {
 
         let ast_parser = self.parsers.ast_parser;
 
-        self.ast = match ast_parser(self, &document, None) {
+        self.ast = match ast_parser(self, document, None) {
             Ok(ast) => Some(ast),
             Err(e) => {
                 self.diagnostics.push(e);
@@ -23,7 +23,7 @@ impl Workspace {
         #[cfg(feature = "log")]
         self.log_unsolved();
 
-        return self;
+        self
     }
     /// Parses a document and updates the AST.
     ///
@@ -142,7 +142,7 @@ impl Workspace {
                 self.log_unsolved();
             }
         }
-        return self;
+        self
     }
 
     #[cfg(feature = "log")]

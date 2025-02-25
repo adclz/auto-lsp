@@ -77,7 +77,7 @@ pub struct RequestDispatcher<'a> {
     req: Option<Request>,
 }
 
-impl<'a, 'b> RequestDispatcher<'a> {
+impl<'a> RequestDispatcher<'a> {
     pub fn new(session: &'a mut Session, req: Request) -> Self {
         RequestDispatcher {
             session,
@@ -126,7 +126,7 @@ pub struct NotificationDispatcher<'a> {
     not: Option<Notification>,
 }
 
-impl<'a, 'b> NotificationDispatcher<'a> {
+impl<'a> NotificationDispatcher<'a> {
     pub fn new(session: &'a mut Session, not: Notification) -> Self {
         NotificationDispatcher {
             session,
@@ -152,10 +152,10 @@ impl<'a, 'b> NotificationDispatcher<'a> {
                 hook(self.session, params)?;
                 Ok(self)
             }
-            Err(err @ ExtractError::JsonError { .. }) => return Err(anyhow::Error::from(err)),
+            Err(err @ ExtractError::JsonError { .. }) => Err(anyhow::Error::from(err)),
             Err(ExtractError::MethodMismatch(not)) => {
                 self.not = Some(not);
-                return Ok(self);
+                Ok(self)
             }
         }
     }

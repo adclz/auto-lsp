@@ -16,7 +16,7 @@ fn matching_specific_values() -> Result<(), ()> {
         character.get(obj, current_room)
     case ["go", direction]:
         current_room = current_room.neighbor(direction)"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -27,7 +27,7 @@ fn matching_multiple_values() -> Result<(), ()> {
     case ["drop", *objects]:
         for obj in objects:
             character.drop(obj, current_room)"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -41,7 +41,7 @@ fn adding_a_wildcard() -> Result<(), ()> {
     case ["drop", *objects]: pass
     case _:
         print(f"Sorry, I couldn't understand {command!r}")"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -54,7 +54,7 @@ fn or_patterns() -> Result<(), ()> {
     case ["get", obj] | ["pick", "up", obj] | ["pick", obj, "up"]:
         pass
 "#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -64,7 +64,7 @@ fn as_patterns() -> Result<(), ()> {
         r#"match command.split():
     case ["go", ("north" | "south" | "east" | "west") as direction]:
         current_room = current_room.neighbor(direction)"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -76,7 +76,7 @@ fn if_guards() -> Result<(), ()> {
         x = False
     case 0 if True:
         x = True"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -97,7 +97,7 @@ fn literals() -> Result<(), ()> {
     case None:
       pass
 "#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -108,7 +108,7 @@ fn coma_separated_cases() -> Result<(), ()> {
     case *x,:
         y = 0
 "#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -119,7 +119,7 @@ fn case_terminating_in_comma() -> Result<(), ()> {
     case a, b:
         return locals()
 "#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -130,7 +130,7 @@ fn multiple_match_patterns() -> Result<(), ()> {
     case a, b:
         return locals()
 "#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -140,7 +140,7 @@ fn walrus_match() -> Result<(), ()> {
         r#"if match := re.fullmatch(r"(-)?(\d+:)?\d?\d:\d\d(\.\d*)?", time, flags=re.ASCII):
     return 42
 "#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -160,7 +160,7 @@ fn matching_objects() -> Result<(), ()> {
     case other_event:
         raise ValueError(f"Unrecognized event: {other_event}")
 "#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -170,7 +170,7 @@ fn positional_arguments() -> Result<(), ()> {
         r#"match event.get():
     case Click((x, y)):
         handle_click_at(x, y)"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }
 
@@ -182,6 +182,6 @@ fn constant_and_enums() -> Result<(), ()> {
         handle_click_at(x, y)
     case Click():
         pass  # ignore other clicks"#,
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
     )
 }

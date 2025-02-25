@@ -14,7 +14,7 @@ impl Session {
         let workspace = WORKSPACES.lock();
 
         let (_, document) = workspace
-            .get(&uri)
+            .get(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
         let root_node = document.tree.root_node();
 
@@ -32,13 +32,10 @@ impl Session {
                     candidate.start_byte() <= offset && candidate.end_byte() > offset
                 });
 
-                match child {
-                    Some(child) => {
-                        stack.push(node.clone());
-                        node = child;
-                        continue;
-                    }
-                    None => (),
+                if let Some(child) = child {
+                    stack.push(node);
+                    node = child;
+                    continue;
                 }
                 break;
             }
@@ -51,7 +48,7 @@ impl Session {
                 };
                 let range = SelectionRange {
                     range,
-                    parent: parent.map(|p| Box::new(p)),
+                    parent: parent.map(Box::new),
                 };
                 parent = Some(range);
             }

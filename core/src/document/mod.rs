@@ -102,7 +102,7 @@ impl Document {
 
     /// Converts a position (line and character) in the document to its corresponding byte offset.
     pub fn offset_at(&self, position: lsp_types::Position) -> Option<usize> {
-        match self.tree.root_node().named_descendant_for_point_range(
+        self.tree.root_node().named_descendant_for_point_range(
             Point {
                 row: position.line as usize,
                 column: position.character as usize,
@@ -111,9 +111,6 @@ impl Document {
                 row: position.line as usize,
                 column: position.character as usize,
             },
-        ) {
-            Some(node) => Some(node.start_byte()),
-            None => None,
-        }
+        ).map(|node| node.start_byte())
     }
 }

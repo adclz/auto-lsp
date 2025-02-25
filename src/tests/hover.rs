@@ -13,7 +13,7 @@ use super::python_workspace::PYTHON_PARSERS;
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -39,7 +39,7 @@ fn foo_bar_hover(foo_bar: (Workspace, Document)) {
     if let Statement::Compound(CompoundStatement::Function(foo)) = foo.deref() {
         let foo_name = foo.name.read();
 
-        let foo_hover = foo_name.get_hover(&document).unwrap();
+        let foo_hover = foo_name.get_hover(document).unwrap();
 
         assert_eq!(
             foo_hover.contents,
@@ -57,7 +57,7 @@ fn foo_bar_hover(foo_bar: (Workspace, Document)) {
     if let Statement::Compound(CompoundStatement::Function(foo)) = bar.deref() {
         let bar_name = foo.name.read();
 
-        let bar_hover = bar_name.get_hover(&document).unwrap();
+        let bar_hover = bar_name.get_hover(document).unwrap();
 
         assert_eq!(
             bar_hover.contents,

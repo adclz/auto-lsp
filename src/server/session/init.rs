@@ -110,9 +110,7 @@ impl Session {
                     true => Some(lsp_types::FoldingRangeProviderCapability::Simple(true)),
                     false => None,
                 },
-                semantic_tokens_provider: match &init_options.lsp_options.semantic_tokens {
-                    Some(options) => Some(
-                        lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
+                semantic_tokens_provider: init_options.lsp_options.semantic_tokens.as_ref().map(|options| lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
                             SemanticTokensOptions {
                                 legend: SemanticTokensLegend {
                                     token_types: options
@@ -128,10 +126,7 @@ impl Session {
                                 full: Some(SemanticTokensFullOptions::Bool(true)),
                                 ..Default::default()
                             },
-                        ),
-                    ),
-                    None => None,
-                },
+                        )),
                 hover_provider: match init_options.lsp_options.hover_info {
                     true => Some(lsp_types::HoverProviderCapability::Simple(true)),
                     false => None,

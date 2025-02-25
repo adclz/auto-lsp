@@ -14,7 +14,7 @@ impl Session {
         let workspace = WORKSPACES.lock();
 
         let (workspace, document) = workspace
-            .get(&uri)
+            .get(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
@@ -22,7 +22,7 @@ impl Session {
         workspace
             .ast
             .iter()
-            .for_each(|p| p.build_semantic_tokens(&document, &mut builder));
+            .for_each(|p| p.build_semantic_tokens(document, &mut builder));
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }
@@ -36,7 +36,7 @@ impl Session {
         let workspace = WORKSPACES.lock();
 
         let (workspace, document) = workspace
-            .get(&uri)
+            .get(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
@@ -44,7 +44,7 @@ impl Session {
         workspace
             .ast
             .iter()
-            .for_each(|p| p.build_semantic_tokens(&document, &mut builder));
+            .for_each(|p| p.build_semantic_tokens(document, &mut builder));
 
         Ok(SemanticTokensResult::Tokens(builder.build()))
     }

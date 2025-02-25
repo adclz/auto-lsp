@@ -27,7 +27,7 @@ impl Session {
 
         // Validate that the parsers provided by the client exist
         for (file_extension, parser) in &options.perFileParser {
-            if let false = self.init_options.parsers.contains_key(parser.as_str()) {
+            if !self.init_options.parsers.contains_key(parser.as_str()) {
                 return Err(anyhow::format_err!(
                     "Error: Parser {} not found for file extension {}",
                     parser,
@@ -42,7 +42,7 @@ impl Session {
         collect_workspace_files(&self.extensions, &params.workspace_folders)
             .into_iter()
             .try_for_each(|file| {
-                let mut open_file = File::open(&file.to_file_path().unwrap())?;
+                let mut open_file = File::open(file.to_file_path().unwrap())?;
                 let mut buffer = String::new();
                 open_file.read_to_string(&mut buffer)?;
 
@@ -107,13 +107,13 @@ fn collect_workspace_files(
 ) -> Vec<Url> {
     let mut roots = Vec::new();
     if let Some(folders) = workspace_folders {
-        folders.into_iter().for_each(|folder| {
+        folders.iter().for_each(|folder| {
             WalkDir::new(folder.uri.path())
                 .into_iter()
                 .filter_map(Result::ok)
                 .filter(|entry| {
                     entry.file_type().is_file()
-                        && entry.path().extension().map_or(false, |ext| {
+                        && entry.path().extension().is_some_and(|ext| {
                             extensions.contains_key(ext.to_string_lossy().as_ref())
                         })
                 })

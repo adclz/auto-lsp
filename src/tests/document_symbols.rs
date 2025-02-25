@@ -8,7 +8,7 @@ use rstest::{fixture, rstest};
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -28,7 +28,7 @@ fn foo_bar_document_symbols(foo_bar: (Workspace, Document)) {
     let document = &foo_bar.1;
 
     let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder);
+    ast.build_document_symbols(document, &mut builder);
     let symbols = builder.finalize();
 
     assert_eq!(symbols.len(), 2);
@@ -43,7 +43,7 @@ fn foo_bar_document_symbols(foo_bar: (Workspace, Document)) {
 #[fixture]
 fn foo_bar_nested_baz() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -64,7 +64,7 @@ fn foo_bar_nested_bazdocument_symbols(foo_bar_nested_baz: (Workspace, Document))
     let document = &foo_bar_nested_baz.1;
 
     let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder);
+    ast.build_document_symbols(document, &mut builder);
     let symbols = builder.finalize();
 
     assert_eq!(symbols.len(), 2);

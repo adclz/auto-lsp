@@ -25,7 +25,7 @@ mod utilities;
 use std::cell::LazyCell;
 
 /// Paths of every structs, enums, traits and functions from core crate
-const PATHS: LazyCell<Paths> = LazyCell::new(|| Paths::default());
+const PATHS: LazyCell<Paths> = LazyCell::new(Paths::default);
 
 /// A procedural macro for generating an AST symbol from a struct.
 ///
@@ -110,9 +110,9 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
         StructBuilder::new(
             &attributes,
             &input_attr,
-            &input_name,
+            input_name,
             &input_builder_name,
-            &query_name,
+            query_name,
             &fields,
         )
         .to_token_stream(),
@@ -146,6 +146,6 @@ pub fn choice(_args: TokenStream, input: TokenStream) -> TokenStream {
     let fields = extract_variants(&input.data);
     let mut tokens = proc_macro2::TokenStream::new();
 
-    EnumBuilder::new(&input_name, &input_builder_name, &fields).to_tokens(&mut tokens);
+    EnumBuilder::new(input_name, &input_builder_name, &fields).to_tokens(&mut tokens);
     tokens.into()
 }

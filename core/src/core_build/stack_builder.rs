@@ -64,7 +64,7 @@ where
         let result = result
             .downcast_ref::<T>()
             .ok_or(builder_error!(
-                result.get_lsp_range(&self.document),
+                result.get_lsp_range(self.document),
                 format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
             ))?
             .try_into_builder(self.workspace, self.document)?;
@@ -93,7 +93,7 @@ where
                 result
                     .downcast_ref::<T>()
                     .ok_or(builder_error!(
-                        result.get_lsp_range(&self.document),
+                        result.get_lsp_range(self.document),
                         format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
                     ))?
                     .try_into_builder(self.workspace, self.document)
@@ -136,8 +136,8 @@ where
             // is within the given range, we also check if T contains the query name .
             if !self.build {
                 if let Some(range) = &range {
-                    if ((capture.node.range().start_byte > range.start as usize)
-                        || (capture.node.range().start_byte == range.start as usize))
+                    if ((capture.node.range().start_byte > range.start)
+                        || (capture.node.range().start_byte == range.start))
                         && T::QUERY_NAMES.contains(
                             &self
                                 .workspace
@@ -175,16 +175,11 @@ where
                     // If there's no parent, create a root node.
                     None => {
                         // There can only be one root node unless only_one_node is true.
-                        if multiple {
+                        if multiple || self.roots.is_empty() {
                             self.create_root_node(&capture, capture_index);
                             break;
                         } else {
-                            if self.roots.is_empty() {
-                                self.create_root_node(&capture, capture_index);
-                                break;
-                            } else {
-                                return self;
-                            }
+                            return self;
                         }
                     }
                     // If there's a parent, checks if the parent's range intersects with the current capture.
@@ -212,7 +207,7 @@ where
         let mut node = T::new(
             self.workspace.url.clone(),
             &self.workspace.parsers.tree_sitter.queries.core,
-            &capture,
+            capture,
         );
 
         match node.take() {
@@ -230,7 +225,7 @@ where
                         .tree_sitter
                         .queries
                         .core
-                        .capture_names()[capture_index as usize],
+                        .capture_names()[capture_index],
                 )
             )),
         }
@@ -241,7 +236,7 @@ where
         let add = parent
             .get_rc()
             .borrow_mut()
-            .add(&capture, self.workspace, &self.document);
+            .add(capture, self.workspace, self.document);
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.

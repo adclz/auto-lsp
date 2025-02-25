@@ -24,13 +24,13 @@ impl Session {
         let workspace = WORKSPACES.lock();
 
         let (workspace, document) = workspace
-            .get(&uri)
+            .get(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
         let mut results = vec![];
-        let matches = workspace.find_all_with_regex(&document, &re);
+        let matches = workspace.find_all_with_regex(document, re);
         matches.into_iter().for_each(|(m, line)| {
-            to_document_link(m, line, &document, &workspace, &mut results);
+            to_document_link(m, line, document, workspace, &mut results);
         });
 
         Ok(results)

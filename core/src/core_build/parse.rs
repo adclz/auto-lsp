@@ -143,7 +143,7 @@ where
                 }
 
                 if let Ok(ast) = result {
-                    report.add_note(format!("\n\n {}", ast.to_string()));
+                    report.add_note(format!("\n\n {}", ast));
                 }
 
                 report.finish().print(source).unwrap();

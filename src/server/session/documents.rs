@@ -70,7 +70,7 @@ impl Session {
         )?;
 
         // Update AST
-        workspace.parse(Some(&edits), &document);
+        workspace.parse(Some(&edits), document);
         Ok(())
     }
 }

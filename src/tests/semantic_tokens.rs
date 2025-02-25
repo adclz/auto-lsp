@@ -11,7 +11,7 @@ use crate::python::semantic_tokens::{DECLARATION, FUNCTION, SUPPORTED_MODIFIERS,
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -34,7 +34,7 @@ fn foo_bar_semantic_tokens(foo_bar: (Workspace, Document)) {
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
-    module.build_semantic_tokens(&document, &mut builder);
+    module.build_semantic_tokens(document, &mut builder);
 
     let tokens = builder.build().data;
 

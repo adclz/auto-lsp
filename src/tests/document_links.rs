@@ -9,7 +9,7 @@ use super::html_workspace::*;
 #[fixture]
 fn comments_with_link() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///sample_file.html").unwrap(),
         r#"<!DOCTYPE html>
 <!-- source:file1.txt:52 -->         
@@ -39,7 +39,7 @@ fn document_links(comments_with_link: (Workspace, Document)) {
 #[fixture]
 fn multiline_comment_with_links() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///sample_file.html").unwrap(),
         r#"<!DOCTYPE html>
 <div>

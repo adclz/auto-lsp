@@ -1,19 +1,16 @@
-#[cfg(feature = "python")]
-use auto_lsp::python::PYTHON_PARSERS;
-use auto_lsp_core::workspace::Workspace;
 use criterion::Criterion;
-use lsp_types::Url;
 
-use auto_lsp::{self as auto_lsp};
-
-pub fn parse_django(c: &mut Criterion) {
-    let text = include_str!("django.py").to_string();
+pub fn parse_django(_c: &mut Criterion) {
+    let _text = include_str!("django.py").to_string();
     #[cfg(feature = "python")]
-    c.bench_function("parse_django", move |b| {
+    _c.bench_function("parse_django", move |b| {
         b.iter(|| {
-            let uri = Url::parse("file:///test.py").unwrap();
-            let workspace =
-                Workspace::from_utf8(PYTHON_PARSERS.get("python").unwrap(), uri, text.clone());
+            let uri = lsp_types::Url::parse("file:///test.py").unwrap();
+            let workspace = auto_lsp_core::workspace::Workspace::from_utf8(
+                auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
+                uri,
+                _text.clone(),
+            );
             workspace
         });
     });

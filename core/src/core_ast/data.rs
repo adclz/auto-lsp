@@ -92,7 +92,7 @@ impl GetSymbolData for SymbolData {
     }
 
     fn get_parent(&self) -> Option<WeakSymbol> {
-        self.parent.as_ref().map(|p| p.clone())
+        self.parent.clone()
     }
 
     fn set_parent(&mut self, parent: WeakSymbol) {

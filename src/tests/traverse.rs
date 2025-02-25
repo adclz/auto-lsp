@@ -11,7 +11,7 @@ use super::html_workspace::*;
 #[fixture]
 fn nested_divs() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///nested.html").unwrap(),
         r#"<!DOCTYPE html>
 <div>
@@ -70,15 +70,7 @@ fn descendant_at_and_collect(nested_divs: (Workspace, Document)) {
     let mut collected = vec![];
     let descendant = ast.descendant_at_and_collect(
         59,
-        |d| {
-            if d.read().is::<Element>() {
-                true
-            } else if let Some(Node::Element(_)) = d.read().downcast_ref::<Node>() {
-                true
-            } else {
-                false
-            }
-        },
+        |d| matches!(d.read().downcast_ref::<Node>(), Some(Node::Element(_))),
         &mut collected,
     );
 

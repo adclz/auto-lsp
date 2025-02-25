@@ -243,7 +243,7 @@ pub trait BuildCodeActions {
     fn build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>) {}
 }
 
-/// Special capabilities
+// Special capabilities
 
 /// Tree traversal
 pub trait Traverse {

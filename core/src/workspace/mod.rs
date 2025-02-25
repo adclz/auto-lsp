@@ -103,7 +103,7 @@ impl Workspace {
 
         // Initialize the document with the source code and syntax tree.
         let document = Document {
-            texter: Text::new(source_code.into()),
+            texter: Text::new(source_code),
             tree,
         };
 

@@ -3,7 +3,7 @@ use crate::{choice, seq};
 
 use crate::configure_parsers;
 
-static CORE_QUERY: &'static str = "
+static CORE_QUERY: &str = "
 (document) @document
 (doctype) @doctype
 (text) @text
@@ -28,7 +28,7 @@ static CORE_QUERY: &'static str = "
 (quoted_attribute_value) @quoted_attribute_value
 ";
 
-static COMMENT_QUERY: &'static str = "
+static COMMENT_QUERY: &str = "
 (comment) @comment
 ";
 

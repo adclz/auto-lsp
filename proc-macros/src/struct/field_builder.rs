@@ -14,11 +14,11 @@ pub struct FieldInfo {
 }
 
 pub trait FieldInfoExtract {
-    fn get_field_names<'a>(&'a self) -> Vec<&'a Ident>;
+    fn get_field_names(&self) -> Vec<&Ident>;
 }
 
 impl FieldInfoExtract for Vec<FieldInfo> {
-    fn get_field_names<'a>(&'a self) -> Vec<&'a Ident> {
+    fn get_field_names(&self) -> Vec<&Ident> {
         self.iter().map(|field| &field.ident).collect()
     }
 }
@@ -83,7 +83,7 @@ pub struct Fields {
 
 impl Fields {
     /// Returns a list of field names in the struct, regardless of type.
-    pub fn get_field_names<'a>(&'a self) -> Vec<&'a Ident> {
+    pub fn get_field_names(&self) -> Vec<&Ident> {
         let mut ret = vec![];
         ret.extend(self.field_names.get_field_names());
         ret.extend(self.field_vec_names.get_field_names());
@@ -92,7 +92,7 @@ impl Fields {
     }
 
     // Returns a list of field types in the struct, regardless of type.
-    pub fn get_field_types<'a>(&'a self) -> Vec<&'a Ident> {
+    pub fn get_field_types(&self) -> Vec<&Ident> {
         let mut ret = vec![];
         ret.extend(&self.field_types_names);
         ret.extend(&self.field_vec_types_names);
@@ -101,7 +101,7 @@ impl Fields {
     }
 
     // Returns a list of field builder names in the struct, regardless of type.
-    pub fn get_field_builder_names<'a>(&'a self) -> Vec<&'a Ident> {
+    pub fn get_field_builder_names(&self) -> Vec<&Ident> {
         let mut ret = vec![];
         ret.extend(&self.field_builder_names);
         ret.extend(&self.field_vec_builder_names);
@@ -212,13 +212,13 @@ impl FieldBuilder {
         let mut _fields: Vec<TokenStream> = vec![];
 
         if !fields.field_names.is_empty() {
-            _fields.extend::<Vec<TokenStream>>(self.apply(&fields, &f) as _);
+            _fields.extend::<Vec<TokenStream>>(self.apply(fields, &f) as _);
         }
         if !fields.field_option_names.is_empty() {
-            _fields.extend::<Vec<TokenStream>>(self.apply_opt(&fields, &f) as _);
+            _fields.extend::<Vec<TokenStream>>(self.apply_opt(fields, &f) as _);
         }
         if !fields.field_vec_names.is_empty() {
-            _fields.extend::<Vec<TokenStream>>(self.apply_vec(&fields, &f) as _);
+            _fields.extend::<Vec<TokenStream>>(self.apply_vec(fields, &f) as _);
         }
         self.unstaged.extend(_fields);
         self
@@ -249,13 +249,13 @@ impl FieldBuilder {
     {
         let mut _body: Vec<TokenStream> = vec![];
         if !fields.field_names.is_empty() {
-            _body.extend::<Vec<TokenStream>>(self.apply(&fields, &body) as _);
+            _body.extend::<Vec<TokenStream>>(self.apply(fields, &body) as _);
         }
         if !fields.field_option_names.is_empty() {
-            _body.extend::<Vec<TokenStream>>(self.apply_opt(&fields, &body) as _);
+            _body.extend::<Vec<TokenStream>>(self.apply_opt(fields, &body) as _);
         }
         if !fields.field_vec_names.is_empty() {
-            _body.extend::<Vec<TokenStream>>(self.apply_vec(&fields, &body) as _);
+            _body.extend::<Vec<TokenStream>>(self.apply_vec(fields, &body) as _);
         }
 
         let mut result = TokenStream::default();
@@ -345,8 +345,8 @@ impl FieldBuilder {
                     FieldType::Normal,
                     &field.attr,
                     &field.ident,
-                    &field_type,
-                    &field_builder,
+                    field_type,
+                    field_builder,
                 )
             })
             .collect::<Vec<_>>()
@@ -367,8 +367,8 @@ impl FieldBuilder {
                     FieldType::Option,
                     &field.attr,
                     &field.ident,
-                    &field_type,
-                    &field_builder,
+                    field_type,
+                    field_builder,
                 )
             })
             .collect::<Vec<_>>()
@@ -389,8 +389,8 @@ impl FieldBuilder {
                     FieldType::Vec,
                     &field.attr,
                     &field.ident,
-                    &field_type,
-                    &field_builder,
+                    field_type,
+                    field_builder,
                 )
             })
             .collect::<Vec<_>>()
