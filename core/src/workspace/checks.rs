@@ -64,7 +64,7 @@ impl Workspace {
                     None => return false,
                 };
                 let read = item.read();
-                match read.find(&document) {
+                match read.find(document) {
                     Ok(Some(target)) => {
                         target.write().add_referrer(item.to_weak());
                         drop(read);
@@ -120,7 +120,7 @@ impl Workspace {
                     Some(read) => read,
                     None => return false,
                 };
-                let check_result = item.read().check(&document, &mut diagnostics.write());
+                let check_result = item.read().check(document, &mut diagnostics.write());
                 match check_result {
                     Ok(()) => {
                         item.write().update_check_pending(false);

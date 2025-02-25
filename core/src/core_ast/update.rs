@@ -212,7 +212,7 @@ where
         workspace: &mut Workspace,
         document: &Document,
     ) {
-        self.as_mut().map(|f| {
+        if let Some(f) = self.as_mut() {
             let mut write = f.write();
             let data = write.get_mut_data();
             edit_range(
@@ -227,7 +227,7 @@ where
                 write.set_comment(None);
             }
             write.adjust(edit, collect, workspace, document)
-        });
+        };
     }
 
     fn update(
@@ -445,7 +445,7 @@ where
                     }
                 }
 
-                return match (insert_position, last_position) {
+                match (insert_position, last_position) {
                     (Some(start), Some(end)) => {
                         let parent = self.get(end).unwrap().read().get_parent();
 
@@ -477,7 +477,7 @@ where
                         generate_symbols(self, workspace, document, range, end, end, parent)
                     }
                     (None, None) => ControlFlow::Continue(()),
-                };
+                }
             }
         }
     }

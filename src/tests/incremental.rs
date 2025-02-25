@@ -17,7 +17,7 @@ use super::python_workspace::PYTHON_PARSERS;
 #[fixture]
 fn empty() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///sample_file.html").unwrap(),
         r#""#.into(),
     )
@@ -76,7 +76,7 @@ fn empty_document(empty: (Workspace, Document)) {
 #[fixture]
 fn foo() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def foo(param1, param2: int, param3: int = 5):
     pass"#
@@ -285,7 +285,7 @@ fn insert_bar(mut foo: (Workspace, Document)) {
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def foo(param1, param2: int, param3: int = 5):
     pass
@@ -388,7 +388,7 @@ fn insert_baz_between(mut foo_bar: (Workspace, Document)) {
 #[fixture]
 fn string_filter() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def stringfilter(func):
 

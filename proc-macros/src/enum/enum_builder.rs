@@ -169,16 +169,16 @@ impl EnumBuilder<'_> {
     fn impl_dynamic_swap(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &self.paths.dynamic_swap.adjust.sig,
                 &self.paths.dynamic_swap.adjust.variant,
             )
             .add_pattern_match_iter(
-                &self.fields,
+                self.fields,
                 &self.paths.dynamic_swap.swap.sig,
                 &self.paths.dynamic_swap.swap.variant,
             )
-            .stage_trait(&self.input_name, &self.paths.dynamic_swap.path);
+            .stage_trait(self.input_name, &self.paths.dynamic_swap.path);
     }
 
     fn impl_indented_display(&self, builder: &mut VariantBuilder) {

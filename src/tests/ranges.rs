@@ -12,7 +12,7 @@ use super::python_workspace::*;
 #[fixture]
 fn divs() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///sample_file.html").unwrap(),
         r#"<div> </div>"#.into(),
     )
@@ -150,7 +150,7 @@ fn delete_whitespace(divs: (Workspace, Document)) {
 #[fixture]
 fn empty() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &HTML_PARSERS.get("html").unwrap(),
+        HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///sample_file.html").unwrap(),
         r#""#.into(),
     )
@@ -160,7 +160,7 @@ fn empty() -> (Workspace, Document) {
 #[fixture]
 fn foo() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def foo(param1, param2: int, param3: int = 5):
     pass"#
@@ -219,7 +219,7 @@ fn add_space_after_pass(foo: (Workspace, Document)) {
 #[fixture]
 fn foo_bar() -> (Workspace, Document) {
     Workspace::from_utf8(
-        &PYTHON_PARSERS.get("python").unwrap(),
+        PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def bar(param1, param2: int, param3: int = 5):
     pass

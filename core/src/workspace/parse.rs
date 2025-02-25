@@ -164,17 +164,17 @@ impl Workspace {
 
 #[cfg(feature = "incremental")]
 /// Filters intersecting edits and keeps only the largest non-overlapping ones.
-fn filter_intersecting_edits(params: &Vec<Change>) -> Vec<Change> {
+fn filter_intersecting_edits(params: &[Change]) -> Vec<Change> {
     if params.is_empty() {
         return vec![];
     }
 
     if params.len() == 1 {
-        return params.clone();
+        return params.to_owned();
     }
 
     // Sort by range
-    let mut sorted_edits = params.clone();
+    let mut sorted_edits = params.to_vec();
     sorted_edits
         .sort_by_key(|change| change.input_edit.start_byte + change.input_edit.new_end_byte);
 

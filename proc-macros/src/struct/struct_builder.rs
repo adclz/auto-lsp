@@ -210,7 +210,7 @@ impl StructBuilder<'_> {
         let static_update_trait = &self.paths.static_swap.path;
         builder
             .add_fn_iter(
-                &self.fields,
+                self.fields,
                 &self.paths.dynamic_swap.adjust.sig,
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
@@ -221,7 +221,7 @@ impl StructBuilder<'_> {
                 None
             )
             .add_fn_iter(
-                &self.fields,
+                self.fields,
                 &self.paths.dynamic_swap.swap.sig,
                 Some(quote! { use #static_update_trait; }),
                 |_, _, name, _, _| {
@@ -231,7 +231,7 @@ impl StructBuilder<'_> {
                 },
                 Some(quote! { std::ops::ControlFlow::Continue(()) }),
             )
-            .stage_trait(&self.input_name, &self.paths.dynamic_swap.path);
+            .stage_trait(self.input_name, &self.paths.dynamic_swap.path);
     }
 
     fn impl_indented_display(&self, builder: &mut FieldBuilder) {
