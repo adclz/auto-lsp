@@ -65,7 +65,7 @@ nested_struct!(
 
         pub lsp_code_lens: LspCodeLens {
             pub path: Path,
-            pub build_code_lens: Method
+            pub build_code_lenses: Method
         },
         pub lsp_code_actions: LspCodeActions {
             pub path: Path,
@@ -238,9 +238,9 @@ impl Default for Paths {
             },
             lsp_code_lens: LspCodeLens {
                 path: core_ast(parse_quote!(BuildCodeLenses)),
-                build_code_lens: Method {
-                    sig: quote! { fn build_code_lens(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
-                    variant: quote! { build_code_lens(doc, acc) },
+                build_code_lenses: Method {
+                    sig: quote! { fn build_code_lenses(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
+                    variant: quote! { build_code_lenses(doc, acc) },
                 },
             },
             lsp_code_actions: LspCodeActions {

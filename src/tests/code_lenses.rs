@@ -29,7 +29,7 @@ fn foo_bar_code_lens(foo_bar: (Workspace, Document)) {
     let document = &foo_bar.1;
 
     let mut code_lens = vec![];
-    ast.build_code_lens(document, &mut code_lens);
+    ast.build_code_lenses(document, &mut code_lens);
 
     assert_eq!(code_lens.len(), 2);
 

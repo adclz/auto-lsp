@@ -260,8 +260,8 @@ impl EnumBuilder<'_> {
         builder
             .add_pattern_match_iter(
                 self.fields,
-                &self.paths.lsp_code_lens.build_code_lens.sig,
-                &self.paths.lsp_code_lens.build_code_lens.variant,
+                &self.paths.lsp_code_lens.build_code_lenses.sig,
+                &self.paths.lsp_code_lens.build_code_lenses.variant,
             )
             .stage_trait(self.input_name, &self.paths.lsp_code_lens.path);
     }

@@ -165,7 +165,7 @@ pub trait BuildInlayHints {
     fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {}
 }
 
-/// [LSP BuildCodeLenses specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
+/// [LSP CodeLens specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
 pub trait BuildCodeLenses {
     /// Code lens builder
     ///
@@ -175,7 +175,7 @@ pub trait BuildCodeLenses {
     /// use auto_lsp_core::ast::BuildCodeLenses;
     ///
     /// impl BuildCodeLenses for MySymbol {
-    ///   fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+    ///   fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
     ///     acc.push(lsp_types::CodeLens {
     ///         range: lsp_types::Range::default(),
     ///         command: None,
@@ -184,7 +184,7 @@ pub trait BuildCodeLenses {
     ///   }
     /// }
     /// ```
-    fn build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
+    fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
 }
 
 /// [LSP CompletionItem specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
@@ -566,7 +566,7 @@ impl_dyn_symbol!(GetGoToDeclaration, go_to_declaration(&self, doc: &Document) ->
 impl_dyn_symbol!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder));
 impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
 impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
-impl_dyn_symbol!(BuildCodeLenses, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
+impl_dyn_symbol!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>));
 impl_dyn_symbol!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
 impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));
@@ -594,7 +594,7 @@ macro_rules! impl_build {
 impl_build!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder));
 impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
 impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
-impl_build!(BuildCodeLenses, build_code_lens(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
+impl_build!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
 impl_build!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
 impl_build!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));
