@@ -67,12 +67,25 @@ pub type InvokeParserFn = fn(
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
-pub type TryParseResult<E = AriadneReport> = Result<(), E>;
+pub type TestParseResult<E = AriadneReport> = anyhow::Result<(), E>;
 
-#[derive(Debug)]
 pub struct AriadneReport {
     pub result: Report<'static>,
     pub cache: Source<&'static str>,
+}
+
+impl std::fmt::Debug for AriadneReport {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self, f)
+    }
+}
+
+impl std::fmt::Display for AriadneReport {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut output = Vec::<u8>::new();
+        self.result.write(self.cache.clone(), &mut output).unwrap();
+        write!(f, "{}", String::from_utf8_lossy(&output).into_owned())
+    }
 }
 
 pub trait TryParse<
@@ -86,10 +99,8 @@ pub trait TryParse<
     /// - `test_code`: The code to be parsed and analyzed.
     /// - `parsers`: A reference to the parsers for syntax tree generation.
     ///
-    /// # Returns
-    /// - `Ok(())` if the code was successfully parsed and validated.
-    /// - `Err(Result<(), ()>)` if any parsing or validation errors occurred.
-    fn try_parse(test_code: &'static str, parsers: &'static Parsers) -> Result<(), ()>;
+    /// # Returns [`TestParseResult`]
+    fn test_parse(test_code: &'static str, parsers: &'static Parsers) -> TestParseResult;
 }
 
 impl<T, Y> TryParse<T, Y> for Y
@@ -97,7 +108,7 @@ where
     T: Buildable + Queryable,
     Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
-    fn try_parse(test_code: &'static str, parsers: &'static Parsers) -> Result<(), ()> {
+    fn test_parse(test_code: &'static str, parsers: &'static Parsers) -> TestParseResult {
         let source = Source::from(test_code);
 
         let (mut workspace, document) = match Workspace::from_utf8(
@@ -107,12 +118,12 @@ where
         ) {
             Ok(workspace) => workspace,
             Err(err) => {
-                Report::build(ReportKind::Error, 0..source.len())
-                    .with_message(err.to_string())
-                    .finish()
-                    .print(source)
-                    .unwrap();
-                return Err(());
+                return Err(AriadneReport {
+                    result: Report::build(ReportKind::Error, 0..test_code.len())
+                        .with_message(err.to_string())
+                        .finish(),
+                    cache: source,
+                });
             }
         };
 
@@ -122,7 +133,7 @@ where
         match &workspace.diagnostics.is_empty() {
             false => {
                 let mut colors = ColorGenerator::new();
-                let mut report = Report::build(ReportKind::Error, 0..source.len()).with_message(
+                let mut report = Report::build(ReportKind::Error, 0..test_code.len()).with_message(
                     format!("Parsing failed: {} error(s)", workspace.diagnostics.len()),
                 );
 
@@ -143,11 +154,13 @@ where
                 }
 
                 if let Ok(ast) = result {
-                    report.add_note(format!("\n\n {}", ast));
+                    report.add_note(format!("{}", ast));
                 }
 
-                report.finish().print(source).unwrap();
-                Err(())
+                Err(AriadneReport {
+                    result: report.finish(),
+                    cache: source,
+                })
             }
             true => Ok(()),
         }

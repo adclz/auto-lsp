@@ -1,24 +1,24 @@
-use auto_lsp_core::build::TryParse;
+use auto_lsp_core::build::{TestParseResult, TryParse};
 
 use super::html_workspace::*;
 use crate::html::HtmlDocument;
 
 #[test]
-fn tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(r#"<span>Hello</span>"#, HTML_PARSERS.get("html").unwrap())
+fn tags() -> TestParseResult {
+    HtmlDocument::test_parse(r#"<span>Hello</span>"#, HTML_PARSERS.get("html").unwrap())
 }
 
 #[test]
-fn tags_with_attributes() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn tags_with_attributes() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<input value=yes class="a" data-💩></input>"#,
         HTML_PARSERS.get("html").unwrap(),
     )
 }
 
 #[test]
-fn nested_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn nested_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<div>
   <span>a</span>
   b
@@ -31,24 +31,24 @@ fn nested_tags() -> Result<(), ()> {
 }
 
 #[test]
-fn void_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn void_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<form><img src="something.png"><br><input type=submit value=Ok /></form>"#,
         HTML_PARSERS.get("html").unwrap(),
     )
 }
 
 #[test]
-fn void_tags_at_eof() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn void_tags_at_eof() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<img src="something.png">"#,
         HTML_PARSERS.get("html").unwrap(),
     )
 }
 
 #[test]
-fn custom_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn custom_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<something:different>
   <atom-text-editor mini>
     Hello
@@ -59,8 +59,8 @@ fn custom_tags() -> Result<(), ()> {
 }
 
 #[test]
-fn raw_text_elements() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn raw_text_elements() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<script>
   </s
   </sc
@@ -80,8 +80,8 @@ fn raw_text_elements() -> Result<(), ()> {
 }
 
 #[test]
-fn all_caps_doctype() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn all_caps_doctype() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<!DOCTYPE html PUBLIC
   "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">"#,
@@ -90,8 +90,8 @@ fn all_caps_doctype() -> Result<(), ()> {
 }
 
 #[test]
-fn li_elements_without_close_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn li_elements_without_close_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<ul>
   <li>One
   <li>Two
@@ -101,8 +101,8 @@ fn li_elements_without_close_tags() -> Result<(), ()> {
 }
 
 #[test]
-fn dt_and_dl_elements_without_close_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn dt_and_dl_elements_without_close_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<dl>
   <dt>Coffee
   <dt>Café
@@ -115,8 +115,8 @@ fn dt_and_dl_elements_without_close_tags() -> Result<(), ()> {
 }
 
 #[test]
-fn p_elements_without_close_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn p_elements_without_close_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<p>One
 <div>Two</div>
 <p>Three
@@ -127,16 +127,16 @@ fn p_elements_without_close_tags() -> Result<(), ()> {
 }
 
 #[test]
-fn ruby_annotation_elements_without_close_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn ruby_annotation_elements_without_close_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<ruby>東<rb>京<rt>とう<rt>きょう</ruby>"#,
         HTML_PARSERS.get("html").unwrap(),
     )
 }
 
 #[test]
-fn col_group_elements_without_end_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn col_group_elements_without_end_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<table>
   <colgroup>
     <col style="background-color: #0f0">
@@ -152,8 +152,8 @@ fn col_group_elements_without_end_tags() -> Result<(), ()> {
 }
 
 #[test]
-fn tr_td_th_elements_without_end_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn tr_td_th_elements_without_end_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<table>
   <tr>
     <th>One
@@ -167,32 +167,32 @@ fn tr_td_th_elements_without_end_tags() -> Result<(), ()> {
 }
 
 #[test]
-fn named_entities_in_tag_content() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn named_entities_in_tag_content() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<p>Lorem ipsum &nbsp; dolor sit &copy; amet.</p>"#,
         HTML_PARSERS.get("html").unwrap(),
     )
 }
 
 #[test]
-fn numeric_entities_in_tag_content() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn numeric_entities_in_tag_content() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<p>Lorem ipsum &#160; dolor sit &#8212; amet.</p>"#,
         HTML_PARSERS.get("html").unwrap(),
     )
 }
 
 #[test]
-fn multiple_entities_in_tag_content() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn multiple_entities_in_tag_content() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<p>Lorem ipsum &#xA0; dolor &#xa0; sit &nbsp; amet.</p>"#,
         HTML_PARSERS.get("html").unwrap(),
     )
 }
 
 #[test]
-fn omitted_end_tags() -> Result<(), ()> {
-    HtmlDocument::try_parse(
+fn omitted_end_tags() -> TestParseResult {
+    HtmlDocument::test_parse(
         r#"<!doctype html><html><head>"#,
         HTML_PARSERS.get("html").unwrap(),
     )
