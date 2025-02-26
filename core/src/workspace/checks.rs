@@ -1,5 +1,4 @@
-use crate::ast::ReferrersTrait;
-use crate::ast::{DynSymbol, WeakSymbol};
+use crate::ast::{CheckStatus, DynSymbol, ReferrersTrait, WeakSymbol};
 use crate::document::Document;
 
 use super::Workspace;
@@ -92,11 +91,11 @@ impl Workspace {
             };
             let check_result = item.read().check(document, &mut self.diagnostics);
             match check_result {
-                Ok(()) => {
+                CheckStatus::Ok => {
                     item.write().update_check_pending(false);
                     false
                 }
-                Err(()) => {
+                CheckStatus::Fail => {
                     item.write().update_check_pending(true);
                     true
                 }
@@ -122,11 +121,11 @@ impl Workspace {
                 };
                 let check_result = item.read().check(document, &mut diagnostics.write());
                 match check_result {
-                    Ok(()) => {
+                    CheckStatus::Ok => {
                         item.write().update_check_pending(false);
                         false
                     }
-                    Err(()) => {
+                    CheckStatus::Fail => {
                         item.write().update_check_pending(true);
                         true
                     }

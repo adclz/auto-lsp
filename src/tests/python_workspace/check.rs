@@ -1,46 +1,42 @@
 use super::ast::{Expression, PrimaryExpression, TypedDefaultParameter};
 use crate::{self as auto_lsp};
 use auto_lsp::core::ast::{AstSymbol, Check};
-use auto_lsp_core::document::Document;
+use auto_lsp_core::{ast::CheckStatus, document::Document};
 
 impl Check for TypedDefaultParameter {
-    fn check(
-        &self,
-        doc: &Document,
-        diagnostics: &mut Vec<lsp_types::Diagnostic>,
-    ) -> Result<(), ()> {
+    fn check(&self, doc: &Document, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> CheckStatus {
         let source = doc.texter.text.as_bytes();
 
         match self.parameter_type.read().get_text(source).unwrap() {
             "int" => match self.value.read().is_integer() {
-                true => Ok(()),
+                true => CheckStatus::Ok,
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    Err(())
+                    CheckStatus::Fail
                 }
             },
             "float" => match self.value.read().is_float() {
-                true => Ok(()),
+                true => CheckStatus::Ok,
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    Err(())
+                    CheckStatus::Fail
                 }
             },
             "str" => match self.value.read().is_string() {
-                true => Ok(()),
+                true => CheckStatus::Ok,
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    Err(())
+                    CheckStatus::Fail
                 }
             },
             "bool" => match self.value.read().is_true() || self.value.read().is_false() {
-                true => Ok(()),
+                true => CheckStatus::Ok,
                 false => {
                     diagnostics.push(self.type_error_message(doc));
-                    Err(())
+                    CheckStatus::Fail
                 }
             },
-            _ => Err(()),
+            _ => CheckStatus::Fail,
         }
     }
 }

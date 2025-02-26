@@ -113,18 +113,17 @@ impl BuildCodeActions for Function {
 
 - `check`: [`Check`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.Check.html) trait.
 
-Check is a special trait that is used to check the validity of a symbol, when check is implemented, `auto_lsp` will execute the check method to validate the symbol.
-
-If the check method returns an error, the symbol will be considered invalid, will remain in memory until the next time the AST is parsed, and will be checked again.
+The `Check` trait is a special trait used to validate a symbol. 
+When implemented, auto_lsp will execute the check method to verify the symbol's validity.
 
 
 ```admonish
-Check does not return a `Diagnostic`; instead, it uses `Err(())` to indicate an error. This design allows for creating multiple diagnostics if needed, such as specifying the location of the error and the affected nodes```
+`check` returns a `CheckStatus` to indicate whether the validation was successful. To add diagnostics, push them into the provided `diagnostics` vector.  
 ```
 
 ```rust, ignore
 use auto_lsp::seq;
-use auto_lsp::core::ast::Check;
+use auto_lsp::core::ast::{Check, CheckStatus};
 
 #[seq(query = "document", check)]
 struct Document {}
@@ -134,12 +133,12 @@ impl Check for Document {
         &self,
         doc: &Document,
         diagnostics: &mut Vec<lsp_types::Diagnostic>,
-    ) -> Result<(), ()> {
+    ) -> CheckStatus {
         let source = doc.texter.text.as_bytes();
         let document_text = self.read().get_text(source);
 
         if document_text.starts_with("Hello, World") {
-            return Ok(()
+            return CheckStatus::Ok
         } else {
             diagnostics.push(lsp_types::Diagnostic {
                 range: self.get_lsp_range(document),
@@ -147,9 +146,8 @@ impl Check for Document {
                 message: "Document must start with 'Hello, World'".to_string(),
                 ..Default::default()
             });
-            return Err(());
+            return CheckStatus::Fail;
         }
     }
 }
-
 ```

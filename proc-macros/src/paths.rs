@@ -359,7 +359,7 @@ impl Default for Paths {
             check: Check {
                 path: core_ast(parse_quote!(Check)),
                 check: Method {
-                    sig: quote! { fn check(&self, doc: &auto_lsp::core::document::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> Result<(), ()> },
+                    sig: quote! { fn check(&self, doc: &auto_lsp::core::document::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> auto_lsp::core::ast::CheckStatus },
                     variant: quote! { check(doc, diagnostics) },
                 },
             },

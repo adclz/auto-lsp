@@ -432,16 +432,23 @@ pub trait IsCheck {
     }
 }
 
+/// Check Status of a symbol
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum CheckStatus {
+    Ok,
+    Fail,
+}
+
 /// Checking a symbol
 pub trait Check: IsCheck {
     /// Perform a check on the symbol during the last step of build process
     ///
-    /// If the check fails, push your [`Diagnostic`] to the accumulator and return `std::Err(())`
-    /// If the check succeeds, return `Ok(())`
+    /// If the check fails, push your [`Diagnostic`](s) to the accumulator and return `CheckStatus::Fail`
+    /// If the check succeeds, return `CheckStatus::Ok`
     ///
-    /// By default, `Ok(())`
-    fn check(&self, doc: &Document, diagnostics: &mut Vec<Diagnostic>) -> Result<(), ()> {
-        Ok(())
+    /// By default, `CheckStatus::Ok`
+    fn check(&self, doc: &Document, diagnostics: &mut Vec<Diagnostic>) -> CheckStatus {
+        CheckStatus::Ok
     }
 }
 
