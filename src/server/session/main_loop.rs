@@ -4,10 +4,11 @@ use lsp_server::{ExtractError, Notification, Request, Response};
 use lsp_types::{
     notification::{DidChangeTextDocument, DidChangeWatchedFiles, DidOpenTextDocument},
     request::{
-        CodeLensRequest, Completion, DocumentDiagnosticRequest, DocumentLinkRequest,
-        DocumentSymbolRequest, FoldingRangeRequest, GotoDeclaration, GotoDefinition, HoverRequest,
-        InlayHintRequest, References, SelectionRangeRequest, SemanticTokensFullRequest,
-        SemanticTokensRangeRequest, WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
+        CodeActionRequest, CodeLensRequest, Completion, DocumentDiagnosticRequest,
+        DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, GotoDeclaration,
+        GotoDefinition, HoverRequest, InlayHintRequest, References, SelectionRangeRequest,
+        SemanticTokensFullRequest, SemanticTokensRangeRequest, WorkspaceDiagnosticRequest,
+        WorkspaceSymbolRequest,
     },
 };
 use serde::Serialize;
@@ -37,7 +38,8 @@ impl Session {
                                 .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?
                                 .on::<WorkspaceDiagnosticRequest, _>(Self::get_workspace_diagnostics)?
                                 .on::<InlayHintRequest, _>(Self::get_inlay_hints)?
-                                .on::<CodeLensRequest, _>(Self::get_code_lens)?
+                                .on::<CodeActionRequest, _>(Self::get_code_actions)?
+                                .on::<CodeLensRequest, _>(Self::get_code_lenses)?
                                 .on::<Completion, _>(Self::get_completion_items)?
                                 .on::<GotoDefinition, _>(Self::go_to_definition)?
                                 .on::<GotoDeclaration, _>(Self::go_to_declaration)?

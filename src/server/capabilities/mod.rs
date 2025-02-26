@@ -1,3 +1,4 @@
+pub mod code_actions;
 pub mod code_lens;
 pub mod completion_items;
 pub mod document_diagnostics;
