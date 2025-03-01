@@ -17,8 +17,8 @@ struct InitializationOptions {
 }
 
 impl Session {
-    /// Initializes the root by loading files and associating them with parsers.
-    pub(crate) fn init_roots(&mut self, params: InitializeParams) -> anyhow::Result<()> {
+    /// Initializes the workspace by loading files and associating them with parsers.
+    pub(crate) fn init_workspaces(&mut self, params: InitializeParams) -> anyhow::Result<()> {
         let options = InitializationOptions::deserialize(
             params
                 .initialization_options
@@ -38,8 +38,8 @@ impl Session {
 
         self.extensions = options.perFileParser;
 
-        // Traverse root folders and add files to the session
-        collect_root_files(&self.extensions, &params.workspace_folders)
+        // Traverse workspace folders and add files to the session
+        collect_workspace_files(&self.extensions, &params.workspace_folders)
             .into_iter()
             .try_for_each(|file| {
                 let mut open_file = File::open(file.to_file_path().unwrap())?;
@@ -98,15 +98,15 @@ pub(crate) fn get_extension(path: &Url) -> anyhow::Result<String> {
         )
 }
 
-/// Collects all files in the root folders that match the specified extensions.
+/// Collects all files in the workspace folders that match the specified extensions.
 ///
-/// A vector of [`Url`]s representing the valid files in the root.
-fn collect_root_files(
+/// A vector of [`Url`]s representing the valid files in the workspace.
+fn collect_workspace_files(
     extensions: &HashMap<String, String>,
-    root_folders: &Option<Vec<WorkspaceFolder>>,
+    workspace_folders: &Option<Vec<WorkspaceFolder>>,
 ) -> Vec<Url> {
     let mut roots = Vec::new();
-    if let Some(folders) = root_folders {
+    if let Some(folders) = workspace_folders {
         folders.iter().for_each(|folder| {
             WalkDir::new(folder.uri.path())
                 .into_iter()
