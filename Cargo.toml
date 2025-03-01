@@ -68,7 +68,6 @@ deadlock_detection = [
     "parking_lot/deadlock_detection",
     "auto-lsp-core/deadlock_detection",
 ]
-incremental = ["auto-lsp-core/incremental", "auto-lsp-macros/incremental"]
 log = ["auto-lsp-core/log"]
 lsp_server = [
     "dep:serde",

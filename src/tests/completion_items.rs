@@ -71,14 +71,14 @@ fn triggered_completion_items(foo_bar: (Workspace, Document)) {
         text: ".".into(),
     };
 
-    let edits = document
+    document
         .update(
             &mut workspace.parsers.tree_sitter.parser.write(),
             &vec![change],
         )
         .unwrap();
 
-    workspace.parse(Some(&edits), &document);
+    workspace.parse(&document);
 
     let node = workspace.ast.as_ref().unwrap().descendant_at(75).unwrap();
 

@@ -3,7 +3,6 @@ use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
 
 pub(crate) mod texter_impl;
-pub use texter_impl::updateable::{Change, ChangeKind};
 
 /// Represents a text document that combines plain text [`texter`] with its parsed syntax tree [`tree_sitter::Tree`].
 ///
@@ -41,7 +40,7 @@ impl Document {
         &mut self,
         parser: &mut tree_sitter::Parser,
         changes: &Vec<lsp_types::TextDocumentContentChangeEvent>,
-    ) -> anyhow::Result<Vec<Change>> {
+    ) -> anyhow::Result<()> {
         let mut new_tree = WrapTree::from(&mut self.tree);
 
         for change in changes {
@@ -49,12 +48,11 @@ impl Document {
                 .update(WrapChange::from(change).change, &mut new_tree)?;
         }
 
-        let edits = new_tree.get_edits();
         self.tree = parser
             .parse(self.texter.text.as_bytes(), Some(&self.tree))
             .ok_or(anyhow::format_err!("Tree sitter failed to edit tree",))?;
 
-        Ok(edits)
+        Ok(())
     }
 
     /// Retrieves the smallest syntax node that spans the given position in the document.
@@ -102,15 +100,18 @@ impl Document {
 
     /// Converts a position (line and character) in the document to its corresponding byte offset.
     pub fn offset_at(&self, position: lsp_types::Position) -> Option<usize> {
-        self.tree.root_node().named_descendant_for_point_range(
-            Point {
-                row: position.line as usize,
-                column: position.character as usize,
-            },
-            Point {
-                row: position.line as usize,
-                column: position.character as usize,
-            },
-        ).map(|node| node.start_byte())
+        self.tree
+            .root_node()
+            .named_descendant_for_point_range(
+                Point {
+                    row: position.line as usize,
+                    column: position.character as usize,
+                },
+                Point {
+                    row: position.line as usize,
+                    column: position.character as usize,
+                },
+            )
+            .map(|node| node.start_byte())
     }
 }

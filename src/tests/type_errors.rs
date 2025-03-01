@@ -104,14 +104,13 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: (Workspace, Document
         text: "xxxx".into(),
     };
 
-    let edits = document
+    document
         .update(
             &mut workspace.parsers.tree_sitter.parser.write(),
             &vec![change],
         )
         .unwrap();
-
-    workspace.parse(Some(&edits), document);
+    workspace.parse(document);
 
     // foo_with_type_error should have 1 error
     assert_eq!(workspace.diagnostics.len(), 1);
@@ -154,14 +153,14 @@ fn fix_type_error(mut foo_with_type_error: (Workspace, Document)) {
         range_length: Some(3),
         text: "1".into(),
     };
-    let edits = document
+    document
         .update(
             &mut workspace.parsers.tree_sitter.parser.write(),
             &vec![change],
         )
         .unwrap();
 
-    workspace.parse(Some(&edits), document);
+    workspace.parse(document);
 
     // foo_with_type_error should have no type errors
     assert_eq!(workspace.diagnostics.len(), 0);

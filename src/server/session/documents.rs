@@ -47,12 +47,6 @@ impl Session {
     /// Edit a document in workspaces
     ///
     /// Edits are incremental, meaning that the entire document is not re-parsed.
-    /// Instead, the changes are applied to the existing CST (using [`tree-sitter`] and [`texter`]).
-    ///
-    /// The AST is not updated if the node is either:
-    ///  - an extra (comment)
-    ///  - an errored node
-    ///  - a whitespace
     pub(crate) fn edit_document(
         &mut self,
         params: DidChangeTextDocumentParams,
@@ -64,13 +58,13 @@ impl Session {
             .get_mut(uri)
             .ok_or(anyhow::anyhow!("Workspace not found"))?;
 
-        let edits = document.update(
+        document.update(
             &mut workspace.parsers.tree_sitter.parser.write(),
             &params.content_changes,
         )?;
 
         // Update AST
-        workspace.parse(Some(&edits), document);
+        workspace.parse(document);
         Ok(())
     }
 }

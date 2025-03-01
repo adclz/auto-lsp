@@ -68,9 +68,6 @@ pub struct Workspace {
     pub unsolved_checks: Vec<WeakSymbol>,
     /// References flagged as unresolved during analysis.
     pub unsolved_references: Vec<WeakSymbol>,
-    /// Changes report
-    #[cfg(feature = "incremental")]
-    pub changes: Vec<crate::ast::ChangeReport>,
 }
 
 impl Workspace {
@@ -115,12 +112,10 @@ impl Workspace {
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
-            #[cfg(feature = "incremental")]
-            changes: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
-        workspace.parse(None, &document);
+        workspace.parse(&document);
 
         Ok((workspace, document))
     }
@@ -163,19 +158,12 @@ impl Workspace {
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
-            #[cfg(feature = "incremental")]
-            changes: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
-        workspace.parse(None, &document);
+        workspace.parse(&document);
 
         Ok((workspace, document))
-    }
-
-    #[cfg(feature = "incremental")]
-    pub fn get_changes(&self) -> &Vec<crate::ast::ChangeReport> {
-        &self.changes
     }
 
     /// Finds the symbol at the given offset in the AST.

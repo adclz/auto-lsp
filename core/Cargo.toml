@@ -29,5 +29,4 @@ rayon = { workspace = true, optional = true }
 [features]
 log = ["dep:log"]
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
-incremental = []
 rayon = ["dep:rayon"]

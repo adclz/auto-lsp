@@ -63,7 +63,6 @@ You can find more examples in the `src/tests` folder.
 - `wasm`: Enable wasm support.
 - `html`: Enable the html workspace mock for testing purposes.
 - `python`: Enable the python workspace mock for testing purposes.
-- `incremental`: Enable incremental updates.
 
 # Documentation
 

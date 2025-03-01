@@ -36,8 +36,6 @@ impl ToTokens for EnumBuilder<'_> {
 
         self.impl_ast_symbol(&mut builder);
         self.impl_traverse(&mut builder);
-        #[cfg(feature = "incremental")]
-        self.impl_dynamic_swap(&mut builder);
         self.impl_indented_display(&mut builder);
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
@@ -163,22 +161,6 @@ impl EnumBuilder<'_> {
                 &self.paths.traverse.traverse_and_collect.variant,
             )
             .stage_trait(self.input_name, &self.paths.traverse.path);
-    }
-
-    #[cfg(feature = "incremental")]
-    fn impl_dynamic_swap(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.dynamic_swap.adjust.sig,
-                &self.paths.dynamic_swap.adjust.variant,
-            )
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.dynamic_swap.swap.sig,
-                &self.paths.dynamic_swap.swap.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.dynamic_swap.path);
     }
 
     fn impl_indented_display(&self, builder: &mut VariantBuilder) {

@@ -112,7 +112,7 @@ fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
         text: "\n# bar comment".into(),
     };
 
-    let edits = document
+    document
         .update(
             &mut workspace.parsers.tree_sitter.parser.write(),
             &vec![foo_change, bar_change],
@@ -120,7 +120,7 @@ fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
         .unwrap();
 
     drop(ast);
-    workspace.parse(Some(&edits), document);
+    workspace.parse(document);
 
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();
@@ -209,7 +209,7 @@ fn remove_comments(mut foo_bar_with_comments: (Workspace, Document)) {
         text: "".into(),
     };
 
-    let edits = document
+    document
         .update(
             &mut workspace.parsers.tree_sitter.parser.write(),
             &vec![foo_change, bar_change],
@@ -217,7 +217,7 @@ fn remove_comments(mut foo_bar_with_comments: (Workspace, Document)) {
         .unwrap();
 
     drop(ast);
-    workspace.parse(Some(&edits), document);
+    workspace.parse(document);
 
     let ast = workspace.ast.as_ref().unwrap();
     let ast = ast.read();

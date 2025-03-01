@@ -66,8 +66,6 @@ impl ToTokens for StructBuilder<'_> {
         // Implement core capabilities
         self.impl_traverse(&mut builder);
         self.impl_parent(&mut builder);
-        #[cfg(feature = "incremental")]
-        self.impl_dynamic_swap(&mut builder);
         self.impl_indented_display(&mut builder);
 
         // Implement other features
@@ -203,35 +201,7 @@ impl StructBuilder<'_> {
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
             .stage_trait(self.input_builder_name, queryable);
-    }
-
-    #[cfg(feature = "incremental")]
-    fn impl_dynamic_swap(&self, builder: &mut FieldBuilder) {
-        let static_update_trait = &self.paths.static_swap.path;
-        builder
-            .add_fn_iter(
-                self.fields,
-                &self.paths.dynamic_swap.adjust.sig,
-                Some(quote! { use #static_update_trait; }),
-                |_, _, name, _, _| {
-                    quote! {
-                        self.#name.adjust(edit, collect, workspace, document);
-                    }
-                },
-                None
-            )
-            .add_fn_iter(
-                self.fields,
-                &self.paths.dynamic_swap.swap.sig,
-                Some(quote! { use #static_update_trait; }),
-                |_, _, name, _, _| {
-                    quote! {
-                        self.#name.update(edit, collect, workspace, document)?;
-                    }
-                },
-                Some(quote! { std::ops::ControlFlow::Continue(()) }),
-            )
-            .stage_trait(self.input_name, &self.paths.dynamic_swap.path);
+    
     }
 
     fn impl_indented_display(&self, builder: &mut FieldBuilder) {

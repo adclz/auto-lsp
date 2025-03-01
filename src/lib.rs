@@ -62,7 +62,6 @@
 //! - `wasm`: Enable wasm support.
 //! - `html`: Enable the html workspace mock for testing purposes.
 //! - `python`: Enable the python workspace mock for testing purposes.
-//! - `incremental`: Enable incremental parsing.
 
 /// LSP server (enabled with feature `lsp_server`)
 #[cfg(any(feature = "lsp_server", test))]

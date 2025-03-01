@@ -137,17 +137,6 @@ nested_struct!(
             pub path: Path,
             pub check: Method
         },
-        #[cfg(feature = "incremental")]
-        pub dynamic_swap: DynamicSwap {
-            pub path: Path,
-            pub adjust: Method,
-            pub swap: Method
-        },
-        #[cfg(feature = "incremental")]
-        pub static_swap: StaticSwap {
-            pub path: Path,
-            pub swap: Method
-        },
         pub display: Display {
             pub path: Path,
             pub fmt: Method
@@ -361,44 +350,6 @@ impl Default for Paths {
                 check: Method {
                     sig: quote! { fn check(&self, doc: &auto_lsp::core::document::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> auto_lsp::core::ast::CheckStatus },
                     variant: quote! { check(doc, diagnostics) },
-                },
-            },
-            #[cfg(feature = "incremental")]
-            dynamic_swap: DynamicSwap {
-                path: core_ast(parse_quote!(UpdateDynamic)),
-                adjust: Method {
-                    sig: quote! { fn adjust(
-                        &mut self,
-                        edit: auto_lsp::core::document::Change,
-                        collect: &mut Vec<auto_lsp::core::ast::DynSymbol>,
-                        workspace: &mut auto_lsp::core::workspace::Workspace,
-                        document: &auto_lsp::core::document::Document,
-                    )},
-                    variant: quote! { adjust(edit, collect, workspace, document) },
-                },
-                swap: Method {
-                    sig: quote! { fn update(
-                        &mut self,
-                        edit: auto_lsp::core::document::Change,
-                        collect: &mut Vec<auto_lsp::core::ast::DynSymbol>,
-                        workspace: &mut auto_lsp::core::workspace::Workspace,
-                        document: &auto_lsp::core::document::Document,
-                    ) -> std::ops::ControlFlow<auto_lsp::core::ast::UpdateState> },
-                    variant: quote! { update(edit, collect, workspace, document) },
-                },
-            },
-            #[cfg(feature = "incremental")]
-            static_swap: StaticSwap {
-                path: core_ast(parse_quote!(UpdateStatic)),
-                swap: Method {
-                    sig: quote! { fn update(
-                        &mut self,
-                        edit: auto_lsp::core::document::Change,
-                        collect: &mut Vec<auto_lsp::core::ast::DynSymbol>,
-                        workspace: &mut auto_lsp::core::workspace::Workspace,
-                        document: &auto_lsp::core::document::Document,
-                    ) -> std::ops::ControlFlow<auto_lsp::core::ast::UpdateState> },
-                    variant: quote! { update(edit, collect, workspace, document) },
                 },
             },
             display: Display {

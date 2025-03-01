@@ -25,17 +25,11 @@ pub mod hover;
 #[cfg(test)]
 pub mod html_corpus;
 #[cfg(test)]
-#[cfg(feature = "incremental")]
-pub mod incremental;
-#[cfg(test)]
 pub mod inlay_hints;
 #[cfg(test)]
 pub mod proc_macros;
 #[cfg(test)]
 pub mod python_corpus;
-#[cfg(test)]
-#[cfg(feature = "incremental")]
-pub mod ranges;
 #[cfg(test)]
 pub mod semantic_tokens;
 #[cfg(test)]

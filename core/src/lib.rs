@@ -9,10 +9,8 @@ pub mod ast {
     pub use crate::core_ast::capabilities::*;
     pub use crate::core_ast::core::*;
     pub use crate::core_ast::data::*;
+    pub use crate::core_ast::display::*;
     pub use crate::core_ast::symbol::*;
-    pub use crate::core_ast::display::*; 
-    #[cfg(feature = "incremental")]
-    pub use crate::core_ast::update::*;
 }
 
 /// This module contains everything related to building ast symbols
