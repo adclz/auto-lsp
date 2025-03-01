@@ -1,4 +1,6 @@
 #![allow(unused)]
+use std::fmt::Display;
+
 use crate::document::Document;
 
 use super::Root;
@@ -21,7 +23,7 @@ impl Root {
             .resolve_checks(document)
             .resolve_references(document);
         #[cfg(feature = "log")]
-        self.log_unsolved();
+        log::info!("{}", self);
 
         self
     }
@@ -56,20 +58,21 @@ impl Root {
         self.set_ast(document);
         self
     }
+}
 
-    #[cfg(feature = "log")]
-    fn log_unsolved(&self) -> &Self {
-        {
-            if !self.unsolved_checks.is_empty() {
-                log::info!("");
-                log::warn!("Unsolved checks: {:?}", self.unsolved_checks.len());
-            }
+impl Display for Root {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if !self.unsolved_checks.is_empty() {
+            writeln!(f, "Unsolved checks: {:?}", self.unsolved_checks.len())?;
+        };
 
-            if !self.unsolved_references.is_empty() {
-                log::info!("");
-                log::warn!("Unsolved references: {:?}", self.unsolved_references.len());
-            }
-            self
-        }
+        if !self.unsolved_references.is_empty() {
+            writeln!(
+                f,
+                "Unsolved references: {:?}",
+                self.unsolved_references.len()
+            )?;
+        };
+        Ok(())
     }
 }
