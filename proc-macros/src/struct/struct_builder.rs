@@ -300,7 +300,7 @@ impl StructBuilder<'_> {
             |_, _, name, field_type, builder| {
                 quote! {
                     
-                    if let Some(node) =  self.#name.add::<#builder>(capture, workspace, stringify!(#input_name), stringify!(#field_type))? {
+                    if let Some(node) =  self.#name.add::<#builder>(capture, root, stringify!(#input_name), stringify!(#field_type))? {
                        return Ok(Some(node))
                     };
                 }
@@ -318,7 +318,7 @@ impl StructBuilder<'_> {
         let try_from_builder = &self.paths.try_from_builder;
 
         let symbol_data = &self.paths.symbol_data;
-        let workspace = &self.paths.workspace;
+        let root = &self.paths.root;
         let try_downcast = &self.paths.try_downcast_trait;
         let finalize = &self.paths.finalize_trait;
         let symbol = &self.paths.symbol;
@@ -343,12 +343,12 @@ impl StructBuilder<'_> {
                                 stringify!(#input_name),
                             )
                         ))?
-                        .try_downcast(workspace, document, stringify!(#field_type), builder_range, stringify!(#input_name))?, workspace);
+                        .try_downcast(root, document, stringify!(#field_type), builder_range, stringify!(#input_name))?, root);
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(workspace, document, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(workspace);
+                            .try_downcast(root, document, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(root);
                     }
             })
             .stage()
@@ -360,7 +360,7 @@ impl StructBuilder<'_> {
             impl #try_from_builder<&#input_builder_name> for #input_name {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, workspace: &mut #workspace, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, root: &mut #root, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
                     use #builder_trait;
                     let builder_range = builder.get_lsp_range(document);
 

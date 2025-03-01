@@ -1,4 +1,4 @@
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 use lsp_types::{DocumentLink, DocumentLinkParams};
 
 impl Session {
@@ -21,16 +21,17 @@ impl Session {
         let re = &with_regex.regex;
         let to_document_link = &with_regex.to_document_link;
         let uri = &params.text_document.uri;
-        let workspace = WORKSPACES.lock();
 
-        let (workspace, document) = workspace
+        let workspace = WORKSPACE.lock();
+
+        let (root, document) = workspace.roots
             .get(uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
 
         let mut results = vec![];
-        let matches = workspace.find_all_with_regex(document, re);
+        let matches = root.find_all_with_regex(document, re);
         matches.into_iter().for_each(|(m, line)| {
-            to_document_link(m, line, document, workspace, &mut results);
+            to_document_link(m, line, document, root, &mut results);
         });
 
         Ok(results)

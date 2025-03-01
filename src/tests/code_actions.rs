@@ -1,5 +1,5 @@
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
+use crate::core::root::Root;
 use auto_lsp_core::ast::BuildCodeActions;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
@@ -7,8 +7,8 @@ use rstest::{fixture, rstest};
 use super::python_workspace::*;
 
 #[fixture]
-fn foo_bar() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -24,7 +24,7 @@ def bar():
 }
 
 #[rstest]
-fn foo_bar_code_actions(foo_bar: (Workspace, Document)) {
+fn foo_bar_code_actions(foo_bar: (Root, Document)) {
     let ast = foo_bar.0.ast.as_ref().unwrap();
     let document = &foo_bar.1;
 

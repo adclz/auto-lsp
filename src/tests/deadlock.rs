@@ -1,5 +1,5 @@
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
+use crate::core::root::Root;
 use lsp_types::Url;
 use parking_lot::Mutex;
 use rstest::{fixture, rstest};
@@ -9,8 +9,8 @@ use super::python_workspace::ast::Module;
 use super::python_workspace::PYTHON_PARSERS;
 
 #[fixture]
-fn foo_bar() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -33,7 +33,7 @@ fn has_deadlock() -> bool {
 }
 
 #[rstest]
-fn read_write(foo_bar: (Workspace, Document)) {
+fn read_write(foo_bar: (Root, Document)) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
     let ast = foo_bar.0.ast.unwrap();
 
@@ -49,7 +49,7 @@ fn read_write(foo_bar: (Workspace, Document)) {
 }
 
 #[rstest]
-fn multiple_readers(foo_bar: (Workspace, Document)) {
+fn multiple_readers(foo_bar: (Root, Document)) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
     let ast = foo_bar.0.ast.unwrap();
     let ast_clone = ast.clone();
@@ -70,7 +70,7 @@ fn multiple_readers(foo_bar: (Workspace, Document)) {
 }
 
 #[rstest]
-fn multiple_writers(foo_bar: (Workspace, Document)) {
+fn multiple_writers(foo_bar: (Root, Document)) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
     let ast = foo_bar.0.ast.unwrap();
     let ast_clone = ast.clone();
@@ -90,7 +90,7 @@ fn multiple_writers(foo_bar: (Workspace, Document)) {
 }
 
 #[rstest]
-fn nested_writer(foo_bar: (Workspace, Document)) {
+fn nested_writer(foo_bar: (Root, Document)) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
 
     let ast = foo_bar.0.ast.unwrap();

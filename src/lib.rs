@@ -60,8 +60,8 @@
 //! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
 //! - `rayon`: Enable [`rayon`] support (not compatible with `wasm`).
 //! - `wasm`: Enable wasm support.
-//! - `html`: Enable the html workspace mock for testing purposes.
-//! - `python`: Enable the python workspace mock for testing purposes.
+//! - `html`: Enable the html root mock for testing purposes.
+//! - `python`: Enable the python root mock for testing purposes.
 
 /// LSP server (enabled with feature `lsp_server`)
 #[cfg(any(feature = "lsp_server", test))]
@@ -92,8 +92,8 @@ pub mod core {
     pub use auto_lsp_core::ast;
     pub use auto_lsp_core::document;
     pub use auto_lsp_core::document_symbols_builder;
+    pub use auto_lsp_core::root;
     pub use auto_lsp_core::semantic_tokens_builder;
-    pub use auto_lsp_core::workspace;
     #[doc(hidden)]
     pub use auto_lsp_core::{builder_error, builder_warning};
 }

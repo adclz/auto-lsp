@@ -1,7 +1,7 @@
 use lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 use streaming_iterator::StreamingIterator;
 
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 
 impl Session {
     /// Request for folding ranges
@@ -12,13 +12,14 @@ impl Session {
         params: FoldingRangeParams,
     ) -> anyhow::Result<Vec<FoldingRange>> {
         let uri = &params.text_document.uri;
-        let workspace = WORKSPACES.lock();
 
-        let (workspace, document) = workspace
+        let workspace = WORKSPACE.lock();
+
+        let (root, document) = workspace.roots
             .get(uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
 
-        let query = match workspace.parsers.tree_sitter.queries.fold {
+        let query = match root.parsers.tree_sitter.queries.fold {
             Some(ref query) => query,
             None => return Ok(vec![]),
         };

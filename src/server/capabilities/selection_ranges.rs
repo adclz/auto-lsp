@@ -1,6 +1,6 @@
 use lsp_types::{SelectionRange, SelectionRangeParams};
 
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 
 impl Session {
     /// Request for selection ranges
@@ -11,11 +11,14 @@ impl Session {
         params: SelectionRangeParams,
     ) -> anyhow::Result<Vec<SelectionRange>> {
         let uri = &params.text_document.uri;
-        let workspace = WORKSPACES.lock();
+
+        let workspace = WORKSPACE.lock();
 
         let (_, document) = workspace
+            .roots
             .get(uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
+
         let root_node = document.tree.root_node();
 
         let mut query_cursor = document.tree.walk();

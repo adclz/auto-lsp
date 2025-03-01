@@ -1,13 +1,13 @@
-use auto_lsp_core::workspace::Workspace;
+use auto_lsp_core::root::Root;
 
 use lsp_types::{DidChangeTextDocumentParams, Url};
 
 use crate::server::session::Session;
 
-use super::WORKSPACES;
+use super::WORKSPACE;
 
 impl Session {
-    /// Add a new document to workspaces
+    /// Add a new document to roots
     ///
     /// This will first try to find the correct parser for the language id,
     /// then parse the source code with the tree sitter parser,
@@ -35,16 +35,17 @@ impl Session {
             .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
-        let (workspace, document) = Workspace::from_texter(parsers, uri.clone(), text)?;
+        let (root, document) = Root::from_texter(parsers, uri.clone(), text)?;
 
-        WORKSPACES
+        WORKSPACE
             .lock()
-            .insert(uri.to_owned(), (workspace, document));
+            .roots
+            .insert(uri.to_owned(), (root, document));
 
         Ok(())
     }
 
-    /// Edit a document in workspaces
+    /// Edit a document in roots
     ///
     /// Edits are incremental, meaning that the entire document is not re-parsed.
     pub(crate) fn edit_document(
@@ -53,18 +54,19 @@ impl Session {
     ) -> anyhow::Result<()> {
         let uri = &params.text_document.uri;
 
-        let mut workspaces = WORKSPACES.lock();
-        let (workspace, document) = workspaces
+        let mut workspace = WORKSPACE.lock();
+        let (root, document) = workspace
+            .roots
             .get_mut(uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
 
         document.update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
+            &mut root.parsers.tree_sitter.parser.write(),
             &params.content_changes,
         )?;
 
         // Update AST
-        workspace.parse(document);
+        root.parse(document);
         Ok(())
     }
 }

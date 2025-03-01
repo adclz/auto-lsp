@@ -1,4 +1,4 @@
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 use auto_lsp_core::ast::BuildCodeActions;
 use lsp_types::{CodeAction, CodeActionParams};
 
@@ -11,13 +11,14 @@ impl Session {
         let mut results = vec![];
 
         let uri = params.text_document.uri;
-        let workspace = WORKSPACES.lock();
+        let workspace = WORKSPACE.lock();
 
-        let (workspace, document) = workspace
+        let (root, document) = workspace
+            .roots
             .get(&uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
 
-        if let Some(a) = workspace.ast.as_ref() {
+        if let Some(a) = root.ast.as_ref() {
             a.build_code_actions(document, &mut results)
         }
 

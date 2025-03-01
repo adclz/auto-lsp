@@ -1,7 +1,7 @@
 use crate::core::ast::GetGoToDeclaration;
 use lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse};
 
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 
 impl Session {
     /// Request to go to the declaration of a symbol
@@ -12,16 +12,17 @@ impl Session {
         params: GotoDeclarationParams,
     ) -> anyhow::Result<Option<GotoDeclarationResponse>> {
         let uri = &params.text_document_position_params.text_document.uri;
-        let workspace = WORKSPACES.lock();
 
-        let (workspace, document) = workspace
+        let workspace = WORKSPACE.lock();
+
+        let (root, document) = workspace.roots
             .get(uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
 
         let position = params.text_document_position_params.position;
 
         let offset = document.offset_at(position).unwrap();
-        let item = workspace.descendant_at(offset);
+        let item = root.descendant_at(offset);
 
         match item {
             Some(item) => Ok(item.go_to_declaration(document)),

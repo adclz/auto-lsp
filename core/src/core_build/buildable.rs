@@ -7,7 +7,7 @@ use crate::{
     ast::WeakSymbol,
     core_ast::{core::AstSymbol, symbol::Symbol},
     document::Document,
-    workspace::Workspace,
+    root::Root,
 };
 
 use super::{
@@ -97,7 +97,7 @@ pub trait Buildable: Downcast {
     fn add(
         &mut self,
         capture: &tree_sitter::QueryCapture,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
 
@@ -106,9 +106,9 @@ pub trait Buildable: Downcast {
     fn get_range(&self) -> std::ops::Range<usize>;
 
     fn get_query_index(&self) -> usize;
-    fn get_lsp_range(&self, workspace: &Document) -> lsp_types::Range {
+    fn get_lsp_range(&self, root: &Document) -> lsp_types::Range {
         let range = self.get_range();
-        let node = workspace
+        let node = root
             .tree
             .root_node()
             .descendant_for_byte_range(range.start, range.end)
@@ -180,7 +180,7 @@ pub trait AddSymbol {
     fn add<Y: Buildable + Queryable>(
         &mut self,
         capture: &tree_sitter::QueryCapture,
-        workspace: &mut Workspace,
+        root: &mut Root,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
@@ -190,7 +190,7 @@ impl AddSymbol for MaybePendingSymbol {
     fn add<Y: Buildable + Queryable>(
         &mut self,
         capture: &tree_sitter::QueryCapture,
-        workspace: &mut Workspace,
+        root: &mut Root,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
@@ -198,15 +198,15 @@ impl AddSymbol for MaybePendingSymbol {
             return Ok(None);
         }
         let name =
-            workspace.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
+            root.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
             match self.as_ref() {
                 Some(_) => {
                     return Ok(None);
                 }
                 None => match Y::new(
-                    workspace.url.clone(),
-                    &workspace.parsers.tree_sitter.queries.core,
+                    root.url.clone(),
+                    &root.parsers.tree_sitter.queries.core,
                     capture,
                 ) {
                     Some(node) => {
@@ -236,16 +236,16 @@ impl AddSymbol for Vec<PendingSymbol> {
     fn add<Y: Buildable + Queryable>(
         &mut self,
         capture: &tree_sitter::QueryCapture,
-        workspace: &mut Workspace,
+        root: &mut Root,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
         let name =
-            workspace.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
+            root.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
             match Y::new(
-                workspace.url.clone(),
-                &workspace.parsers.tree_sitter.queries.core,
+                root.url.clone(),
+                &root.parsers.tree_sitter.queries.core,
                 capture,
             ) {
                 Some(node) => {
@@ -276,31 +276,31 @@ pub trait Finalize<T: AstSymbol> {
     type Output;
 
     /// Converts the AST symbol to a [`Symbol`].
-    fn finalize(self, workspace: &mut Workspace) -> Self::Output;
+    fn finalize(self, root: &mut Root) -> Self::Output;
 }
 
 impl<T: AstSymbol> Finalize<T> for T {
     type Output = Symbol<T>;
 
-    fn finalize(self, workspace: &mut Workspace) -> Self::Output {
-        Symbol::new_and_check(self, workspace)
+    fn finalize(self, root: &mut Root) -> Self::Output {
+        Symbol::new_and_check(self, root)
     }
 }
 
 impl<T: AstSymbol> Finalize<T> for Option<T> {
     type Output = Option<Symbol<T>>;
 
-    fn finalize(self, workspace: &mut Workspace) -> Self::Output {
-        self.map(|symbol| Symbol::new_and_check(symbol, workspace))
+    fn finalize(self, root: &mut Root) -> Self::Output {
+        self.map(|symbol| Symbol::new_and_check(symbol, root))
     }
 }
 
 impl<T: AstSymbol> Finalize<T> for Vec<T> {
     type Output = Vec<Symbol<T>>;
 
-    fn finalize(self, workspace: &mut Workspace) -> Self::Output {
+    fn finalize(self, root: &mut Root) -> Self::Output {
         self.into_iter()
-            .map(|f| Symbol::new_and_check(f, workspace))
+            .map(|f| Symbol::new_and_check(f, root))
             .collect()
     }
 }

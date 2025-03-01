@@ -29,5 +29,6 @@ pub mod document_symbols_builder;
 
 /// Document handling
 pub mod document;
-/// Workspace handling
+/// Root
+pub mod root;
 pub mod workspace;

@@ -1,6 +1,6 @@
 use lsp_types::{Location, ReferenceParams};
 
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 
 impl Session {
     /// Request to get references of a symbol
@@ -12,15 +12,17 @@ impl Session {
         params: ReferenceParams,
     ) -> anyhow::Result<Option<Vec<Location>>> {
         let uri = &params.text_document_position.text_document.uri;
-        let workspace = WORKSPACES.lock();
 
-        let (workspace, document) = workspace
+        let workspace = WORKSPACE.lock();
+
+        let (root, document) = workspace.roots
             .get(uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
+
         let position = params.text_document_position.position;
 
         let offset = document.offset_at(position).unwrap();
-        let item = workspace.descendant_at(offset);
+        let item = root.descendant_at(offset);
 
         match item {
             Some(item) => match item.read().get_referrers().as_ref() {

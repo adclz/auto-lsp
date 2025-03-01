@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
-use crate::server::session::{fs::get_extension, Session, WORKSPACES};
+use crate::server::session::{fs::get_extension, Session, WORKSPACE};
 
 impl Session {
     /// Handle the watched files change notification.
@@ -17,10 +17,10 @@ impl Session {
         params.changes.iter().try_for_each(|file| match file.typ {
             FileChangeType::CREATED => {
                 let uri = &file.uri;
-                let workspace = WORKSPACES.lock();
+                let workspace = WORKSPACE.lock();
 
-                if workspace.contains_key(uri) {
-                    // The file is already in the workspace
+                if workspace.roots.contains_key(uri) {
+                    // The file is already in the root
                     // We can ignore this change
                     return Ok(());
                 };
@@ -37,21 +37,21 @@ impl Session {
             }
             FileChangeType::CHANGED => {
                 let uri = &file.uri;
-                let mut workspace = WORKSPACES.lock();
+                let mut workspace = WORKSPACE.lock();
                 let file_path = uri
                     .to_file_path()
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
                 let mut open_file = File::open(file_path)?;
 
-                if workspace.contains_key(uri) {
-                    // The file is already in the workspace
+                if workspace.roots.contains_key(uri) {
+                    // The file is already in the root
                     // We compare the stored document with the new file content
                     // If there's a single byte difference, we replace the document
                     if (is_file_content_different(
                         &open_file,
-                        &workspace.get(uri).unwrap().1.texter.text,
+                        &workspace.roots.get(uri).unwrap().1.texter.text,
                     ))? {
-                        workspace.remove(uri);
+                        workspace.roots.remove(uri);
                         let language_id = get_extension(uri)?;
 
                         let mut buffer = String::new();
@@ -65,9 +65,9 @@ impl Session {
                 Ok(())
             }
             FileChangeType::DELETED => {
-                let mut workspace = WORKSPACES.lock();
+                let mut root = WORKSPACE.lock();
                 let uri = &file.uri;
-                workspace.remove(uri);
+                root.roots.remove(uri);
                 Ok(())
             }
             // Should never happen
@@ -124,17 +124,9 @@ mod tests {
         drop(tmp_file);
         let tmp_file = File::open(&file_path).unwrap();
 
-        assert!(
-            !is_file_content_different(&tmp_file, "Hello, World!").unwrap()
-        );
-        assert!(
-            is_file_content_different(&tmp_file, "Hello, World").unwrap()
-        );
-        assert!(
-            is_file_content_different(&tmp_file, "Hello,_World!").unwrap()
-        );
-        assert!(
-            is_file_content_different(&tmp_file, "Hello, World!!").unwrap()
-        );
+        assert!(!is_file_content_different(&tmp_file, "Hello, World!").unwrap());
+        assert!(is_file_content_different(&tmp_file, "Hello, World").unwrap());
+        assert!(is_file_content_different(&tmp_file, "Hello,_World!").unwrap());
+        assert!(is_file_content_different(&tmp_file, "Hello, World!!").unwrap());
     }
 }

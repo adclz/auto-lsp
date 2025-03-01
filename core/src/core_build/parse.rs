@@ -1,7 +1,7 @@
 use crate::ast::DynSymbol;
 use crate::document::Document;
-use crate::workspace::Parsers;
-use crate::workspace::Workspace;
+use crate::root::Parsers;
+use crate::root::Root;
 use crate::{
     ast::AstSymbol,
     build::{Buildable, Queryable, TryFromBuilder},
@@ -24,13 +24,13 @@ pub trait InvokeParser<
     /// This method internally initializes a stack builder to build the AST and derive a symbol
     /// of type Y.
     fn parse_symbol(
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic>;
 
     fn parse_symbols(
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Vec<Y>, lsp_types::Diagnostic>;
@@ -42,18 +42,18 @@ where
     Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
 {
     fn parse_symbol(
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic> {
-        StackBuilder::<T>::new(workspace, document).create_symbol(&range)
+        StackBuilder::<T>::new(root, document).create_symbol(&range)
     }
     fn parse_symbols(
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Vec<Y>, lsp_types::Diagnostic> {
-        StackBuilder::<T>::new(workspace, document).create_symbols(&range)
+        StackBuilder::<T>::new(root, document).create_symbols(&range)
     }
 }
 
@@ -62,7 +62,7 @@ where
 /// This type alias is useful for mapping language IDs to specific parsers,
 /// avoiding ambiguity.
 pub type InvokeParserFn = fn(
-    &mut Workspace,
+    &mut Root,
     &Document,
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
@@ -111,12 +111,12 @@ where
     fn test_parse(test_code: &'static str, parsers: &'static Parsers) -> TestParseResult {
         let source = Source::from(test_code);
 
-        let (mut workspace, document) = match Workspace::from_utf8(
+        let (mut root, document) = match Root::from_utf8(
             parsers,
             Url::parse("file://test.txt").unwrap(),
             test_code.into(),
         ) {
-            Ok(workspace) => workspace,
+            Ok(root) => root,
             Err(err) => {
                 return Err(AriadneReport {
                     result: Report::build(ReportKind::Error, 0..test_code.len())
@@ -128,16 +128,16 @@ where
         };
 
         let result: Result<Y, lsp_types::Diagnostic> =
-            Y::parse_symbol(&mut workspace, &document, None);
+            Y::parse_symbol(&mut root, &document, None);
 
-        match &workspace.diagnostics.is_empty() {
+        match &root.diagnostics.is_empty() {
             false => {
                 let mut colors = ColorGenerator::new();
                 let mut report = Report::build(ReportKind::Error, 0..test_code.len()).with_message(
-                    format!("Parsing failed: {} error(s)", workspace.diagnostics.len()),
+                    format!("Parsing failed: {} error(s)", root.diagnostics.len()),
                 );
 
-                for diagnostic in &workspace.diagnostics {
+                for diagnostic in &root.diagnostics {
                     let range = diagnostic.range;
                     let start_line = source.line(range.start.line as usize).unwrap().offset();
                     let end_line = source.line(range.end.line as usize).unwrap().offset();

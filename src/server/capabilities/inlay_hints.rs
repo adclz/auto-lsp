@@ -1,7 +1,7 @@
 use crate::core::ast::BuildInlayHints;
 use lsp_types::{InlayHint, InlayHintParams};
 
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 
 impl Session {
     /// Get inlay hints for a document.
@@ -12,13 +12,14 @@ impl Session {
         let mut results = vec![];
 
         let uri = params.text_document.uri;
-        let workspace = WORKSPACES.lock();
 
-        let (workspace, document) = workspace
+        let workspace = WORKSPACE.lock();
+
+        let (root, document) = workspace.roots
             .get(&uri)
-            .ok_or(anyhow::anyhow!("Workspace not found"))?;
+            .ok_or(anyhow::anyhow!("Root not found"))?;
 
-        workspace.ast.iter().for_each(|ast| {
+        root.ast.iter().for_each(|ast| {
             ast.build_inlay_hints(document, &mut results);
         });
 

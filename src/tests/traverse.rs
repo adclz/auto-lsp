@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
+use crate::core::root::Root;
 use auto_lsp_core::ast::{GetSymbolData, Traverse};
 use lsp_types::Url;
 use rstest::{fixture, rstest};
@@ -9,8 +9,8 @@ use rstest::{fixture, rstest};
 use super::html_workspace::*;
 
 #[fixture]
-fn nested_divs() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn nested_divs() -> (Root, Document) {
+    Root::from_utf8(
         HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///nested.html").unwrap(),
         r#"<!DOCTYPE html>
@@ -27,7 +27,7 @@ fn nested_divs() -> (Workspace, Document) {
 }
 
 #[rstest]
-fn descendant(nested_divs: (Workspace, Document)) {
+fn descendant(nested_divs: (Root, Document)) {
     let ast = nested_divs.0.ast.as_ref().unwrap();
 
     let guard = ast.read();
@@ -64,7 +64,7 @@ fn descendant(nested_divs: (Workspace, Document)) {
 }
 
 #[rstest]
-fn descendant_at_and_collect(nested_divs: (Workspace, Document)) {
+fn descendant_at_and_collect(nested_divs: (Root, Document)) {
     let ast = nested_divs.0.ast.as_ref().unwrap();
 
     let mut collected = vec![];
@@ -84,7 +84,7 @@ fn descendant_at_and_collect(nested_divs: (Workspace, Document)) {
 }
 
 #[rstest]
-fn traverse_and_collect(nested_divs: (Workspace, Document)) {
+fn traverse_and_collect(nested_divs: (Root, Document)) {
     let ast = nested_divs.0.ast.as_ref().unwrap();
     let source_code = nested_divs.1.texter.text.as_bytes();
 

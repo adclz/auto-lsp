@@ -10,7 +10,7 @@ use super::downcast::*;
 use super::symbol::*;
 use super::utils::{intersecting_ranges, tree_sitter_range_to_lsp_range};
 use crate::document::Document;
-use crate::workspace::Workspace;
+use crate::root::Root;
 use crate::{builder_error, builder_warning, core_ast::core::AstSymbol};
 
 /// Stack builder for constructing Abstract Syntax Trees (ASTs).
@@ -22,7 +22,7 @@ where
     T: Buildable + Queryable,
 {
     _meta: PhantomData<T>,
-    workspace: &'a mut Workspace,
+    root: &'a mut Root,
     document: &'a Document,
     /// Symbols created while building the AST
     roots: Vec<PendingSymbol>,
@@ -36,10 +36,10 @@ where
     T: Buildable + Queryable,
 {
     /// Creates a new `StackBuilder` instance.
-    pub fn new(workspace: &'a mut Workspace, document: &'a Document) -> Self {
+    pub fn new(root: &'a mut Root, document: &'a Document) -> Self {
         Self {
             _meta: PhantomData,
-            workspace,
+            root,
             document,
             roots: vec![],
             stack: vec![],
@@ -67,7 +67,7 @@ where
                 result.get_lsp_range(self.document),
                 format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
             ))?
-            .try_into_builder(self.workspace, self.document)?;
+            .try_into_builder(self.root, self.document)?;
         #[cfg(feature = "log")]
         log::debug!("\n{}", result);
         Ok(result)
@@ -96,7 +96,7 @@ where
                         result.get_lsp_range(self.document),
                         format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
                     ))?
-                    .try_into_builder(self.workspace, self.document)
+                    .try_into_builder(self.root, self.document)
             })
             .collect::<Result<Vec<Y>, Diagnostic>>()?;
         #[cfg(feature = "log")]
@@ -114,7 +114,7 @@ where
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
-            &self.workspace.parsers.tree_sitter.queries.core,
+            &self.root.parsers.tree_sitter.queries.core,
             self.document.tree.root_node(),
             self.document.texter.text.as_bytes(),
         );
@@ -140,7 +140,7 @@ where
                         || (capture.node.range().start_byte == range.start))
                         && T::QUERY_NAMES.contains(
                             &self
-                                .workspace
+                                .root
                                 .parsers
                                 .tree_sitter
                                 .queries
@@ -154,7 +154,7 @@ where
                     }
                 } else if T::QUERY_NAMES.contains(
                     &self
-                        .workspace
+                        .root
                         .parsers
                         .tree_sitter
                         .queries
@@ -205,8 +205,8 @@ where
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
         let mut node = T::new(
-            self.workspace.url.clone(),
-            &self.workspace.parsers.tree_sitter.queries.core,
+            self.root.url.clone(),
+            &self.root.parsers.tree_sitter.queries.core,
             capture,
         );
 
@@ -216,11 +216,11 @@ where
                 self.roots.push(node.clone());
                 self.stack.push(node);
             }
-            None => self.workspace.diagnostics.push(builder_warning!(
+            None => self.root.diagnostics.push(builder_warning!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
                     "Syntax error: Unexpected {:?}",
-                    self.workspace
+                    self.root
                         .parsers
                         .tree_sitter
                         .queries
@@ -236,25 +236,25 @@ where
         let add = parent
             .get_rc()
             .borrow_mut()
-            .add(capture, self.workspace, self.document);
+            .add(capture, self.root, self.document);
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.
-                self.workspace.diagnostics.push(e);
+                self.root.diagnostics.push(e);
             }
             Ok(None) => {
                 // Parent did not accept the child node.
-                self.workspace.diagnostics.push(builder_warning!(
+                self.root.diagnostics.push(builder_warning!(
                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                     format!(
                         "Syntax error: Unexpected {:?} in {:?}",
-                        self.workspace
+                        self.root
                             .parsers
                             .tree_sitter
                             .queries
                             .core
                             .capture_names()[capture.index as usize],
-                        self.workspace
+                        self.root
                             .parsers
                             .tree_sitter
                             .queries

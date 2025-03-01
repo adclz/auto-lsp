@@ -2,7 +2,7 @@
 def fpkkkkkkkllllpko():
     pass
 
-def ajjdpkdkmmmaa(
+def ajjdpkkdkmmmaa(
     jnljkn: int,
     k: int) 
     -> int:

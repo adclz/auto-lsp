@@ -1,6 +1,6 @@
 use lsp_types::Diagnostic;
 
-use crate::{builder_error, core_ast::core::AstSymbol, document::Document, workspace::Workspace};
+use crate::{builder_error, core_ast::core::AstSymbol, document::Document, root::Root};
 
 use super::{
     buildable::Buildable,
@@ -14,7 +14,7 @@ use super::{
 ///
 /// # Parameters
 /// - `value`: The builder instance used to construct the target type.
-/// - `workspace`: The current workspace context.
+/// - `root`: The current root context.
 /// - `document`: The document context.
 pub trait TryFromBuilder<T>: Sized
 where
@@ -24,7 +24,7 @@ where
 
     fn try_from_builder(
         value: T,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
     ) -> Result<Self, Self::Error>;
 }
@@ -34,7 +34,7 @@ pub trait TryIntoBuilder<T>: Sized {
 
     fn try_into_builder(
         self,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
     ) -> Result<T, Self::Error>;
 }
@@ -48,10 +48,10 @@ where
 
     fn try_into_builder(
         self,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
     ) -> Result<U, Self::Error> {
-        U::try_from_builder(self, workspace, document)
+        U::try_from_builder(self, root, document)
     }
 }
 
@@ -62,7 +62,7 @@ where
 /// typically used for field-level downcasting.
 ///
 /// # Parameters
-/// - `workspace`: The current workspace context.
+/// - `root`: The current root context.
 /// - `document`: The document context.
 /// - `field_name`: The name of the field being downcasted.
 /// - `field_range`: The range in the document where the field is located.
@@ -76,7 +76,7 @@ pub trait TryDownCast<
 
     fn try_downcast(
         &self,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
@@ -93,7 +93,7 @@ where
 
     fn try_downcast(
         &self,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
@@ -108,11 +108,11 @@ where
                     "Invalid {:?} for {:?}: received: {:?}",
                     field_name,
                     input_name,
-                    workspace.parsers.tree_sitter.queries.core.capture_names()
+                    root.parsers.tree_sitter.queries.core.capture_names()
                         [self.get_query_index()]
                 )
             ))?
-            .try_into_builder(workspace, document)
+            .try_into_builder(root, document)
     }
 }
 
@@ -125,7 +125,7 @@ where
 
     fn try_downcast(
         &self,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
@@ -133,7 +133,7 @@ where
     ) -> Result<Self::Output, Diagnostic> {
         self.as_ref().map_or(Ok(None), |pending| {
             pending
-                .try_downcast(workspace, document, field_name, field_range, input_name)
+                .try_downcast(root, document, field_name, field_range, input_name)
                 .map(Some)
         })
     }
@@ -149,14 +149,14 @@ where
 
     fn try_downcast(
         &self,
-        workspace: &mut Workspace,
+        root: &mut Root,
         document: &Document,
         field_name: &str,
         field_range: lsp_types::Range,
         input_name: &str,
     ) -> Result<Self::Output, Diagnostic> {
         self.iter()
-            .map(|item| item.try_downcast(workspace, document, field_name, field_range, input_name))
+            .map(|item| item.try_downcast(root, document, field_name, field_range, input_name))
             .collect::<Result<Vec<_>, lsp_types::Diagnostic>>()
     }
 }

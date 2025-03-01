@@ -4,12 +4,12 @@ use std::collections::HashMap;
 use std::fs;
 
 use lsp_server::{Connection, IoThreads};
+use lsp_types::WorkspaceServerCapabilities;
 use lsp_types::{
     CodeLensOptions, DiagnosticOptions, DiagnosticServerCapabilities, DocumentLinkOptions,
     InitializeParams, InitializeResult, OneOf, PositionEncodingKind,
     SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
     SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
-    WorkspaceServerCapabilities,
 };
 use texter::core::text::Text;
 
@@ -110,7 +110,9 @@ impl Session {
                     true => Some(lsp_types::FoldingRangeProviderCapability::Simple(true)),
                     false => None,
                 },
-                semantic_tokens_provider: init_options.lsp_options.semantic_tokens.as_ref().map(|options| lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
+                semantic_tokens_provider: init_options.lsp_options.semantic_tokens.as_ref().map(
+                    |options| {
+                        lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
                             SemanticTokensOptions {
                                 legend: SemanticTokensLegend {
                                     token_types: options
@@ -126,7 +128,9 @@ impl Session {
                                 full: Some(SemanticTokensFullOptions::Bool(true)),
                                 ..Default::default()
                             },
-                        )),
+                        )
+                    },
+                ),
                 hover_provider: match init_options.lsp_options.hover_info {
                     true => Some(lsp_types::HoverProviderCapability::Simple(true)),
                     false => None,
@@ -188,7 +192,7 @@ impl Session {
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.
-        session.init_workspaces(params)?;
+        session.init_roots(params)?;
 
         Ok(session)
     }

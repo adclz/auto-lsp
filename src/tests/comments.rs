@@ -1,6 +1,6 @@
 use crate::core::ast::Comment;
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
+use crate::core::root::Root;
 use auto_lsp_core::ast::GetSymbolData;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
@@ -9,8 +9,8 @@ use super::python_workspace::ast::Module;
 use super::python_workspace::PYTHON_PARSERS;
 
 #[fixture]
-fn foo_bar() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -26,7 +26,7 @@ def bar():
 }
 
 #[rstest]
-fn foo_bar_comment(foo_bar: (Workspace, Document)) {
+fn foo_bar_comment(foo_bar: (Root, Document)) {
     let ast = foo_bar.0.ast.as_ref().unwrap();
     let document = &foo_bar.1;
 
@@ -45,8 +45,8 @@ fn foo_bar_comment(foo_bar: (Workspace, Document)) {
 }
 
 #[fixture]
-fn foo_bar_no_comments() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar_no_comments() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def foo(param1, param2: int, param3: int = 5):
@@ -61,10 +61,10 @@ def bar():
 }
 
 #[rstest]
-fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
-    let mut workspace = foo_bar_no_comments.0;
+fn add_comments(mut foo_bar_no_comments: (Root, Document)) {
+    let mut root = foo_bar_no_comments.0;
     let document = &mut foo_bar_no_comments.1;
-    let ast = workspace.ast.as_ref().unwrap();
+    let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();
 
     // foo has no comment
@@ -114,15 +114,15 @@ fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
 
     document
         .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
+            &mut root.parsers.tree_sitter.parser.write(),
             &vec![foo_change, bar_change],
         )
         .unwrap();
 
     drop(ast);
-    workspace.parse(document);
+    root.parse(document);
 
-    let ast = workspace.ast.as_ref().unwrap();
+    let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();
 
     // foo has comment
@@ -140,8 +140,8 @@ fn add_comments(mut foo_bar_no_comments: (Workspace, Document)) {
 }
 
 #[fixture]
-fn foo_bar_with_comments() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar_with_comments() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -158,10 +158,10 @@ def bar():
 }
 
 #[rstest]
-fn remove_comments(mut foo_bar_with_comments: (Workspace, Document)) {
-    let mut workspace = foo_bar_with_comments.0;
+fn remove_comments(mut foo_bar_with_comments: (Root, Document)) {
+    let mut root = foo_bar_with_comments.0;
     let document = &mut foo_bar_with_comments.1;
-    let ast = workspace.ast.as_ref().unwrap();
+    let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();
 
     // foo has comment
@@ -211,15 +211,15 @@ fn remove_comments(mut foo_bar_with_comments: (Workspace, Document)) {
 
     document
         .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
+            &mut root.parsers.tree_sitter.parser.write(),
             &vec![foo_change, bar_change],
         )
         .unwrap();
 
     drop(ast);
-    workspace.parse(document);
+    root.parse(document);
 
-    let ast = workspace.ast.as_ref().unwrap();
+    let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();
 
     // foo has no comment

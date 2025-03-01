@@ -1,13 +1,13 @@
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
+use crate::core::root::Root;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
 use super::python_workspace::*;
 
 #[fixture]
-fn foo_bar() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -23,8 +23,8 @@ def bar():
 }
 
 #[fixture]
-fn foo_bar_with_type_error() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar_with_type_error() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -40,10 +40,7 @@ fn foo_bar_with_type_error() -> (Workspace, Document) {
 }
 
 #[rstest]
-fn foo_has_type_error(
-    foo_bar: (Workspace, Document),
-    foo_bar_with_type_error: (Workspace, Document),
-) {
+fn foo_has_type_error(foo_bar: (Root, Document), foo_bar_with_type_error: (Root, Document)) {
     let foo_bar = foo_bar.0;
     // foo_bar has no type errors
     assert!(foo_bar.diagnostics.is_empty());
@@ -63,8 +60,8 @@ fn foo_has_type_error(
 }
 
 #[fixture]
-fn foo_with_type_error() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_with_type_error() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"def foo(p: int = "x"): pass "#.into(),
@@ -73,17 +70,17 @@ fn foo_with_type_error() -> (Workspace, Document) {
 }
 
 #[rstest]
-fn non_redundant_edited_type_error(mut foo_with_type_error: (Workspace, Document)) {
+fn non_redundant_edited_type_error(mut foo_with_type_error: (Root, Document)) {
     // test to check if a same error is not reported twice between edits of the same error
 
     // foo_with_type_error has one type error
-    let mut workspace = foo_with_type_error.0;
+    let mut root = foo_with_type_error.0;
     let document = &mut foo_with_type_error.1;
-    assert!(!workspace.diagnostics.is_empty());
-    assert!(!workspace.unsolved_checks.is_empty());
-    assert!(workspace.unsolved_references.is_empty());
+    assert!(!root.diagnostics.is_empty());
+    assert!(!root.unsolved_checks.is_empty());
+    assert!(root.unsolved_references.is_empty());
     assert_eq!(
-        workspace.diagnostics[0].message,
+        root.diagnostics[0].message,
         "Invalid value \"x\" for type int"
     );
 
@@ -105,35 +102,32 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: (Workspace, Document
     };
 
     document
-        .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
-            &vec![change],
-        )
+        .update(&mut root.parsers.tree_sitter.parser.write(), &vec![change])
         .unwrap();
-    workspace.parse(document);
+    root.parse(document);
 
     // foo_with_type_error should have 1 error
-    assert_eq!(workspace.diagnostics.len(), 1);
-    assert_eq!(workspace.unsolved_checks.len(), 1);
-    assert_eq!(workspace.unsolved_references.len(), 0);
+    assert_eq!(root.diagnostics.len(), 1);
+    assert_eq!(root.unsolved_checks.len(), 1);
+    assert_eq!(root.unsolved_references.len(), 0);
     assert_eq!(
-        workspace.diagnostics[0].message,
+        root.diagnostics[0].message,
         "Invalid value \"xxxx\" for type int"
     );
 }
 
 #[rstest]
-fn fix_type_error(mut foo_with_type_error: (Workspace, Document)) {
+fn fix_type_error(mut foo_with_type_error: (Root, Document)) {
     // Replaces "x" with 1 and therefore fixes the type error
 
     // foo_with_type_error has one type error
-    let mut workspace = foo_with_type_error.0;
+    let mut root = foo_with_type_error.0;
     let document = &mut foo_with_type_error.1;
-    assert!(!workspace.diagnostics.is_empty());
-    assert!(!workspace.unsolved_checks.is_empty());
-    assert!(workspace.unsolved_references.is_empty());
+    assert!(!root.diagnostics.is_empty());
+    assert!(!root.unsolved_checks.is_empty());
+    assert!(root.unsolved_references.is_empty());
     assert_eq!(
-        workspace.diagnostics[0].message,
+        root.diagnostics[0].message,
         "Invalid value \"x\" for type int"
     );
 
@@ -154,16 +148,13 @@ fn fix_type_error(mut foo_with_type_error: (Workspace, Document)) {
         text: "1".into(),
     };
     document
-        .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
-            &vec![change],
-        )
+        .update(&mut root.parsers.tree_sitter.parser.write(), &vec![change])
         .unwrap();
 
-    workspace.parse(document);
+    root.parse(document);
 
     // foo_with_type_error should have no type errors
-    assert_eq!(workspace.diagnostics.len(), 0);
-    assert_eq!(workspace.unsolved_checks.len(), 0);
-    assert_eq!(workspace.unsolved_references.len(), 0);
+    assert_eq!(root.diagnostics.len(), 0);
+    assert_eq!(root.unsolved_checks.len(), 0);
+    assert_eq!(root.unsolved_references.len(), 0);
 }

@@ -1,9 +1,9 @@
 use lsp_types::{Diagnostic, Position, Range};
 use tree_sitter::Node;
 
-use super::Workspace;
+use super::Root;
 
-impl Workspace {
+impl Root {
     /// Traverse a tree-sitter syntax tree to collect error nodes.
     ///
     /// This function traverses the syntax tree in a depth-first manner to find error nodes:

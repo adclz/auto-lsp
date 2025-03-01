@@ -5,7 +5,7 @@ use crate::server::session::Session;
 impl Session {
     /// Request when a document is changed
     ///
-    /// Calls [Session::edit_document] to update the document in the workspace.
+    /// Calls [Session::edit_document] to update the document in the root.
     pub fn edit_text_document(
         &mut self,
         params: DidChangeTextDocumentParams,

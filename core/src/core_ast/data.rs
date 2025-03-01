@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::workspace::Workspace;
+use crate::root::Root;
 
 use super::core::AstSymbol;
 use super::symbol::*;
@@ -9,7 +9,7 @@ use lsp_types::Url;
 /// Core data of any ast symbol
 #[derive(Clone)]
 pub struct SymbolData {
-    /// The workspace url of the symbol
+    /// The root url of the symbol
     pub url: Arc<Url>,
     /// The parent of the symbol
     pub parent: Option<WeakSymbol>,
@@ -41,7 +41,7 @@ impl SymbolData {
 
 /// Trait to read or mutate the core data of an ast symbol
 pub trait GetSymbolData {
-    /// Get the workspace url of the symbol
+    /// Get the root url of the symbol
     fn get_url(&self) -> Arc<Url>;
     /// Get the range of the symbol in the source code
     ///
@@ -160,8 +160,8 @@ pub trait ReferrersTrait {
 
     /// Drop any referrers that have an reference
     ///
-    /// If the referrer was not dropped, add it to the unsolved checks field of [`Workspace`]
-    fn drop_referrers(&mut self, workspace: &mut Workspace);
+    /// If the referrer was not dropped, add it to the unsolved checks field of [`Root`]
+    fn drop_referrers(&mut self, root: &mut Root);
 }
 
 impl<'a> IntoIterator for &'a Referrers {
@@ -184,14 +184,14 @@ impl<T: AstSymbol + ?Sized> ReferrersTrait for T {
             .retain(|r| r.get_ptr().weak_count() > 0);
     }
 
-    fn drop_referrers(&mut self, workspace: &mut Workspace) {
+    fn drop_referrers(&mut self, root: &mut Root) {
         self.get_mut_referrers().0.retain(|r| {
             if let Some(symbol) = r.to_dyn() {
                 let read = symbol.read();
                 if read.get_target().is_some() {
                     drop(read);
                     symbol.write().reset_target_reference_reference();
-                    workspace.add_unsolved_reference(&symbol.clone());
+                    root.add_unsolved_reference(&symbol.clone());
                 }
             }
             false

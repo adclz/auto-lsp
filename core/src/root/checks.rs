@@ -1,9 +1,9 @@
 use crate::ast::{CheckStatus, DynSymbol, ReferrersTrait, WeakSymbol};
 use crate::document::Document;
 
-use super::Workspace;
+use super::Root;
 
-impl Workspace {
+impl Root {
     pub(crate) fn add_unsolved_check(&mut self, symbol: &DynSymbol) -> &mut Self {
         self.unsolved_checks.push(symbol.to_weak());
         self

@@ -1,11 +1,11 @@
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 
 impl Session {
-    /// Request to get workspace symbols
+    /// Request to get root symbols
     ///
-    /// This function will return all symbols found in the workspace recursively
+    /// This function will return all symbols found in the root recursively
     pub fn get_workspace_symbols(
         &mut self,
         params: WorkspaceSymbolParams,
@@ -16,10 +16,10 @@ impl Session {
 
         let mut symbols = vec![];
 
-        let workspaces = WORKSPACES.lock();
+        let lock = WORKSPACE.lock();
 
-        workspaces.iter().for_each(|(uri, (workspace, document))| {
-            let ast = &workspace.ast;
+        lock.roots.iter().for_each(|(uri, (root, document))| {
+            let ast = &root.ast;
 
             let mut builder = DocumentSymbolsBuilder::default();
 

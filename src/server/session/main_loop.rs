@@ -1,14 +1,14 @@
 use crossbeam_channel::select;
 use lsp_server::Message;
 use lsp_server::{ExtractError, Notification, Request, Response};
+use lsp_types::request::{WorkspaceDiagnosticRequest, WorkspaceSymbolRequest};
 use lsp_types::{
     notification::{DidChangeTextDocument, DidChangeWatchedFiles, DidOpenTextDocument},
     request::{
         CodeActionRequest, CodeLensRequest, Completion, DocumentDiagnosticRequest,
         DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, GotoDeclaration,
         GotoDefinition, HoverRequest, InlayHintRequest, References, SelectionRangeRequest,
-        SemanticTokensFullRequest, SemanticTokensRangeRequest, WorkspaceDiagnosticRequest,
-        WorkspaceSymbolRequest,
+        SemanticTokensFullRequest, SemanticTokensRangeRequest,
     },
 };
 use serde::Serialize;

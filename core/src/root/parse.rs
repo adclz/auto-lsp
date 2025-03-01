@@ -1,9 +1,9 @@
 #![allow(unused)]
 use crate::document::Document;
 
-use super::Workspace;
+use super::Root;
 
-impl Workspace {
+impl Root {
     fn set_ast(&mut self, document: &Document) -> &mut Self {
         self.unsolved_checks.clear();
         self.unsolved_references.clear();
@@ -33,7 +33,7 @@ impl Workspace {
         self.diagnostics.clear();
 
         // Get new diagnostics from tree sitter
-        Workspace::get_tree_sitter_errors(
+        Root::get_tree_sitter_errors(
             &document.tree.root_node(),
             document.texter.text.as_bytes(),
             &mut self.diagnostics,

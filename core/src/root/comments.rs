@@ -1,8 +1,8 @@
-use super::Workspace;
+use super::Root;
 use crate::document::Document;
 use streaming_iterator::StreamingIterator;
 
-impl Workspace {
+impl Root {
     /// Sets comments in the document based on the [`tree_sitter::Query`] for comments
     ///
     /// This function identifies comments in the [`tree_sitter::Tree`] of the [`Document`] and then

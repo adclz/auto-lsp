@@ -1,6 +1,6 @@
 use crate::core::ast::BuildCompletionItems;
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
+use crate::core::root::Root;
 use auto_lsp_core::ast::{BuildTriggeredCompletionItems, Traverse};
 use lsp_types::Url;
 use rstest::{fixture, rstest};
@@ -9,8 +9,8 @@ use super::python_workspace::ast::Module;
 use super::python_workspace::*;
 
 #[fixture]
-fn foo_bar() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn foo_bar() -> (Root, Document) {
+    Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
         Url::parse("file:///test.py").unwrap(),
         r#"# foo comment
@@ -27,7 +27,7 @@ def bar():
 }
 
 #[rstest]
-fn global_completion_items(foo_bar: (Workspace, Document)) {
+fn global_completion_items(foo_bar: (Root, Document)) {
     let ast = foo_bar.0.ast.as_ref().unwrap();
     let document = &foo_bar.1;
 
@@ -52,8 +52,8 @@ fn global_completion_items(foo_bar: (Workspace, Document)) {
 }
 
 #[rstest]
-fn triggered_completion_items(foo_bar: (Workspace, Document)) {
-    let mut workspace = foo_bar.0;
+fn triggered_completion_items(foo_bar: (Root, Document)) {
+    let mut root = foo_bar.0;
     let mut document = foo_bar.1;
 
     let change = lsp_types::TextDocumentContentChangeEvent {
@@ -72,15 +72,12 @@ fn triggered_completion_items(foo_bar: (Workspace, Document)) {
     };
 
     document
-        .update(
-            &mut workspace.parsers.tree_sitter.parser.write(),
-            &vec![change],
-        )
+        .update(&mut root.parsers.tree_sitter.parser.write(), &vec![change])
         .unwrap();
 
-    workspace.parse(&document);
+    root.parse(&document);
 
-    let node = workspace.ast.as_ref().unwrap().descendant_at(75).unwrap();
+    let node = root.ast.as_ref().unwrap().descendant_at(75).unwrap();
 
     let mut completion_items = vec![];
     node.build_triggered_completion_items(".", &document, &mut completion_items);

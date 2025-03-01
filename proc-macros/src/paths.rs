@@ -34,7 +34,7 @@ nested_struct!(
         pub symbol_data: Path,
         pub pending_symbol: Path,
         pub maybe_pending_symbol: Path,
-        pub workspace: Path,
+        pub root: Path,
 
         pub queryable: Queryable {
             pub path: Path,
@@ -158,7 +158,7 @@ impl Default for Paths {
             referrers: core_ast(parse_quote!(Referrers)),
             pending_symbol: core_build(parse_quote!(PendingSymbol)),
             maybe_pending_symbol: core_build(parse_quote!(MaybePendingSymbol)),
-            workspace: parse_quote!(auto_lsp::core::workspace::Workspace),
+            root: parse_quote!(auto_lsp::core::root::Root),
 
             queryable: Queryable {
                 path: core_build(parse_quote!(Queryable)),
@@ -194,10 +194,10 @@ impl Default for Paths {
                     sig: quote! { fn add(
                         &mut self,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
-                        workspace: &mut auto_lsp::core::workspace::Workspace,
+                        root: &mut auto_lsp::core::root::Root,
                         document: &auto_lsp::core::document::Document,
                     ) -> Result<Option<auto_lsp::core::build::PendingSymbol>, auto_lsp::lsp_types::Diagnostic> },
-                    variant: quote! { add(capture, workspace, document) },
+                    variant: quote! { add(capture, root, document) },
                 },
                 get_url: Method {
                     sig: quote! { fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> },

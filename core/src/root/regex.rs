@@ -1,9 +1,9 @@
-use super::Workspace;
+use super::Root;
 use crate::document::Document;
 use regex::{Match, Regex};
 use streaming_iterator::StreamingIterator;
 
-impl Workspace {
+impl Root {
     /// Find matches in the document with the provided regex
     ///
     /// This function identifies comments in the [`tree_sitter::Tree`] of the [`Document`] and then

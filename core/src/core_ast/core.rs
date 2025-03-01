@@ -84,9 +84,9 @@ pub trait AstSymbol:
                 }
 
                 /// Returns the LSP start position of the symbol.
-                fn get_start_position(&self, workspace: &Document) -> Position {
+                fn get_start_position(&self, root: &Document) -> Position {
                     let range = self.get_data().get_range();
-                    let node = workspace
+                    let node = root
                         .tree
                         .root_node()
                         .descendant_for_byte_range(range.start, range.start)
@@ -99,9 +99,9 @@ pub trait AstSymbol:
                 }
 
                 /// Returns the LSP end position of the symbol.
-                fn get_end_position(&self, workspace: &Document) -> Position {
+                fn get_end_position(&self, root: &Document) -> Position {
                     let range = self.get_data().get_range();
-                    let node = workspace
+                    let node = root
                         .tree
                         .root_node()
                         .descendant_for_byte_range(range.end, range.end)
@@ -114,9 +114,9 @@ pub trait AstSymbol:
                 }
 
                 /// Returns the LSP range (start and end position) of the symbol.
-                fn get_lsp_range(&self, workspace: &Document) -> Range {
+                fn get_lsp_range(&self, root: &Document) -> Range {
                     let range = self.get_data().get_range();
-                    let node = workspace
+                    let node = root
                         .tree
                         .root_node()
                         .descendant_for_byte_range(range.start, range.end)

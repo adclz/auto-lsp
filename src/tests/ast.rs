@@ -1,15 +1,14 @@
 use crate::core::ast::AstSymbol;
 use crate::core::document::Document;
-use crate::core::workspace::Workspace;
+use crate::core::root::Root;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
 use super::html_workspace::*;
 
-
 #[fixture]
-fn sample_file() -> (Workspace, Document) {
-    Workspace::from_utf8(
+fn sample_file() -> (Root, Document) {
+    Root::from_utf8(
         HTML_PARSERS.get("html").unwrap(),
         Url::parse("file:///sample_file.html").unwrap(),
         r#"<!DOCTYPE html>
@@ -25,11 +24,11 @@ fn sample_file() -> (Workspace, Document) {
 }
 
 #[rstest]
-fn html_ast(sample_file: (Workspace, Document)) {
-    let workspace = sample_file.0;
+fn html_ast(sample_file: (Root, Document)) {
+    let root = sample_file.0;
     let document = sample_file.1;
 
-    let ast = workspace.ast.as_ref().unwrap();
+    let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();
 
     // Root node should be HtmlDocument
@@ -44,7 +43,10 @@ fn html_ast(sample_file: (Workspace, Document)) {
     assert!(matches!(*tags[0].read(), Node::DocType(_)));
     assert!(matches!(*tags[1].read(), Node::Script(_)));
     assert!(matches!(*tags[2].read(), Node::Style(_)));
-    assert!(matches!(*tags[3].read(), Node::Element(Element::FullTag(_))));
+    assert!(matches!(
+        *tags[3].read(),
+        Node::Element(Element::FullTag(_))
+    ));
 
     let tag_3 = tags[3].read();
 
@@ -81,7 +83,8 @@ fn html_ast(sample_file: (Workspace, Document)) {
 
         if let Node::Element(Element::SelfClosingTag(ref element)) = *elements[1].read() {
             assert_eq!(
-                element.tag_name
+                element
+                    .tag_name
                     .read()
                     .get_text(document.texter.text.as_bytes())
                     .unwrap(),

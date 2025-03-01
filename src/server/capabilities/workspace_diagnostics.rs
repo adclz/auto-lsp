@@ -3,20 +3,21 @@ use lsp_types::{
     WorkspaceDocumentDiagnosticReport, WorkspaceFullDocumentDiagnosticReport,
 };
 
-use crate::server::session::{Session, WORKSPACES};
+use crate::server::session::{Session, WORKSPACE};
 
 impl Session {
     /// Get diagnostics for all documents.
     pub fn get_workspace_diagnostics(
         &mut self,
-        _workspace: WorkspaceDiagnosticParams,
+        _params: WorkspaceDiagnosticParams,
     ) -> anyhow::Result<WorkspaceDiagnosticReport> {
-        let workspaces = WORKSPACES.lock();
+        let lock = WORKSPACE.lock();
 
-        let result: Vec<lsp_types::WorkspaceDocumentDiagnosticReport> = workspaces
+        let result: Vec<lsp_types::WorkspaceDocumentDiagnosticReport> = lock
+            .roots
             .iter()
-            .map(|(uri, (workspace, _))| {
-                let errors = workspace.diagnostics.clone();
+            .map(|(uri, (root, _))| {
+                let errors = root.diagnostics.clone();
                 WorkspaceDocumentDiagnosticReport::Full(WorkspaceFullDocumentDiagnosticReport {
                     version: None,
                     full_document_diagnostic_report: FullDocumentDiagnosticReport {

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use auto_lsp_core::{
     document::Document,
-    workspace::{Parsers, Workspace},
+    root::{Parsers, Root},
 };
 use regex::{Match, Regex};
 /// List of options for the LSP server capabilties [`lsp_types::ServerCapabilities`]
@@ -60,13 +60,13 @@ pub struct SemanticTokensList {
 /// ```rust
 /// # use auto_lsp::server::{RegexToDocumentLink, Session};
 /// # use auto_lsp_core::document::Document;
-/// # use auto_lsp_core::workspace::Workspace;
+/// # use auto_lsp_core::root::Root;
 /// # use lsp_types::{DocumentLink, Url};
 /// # use regex::Regex;
 ///
 /// let regex = Regex::new(r"(\w+):(\d+)").unwrap();
 ///
-/// fn to_document_link(m: regex::Match, line: usize, document: &Document, workspace: &Workspace, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink {
+/// fn to_document_link(m: regex::Match, line: usize, document: &Document, root: &Root, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink {
 ///    lsp_types::DocumentLink {
 ///         data: None,
 ///         tooltip: Some(m.as_str().to_string()),
@@ -94,7 +94,7 @@ pub struct RegexToDocumentLink {
         _match: Match<'_>,
         line: usize,
         document: &Document,
-        workspace: &Workspace,
+        root: &Root,
         acc: &mut Vec<lsp_types::DocumentLink>,
     ) -> lsp_types::DocumentLink,
 }
