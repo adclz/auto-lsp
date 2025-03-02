@@ -26,6 +26,10 @@ const_panic = { version = "0.2.11", optional = true }
 log = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
 
+[dev-dependencies]
+tree-sitter-html = { workspace = true }
+rstest = { workspace = true }
+
 [features]
 log = ["dep:log"]
 deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]

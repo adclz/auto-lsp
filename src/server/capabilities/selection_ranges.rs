@@ -45,7 +45,7 @@ impl Session {
 
             let mut parent: Option<SelectionRange> = None;
             for _node in stack {
-                let range = match document.range_at(offset) {
+                let range = match document.node_range_at(offset) {
                     Some(range) => range,
                     None => continue,
                 };
