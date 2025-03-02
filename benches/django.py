@@ -1364,12 +1364,6 @@ class RegroupNode(Node):
             return ""
         # List of dictionaries in the format:
         # {'grouper': 'key', 'list': [list of contents]}.
-        context[self.var_name] = [
-            GroupedResult(grouper=key, list=list(val))
-            for key, val in groupby(
-                obj_list, lambda obj: self.resolve_expression(obj, context)
-            )
-        ]
         return ""
 
 
@@ -1456,7 +1450,6 @@ class URLNode(Node):
         from django.urls import NoReverseMatch, reverse
 
         args = [arg.resolve(context) for arg in self.args]
-        kwargs = {k: v.resolve(context) for k, v in self.kwargs.items()}
         view_name = self.view_name.resolve(context)
         try:
             current_app = context.request.current_app
@@ -1535,11 +1528,6 @@ class WithNode(Node):
 
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
-
-    def render(self, context):
-        values = {key: val.resolve(context) for key, val in self.extra_context.items()}
-        with context.push(**values):
-            return self.nodelist.render(context)
 
 
 @register.tag

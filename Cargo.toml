@@ -88,7 +88,7 @@ html = ["dep:tree-sitter-html"]
 features = ["lsp_server", "log", "miette", "rayon"]
 
 [target.'cfg(unix)'.dev-dependencies]
-pprof = { version = "0.14.0", features = ["flamegraph"] }
+pprof = { version = "0.14.0", features = ["criterion", "flamegraph"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }
@@ -107,6 +107,16 @@ static_assertions = "1.1.0"
 impls = "1.0.3"
 
 [[bench]]
-name = "main"
+name = "flame_graph"
 harness = false
 required-features = ["python"]
+
+[[bench]]
+name = "django"
+harness = false
+required-features = ["python"]
+
+[[bench]]
+name = "django_rayon"
+harness = false
+required-features = ["python", "rayon"]
