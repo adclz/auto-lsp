@@ -1,5 +1,11 @@
 # Configuring a client
 
+## Acknowledgement
+
+Thanks to [`texter`](https://github.com/airblast-dev/texter) crate, the client can send text in any encoding to the server.
+
+`texter` also provides an efficient way to update documents incrementally.
+
 ## File extensions
 
 The LSP server must know how each file extensions are associated with a parser.
@@ -32,9 +38,3 @@ const clientOptions: LanguageClientOptions = {
 ```admonish
 You have an example in the [`vscode-python-wasi-lsp`](https://github.com/adclz/auto-lsp/tree/main/extensions/vscode-python-wasi-lsp) folder in the `auto-lsp` repository.
 ```
-
-## Acknowledgement
-
-Thanks to [`texter`](https://github.com/airblast-dev/texter) crate, the client can send text in any encoding to the server.
-
-`texter` also provides an efficient way to update documents incrementally.

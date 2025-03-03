@@ -19,5 +19,5 @@
    - [Configuring a client](lsp-server/configuring-a-client.md)
  - [Tests]()
    - [Logging](tests/logging.md)
-   - [Miette](tests/miette.md)
+   - [Reports](tests/reports.md)
 - [Targets](targets/index.md)

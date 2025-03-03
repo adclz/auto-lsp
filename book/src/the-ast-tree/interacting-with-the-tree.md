@@ -2,7 +2,7 @@
 
 ## Static and Dynamic Symbols
 
-The AST tree is composed of two types of symbols:
+The AST tree is composed of 3 types of symbols:
 
 - Static symbols: [`Symbol<T>`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/struct.Symbol.html) where T implements [`AstSymbol`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.AstSymbol.html).
 - Dynamic symbols: [`DynSymbol`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/struct.DynSymbol.html)  which is a trait object that wraps a `Symbol<T>`.

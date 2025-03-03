@@ -35,7 +35,7 @@ The `#[choice]` attribute generates standard Rust enums that fully support patte
 
 For example, consider an expression that can contain nested types:
 
-```rust
+```rust, ignore
 #[choice]
 pub enum Expression {
     PrimaryExpression(PrimaryExpression),
@@ -52,7 +52,7 @@ pub enum PrimaryExpression {
 You can pattern match through multiple layers using standard Rust match expressions:
 
 
-```rust
+```rust, ignore
 impl Expression {
     pub fn is_integer(&self) -> bool {
         matches!(self, Expression::PrimaryExpression(PrimaryExpression::Integer(_)))

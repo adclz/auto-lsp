@@ -78,5 +78,3 @@ To address this, `auto_lsp`  provides testing and logging utilities to help you 
 - `wasm`: Enable wasm support.
 - `html`: Enable the html workspace mock for testing purposes.
 - `python`: Enable the python workspace mock for testing purposes.
-- `incremental`: Enable incremental parsing.
-- `miette`: Enable [`miette`](https://crates.io/crates/miette) error handling.

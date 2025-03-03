@@ -4,7 +4,7 @@ To configure semantic tokens, you need to use the `define_semantic_token_types` 
 
 # Token Types
 
-```rust
+```rust, ignore
 use auto_lsp::define_semantic_token_types;
 
 define_semantic_token_types![
@@ -26,7 +26,7 @@ This macro generates three components to streamline working with semantic token 
 
 # Token Modifiers
 
-```rust
+```rust, ignore
 use auto_lsp::define_semantic_token_modifiers;
 define_semantic_token_modifiers![
     standard {
@@ -47,7 +47,7 @@ This generates:
 
 # Example in AST
 
-```rust 
+```rust, ignore
 use auto_lsp::semantic_tokens::{SemanticToken, SemanticTokenType, SemanticTokenModifier};
 
 define_semantic_token_types![
@@ -81,7 +81,7 @@ impl BuildSemanticTokens for MyType {
 
 To inform the LSP client about the supported token types and modifiers, you need to pass the `SemanticTokensList` to the `LspOptions` struct.
 
-```rust
+```rust, ignore
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut session = Session::create(InitOptions {
         parsers: &PYTHON_PARSERS,

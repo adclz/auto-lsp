@@ -13,7 +13,7 @@ To configure the `lsp_server`, you need to use the `create` method from the [`Se
 - `Parsers`: A list of parsers (previously defined with the [`configure_parsers!`](/workspace-and-document/configuring-parsers.html) macro)
 - `LspOptions`: Options to configure the LSP server, see [LSP Options](#lsp-options).
 
-```rust
+```rust, ignore
 To start a session, you need to provide the InitOptions struct.
 
 ```rust
@@ -53,7 +53,7 @@ Just 2 options require specific implementations:
 
 Configuring Document Links requires a [`RegexToDocumentLink`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.RegexToDocumentLink.html) struct.
 
-```rust
+```rust, ignore
 use auto_lsp::server::{RegexToDocumentLink, Session};
 use auto_lsp::core::document::Document;
 use auto_lsp::core::workspace::Workspace;
@@ -93,7 +93,7 @@ Semantic Tokens that are defined previously with the [`define_semantic_token_typ
 and `define_semantic_token_modifiers!` macros
 must be provided to the LSP Server.
 
-```rust
+```rust, ignore
 use auto_lsp::lsp_types::SemanticTokenType;
 use auto_lsp::define_semantic_token_types;
 use phf::phf_map;
