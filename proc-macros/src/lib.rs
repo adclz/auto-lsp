@@ -34,20 +34,26 @@ mod utilities;
 /// ## Attributes
 ///
 /// - `query_name`: The name of the Tree-sitter query associated with this struct.
-/// - `kind`: Specifies the type of symbol to generate, which can be either `symbol` or `reference`.
 ///
-/// ### symbol
+/// ### LSP attributes
 ///
-/// When the `kind` attribute is set to `symbol`, the generated symbol will implement the `AstSymbol` trait.
+/// - `code_actions`: [`BuildCodeActions`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.GetHover.html) trait.
+/// - `code_lenses`: [`BuildCodeLenses`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.BuildCodeLenses.html) trait.
+/// - `completions`:[`BuildCompletionItems`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.BuildCompletionItems.html) trait.
+/// - `declaration`:[`GetGoToDeclaration`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.GetGoToDeclaration.html) trait.
+/// - `definition`: [`GetGoToDefinition`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.GetGoToDefinition.html) trait.
+/// - `document_symbols`: [`BuildDocumentSymbols`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.BuildDocumentSymbols.html) trait.
+/// - `hover`: [`GetHover`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.GetHover.html) trait.
+/// - `inlay_hints`: [`BuildInlayHints`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.BuildInlayHints.html) trait.
+/// - `invoked_completions`:[`BuildInvokedCompletionItems`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.BuildInvokedCompletionItems.html) trait.
+/// - `semantic_tokens`: [`BuildSemanticTokens`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.BuildSemanticTokens.html) trait.
 ///
-/// As a result, all capabilities traits are implemented by default, but users can override them using nested attributes.
+/// ### Special attributes
 ///
-/// All nested attributes are optional. If an attribute is set, it allows the user to override the default implementation,
-/// either by providing a custom implementation of the trait (using `user`) or replacing the default implementation with code generation (using code_gen when available).
+/// - `comment`: mark this node as a node that can potentially contain a comment.
+/// - `check`: [`Check`](https://docs.rs/auto-lsp/latest/auto_lsp/core/ast/trait.Check.html) trait.
 ///
 /// ```ignore
-/// // When using `user`, the default trait implementation is removed.
-///
 /// #[seq(query = "query_name", document_symbols)]
 /// struct MyStruct {}
 ///
@@ -56,8 +62,6 @@ mod utilities;
 ///        /* ... */
 ///    }
 /// }
-///
-/// // With `codegen`, the default implementation is replaced by the code_gen implementation
 ///
 /// #[seq(query = "query_name2", symbols)]
 /// struct MyStruct2 {}
