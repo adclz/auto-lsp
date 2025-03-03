@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.3.0...auto-lsp-core-v0.4.0)
+
+### Features
+
+- *(display)* Add IndentedDisplay trait and implement Display - ([e6c1dd6](https://github.com/adclz/auto-lsp/commit/e6c1dd6cbd2dd535e10cbef9829634cd7cce0fd7))
+
+### Bug Fixes
+
+- *(incremental)* Ensure correct symbol generation when vector has only one end node - ([fb40915](https://github.com/adclz/auto-lsp/commit/fb40915256afaddfb73ba5dac3990a8679e28da5))
+
+### Refactor
+
+- *(build)* Add parent context in error message - ([4e62199](https://github.com/adclz/auto-lsp/commit/4e62199142fddd5385247aded0dc9964ea4dd33d))
+- *(check)* Update check method to return CheckStatus  enum instead of Result - ([f3330bb](https://github.com/adclz/auto-lsp/commit/f3330bbeb4a682724ef2dc048868969b286250a8))
+- *(code-lenses)* Rename build_code_lens to build_code_lenses for consistency - ([519fcc0](https://github.com/adclz/auto-lsp/commit/519fcc0743a83c42aa7e850d973355c130a39528))
+- *(completion-items)* Scoped-based and triggered completion items - ([e358a24](https://github.com/adclz/auto-lsp/commit/e358a247bef9529a9b2db3f27d24039c717a9b0f))
+- *(core_build)* Remove unused add method - ([633b7cd](https://github.com/adclz/auto-lsp/commit/633b7cde3b0957617a7850c69a322efd9f8dde98))
+- *(document)* Search methods - ([00086e9](https://github.com/adclz/auto-lsp/commit/00086e96417585a40e379268d9a47c07c7212de1))
+- *(parse)* Implement fmt::Display - ([9c4c5fb](https://github.com/adclz/auto-lsp/commit/9c4c5fbb2568b2feee7ed3a0109647ead70e34c2))
+- *(parse)* Rename try_parse to test_parse and update return type to TestParseResult - ([26a305d](https://github.com/adclz/auto-lsp/commit/26a305dd7b66b9c002bbe4a8aaccfb5a38cfead2))
+- *(try_parse)* Replace miette with ariadne - ([8211f55](https://github.com/adclz/auto-lsp/commit/8211f5557d7e10236ce791843919ff7c1707f046))
+- Remove incremental feature and related code - ([b8b9a4f](https://github.com/adclz/auto-lsp/commit/b8b9a4ff7285d806e90fb959b59ee3dd8de49139))
+
+### Documentation
+
+- Update main and core crates documentation - ([3c5c9c3](https://github.com/adclz/auto-lsp/commit/3c5c9c3f2a0254b5a1353337b7f21131cef41366))
+
+### Testing
+
+- *(html)* Refactor html AST and add html_corpus module - ([0b5a056](https://github.com/adclz/auto-lsp/commit/0b5a0565d894e3b1bdfcdeb4c23fe32903ad827e))
+
+
 ## [0.3.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.2.0...auto-lsp-core-v0.3.0)
 
 ### Features

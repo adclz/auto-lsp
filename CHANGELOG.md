@@ -2,6 +2,53 @@
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.3.0...auto-lsp-v0.4.0)
+
+### Features
+
+- *(display)* Add IndentedDisplay trait and implement Display - ([e6c1dd6](https://github.com/adclz/auto-lsp/commit/e6c1dd6cbd2dd535e10cbef9829634cd7cce0fd7))
+- *(semantic-tokens)* Enhance token type and modifier definitions - ([1f586e7](https://github.com/adclz/auto-lsp/commit/1f586e7e3f065ea91ea3b8bedbc3bc8598f0081e))
+- *(server)* Code actions - ([18866c7](https://github.com/adclz/auto-lsp/commit/18866c7d294ffe8198d360b313ca9f12a5c573bc))
+
+### Bug Fixes
+
+- *(bench)* Remove flamegraph profiler for windows - ([3f89ad4](https://github.com/adclz/auto-lsp/commit/3f89ad465b4f5275ef5e2f36fdce774decf8565c))
+- *(incremental)* Ensure correct symbol generation when vector has only one end node - ([fb40915](https://github.com/adclz/auto-lsp/commit/fb40915256afaddfb73ba5dac3990a8679e28da5))
+- *(python)* Function return type - ([b483a63](https://github.com/adclz/auto-lsp/commit/b483a63c1af57739b8e242673420c91b1a7bac9c))
+- Remove invalid test - ([c190be2](https://github.com/adclz/auto-lsp/commit/c190be2314617dfec6995332184ebbba8115dc18))
+
+### Refactor
+
+- *(bench)* Update benchmarks - ([8a82888](https://github.com/adclz/auto-lsp/commit/8a828884200cb4b4eb6c7216ca41a4c7a5fe162a))
+- *(check)* Update check method to return CheckStatus  enum instead of Result - ([f3330bb](https://github.com/adclz/auto-lsp/commit/f3330bbeb4a682724ef2dc048868969b286250a8))
+- *(code-lenses)* Rename build_code_lens to build_code_lenses for consistency - ([519fcc0](https://github.com/adclz/auto-lsp/commit/519fcc0743a83c42aa7e850d973355c130a39528))
+- *(completion-items)* Scoped-based and triggered completion items - ([e358a24](https://github.com/adclz/auto-lsp/commit/e358a247bef9529a9b2db3f27d24039c717a9b0f))
+- *(document)* Search methods - ([00086e9](https://github.com/adclz/auto-lsp/commit/00086e96417585a40e379268d9a47c07c7212de1))
+- *(parse)* Rename try_parse to test_parse and update return type to TestParseResult - ([26a305d](https://github.com/adclz/auto-lsp/commit/26a305dd7b66b9c002bbe4a8aaccfb5a38cfead2))
+- *(server)* Move InitOptions to a dedicated options module - ([510ddba](https://github.com/adclz/auto-lsp/commit/510ddba3d0a8b91dbe802ac284aa7fd25ca3c82b))
+- *(session)* Rename init_roots - ([6fd5f2a](https://github.com/adclz/auto-lsp/commit/6fd5f2acc6e5d63c9e641370e4cc6124af4c1e3f))
+- *(tests)* Enhance python AST and add tree sitter corpus - ([e205710](https://github.com/adclz/auto-lsp/commit/e2057103b45ceb1bde47e30f7f8bc2a4fce08b21))
+- *(try_parse)* Replace miette with ariadne - ([8211f55](https://github.com/adclz/auto-lsp/commit/8211f5557d7e10236ce791843919ff7c1707f046))
+- Remove incremental feature and related code - ([b8b9a4f](https://github.com/adclz/auto-lsp/commit/b8b9a4ff7285d806e90fb959b59ee3dd8de49139))
+
+### Documentation
+
+- Update book - ([ff317a6](https://github.com/adclz/auto-lsp/commit/ff317a61939edb8d007f7df7ecd62af12843a227))
+- Update main and core crates documentation - ([3c5c9c3](https://github.com/adclz/auto-lsp/commit/3c5c9c3f2a0254b5a1353337b7f21131cef41366))
+- Fix dead links - ([729fc49](https://github.com/adclz/auto-lsp/commit/729fc49d699dfe36193139f1c4d1db203db67d52))
+- Update links - ([ebbbc0c](https://github.com/adclz/auto-lsp/commit/ebbbc0cbc4786c3c3d033ce99e692a4356059081))
+
+### Testing
+
+- *(html)* Refactor html AST and add html_corpus module - ([0b5a056](https://github.com/adclz/auto-lsp/commit/0b5a0565d894e3b1bdfcdeb4c23fe32903ad827e))
+- *(python)* Add pattern matching tests and clean up unused code - ([5de7cfb](https://github.com/adclz/auto-lsp/commit/5de7cfbf4e6ff4ef1473ee0bac24d17ac013d190))
+- Python expressions - ([97e09c8](https://github.com/adclz/auto-lsp/commit/97e09c8709163451e985ebe76179b2692bccbe07))
+
+### Miscellaneous Tasks
+
+- Update pprof - ([0304042](https://github.com/adclz/auto-lsp/commit/03040425413703276230145664fdabad117158b9))
+
+
 ## [0.3.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.2.0...auto-lsp-v0.3.0)
 
 ### Features

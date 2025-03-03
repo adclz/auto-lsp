@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.2...auto-lsp-macros-v0.1.3)
+
+### Features
+
+- *(display)* Add IndentedDisplay trait and implement Display - ([e6c1dd6](https://github.com/adclz/auto-lsp/commit/e6c1dd6cbd2dd535e10cbef9829634cd7cce0fd7))
+
+### Refactor
+
+- *(check)* Update check method to return CheckStatus  enum instead of Result - ([f3330bb](https://github.com/adclz/auto-lsp/commit/f3330bbeb4a682724ef2dc048868969b286250a8))
+- *(code-lenses)* Rename build_code_lens to build_code_lenses for consistency - ([519fcc0](https://github.com/adclz/auto-lsp/commit/519fcc0743a83c42aa7e850d973355c130a39528))
+- *(completion-items)* Scoped-based and triggered completion items - ([e358a24](https://github.com/adclz/auto-lsp/commit/e358a247bef9529a9b2db3f27d24039c717a9b0f))
+- *(proc-macros)* Inject Paths instead of inlining const LazyCell - ([7a11ad6](https://github.com/adclz/auto-lsp/commit/7a11ad6fe87810f87f8b998547d96c7ea0df7d50))
+- *(proc-macros)* Paths - ([3917eda](https://github.com/adclz/auto-lsp/commit/3917eda13e4cb36c0f6aab431d6c4fe47b3ca798))
+- Remove incremental feature and related code - ([b8b9a4f](https://github.com/adclz/auto-lsp/commit/b8b9a4ff7285d806e90fb959b59ee3dd8de49139))
+
+### Documentation
+
+- *(proc-macros)* Update seq documentation - ([f5b308a](https://github.com/adclz/auto-lsp/commit/f5b308a25689a8cfd3bbc1b77284ab7321a52eb7))
+
+
 ## [0.1.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.1...auto-lsp-macros-v0.1.2)
 
 ### Features
