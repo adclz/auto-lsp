@@ -443,7 +443,7 @@ pub enum CheckStatus {
 pub trait Check: IsCheck {
     /// Perform a check on the symbol during the last step of build process
     ///
-    /// If the check fails, push your [`Diagnostic`](s) to the accumulator and return `CheckStatus::Fail`
+    /// If the check fails, push your [`Diagnostic`] to the accumulator and return `CheckStatus::Fail`
     /// If the check succeeds, return `CheckStatus::Ok`
     ///
     /// By default, `CheckStatus::Ok`

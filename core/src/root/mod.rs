@@ -51,9 +51,7 @@ pub struct Queries {
     pub highlights: Option<Query>,
 }
 
-/// Represents the Root for parsing and analyzing a document.
-///
-/// This struct manages the parsing process, diagnostics, and AST for a document.
+/// This struct contains diagnostics, parser lists, URL,  and AST for a document.
 /// Note: The document text and the [`tree_sitter::Tree`] are not stored in this struct.
 pub struct Root {
     /// The URI of the document associated with this Root.

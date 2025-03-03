@@ -85,7 +85,7 @@ python = ["dep:tree-sitter-python"]
 html = ["dep:tree-sitter-html"]
 
 [package.metadata.docs.rs]
-features = ["lsp_server", "log", "miette", "rayon"]
+features = ["lsp_server", "log", "rayon"]
 
 [target.'cfg(unix)'.dev-dependencies]
 pprof = { version = "0.14.0", features = ["criterion", "flamegraph"] }

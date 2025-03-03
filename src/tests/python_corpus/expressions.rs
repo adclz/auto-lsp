@@ -6,6 +6,17 @@ use crate::python::ast::{
 };
 
 #[test]
+fn function() -> TestParseResult {
+    Function::test_parse(
+        r#"
+       def foo(param1, param2: int = "5"):
+           pass
+       "#,
+        &PYTHON_PARSERS.get("python").unwrap(),
+    )
+}
+
+#[test]
 fn greek_letters() -> TestParseResult {
     ExpressionStatement::test_parse(r#"ψ1 = β_γ + Ψ_5"#, PYTHON_PARSERS.get("python").unwrap())
 }

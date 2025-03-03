@@ -5,7 +5,7 @@ use auto_lsp_core::{
     root::{Parsers, Root},
 };
 use regex::{Match, Regex};
-/// List of options for the LSP server capabilties [`lsp_types::ServerCapabilities`]
+/// List of options for the LSP server capabilties ([`lsp_types::ServerCapabilities`])
 ///
 /// Use `..Default::default()` to set the rest of the options to false
 ///
@@ -63,7 +63,6 @@ pub struct SemanticTokensList {
 /// # use auto_lsp_core::root::Root;
 /// # use lsp_types::{DocumentLink, Url};
 /// # use regex::Regex;
-///
 /// let regex = Regex::new(r"(\w+):(\d+)").unwrap();
 ///
 /// fn to_document_link(m: regex::Match, line: usize, document: &Document, root: &Root, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink {

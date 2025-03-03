@@ -17,7 +17,7 @@ pub(crate) static WORKSPACE: LazyLock<Mutex<Workspace>> = LazyLock::new(Mutex::d
 
 /// Main session object that holds both lsp server connection and initialization options.
 ///
-/// Documents are stored in [`WORKSPACES`].
+/// Documents are stored in [`WORKSPACE`].
 pub struct Session {
     /// Initialization options provided by the library user.
     pub init_options: InitOptions,

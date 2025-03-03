@@ -15,6 +15,7 @@ use super::{
     utils::tree_sitter_range_to_lsp_range,
 };
 
+#[doc(hidden)]
 /// Macro to create a builder error diagnostic
 ///
 /// This is used internally by the library to avoid redundancy when creating diagnostics during the build process
@@ -44,6 +45,7 @@ macro_rules! builder_error {
     };
 }
 
+#[doc(hidden)]
 /// Macro to create a builder warning diagnostic
 ///
 /// This is used internally by the library to avoid redundancy when creating diagnostics during the build process
@@ -197,8 +199,7 @@ impl AddSymbol for MaybePendingSymbol {
         if self.is_some() {
             return Ok(None);
         }
-        let name =
-            root.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
+        let name = root.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
             match self.as_ref() {
                 Some(_) => {
@@ -240,8 +241,7 @@ impl AddSymbol for Vec<PendingSymbol> {
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
-        let name =
-            root.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
+        let name = root.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
             match Y::new(
                 root.url.clone(),

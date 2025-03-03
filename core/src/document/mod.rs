@@ -24,7 +24,7 @@ impl Document {
 
     /// Updates the document based on the provided list of text changes.
     ///
-    /// This method applies the changes to both the text [`texter`] and the syntax tree [`tree`].
+    /// This method applies the changes to both the text [`texter`] and the syntax tree [`Tree`].
     /// It uses incremental parsing to minimize the cost of updating the syntax tree.
     ///
     /// # Parameters
