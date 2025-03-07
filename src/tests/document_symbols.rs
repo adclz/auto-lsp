@@ -1,25 +1,20 @@
-use super::python_workspace::*;
+use super::python_utils::create_python_workspace;
 use crate::core::document::Document;
 use crate::core::root::Root;
 use auto_lsp_core::{ast::BuildDocumentSymbols, document_symbols_builder::DocumentSymbolsBuilder};
-use lsp_types::Url;
 use rstest::{fixture, rstest};
 
 #[fixture]
 fn foo_bar() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 #[rstest]
@@ -42,9 +37,7 @@ fn foo_bar_document_symbols(foo_bar: (Root, Document)) {
 
 #[fixture]
 fn foo_bar_nested_baz() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     def baz():
@@ -52,10 +45,8 @@ def foo(param1, param2: int, param3: int = 5):
 
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 #[rstest]

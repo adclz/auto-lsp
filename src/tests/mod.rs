@@ -1,5 +1,9 @@
 #[cfg(any(feature = "html", test))]
+pub mod html_utils;
+#[cfg(any(feature = "html", test))]
 pub mod html_workspace;
+#[cfg(any(feature = "python", test))]
+pub mod python_utils;
 #[cfg(any(feature = "python", test))]
 pub mod python_workspace;
 

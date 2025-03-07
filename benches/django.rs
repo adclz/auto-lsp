@@ -11,7 +11,7 @@ use auto_lsp_core::{
 use criterion::{criterion_group, criterion_main, Criterion};
 use lsp_types::Url;
 
-pub static DJANGO: &'static str = include_str!("django.py");
+pub static DJANGO: &str = include_str!("django.py");
 
 pub fn parse(c: &mut Criterion) {
     c.bench_function("parse_django_file", move |b| {

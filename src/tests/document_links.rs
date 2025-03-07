@@ -1,24 +1,19 @@
 use crate::core::document::Document;
 use crate::core::root::Root;
-use lsp_types::Url;
 use regex::Regex;
 use rstest::{fixture, rstest};
 
-use super::html_workspace::*;
+use super::html_utils::create_html_workspace;
 
 #[fixture]
 fn comments_with_link() -> (Root, Document) {
-    Root::from_utf8(
-        HTML_PARSERS.get("html").unwrap(),
-        Url::parse("file:///sample_file.html").unwrap(),
+    create_html_workspace(
         r#"<!DOCTYPE html>
 <!-- source:file1.txt:52 -->         
 <div>
     <!-- source:file2.txt:25 -->    
-</div>"#
-            .into(),
+</div>"#,
     )
-    .unwrap()
 }
 
 #[rstest]
@@ -38,19 +33,15 @@ fn document_links(comments_with_link: (Root, Document)) {
 
 #[fixture]
 fn multiline_comment_with_links() -> (Root, Document) {
-    Root::from_utf8(
-        HTML_PARSERS.get("html").unwrap(),
-        Url::parse("file:///sample_file.html").unwrap(),
+    create_html_workspace(
         r#"<!DOCTYPE html>
 <div>
     <!-- 
         source:file1.txt:52
         source:file2.txt:25
     -->    
-</div>"#
-            .into(),
+</div>"#,
     )
-    .unwrap()
 }
 
 #[rstest]

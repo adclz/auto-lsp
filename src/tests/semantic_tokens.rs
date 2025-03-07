@@ -1,28 +1,22 @@
 use crate::core::document::Document;
 use crate::core::root::Root;
 use auto_lsp_core::ast::BuildSemanticTokens;
-use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::python_workspace::ast::Module;
-use super::python_workspace::*;
+use super::{python_utils::create_python_workspace, python_workspace::ast::Module};
 use crate::python::semantic_tokens::{DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
 
 #[fixture]
 fn foo_bar() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 #[rstest]
@@ -48,7 +42,10 @@ fn foo_bar_semantic_tokens(foo_bar: (Root, Document)) {
 
     assert_eq!(
         tokens[0].token_modifiers_bitset,
-        SUPPORTED_MODIFIERS.iter().position(|x| *x == DECLARATION).unwrap() as u32,
+        SUPPORTED_MODIFIERS
+            .iter()
+            .position(|x| *x == DECLARATION)
+            .unwrap() as u32,
     );
 
     // foo is at line 1
@@ -64,7 +61,10 @@ fn foo_bar_semantic_tokens(foo_bar: (Root, Document)) {
 
     assert_eq!(
         tokens[1].token_modifiers_bitset,
-        SUPPORTED_MODIFIERS.iter().position(|x| *x == DECLARATION).unwrap() as u32,
+        SUPPORTED_MODIFIERS
+            .iter()
+            .position(|x| *x == DECLARATION)
+            .unwrap() as u32,
     );
     // bar is at line 3
     assert_eq!(tokens[1].delta_line, 3);

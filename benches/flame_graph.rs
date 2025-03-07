@@ -4,7 +4,7 @@ mod django;
 #[cfg(target_family = "unix")]
 use pprof::criterion::{Output, PProfProfiler};
 
-pub static DJANGO: &'static str = include_str!("django.py");
+pub static DJANGO: &str = include_str!("django.py");
 
 pub fn parse(c: &mut Criterion) {
     c.bench_function("parse_flamegraph", move |b| {

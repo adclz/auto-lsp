@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
-pub static DJANGO: &'static str = include_str!("django.py");
+pub static DJANGO: &str = include_str!("django.py");
 
 pub fn parse_rayon(c: &mut Criterion) {
     let _text = include_str!("django.py").to_string();

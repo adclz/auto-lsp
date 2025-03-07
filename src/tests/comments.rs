@@ -2,27 +2,22 @@ use crate::core::ast::Comment;
 use crate::core::document::Document;
 use crate::core::root::Root;
 use auto_lsp_core::ast::GetSymbolData;
-use lsp_types::Url;
 use rstest::{fixture, rstest};
 
+use super::python_utils::create_python_workspace;
 use super::python_workspace::ast::Module;
-use super::python_workspace::PYTHON_PARSERS;
 
 #[fixture]
 fn foo_bar() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 #[rstest]
@@ -46,18 +41,14 @@ fn foo_bar_comment(foo_bar: (Root, Document)) {
 
 #[fixture]
 fn foo_bar_no_comments() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 #[rstest]
@@ -121,6 +112,7 @@ fn add_comments(mut foo_bar_no_comments: (Root, Document)) {
 
     drop(ast);
     root.parse(document);
+    root.set_comments(document);
 
     let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();
@@ -141,9 +133,7 @@ fn add_comments(mut foo_bar_no_comments: (Root, Document)) {
 
 #[fixture]
 fn foo_bar_with_comments() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
@@ -151,10 +141,8 @@ def foo(param1, param2: int, param3: int = 5):
 # bar comment
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 #[rstest]
@@ -218,6 +206,7 @@ fn remove_comments(mut foo_bar_with_comments: (Root, Document)) {
 
     drop(ast);
     root.parse(document);
+    root.set_comments(document);
 
     let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();

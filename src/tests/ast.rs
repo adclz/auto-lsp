@@ -1,26 +1,21 @@
 use crate::core::ast::AstSymbol;
 use crate::core::document::Document;
 use crate::core::root::Root;
-use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::html_workspace::*;
+use super::{html_utils::create_html_workspace, html_workspace::*};
 
 #[fixture]
 fn sample_file() -> (Root, Document) {
-    Root::from_utf8(
-        HTML_PARSERS.get("html").unwrap(),
-        Url::parse("file:///sample_file.html").unwrap(),
+    create_html_workspace(
         r#"<!DOCTYPE html>
 <script></script>
 <style></style>
 <div>
     <span> </span>
     <br/>
-</div>"#
-            .into(),
+</div>"#,
     )
-    .unwrap()
 }
 
 #[rstest]

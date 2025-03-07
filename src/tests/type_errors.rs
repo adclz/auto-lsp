@@ -1,42 +1,33 @@
 use crate::core::document::Document;
 use crate::core::root::Root;
-use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::python_workspace::*;
+use super::python_utils::create_python_workspace;
 
 #[fixture]
 fn foo_bar() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 #[fixture]
 fn foo_bar_with_type_error() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+    create_python_workspace(
         r#"# foo comment
         def foo(param1, param2: int = "string"):
             pass
         
         def bar():
             pass  
-        "#
-        .into(),
+        "#,
     )
-    .unwrap()
 }
 
 #[rstest]
@@ -61,12 +52,7 @@ fn foo_has_type_error(foo_bar: (Root, Document), foo_bar_with_type_error: (Root,
 
 #[fixture]
 fn foo_with_type_error() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
-        r#"def foo(p: int = "x"): pass "#.into(),
-    )
-    .unwrap()
+    create_python_workspace(r#"def foo(p: int = "x"): pass "#)
 }
 
 #[rstest]
@@ -104,7 +90,10 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: (Root, Document)) {
     document
         .update(&mut root.parsers.tree_sitter.parser.write(), &vec![change])
         .unwrap();
+
     root.parse(document);
+    root.resolve_references(document);
+    root.resolve_checks(document);
 
     // foo_with_type_error should have 1 error
     assert_eq!(root.diagnostics.len(), 1);
@@ -152,6 +141,8 @@ fn fix_type_error(mut foo_with_type_error: (Root, Document)) {
         .unwrap();
 
     root.parse(document);
+    root.resolve_references(document);
+    root.resolve_checks(document);
 
     // foo_with_type_error should have no type errors
     assert_eq!(root.diagnostics.len(), 0);

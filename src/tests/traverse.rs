@@ -3,16 +3,13 @@ use std::ops::Deref;
 use crate::core::document::Document;
 use crate::core::root::Root;
 use auto_lsp_core::ast::{GetSymbolData, Traverse};
-use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::html_workspace::*;
+use super::{html_utils::create_html_workspace, html_workspace::*};
 
 #[fixture]
 fn nested_divs() -> (Root, Document) {
-    Root::from_utf8(
-        HTML_PARSERS.get("html").unwrap(),
-        Url::parse("file:///nested.html").unwrap(),
+    create_html_workspace(
         r#"<!DOCTYPE html>
 <div>
     <div>
@@ -20,10 +17,8 @@ fn nested_divs() -> (Root, Document) {
             <div></div>
         </div>
     </div>
-</div>"#
-            .into(),
+</div>"#,
     )
-    .unwrap()
 }
 
 #[rstest]
