@@ -58,7 +58,7 @@ where
     where
         Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
     {
-        self.build(range, false);
+        self.build(range);
         let result = self.get_root_node(range)?;
         let result = result.get_rc().borrow();
         let result = result
@@ -73,44 +73,11 @@ where
         Ok(result)
     }
 
-    /// Creates a symbol of type [`Y`] based on the specified range.
-    ///
-    /// This method builds the AST for the provided range (if any) and attempts to derive
-    /// a symbol from the root node.
-    pub(crate) fn create_symbols<Y>(
-        &mut self,
-        range: &Option<std::ops::Range<usize>>,
-    ) -> Result<Vec<Y>, Diagnostic>
-    where
-        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
-    {
-        self.build(range, true);
-        let results = self.get_root_nodes();
-        let results = results
-            .iter()
-            .map(|result| {
-                let result = result.get_rc().borrow();
-                result
-                    .downcast_ref::<T>()
-                    .ok_or(builder_error!(
-                        result.get_lsp_range(self.document),
-                        format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
-                    ))?
-                    .try_into_builder(self.root, self.document)
-            })
-            .collect::<Result<Vec<Y>, Diagnostic>>()?;
-        #[cfg(feature = "log")]
-        for result in &results {
-            log::debug!("\n{}", result);
-        }
-        Ok(results)
-    }
-
     /// Builds the AST based on Tree-sitter query captures.
     ///
     /// If a range is specified, only the portion of the document within that range
     /// is processed. Captures are iterated in the order they appear in the tree.
-    fn build(&mut self, range: &Option<std::ops::Range<usize>>, multiple: bool) -> &mut Self {
+    fn build(&mut self, range: &Option<std::ops::Range<usize>>) -> &mut Self {
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
@@ -139,13 +106,8 @@ where
                     if ((capture.node.range().start_byte > range.start)
                         || (capture.node.range().start_byte == range.start))
                         && T::QUERY_NAMES.contains(
-                            &self
-                                .root
-                                .parsers
-                                .tree_sitter
-                                .queries
-                                .core
-                                .capture_names()[capture.index as usize],
+                            &self.root.parsers.tree_sitter.queries.core.capture_names()
+                                [capture.index as usize],
                         )
                     {
                         self.build = true;
@@ -153,13 +115,8 @@ where
                         continue;
                     }
                 } else if T::QUERY_NAMES.contains(
-                    &self
-                        .root
-                        .parsers
-                        .tree_sitter
-                        .queries
-                        .core
-                        .capture_names()[capture.index as usize],
+                    &self.root.parsers.tree_sitter.queries.core.capture_names()
+                        [capture.index as usize],
                 ) {
                     self.build = true;
                 } else {
@@ -174,8 +131,8 @@ where
                 match &parent {
                     // If there's no parent, create a root node.
                     None => {
-                        // There can only be one root node unless only_one_node is true.
-                        if multiple || self.roots.is_empty() {
+                        // There can only be one root node.
+                        if self.roots.is_empty() {
                             self.create_root_node(&capture, capture_index);
                             break;
                         } else {
@@ -220,12 +177,7 @@ where
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
                     "Syntax error: Unexpected {:?}",
-                    self.root
-                        .parsers
-                        .tree_sitter
-                        .queries
-                        .core
-                        .capture_names()[capture_index],
+                    self.root.parsers.tree_sitter.queries.core.capture_names()[capture_index],
                 )
             )),
         }
@@ -248,18 +200,10 @@ where
                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                     format!(
                         "Syntax error: Unexpected {:?} in {:?}",
-                        self.root
-                            .parsers
-                            .tree_sitter
-                            .queries
-                            .core
-                            .capture_names()[capture.index as usize],
-                        self.root
-                            .parsers
-                            .tree_sitter
-                            .queries
-                            .core
-                            .capture_names()[parent.get_rc().borrow().get_query_index()],
+                        self.root.parsers.tree_sitter.queries.core.capture_names()
+                            [capture.index as usize],
+                        self.root.parsers.tree_sitter.queries.core.capture_names()
+                            [parent.get_rc().borrow().get_query_index()],
                     )
                 ));
             }
@@ -307,9 +251,5 @@ where
                 )),
             },
         }
-    }
-
-    fn get_root_nodes(&mut self) -> Vec<PendingSymbol> {
-        self.roots.clone()
     }
 }

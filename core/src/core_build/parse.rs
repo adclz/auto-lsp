@@ -28,12 +28,6 @@ pub trait InvokeParser<
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic>;
-
-    fn parse_symbols(
-        root: &mut Root,
-        document: &Document,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Vec<Y>, lsp_types::Diagnostic>;
 }
 
 impl<T, Y> InvokeParser<T, Y> for Y
@@ -47,13 +41,6 @@ where
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic> {
         StackBuilder::<T>::new(root, document).create_symbol(&range)
-    }
-    fn parse_symbols(
-        root: &mut Root,
-        document: &Document,
-        range: Option<std::ops::Range<usize>>,
-    ) -> Result<Vec<Y>, lsp_types::Diagnostic> {
-        StackBuilder::<T>::new(root, document).create_symbols(&range)
     }
 }
 
@@ -127,8 +114,7 @@ where
             }
         };
 
-        let result: Result<Y, lsp_types::Diagnostic> =
-            Y::parse_symbol(&mut root, &document, None);
+        let result: Result<Y, lsp_types::Diagnostic> = Y::parse_symbol(&mut root, &document, None);
 
         match &root.diagnostics.is_empty() {
             false => {
