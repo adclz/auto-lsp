@@ -192,7 +192,7 @@ impl Session {
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.
-        session.init_workspaces(params)?;
+        session.init_workspace(params)?;
 
         Ok(session)
     }

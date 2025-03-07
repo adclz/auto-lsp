@@ -100,6 +100,7 @@ impl<'a> RequestDispatcher<'a> {
             Some(r) => r,
             None => return Ok(self),
         };
+        eprintln!("{}", R::METHOD);
 
         match req.extract::<R::Params>(R::METHOD) {
             Ok((id, params)) => {
@@ -148,6 +149,8 @@ impl<'a> NotificationDispatcher<'a> {
             Some(r) => r,
             None => return Ok(self),
         };
+
+        eprintln!("{}", N::METHOD);
 
         match not.extract::<N::Params>(N::METHOD) {
             Ok(params) => {

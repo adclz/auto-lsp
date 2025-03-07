@@ -1,10 +1,11 @@
-use std::{collections::HashMap, fs::File, io::Read};
-
-use lsp_types::{InitializeParams, Url, WorkspaceFolder};
+use super::{Session, WORKSPACE};
+use auto_lsp_core::document::Document;
+use auto_lsp_core::root::Root;
+use lsp_types::{InitializeParams, Url};
 use serde::Deserialize;
+use std::path::PathBuf;
+use std::{collections::HashMap, fs::File, io::Read};
 use walkdir::WalkDir;
-
-use super::Session;
 
 #[allow(non_snake_case, reason = "JSON")]
 #[derive(Debug, Deserialize)]
@@ -18,7 +19,7 @@ struct InitializationOptions {
 
 impl Session {
     /// Initializes the workspace by loading files and associating them with parsers.
-    pub(crate) fn init_workspaces(&mut self, params: InitializeParams) -> anyhow::Result<()> {
+    pub(crate) fn init_workspace(&mut self, params: InitializeParams) -> anyhow::Result<()> {
         let options = InitializationOptions::deserialize(
             params
                 .initialization_options
@@ -38,19 +39,95 @@ impl Session {
 
         self.extensions = options.perFileParser;
 
-        // Traverse workspace folders and add files to the session
-        collect_workspace_files(&self.extensions, &params.workspace_folders)
-            .into_iter()
-            .try_for_each(|file| {
-                let mut open_file = File::open(file.to_file_path().unwrap())?;
-                let mut buffer = String::new();
-                open_file.read_to_string(&mut buffer)?;
+        let mut errors: Vec<Result<(), anyhow::Error>> = vec![];
 
-                let extension = get_extension(&file)?;
-                self.add_document(&file, &extension, &buffer)
-            })?;
+        if let Some(folders) = params.workspace_folders {
+            let mut workspace = WORKSPACE.lock();
+            let files = folders
+                .into_iter()
+                .flat_map(|folder| {
+                    WalkDir::new(folder.uri.path())
+                        .into_iter()
+                        .filter_map(Result::ok)
+                        .filter(|entry| {
+                            entry.file_type().is_file()
+                                && entry.path().extension().is_some_and(|ext| {
+                                    self.extensions.contains_key(ext.to_string_lossy().as_ref())
+                                })
+                        })
+                })
+                .collect::<Vec<_>>();
+
+            #[cfg(not(feature = "rayon"))]
+            errors.extend(
+                files
+                    .into_iter()
+                    .map(|file| match self.file_to_root(&file.into_path()) {
+                        Ok((url, root, document)) => {
+                            workspace.roots.insert(url, (root, document));
+                            Ok(())
+                        }
+                        Err(err) => Err(err),
+                    })
+                    .collect::<Vec<Result<(), anyhow::Error>>>(),
+            );
+
+            #[cfg(feature = "rayon")]
+            {
+                use rayon::prelude::*;
+                errors.extend(rayon_par_bridge::par_bridge(
+                    16,
+                    files.into_par_iter(),
+                    |file_iter| {
+                        file_iter
+                            .map(|file| match self.file_to_root(&file.into_path()) {
+                                Ok((url, root, document)) => {
+                                    workspace.roots.insert(url, (root, document));
+                                    Ok(())
+                                }
+                                Err(err) => Err(err),
+                            })
+                            .collect::<Vec<Result<(), anyhow::Error>>>()
+                    },
+                ));
+            }
+
+            workspace.resolve_references();
+            workspace.resolve_checks();
+        }
 
         Ok(())
+    }
+
+    pub(crate) fn file_to_root(&self, file: &PathBuf) -> anyhow::Result<(Url, Root, Document)> {
+        let url = Url::from_file_path(file)
+            .map_err(|_| anyhow::anyhow!("Failed to read file {}", file.display()))?;
+
+        let mut open_file = File::open(url.to_file_path().unwrap())?;
+        let mut buffer = String::new();
+        open_file.read_to_string(&mut buffer)?;
+
+        let extension = get_extension(&url)?;
+
+        let text = (self.text_fn)(buffer.to_string());
+        let extension = match self.extensions.get(&extension) {
+            Some(extension) => extension,
+            None => {
+                return Err(anyhow::format_err!(
+                    "Extension {} is not registered",
+                    extension
+                ))
+            }
+        };
+
+        let parsers = self
+            .init_options
+            .parsers
+            .get(extension.as_str())
+            .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
+
+        let result = Root::from_texter(parsers, url.clone(), text)?;
+        Ok((url, result.0, result.1))
     }
 }
 
@@ -96,33 +173,6 @@ pub(crate) fn get_extension(path: &Url) -> anyhow::Result<String> {
             },
             |ext| Ok(ext.to_string_lossy().to_string()),
         )
-}
-
-/// Collects all files in the workspace folders that match the specified extensions.
-///
-/// A vector of [`Url`]s representing the valid files in the workspace.
-fn collect_workspace_files(
-    extensions: &HashMap<String, String>,
-    workspace_folders: &Option<Vec<WorkspaceFolder>>,
-) -> Vec<Url> {
-    let mut roots = Vec::new();
-    if let Some(folders) = workspace_folders {
-        folders.iter().for_each(|folder| {
-            WalkDir::new(folder.uri.path())
-                .into_iter()
-                .filter_map(Result::ok)
-                .filter(|entry| {
-                    entry.file_type().is_file()
-                        && entry.path().extension().is_some_and(|ext| {
-                            extensions.contains_key(ext.to_string_lossy().as_ref())
-                        })
-                })
-                .for_each(|file| {
-                    roots.push(Url::from_file_path(file.path()).unwrap());
-                });
-        });
-    }
-    roots
 }
 
 #[cfg(test)]

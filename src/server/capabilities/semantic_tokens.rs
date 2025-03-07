@@ -14,7 +14,8 @@ impl Session {
 
         let workspace = WORKSPACE.lock();
 
-        let (root, document) = workspace.roots
+        let (root, document) = workspace
+            .roots
             .get(uri)
             .ok_or(anyhow::anyhow!("Root not found"))?;
 
@@ -36,7 +37,8 @@ impl Session {
 
         let workspace = WORKSPACE.lock();
 
-        let (root, document) = workspace.roots
+        let (root, document) = workspace
+            .roots
             .get(uri)
             .ok_or(anyhow::anyhow!("Root not found"))?;
 

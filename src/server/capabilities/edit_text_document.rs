@@ -10,8 +10,6 @@ impl Session {
         &mut self,
         params: DidChangeTextDocumentParams,
     ) -> anyhow::Result<()> {
-        self.edit_document(params)?;
-
-        Ok(())
+        self.edit_document(params)
     }
 }

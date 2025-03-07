@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
-use crate::server::session::{fs::get_extension, Session, WORKSPACE};
+use crate::server::session::{Session, WORKSPACE};
 
 impl Session {
     /// Handle the watched files change notification.
@@ -17,23 +17,20 @@ impl Session {
         params.changes.iter().try_for_each(|file| match file.typ {
             FileChangeType::CREATED => {
                 let uri = &file.uri;
-                let workspace = WORKSPACE.lock();
+                let mut workspace = WORKSPACE.lock();
 
                 if workspace.roots.contains_key(uri) {
                     // The file is already in the root
                     // We can ignore this change
                     return Ok(());
                 };
-
-                let language_id = get_extension(uri)?;
-
                 let file_path = uri
                     .to_file_path()
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
-                let mut open_file = File::open(file_path)?;
-                let mut buffer = String::new();
-                open_file.read_to_string(&mut buffer)?;
-                self.add_document(uri, &language_id, &buffer)
+
+                let (_url, root, document) = self.file_to_root(&file_path)?;
+                workspace.roots.insert(uri.clone(), (root, document));
+                Ok(())
             }
             FileChangeType::CHANGED => {
                 let uri = &file.uri;
@@ -41,7 +38,7 @@ impl Session {
                 let file_path = uri
                     .to_file_path()
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
-                let mut open_file = File::open(file_path)?;
+                let open_file = File::open(file_path)?;
 
                 if workspace.roots.contains_key(uri) {
                     // The file is already in the root
@@ -52,15 +49,14 @@ impl Session {
                         &workspace.roots.get(uri).unwrap().1.texter.text,
                     ))? {
                         workspace.roots.remove(uri);
-                        let language_id = get_extension(uri)?;
+                        let file_path = uri.to_file_path().map_err(|_| {
+                            anyhow::anyhow!("Failed to read file {}", uri.to_string())
+                        })?;
 
-                        let mut buffer = String::new();
-                        open_file.read_to_string(&mut buffer)?;
-                        drop(workspace);
-
-                        self.add_document(uri, &language_id, &buffer)?;
+                        let (_url, root, document) = self.file_to_root(&file_path)?;
+                        workspace.roots.insert(uri.clone(), (root, document));
                     }
-                };
+                }
 
                 Ok(())
             }

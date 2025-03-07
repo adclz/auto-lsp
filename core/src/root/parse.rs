@@ -6,27 +6,6 @@ use crate::document::Document;
 use super::Root;
 
 impl Root {
-    fn set_ast(&mut self, document: &Document) -> &mut Self {
-        self.unsolved_checks.clear();
-        self.unsolved_references.clear();
-
-        let ast_parser = self.parsers.ast_parser;
-
-        self.ast = match ast_parser(self, document, None) {
-            Ok(ast) => Some(ast),
-            Err(e) => {
-                self.diagnostics.push(e);
-                None
-            }
-        };
-        self.set_comments(document)
-            .resolve_checks(document)
-            .resolve_references(document);
-        #[cfg(feature = "log")]
-        log::info!("{}", self);
-
-        self
-    }
     /// Parses a document and updates the AST.
     ///
     /// This method assumes the document has already been updated and parsed by the tree-sitter parser.
@@ -56,6 +35,22 @@ impl Root {
         };
 
         self.set_ast(document);
+        self
+    }
+
+    fn set_ast(&mut self, document: &Document) -> &mut Self {
+        self.unsolved_checks.clear();
+        self.unsolved_references.clear();
+
+        let ast_parser = self.parsers.ast_parser;
+
+        self.ast = match ast_parser(self, document, None) {
+            Ok(ast) => Some(ast),
+            Err(e) => {
+                self.diagnostics.push(e);
+                None
+            }
+        };
         self
     }
 }

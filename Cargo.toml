@@ -14,7 +14,7 @@ readme = "README.MD"
 
 [dependencies]
 auto-lsp-core = { path = "./core", version = "0.4.0" }
-auto-lsp-macros = { path = "./proc-macros", version = "0.1.3" }
+auto-lsp-macros = { path = "./proc-macros", version = "0.1.2" }
 phf = { version = "0.11", features = ["macros"] }
 tree-sitter = "0.24.6"
 tree-sitter-language = "0.1.3"
@@ -38,6 +38,7 @@ walkdir = { version = "2", optional = true }
 crossbeam-channel = { version = "0.5.13", optional = true }
 texter = { version = "0.1.2", optional = true }
 rayon = { version = "1.10", optional = true }
+rayon-par-bridge = { version = "0.1.0", optional = true }
 tree-sitter-python = { version = "0.23.6", optional = true }
 tree-sitter-html = { version = "0.23.2", optional = true }
 
@@ -79,7 +80,7 @@ lsp_server = [
     "dep:crossbeam-channel",
     "dep:texter",
 ]
-rayon = ["auto-lsp-core/rayon", "dep:rayon"]
+rayon = ["auto-lsp-core/rayon", "dep:rayon", "dep:rayon-par-bridge"]
 wasm = ["parking_lot/nightly"]
 python = ["dep:tree-sitter-python"]
 html = ["dep:tree-sitter-html"]
