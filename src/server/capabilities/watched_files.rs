@@ -100,7 +100,7 @@ fn is_file_content_different(file: &File, content: &str) -> std::io::Result<bool
     Ok(index != content_bytes.len())
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
     #[test]
     fn test_file_content_different() {

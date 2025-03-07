@@ -1,0 +1,6 @@
+[target.wasm32-wasip1-threads]
+runner = "wasmtime --wasi threads=y --wasm threads=y"
+rustflags = [
+    "-Clink-arg=--initial-memory=10485760",
+    "-Clink-arg=--max-memory=10485760",
+]

@@ -1,0 +1,26 @@
+name: test wasi-p1-threads
+on: 
+  push:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"  
+
+jobs:
+  test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: rustup target add wasm32-wasip1-threads
+      - name: Install Wasmtime
+        run: |
+          curl https://wasmtime.dev/install.sh -sSf | bash
+          echo "${HOME}/.wasmtime/bin" >> $GITHUB_PATH
+      - run:  cargo test --features=wasm,python,html,rayon --target wasm32-wasip1-threads
