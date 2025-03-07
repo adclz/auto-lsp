@@ -23,4 +23,9 @@ jobs:
         run: |
           curl https://wasmtime.dev/install.sh -sSf | bash
           echo "${HOME}/.wasmtime/bin" >> $GITHUB_PATH
-      - run:  cargo test --features=wasm,python,html,rayon --target wasm32-wasip1-threads
+      - name: Install Gcc multilib
+        run: |
+             sudo apt update
+             sudo apt install gcc-multilib -y    
+      - name: Run tests
+        run: cargo test --features=wasm,python,html,rayon --target wasm32-wasip1-threads  
