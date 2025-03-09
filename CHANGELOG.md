@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.4.0...auto-lsp-v0.5.0)
+
+### Features
+
+- Add optional rayon support for workspace init - ([7c79786](https://github.com/adclz/auto-lsp/commit/7c79786274400404ca125950d2f89cb12f1e13dd))
+
+### Bug Fixes
+
+- *(doc)* Server module - ([baa96ad](https://github.com/adclz/auto-lsp/commit/baa96ad7c998c1f6766943402217fdaeb844b5aa))
+- Invalid re-exports of texter and lsp_server - ([9636dee](https://github.com/adclz/auto-lsp/commit/9636deedac47132c20a4b58a546026316da403a5))
+- Add GCC multilib installation step in WASI CI - ([5a53315](https://github.com/adclz/auto-lsp/commit/5a53315bfe7615f4394fb261e29644fd56ba42b3))
+
+### Refactor
+
+- Allow defining lsp_server Connection before Session init - ([97da1c7](https://github.com/adclz/auto-lsp/commit/97da1c7568255cf41c01ac6588c8dd0579af3b16))
+
+### Testing
+
+- WASI config and CI workflow - ([0589308](https://github.com/adclz/auto-lsp/commit/058930885c682cbdb73efb781e43eaabe7a2d4b2))
+- Add utility functions for HTML and Python workspace creation - ([9fbd614](https://github.com/adclz/auto-lsp/commit/9fbd614120e427e1c6731cb8f7f63b359da3b5fd))
+
+### Miscellaneous Tasks
+
+- *(tests)* Dead code warnings in HTML and Python utilities - ([2c9f57e](https://github.com/adclz/auto-lsp/commit/2c9f57e502e3a2e97fa1effb4fadc0350cfb94a7))
+
+
 ## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.3.0...auto-lsp-v0.4.0)
 
 ### Features
