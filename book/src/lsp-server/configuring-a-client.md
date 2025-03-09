@@ -36,5 +36,5 @@ const clientOptions: LanguageClientOptions = {
 ```
 
 ```admonish
-You have an example in the [`vscode-python-wasi-lsp`](https://github.com/adclz/auto-lsp/tree/main/extensions/vscode-python-wasi-lsp) folder in the `auto-lsp` repository.
+You have an example in the [`vscode-wasi`](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi) folder in the `auto-lsp` repository.
 ```

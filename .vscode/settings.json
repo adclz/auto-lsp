@@ -9,6 +9,6 @@
 	],
 	"rust-analyzer.linkedProjects": [
 		"Cargo.toml",
-		"extensions/vscode-python-wasi-lsp/server/Cargo.toml"
+		"examples/vscode-wasi/server/Cargo.toml"
 	],
 }

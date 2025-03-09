@@ -8,5 +8,5 @@ You'll also need to enable the `wasm` featuree.
 Note that some functionalities, such as deadlock detection are not available on WebAssembly.
 
 ```admonish
-You have an example in the [`vscode-python-wasi-lsp`](https://github.com/adclz/auto-lsp/tree/main/extensions/vscode-python-wasi-lsp) folder in the `auto-lsp` repository.
+You have an example in the [`vscode-wasi`](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi) folder in the `auto-lsp` repository.
 ```
