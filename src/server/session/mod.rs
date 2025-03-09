@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::LazyLock};
 
 use crate::server::session::init::TextFn;
 use auto_lsp_core::workspace::Workspace;
-use lsp_server::{Connection, IoThreads};
+use lsp_server::Connection;
 use options::InitOptions;
 use parking_lot::Mutex;
 
@@ -22,7 +22,6 @@ pub struct Session {
     /// Initialization options provided by the library user.
     pub init_options: InitOptions,
     pub connection: Connection,
-    pub io_threads: IoThreads,
     /// Text `fn` used to parse text files with the correct encoding.
     ///
     /// The client is responsible for providing the encoding at initialization (UTF-8, 16 or 32).

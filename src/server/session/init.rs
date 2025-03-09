@@ -3,7 +3,7 @@ use std::collections::HashMap;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
-use lsp_server::{Connection, IoThreads};
+use lsp_server::Connection;
 use lsp_types::WorkspaceServerCapabilities;
 use lsp_types::{
     CodeLensOptions, DiagnosticOptions, DiagnosticServerCapabilities, DocumentLinkOptions,
@@ -37,16 +37,10 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
 }
 
 impl Session {
-    pub(crate) fn new(
-        init_options: InitOptions,
-        connection: Connection,
-        io_threads: IoThreads,
-        text_fn: TextFn,
-    ) -> Self {
+    pub(crate) fn new(init_options: InitOptions, connection: Connection, text_fn: TextFn) -> Self {
         Self {
             init_options,
             connection,
-            io_threads,
             text_fn,
             extensions: HashMap::new(),
         }
@@ -55,7 +49,7 @@ impl Session {
     /// Create a new session with the given initialization options.
     ///
     /// This will establish the connection with the client and send the server capabilities.
-    pub fn create(init_options: InitOptions) -> anyhow::Result<Session> {
+    pub fn create(init_options: InitOptions, connection: Connection) -> anyhow::Result<Session> {
         // This is a workaround for a deadlock issue in WASI libc.
         // See https://github.com/WebAssembly/wasi-libc/pull/491
         #[cfg(target_arch = "wasm32")]
@@ -76,7 +70,6 @@ impl Session {
 
         // Create the transport. Includes the stdio (stdin and stdout) versions but this could
         // also be implemented to use sockets or HTTP.
-        let (connection, io_threads) = Connection::stdio();
         let (id, resp) = connection.initialize_start()?;
         let params: InitializeParams = serde_json::from_value(resp)?;
 
@@ -188,7 +181,7 @@ impl Session {
 
         connection.initialize_finish(id, server_capabilities)?;
 
-        let mut session = Session::new(init_options, connection, io_threads, t_fn);
+        let mut session = Session::new(init_options, connection, t_fn);
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.
