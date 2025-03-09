@@ -3,6 +3,7 @@ use lsp_types::Url;
 
 use super::html_workspace::HTML_PARSERS;
 
+#[allow(dead_code)]
 pub fn create_html_workspace(source_code: &'static str) -> (Root, Document) {
     let mut root = Root::from_utf8(
         HTML_PARSERS.get("html").unwrap(),

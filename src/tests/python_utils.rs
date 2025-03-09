@@ -3,6 +3,7 @@ use lsp_types::Url;
 
 use super::python_workspace::PYTHON_PARSERS;
 
+#[allow(dead_code)]
 pub fn create_python_workspace(source_code: &'static str) -> (Root, Document) {
     let mut root = Root::from_utf8(
         PYTHON_PARSERS.get("python").unwrap(),
