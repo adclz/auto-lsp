@@ -73,18 +73,21 @@
 //! # use auto_lsp::python::PYTHON_PARSERS;
 //! use std::error::Error;
 //! use auto_lsp::server::{Session, InitOptions, LspOptions};
+//! use auto_lsp::lsp_server::Connection;
 //!
 //! fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
+//!   let (connection, io_threads) = Connection::stdio();
+//!
 //!   let init_options = InitOptions {
 //!         parsers: &PYTHON_PARSERS,
 //!         lsp_options: LspOptions {
 //!             ..Default::default()
 //!         }
 //!    };
-//!    let mut session = Session::create(init_options)?;
+//!    let mut session = Session::create(init_options, connection)?;
 //!
 //!    session.main_loop()?;
-//!    session.io_threads.join()?;
+//!    io_threads.join()?;
 //!    Ok(())
 //! }
 //! ```
