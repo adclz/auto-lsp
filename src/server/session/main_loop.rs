@@ -1,17 +1,9 @@
 use crossbeam_channel::select;
 use lsp_server::Message;
-use lsp_server::{ExtractError, Notification, Request, Response};
-use lsp_types::request::{WorkspaceDiagnosticRequest, WorkspaceSymbolRequest};
-use lsp_types::{
-    notification::{DidChangeTextDocument, DidChangeWatchedFiles, DidOpenTextDocument},
-    request::{
-        CodeActionRequest, CodeLensRequest, Completion, DocumentDiagnosticRequest,
-        DocumentLinkRequest, DocumentSymbolRequest, FoldingRangeRequest, GotoDeclaration,
-        GotoDefinition, HoverRequest, InlayHintRequest, References, SelectionRangeRequest,
-        SemanticTokensFullRequest, SemanticTokensRangeRequest,
-    },
-};
-use serde::Serialize;
+use lsp_server::{ExtractError, Notification};
+use lsp_types::notification::{DidChangeTextDocument, DidChangeWatchedFiles, DidOpenTextDocument};
+
+use crate::server::session::REQUEST_REGISTRY;
 
 use super::Session;
 
@@ -26,24 +18,10 @@ impl Session {
                             if self.connection.handle_shutdown(&req)? {
                                 return Ok(());
                             };
-                            RequestDispatcher::new(self, req)
-                                .on::<DocumentDiagnosticRequest, _>(Self::get_diagnostics)?
-                                .on::<DocumentLinkRequest, _>(Self::get_document_links)?
-                                .on::<DocumentSymbolRequest, _>(Self::get_document_symbols)?
-                                .on::<FoldingRangeRequest, _>(Self::get_folding_ranges)?
-                                .on::<HoverRequest, _>(Self::get_hover)?
-                                .on::<SemanticTokensFullRequest, _>(Self::get_semantic_tokens_full)?
-                                .on::<SemanticTokensRangeRequest, _>(Self::get_semantic_tokens_range)?
-                                .on::<SelectionRangeRequest, _>(Self::get_selection_ranges)?
-                                .on::<WorkspaceSymbolRequest, _>(Self::get_workspace_symbols)?
-                                .on::<WorkspaceDiagnosticRequest, _>(Self::get_workspace_diagnostics)?
-                                .on::<InlayHintRequest, _>(Self::get_inlay_hints)?
-                                .on::<CodeActionRequest, _>(Self::get_code_actions)?
-                                .on::<CodeLensRequest, _>(Self::get_code_lenses)?
-                                .on::<Completion, _>(Self::get_completion_items)?
-                                .on::<GotoDefinition, _>(Self::go_to_definition)?
-                                .on::<GotoDeclaration, _>(Self::go_to_declaration)?
-                                .on::<References, _>(Self::get_references)?;
+
+                            if let Some(response) = REQUEST_REGISTRY.lock().handle(self, req)? {
+                                self.connection.sender.send(Message::Response(response))?;
+                            }
                         }
                         Message::Notification(not) => {
                             NotificationDispatcher::new(self, not)
@@ -70,56 +48,6 @@ impl Session {
         };
         self.connection.sender.send(Message::Notification(n))?;
         Ok(())
-    }
-}
-
-/// Code taken from <https://github.com/oxlip-lang/oal/blob/b6741ff99f7c9338551e2067c0de7acd492fad00/oal-client/src/lsp/dispatcher.rs>
-pub struct RequestDispatcher<'a> {
-    session: &'a mut Session,
-    req: Option<Request>,
-}
-
-impl<'a> RequestDispatcher<'a> {
-    pub fn new(session: &'a mut Session, req: Request) -> Self {
-        RequestDispatcher {
-            session,
-            req: Some(req),
-        }
-    }
-
-    pub fn on<R, T>(
-        &'a mut self,
-        hook: impl Fn(&mut Session, R::Params) -> anyhow::Result<T>,
-    ) -> anyhow::Result<&'a mut Self>
-    where
-        R: lsp_types::request::Request,
-        R::Params: serde::de::DeserializeOwned,
-        T: Serialize,
-    {
-        let req = match self.req.take() {
-            Some(r) => r,
-            None => return Ok(self),
-        };
-
-        match req.extract::<R::Params>(R::METHOD) {
-            Ok((id, params)) => {
-                let resp = Response {
-                    id,
-                    result: Some(serde_json::to_value(hook(self.session, params)?).unwrap()),
-                    error: None,
-                };
-                self.session
-                    .connection
-                    .sender
-                    .send(Message::Response(resp))?;
-                Ok(self)
-            }
-            Err(err @ ExtractError::JsonError { .. }) => Err(anyhow::Error::from(err)),
-            Err(ExtractError::MethodMismatch(req)) => {
-                self.req = Some(req);
-                Ok(self)
-            }
-        }
     }
 }
 

@@ -10,7 +10,7 @@ impl Session {
     pub fn get_document_links(
         &mut self,
         params: DocumentLinkParams,
-    ) -> anyhow::Result<Vec<DocumentLink>> {
+    ) -> anyhow::Result<Option<Vec<DocumentLink>>> {
         let with_regex = &self
             .init_options
             .lsp_options
@@ -35,6 +35,6 @@ impl Session {
             to_document_link(m, line, document, root, &mut results);
         });
 
-        Ok(results)
+        Ok(Some(results))
     }
 }

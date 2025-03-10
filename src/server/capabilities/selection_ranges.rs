@@ -9,7 +9,7 @@ impl Session {
     pub fn get_selection_ranges(
         &mut self,
         params: SelectionRangeParams,
-    ) -> anyhow::Result<Vec<SelectionRange>> {
+    ) -> anyhow::Result<Option<Vec<SelectionRange>>> {
         let uri = &params.text_document.uri;
 
         let workspace = WORKSPACE.lock();
@@ -60,6 +60,6 @@ impl Session {
             }
         }
 
-        Ok(results)
+        Ok(Some(results))
     }
 }

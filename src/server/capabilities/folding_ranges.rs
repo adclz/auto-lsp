@@ -10,7 +10,7 @@ impl Session {
     pub fn get_folding_ranges(
         &mut self,
         params: FoldingRangeParams,
-    ) -> anyhow::Result<Vec<FoldingRange>> {
+    ) -> anyhow::Result<Option<Vec<FoldingRange>>> {
         let uri = &params.text_document.uri;
 
         let workspace = WORKSPACE.lock();
@@ -22,7 +22,7 @@ impl Session {
 
         let query = match root.parsers.tree_sitter.queries.fold {
             Some(ref query) => query,
-            None => return Ok(vec![]),
+            None => return Ok(None),
         };
 
         let root_node = document.tree.root_node();
@@ -50,6 +50,6 @@ impl Session {
             });
         }
 
-        Ok(ranges)
+        Ok(Some(ranges))
     }
 }

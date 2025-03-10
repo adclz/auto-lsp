@@ -11,10 +11,11 @@ use lsp_types::{
     SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
     SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
 };
+use serde::Serialize;
 use texter::core::text::Text;
 
-use super::InitOptions;
 use super::Session;
+use super::{InitOptions, REQUEST_REGISTRY};
 
 /// Function to create a new [`Text`] from a [`String`]
 pub(crate) type TextFn = fn(String) -> Text;
@@ -36,6 +37,14 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
     DEFAULT
 }
 
+macro_rules! register_default_requests {
+    ($session:expr, { $($req:ty => $handler:expr),* $(,)? }) => {
+        $(
+            $session.register_request::<$req, _>($handler);
+        )*
+    };
+}
+
 impl Session {
     pub(crate) fn new(init_options: InitOptions, connection: Connection, text_fn: TextFn) -> Self {
         Self {
@@ -44,6 +53,16 @@ impl Session {
             text_fn,
             extensions: HashMap::new(),
         }
+    }
+
+    pub fn register_request<R, F>(&mut self, handler: F)
+    where
+        R: lsp_types::request::Request,
+        R::Params: serde::de::DeserializeOwned,
+        R::Result: Serialize,
+        F: Fn(&mut Session, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
+    {
+        REQUEST_REGISTRY.lock().register::<R, F>(handler);
     }
 
     /// Create a new session with the given initialization options.
@@ -182,6 +201,26 @@ impl Session {
         connection.initialize_finish(id, server_capabilities)?;
 
         let mut session = Session::new(init_options, connection, t_fn);
+
+        register_default_requests!(session, {
+            lsp_types::request::DocumentDiagnosticRequest => |session, params| session.get_diagnostics(params),
+            lsp_types::request::DocumentLinkRequest => |session, params| session.get_document_links(params),
+            lsp_types::request::DocumentSymbolRequest => |session, params| session.get_document_symbols(params),
+            lsp_types::request::FoldingRangeRequest => |session, params| session.get_folding_ranges(params),
+            lsp_types::request::HoverRequest => |session, params| session.get_hover(params),
+            lsp_types::request::SemanticTokensFullRequest => |session, params| session.get_semantic_tokens_full(params),
+            lsp_types::request::SemanticTokensRangeRequest => |session, params| session.get_semantic_tokens_range(params),
+            lsp_types::request::SelectionRangeRequest => |session, params| session.get_selection_ranges(params),
+            lsp_types::request::WorkspaceSymbolRequest => |session, params| session.get_workspace_symbols(params),
+            lsp_types::request::WorkspaceDiagnosticRequest => |session, params| session.get_workspace_diagnostics(params),
+            lsp_types::request::InlayHintRequest => |session, params| session.get_inlay_hints(params),
+            lsp_types::request::CodeActionRequest => |session, params| session.get_code_actions(params),
+            lsp_types::request::CodeLensRequest => |session, params| session.get_code_lenses(params),
+            lsp_types::request::Completion => |session, params| session.get_completion_items(params),
+            lsp_types::request::GotoDefinition => |session, params| session.go_to_definition(params),
+            lsp_types::request::GotoDeclaration => |session, params| session.go_to_declaration(params),
+            lsp_types::request::References => |session, params| session.get_references(params),
+        });
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.

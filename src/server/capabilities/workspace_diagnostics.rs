@@ -1,6 +1,7 @@
 use lsp_types::{
     FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport,
-    WorkspaceDocumentDiagnosticReport, WorkspaceFullDocumentDiagnosticReport,
+    WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport,
+    WorkspaceFullDocumentDiagnosticReport,
 };
 
 use crate::server::session::{Session, WORKSPACE};
@@ -10,7 +11,7 @@ impl Session {
     pub fn get_workspace_diagnostics(
         &mut self,
         _params: WorkspaceDiagnosticParams,
-    ) -> anyhow::Result<WorkspaceDiagnosticReport> {
+    ) -> anyhow::Result<WorkspaceDiagnosticReportResult> {
         let lock = WORKSPACE.lock();
 
         let result: Vec<lsp_types::WorkspaceDocumentDiagnosticReport> = lock
@@ -29,6 +30,8 @@ impl Session {
             })
             .collect();
 
-        Ok(WorkspaceDiagnosticReport { items: result })
+        Ok(WorkspaceDiagnosticReportResult::Report(
+            WorkspaceDiagnosticReport { items: result },
+        ))
     }
 }

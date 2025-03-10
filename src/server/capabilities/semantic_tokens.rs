@@ -1,6 +1,9 @@
 use crate::core::ast::BuildSemanticTokens;
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
-use lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
+use lsp_types::{
+    SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+    SemanticTokensResult,
+};
 
 use crate::server::session::{Session, WORKSPACE};
 
@@ -9,7 +12,7 @@ impl Session {
     pub fn get_semantic_tokens_full(
         &mut self,
         params: SemanticTokensParams,
-    ) -> anyhow::Result<SemanticTokensResult> {
+    ) -> anyhow::Result<Option<SemanticTokensResult>> {
         let uri = &params.text_document.uri;
 
         let workspace = WORKSPACE.lock();
@@ -25,14 +28,14 @@ impl Session {
             .iter()
             .for_each(|p| p.build_semantic_tokens(document, &mut builder));
 
-        Ok(SemanticTokensResult::Tokens(builder.build()))
+        Ok(Some(SemanticTokensResult::Tokens(builder.build())))
     }
 
     /// Get semantic tokens for a range in a document.
     pub fn get_semantic_tokens_range(
         &mut self,
         params: SemanticTokensRangeParams,
-    ) -> anyhow::Result<SemanticTokensResult> {
+    ) -> anyhow::Result<Option<SemanticTokensRangeResult>> {
         let uri = &params.text_document.uri;
 
         let workspace = WORKSPACE.lock();
@@ -48,6 +51,6 @@ impl Session {
             .iter()
             .for_each(|p| p.build_semantic_tokens(document, &mut builder));
 
-        Ok(SemanticTokensResult::Tokens(builder.build()))
+        Ok(Some(SemanticTokensRangeResult::Tokens(builder.build())))
     }
 }

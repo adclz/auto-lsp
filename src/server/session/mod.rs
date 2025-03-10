@@ -5,15 +5,21 @@ use auto_lsp_core::workspace::Workspace;
 use lsp_server::Connection;
 use options::InitOptions;
 use parking_lot::Mutex;
+use request_registry::RequestRegistry;
 
 pub mod documents;
 pub mod fs;
 pub mod init;
 pub mod main_loop;
 pub mod options;
+pub mod request_registry;
 
 /// Workspace
 pub(crate) static WORKSPACE: LazyLock<Mutex<Workspace>> = LazyLock::new(Mutex::default);
+
+/// Request registry
+pub(crate) static REQUEST_REGISTRY: LazyLock<Mutex<RequestRegistry>> =
+    LazyLock::new(Mutex::default);
 
 /// Main session object that holds both lsp server connection and initialization options.
 ///
