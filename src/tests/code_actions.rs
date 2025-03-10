@@ -28,7 +28,15 @@ fn foo_bar_code_actions(foo_bar: (Root, Document)) {
 
     assert_eq!(code_actions.len(), 2);
 
-    assert_eq!(code_actions[0].title, "A code action");
+    if let lsp_types::CodeActionOrCommand::CodeAction(code_action) = &code_actions[0] {
+        assert_eq!(code_action.title, "A code action");
+    } else {
+        panic!("Expected a code action");
+    }
 
-    assert_eq!(code_actions[1].title, "A code action");
+    if let lsp_types::CodeActionOrCommand::CodeAction(code_action) = &code_actions[1] {
+        assert_eq!(code_action.title, "A code action");
+    } else {
+        panic!("Expected a code action");
+    }
 }

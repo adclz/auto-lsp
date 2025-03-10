@@ -1,6 +1,6 @@
 use crate::server::session::{Session, WORKSPACE};
 use auto_lsp_core::ast::BuildCodeActions;
-use lsp_types::{CodeAction, CodeActionOrCommand, CodeActionParams};
+use lsp_types::{CodeActionOrCommand, CodeActionParams};
 
 impl Session {
     /// Get code actions for a document.
@@ -19,7 +19,7 @@ impl Session {
             .ok_or(anyhow::anyhow!("Root not found"))?;
 
         if let Some(a) = root.ast.as_ref() {
-            //a.build_code_actions(document, &mut results)
+            a.build_code_actions(document, &mut results)
         }
 
         Ok(Some(results))

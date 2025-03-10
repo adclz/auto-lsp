@@ -235,7 +235,7 @@ impl Default for Paths {
             lsp_code_actions: LspCodeActions {
                 path: core_ast(parse_quote!(BuildCodeActions)),
                 build_code_actions: Method {
-                    sig: quote! { fn build_code_actions(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeAction>) },
+                    sig: quote! { fn build_code_actions(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeActionOrCommand>) },
                     variant: quote! { build_code_actions(doc, acc) },
                 },
             },
