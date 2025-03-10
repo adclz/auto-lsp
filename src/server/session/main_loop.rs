@@ -1,9 +1,7 @@
 use crossbeam_channel::select;
 use lsp_server::Message;
-use lsp_server::{ExtractError, Notification};
-use lsp_types::notification::{DidChangeTextDocument, DidChangeWatchedFiles, DidOpenTextDocument};
 
-use crate::server::session::REQUEST_REGISTRY;
+use crate::server::session::{NOTIFICATION_REGISTRY, REQUEST_REGISTRY};
 
 use super::Session;
 
@@ -24,10 +22,9 @@ impl Session {
                             }
                         }
                         Message::Notification(not) => {
-                            NotificationDispatcher::new(self, not)
-                                .on::<DidOpenTextDocument>(Self::open_text_document)?
-                                .on::<DidChangeTextDocument>(Self::edit_text_document)?
-                                .on::<DidChangeWatchedFiles>(Self::changed_watched_files)?;
+                            if let Err(err) = NOTIFICATION_REGISTRY.lock().handle(self, not) {
+                                log::error!("Error handling notification: {}", err.to_string());
+                            }
                         }
                         Message::Response(_) => {}
                     }
@@ -48,45 +45,5 @@ impl Session {
         };
         self.connection.sender.send(Message::Notification(n))?;
         Ok(())
-    }
-}
-
-pub struct NotificationDispatcher<'a> {
-    session: &'a mut Session,
-    not: Option<Notification>,
-}
-
-impl<'a> NotificationDispatcher<'a> {
-    pub fn new(session: &'a mut Session, not: Notification) -> Self {
-        NotificationDispatcher {
-            session,
-            not: Some(not),
-        }
-    }
-
-    pub fn on<N>(
-        &'a mut self,
-        hook: impl Fn(&mut Session, N::Params) -> anyhow::Result<()>,
-    ) -> anyhow::Result<&'a mut Self>
-    where
-        N: lsp_types::notification::Notification,
-        N::Params: serde::de::DeserializeOwned,
-    {
-        let not = match self.not.take() {
-            Some(r) => r,
-            None => return Ok(self),
-        };
-
-        match not.extract::<N::Params>(N::METHOD) {
-            Ok(params) => {
-                hook(self.session, params)?;
-                Ok(self)
-            }
-            Err(err @ ExtractError::JsonError { .. }) => Err(anyhow::Error::from(err)),
-            Err(ExtractError::MethodMismatch(not)) => {
-                self.not = Some(not);
-                Ok(self)
-            }
-        }
     }
 }

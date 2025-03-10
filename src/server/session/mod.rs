@@ -3,6 +3,7 @@ use std::{collections::HashMap, sync::LazyLock};
 use crate::server::session::init::TextFn;
 use auto_lsp_core::workspace::Workspace;
 use lsp_server::Connection;
+use notification_registry::NotificationRegistry;
 use options::InitOptions;
 use parking_lot::Mutex;
 use request_registry::RequestRegistry;
@@ -11,6 +12,7 @@ pub mod documents;
 pub mod fs;
 pub mod init;
 pub mod main_loop;
+pub mod notification_registry;
 pub mod options;
 pub mod request_registry;
 
@@ -19,6 +21,10 @@ pub(crate) static WORKSPACE: LazyLock<Mutex<Workspace>> = LazyLock::new(Mutex::d
 
 /// Request registry
 pub(crate) static REQUEST_REGISTRY: LazyLock<Mutex<RequestRegistry>> =
+    LazyLock::new(Mutex::default);
+
+/// Notification registry
+pub(crate) static NOTIFICATION_REGISTRY: LazyLock<Mutex<NotificationRegistry>> =
     LazyLock::new(Mutex::default);
 
 /// Main session object that holds both lsp server connection and initialization options.

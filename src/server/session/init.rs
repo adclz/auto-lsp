@@ -14,8 +14,8 @@ use lsp_types::{
 use serde::Serialize;
 use texter::core::text::Text;
 
-use super::Session;
 use super::{InitOptions, REQUEST_REGISTRY};
+use super::{Session, NOTIFICATION_REGISTRY};
 
 /// Function to create a new [`Text`] from a [`String`]
 pub(crate) type TextFn = fn(String) -> Text;
@@ -45,6 +45,14 @@ macro_rules! register_default_requests {
     };
 }
 
+macro_rules! register_default_notifications {
+    ($session:expr, { $($req:ty => $handler:expr),* $(,)? }) => {
+        $(
+            $session.register_notification::<$req, _>($handler);
+        )*
+    };
+}
+
 impl Session {
     pub(crate) fn new(init_options: InitOptions, connection: Connection, text_fn: TextFn) -> Self {
         Self {
@@ -63,6 +71,15 @@ impl Session {
         F: Fn(&mut Session, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
     {
         REQUEST_REGISTRY.lock().register::<R, F>(handler);
+    }
+
+    pub fn register_notification<N, F>(&mut self, handler: F)
+    where
+        N: lsp_types::notification::Notification,
+        N::Params: serde::de::DeserializeOwned,
+        F: Fn(&mut Session, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
+    {
+        NOTIFICATION_REGISTRY.lock().register::<N, F>(handler);
     }
 
     /// Create a new session with the given initialization options.
@@ -220,6 +237,12 @@ impl Session {
             lsp_types::request::GotoDefinition => |session, params| session.go_to_definition(params),
             lsp_types::request::GotoDeclaration => |session, params| session.go_to_declaration(params),
             lsp_types::request::References => |session, params| session.get_references(params),
+        });
+
+        register_default_notifications!(session, {
+            lsp_types::notification::DidOpenTextDocument => |session, params| session.open_text_document(params),
+            lsp_types::notification::DidChangeTextDocument => |session, params| session.edit_text_document(params),
+            lsp_types::notification::DidChangeWatchedFiles => |session, params| session.changed_watched_files(params),
         });
 
         // Initialize the session with the client's initialization options.
