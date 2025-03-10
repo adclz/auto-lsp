@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.4](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.3...auto-lsp-macros-v0.1.4)
+
+### Refactor
+
+- *(code_actions)* Update build_code_actions signature to use CodeActionOrCommand - ([d74ba87](https://github.com/adclz/auto-lsp/commit/d74ba87280e9bf4cfcf66d64be283cc3630a7e1f))
+
+
 ## [0.1.3](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.2...auto-lsp-macros-v0.1.3)
 
 ### Features
