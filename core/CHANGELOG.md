@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.4.0...auto-lsp-core-v0.5.0)
+
+### Features
+
+- Add optional rayon support for workspace init - ([7c79786](https://github.com/adclz/auto-lsp/commit/7c79786274400404ca125950d2f89cb12f1e13dd))
+
+### Bug Fixes
+
+- Update capabilities - ([b7d903a](https://github.com/adclz/auto-lsp/commit/b7d903ab06ae06733a2c160870149946c08f5cdd))
+
+### Refactor
+
+- Remove unused parse_symbols method and simplify build function - ([8be148f](https://github.com/adclz/auto-lsp/commit/8be148f72b28022939f236ead13597c547110d2a))
+
+
 ## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.3.0...auto-lsp-core-v0.4.0)
 
 ### Features
