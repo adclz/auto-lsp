@@ -240,7 +240,7 @@ pub trait BuildTriggeredCompletionItems {
 
 /// [LSP CodeAction specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction)
 pub trait BuildCodeActions {
-    fn build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>) {}
+    fn build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>) {}
 }
 
 // Special capabilities
@@ -569,7 +569,7 @@ impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: 
 impl_dyn_symbol!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>));
 impl_dyn_symbol!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
-impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));
+impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>));
 
 macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
@@ -597,4 +597,4 @@ impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut 
 impl_build!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
 impl_build!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
-impl_build!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeAction>));
+impl_build!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>));
