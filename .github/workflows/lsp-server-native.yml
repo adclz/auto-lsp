@@ -1,0 +1,22 @@
+name: Run LSP Server - native
+on: 
+  push:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"  
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo test
+        working-directory: ./examples/native
+        run: cargo test
