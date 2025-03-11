@@ -41,3 +41,9 @@ pub struct Session {
     /// Language extensions to parser mappings.
     pub extensions: HashMap<String, String>,
 }
+
+impl Session {
+    pub fn get_workspace(&self) -> parking_lot::MutexGuard<'_, Workspace> {
+        WORKSPACE.lock()
+    }
+}
