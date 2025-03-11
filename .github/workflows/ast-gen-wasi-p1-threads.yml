@@ -1,4 +1,4 @@
-name: test wasi-p1-threads
+name: Generate AST - wasi-p1-threads
 on: 
   push:
     paths-ignore:
