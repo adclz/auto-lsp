@@ -1,0 +1,53 @@
+{
+    "jsonrpc": "2.0",
+    "method": "initialize",
+    "id": 1,
+    "params": {
+        "capabilities": {
+            "workspace": {
+                "didChangeWatchedFiles": {
+                    "dynamicRegistration": true,
+                    "relativePatternSupport": true
+                },
+                "fileOperations": {
+                    "didCreate": true,
+                    "didDelete": true,
+                    "didRename": true,
+                    "dynamicRegistration": true,
+                    "willCreate": true,
+                    "willDelete": true,
+                    "willRename": true
+                },
+                "workspaceEdit": {
+                    "changeAnnotationSupport": {
+                        "groupsOnLabel": true
+                    },
+                    "documentChanges": true,
+                    "failureHandling": "textOnlyTransactional",
+                    "metadataSupport": true,
+                    "normalizesLineEndings": true,
+                    "resourceOperations": [
+                        "create",
+                        "rename",
+                        "delete"
+                    ],
+                    "snippetEditSupport": true
+                },
+                "workspaceFolders": true
+            }
+        },
+        "initializationOptions": {
+            "perFileParser": {
+                "py": "python"
+            }
+        },
+        "rootUri": "file:///testbed",
+        "trace": "off",
+        "workspaceFolders": [
+            {
+                "name": "testbed",
+                "uri": "file:///testbed"
+            }
+        ]
+    }
+}

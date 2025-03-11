@@ -9,6 +9,7 @@
 	],
 	"rust-analyzer.linkedProjects": [
 		"Cargo.toml",
-		"examples/vscode-wasi/server/Cargo.toml"
+		"examples/vscode-wasi/server/Cargo.toml",
+		"examples/native/Cargo.toml"
 	],
 }

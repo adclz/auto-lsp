@@ -44,7 +44,7 @@ tree-sitter-html = { version = "0.23.2", optional = true }
 
 [workspace]
 members = ["core", "proc-macros"]
-exclude = ["examples/vscode-wasi/server"]
+exclude = ["examples/vscode-wasi/server", "examples/native"]
 
 [workspace.dependencies]
 lsp-types = "0.94.1"

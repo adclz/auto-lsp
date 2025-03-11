@@ -24,7 +24,7 @@ export async function activate(context: ExtensionContext) {
 				{ kind: 'workspaceFolder' },
 			]
 		};
-		const filename = Uri.joinPath(context.extensionUri, 'server', 'target', 'wasm32-wasip1-threads', 'release', 'server.wasm');
+		const filename = Uri.joinPath(context.extensionUri, 'server', 'target', 'wasm32-wasip1-threads', 'release', 'vscode-wasi-server.wasm');
 		const bits = await workspace.fs.readFile(filename);
 		const module = await WebAssembly.compile(bits);
 		const process = await wasm.createProcess('lsp-server', module, { initial: 160, maximum: 160, shared: true }, options);
