@@ -1,5 +1,5 @@
 use crossbeam_channel::select;
-use lsp_server::Message;
+use lsp_server::{Message, Notification};
 
 use crate::server::session::{NOTIFICATION_REGISTRY, REQUEST_REGISTRY};
 
@@ -23,6 +23,13 @@ impl Session {
                         }
                         Message::Notification(not) => {
                             if let Err(err) = NOTIFICATION_REGISTRY.lock().handle(self, not) {
+                                self.connection.sender.send(Message::Notification(Notification {
+                                    method: "window/showMessage".to_string(),
+                                    params: serde_json::json!({
+                                        "type": lsp_types::MessageType::ERROR,
+                                        "message": err.to_string(),
+                                    })}
+                                ))?;
                                 log::error!("Error handling notification: {}", err.to_string());
                             }
                         }
