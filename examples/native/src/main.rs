@@ -3,7 +3,7 @@ use std::error::Error;
 use auto_lsp::lsp_server::Connection;
 use auto_lsp::python::PYTHON_PARSERS;
 use auto_lsp::server::{InitOptions, LspOptions, Session};
-use native_lsp::GetWorkspaceFiles;
+use native_lsp::requests::GetWorkspaceFiles;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
