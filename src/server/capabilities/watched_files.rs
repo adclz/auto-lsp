@@ -28,7 +28,7 @@ impl Session {
                     .to_file_path()
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
 
-                let (_url, root, document) = self.file_to_root(&file_path)?;
+                let (_url, root, document) = self.read_file(&file_path)?;
                 workspace.roots.insert(uri.clone(), (root, document));
                 Ok(())
             }
@@ -53,7 +53,7 @@ impl Session {
                             anyhow::anyhow!("Failed to read file {}", uri.to_string())
                         })?;
 
-                        let (_url, root, document) = self.file_to_root(&file_path)?;
+                        let (_url, root, document) = self.read_file(&file_path)?;
                         workspace.roots.insert(uri.clone(), (root, document));
                     }
                 }

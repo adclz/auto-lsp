@@ -62,7 +62,7 @@ impl Session {
             errors.extend(
                 files
                     .into_iter()
-                    .map(|file| match self.file_to_root(&file.into_path()) {
+                    .map(|file| match self.read_file(&file.into_path()) {
                         Ok((url, root, document)) => {
                             workspace.roots.insert(url, (root, document));
                             Ok(())
@@ -80,7 +80,7 @@ impl Session {
                     files.into_par_iter(),
                     |file_iter| {
                         file_iter
-                            .map(|file| match self.file_to_root(&file.into_path()) {
+                            .map(|file| match self.read_file(&file.into_path()) {
                                 Ok((url, root, document)) => {
                                     workspace.roots.insert(url, (root, document));
                                     Ok(())
@@ -99,7 +99,7 @@ impl Session {
         Ok(())
     }
 
-    pub(crate) fn file_to_root(&self, file: &PathBuf) -> anyhow::Result<(Url, Root, Document)> {
+    pub(crate) fn read_file(&self, file: &PathBuf) -> anyhow::Result<(Url, Root, Document)> {
         let url = Url::from_file_path(file)
             .map_err(|_| anyhow::anyhow!("Failed to read file {}", file.display()))?;
 
