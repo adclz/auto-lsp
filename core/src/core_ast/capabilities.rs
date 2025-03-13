@@ -11,6 +11,7 @@ use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
+use crate::workspace::Workspace;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
 use aho_corasick::AhoCorasick;
 
@@ -418,10 +419,16 @@ pub trait Reference: IsReference {
     /// If the symbol cannot be found, return a [Diagnostic] with the reason
     ///
     /// By default, `Ok(None)`
-    fn find(&self, doc: &Document) -> Result<Option<DynSymbol>, Diagnostic> {
-        Ok(None)
+    fn find_reference(
+        &self,
+        doc: &Document,
+        workspace: &Workspace,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) -> Option<DynSymbol> {
+        None
     }
 }
+
 #[doc(hidden)]
 pub trait IsCheck {
     /// Tell this symbol has to be checked during the build process

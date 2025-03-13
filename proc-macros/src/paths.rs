@@ -298,8 +298,12 @@ impl Default for Paths {
             reference: Reference {
                 path: core_ast(parse_quote!(Reference)),
                 find: Method {
-                    sig: quote! { fn find(&self, doc: &auto_lsp::core::document::Document) -> Result<Option<auto_lsp::core::ast::DynSymbol>, auto_lsp::lsp_types::Diagnostic> },
-                    variant: quote! { find(doc) },
+                    sig: quote! { fn find_reference(&self,
+                    doc: &auto_lsp::core::document::Document,
+                    workspace: &auto_lsp::core::workspace::Workspace,
+                    diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>)
+                    -> Option<auto_lsp::core::ast::DynSymbol> },
+                    variant: quote! { find_reference(doc, workspace, diagnostics) },
                 },
             },
             is_comment: Comment {
