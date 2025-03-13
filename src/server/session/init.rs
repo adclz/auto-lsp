@@ -243,6 +243,13 @@ impl Session {
             lsp_types::notification::DidOpenTextDocument => |session, params| session.open_text_document(params),
             lsp_types::notification::DidChangeTextDocument => |session, params| session.edit_text_document(params),
             lsp_types::notification::DidChangeWatchedFiles => |session, params| session.changed_watched_files(params),
+
+            // Disabled notifications (temporary)
+            lsp_types::notification::Cancel => |_, _| (|| Ok(()))(),
+            lsp_types::notification::DidSaveTextDocument => |_, _| (|| Ok(()))(),
+            lsp_types::notification::DidCloseTextDocument => |_, _| (|| Ok(()))(),
+            lsp_types::notification::SetTrace => |_, _| (|| Ok(()))(),
+            lsp_types::notification::LogTrace => |_, _| (|| Ok(()))(),
         });
 
         // Initialize the session with the client's initialization options.
