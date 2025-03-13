@@ -1,14 +1,13 @@
 use std::ops::Deref;
 
-use crate::core::document::Document;
-use crate::core::root::Root;
+use crate::{core::workspace::Workspace, tests::html_utils::get_html_file};
 use auto_lsp_core::ast::{GetSymbolData, Traverse};
 use rstest::{fixture, rstest};
 
 use super::{html_utils::create_html_workspace, html_workspace::*};
 
 #[fixture]
-fn nested_divs() -> (Root, Document) {
+fn nested_divs() -> Workspace {
     create_html_workspace(
         r#"<!DOCTYPE html>
 <div>
@@ -22,8 +21,9 @@ fn nested_divs() -> (Root, Document) {
 }
 
 #[rstest]
-fn descendant(nested_divs: (Root, Document)) {
-    let ast = nested_divs.0.ast.as_ref().unwrap();
+fn descendant(nested_divs: Workspace) {
+    let (root, _document) = get_html_file(&nested_divs);
+    let ast = root.ast.as_ref().unwrap();
 
     let guard = ast.read();
     let document = guard.downcast_ref::<HtmlDocument>().unwrap();
@@ -59,8 +59,9 @@ fn descendant(nested_divs: (Root, Document)) {
 }
 
 #[rstest]
-fn descendant_at_and_collect(nested_divs: (Root, Document)) {
-    let ast = nested_divs.0.ast.as_ref().unwrap();
+fn descendant_at_and_collect(nested_divs: Workspace) {
+    let (root, _document) = get_html_file(&nested_divs);
+    let ast = root.ast.as_ref().unwrap();
 
     let mut collected = vec![];
     let descendant = ast.descendant_at_and_collect(
@@ -79,9 +80,11 @@ fn descendant_at_and_collect(nested_divs: (Root, Document)) {
 }
 
 #[rstest]
-fn traverse_and_collect(nested_divs: (Root, Document)) {
-    let ast = nested_divs.0.ast.as_ref().unwrap();
-    let source_code = nested_divs.1.texter.text.as_bytes();
+fn traverse_and_collect(nested_divs: Workspace) {
+    let (root, document) = get_html_file(&nested_divs);
+    let ast = root.ast.as_ref().unwrap();
+
+    let source_code = document.texter.text.as_bytes();
 
     let mut collected = vec![];
     ast.traverse_and_collect(|d| d.read().is::<TagName>(), &mut collected);

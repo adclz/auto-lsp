@@ -1,28 +1,22 @@
-use crate::core::document::Document;
-use crate::core::root::Root;
-use lsp_types::Url;
+use crate::core::workspace::Workspace;
 use parking_lot::Mutex;
 use rstest::{fixture, rstest};
 use std::time::Duration;
 
 use super::python_workspace::ast::Module;
-use super::python_workspace::PYTHON_PARSERS;
+use crate::tests::python_utils::{create_python_workspace, get_python_file, into_python_file};
 
 #[fixture]
-fn foo_bar() -> (Root, Document) {
-    Root::from_utf8(
-        PYTHON_PARSERS.get("python").unwrap(),
-        Url::parse("file:///test.py").unwrap(),
+fn foo_bar() -> Workspace {
+    create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#
-        .into(),
+"#,
     )
-    .unwrap()
 }
 
 static DEADLOCK_DETECTION_LOCK: Mutex<()> = parking_lot::const_mutex(());
@@ -33,9 +27,11 @@ fn has_deadlock() -> bool {
 }
 
 #[rstest]
-fn read_write(foo_bar: (Root, Document)) {
+fn read_write(foo_bar: Workspace) {
+    let (root, _) = into_python_file(foo_bar);
+    let ast = root.ast.unwrap();
+
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
-    let ast = foo_bar.0.ast.unwrap();
 
     // not allowed in the same thread
     let _t = std::thread::spawn(move || {
@@ -49,9 +45,11 @@ fn read_write(foo_bar: (Root, Document)) {
 }
 
 #[rstest]
-fn multiple_readers(foo_bar: (Root, Document)) {
+fn multiple_readers(foo_bar: Workspace) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
-    let ast = foo_bar.0.ast.unwrap();
+
+    let (root, _) = into_python_file(foo_bar);
+    let ast = root.ast.unwrap();
     let ast_clone = ast.clone();
 
     let _t1 = std::thread::spawn(move || {
@@ -70,9 +68,12 @@ fn multiple_readers(foo_bar: (Root, Document)) {
 }
 
 #[rstest]
-fn multiple_writers(foo_bar: (Root, Document)) {
+fn multiple_writers(foo_bar: Workspace) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
-    let ast = foo_bar.0.ast.unwrap();
+
+    let (root, _) = into_python_file(foo_bar);
+    let ast = root.ast.unwrap();
+
     let ast_clone = ast.clone();
 
     let _t1 = std::thread::spawn(move || {
@@ -90,10 +91,12 @@ fn multiple_writers(foo_bar: (Root, Document)) {
 }
 
 #[rstest]
-fn nested_writer(foo_bar: (Root, Document)) {
+fn nested_writer(foo_bar: Workspace) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
 
-    let ast = foo_bar.0.ast.unwrap();
+    let (root, _) = into_python_file(foo_bar);
+    let ast = root.ast.unwrap();
+
     let ast_clone = ast.clone();
 
     let _t1 = std::thread::spawn(move || {

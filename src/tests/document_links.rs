@@ -1,12 +1,12 @@
-use crate::core::document::Document;
-use crate::core::root::Root;
+use crate::tests::html_utils::get_html_file;
+use auto_lsp_core::workspace::Workspace;
 use regex::Regex;
 use rstest::{fixture, rstest};
 
 use super::html_utils::create_html_workspace;
 
 #[fixture]
-fn comments_with_link() -> (Root, Document) {
+fn comments_with_link() -> Workspace {
     create_html_workspace(
         r#"<!DOCTYPE html>
 <!-- source:file1.txt:52 -->         
@@ -17,9 +17,8 @@ fn comments_with_link() -> (Root, Document) {
 }
 
 #[rstest]
-fn document_links(comments_with_link: (Root, Document)) {
-    let root = comments_with_link.0;
-    let document = comments_with_link.1;
+fn document_links(comments_with_link: Workspace) {
+    let (root, document) = get_html_file(&comments_with_link);
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
     let results = root.find_all_with_regex(&document, &regex);
@@ -32,7 +31,7 @@ fn document_links(comments_with_link: (Root, Document)) {
 }
 
 #[fixture]
-fn multiline_comment_with_links() -> (Root, Document) {
+fn multiline_comment_with_links() -> Workspace {
     create_html_workspace(
         r#"<!DOCTYPE html>
 <div>
@@ -45,9 +44,8 @@ fn multiline_comment_with_links() -> (Root, Document) {
 }
 
 #[rstest]
-fn multiline_document_links(multiline_comment_with_links: (Root, Document)) {
-    let root = multiline_comment_with_links.0;
-    let document = multiline_comment_with_links.1;
+fn multiline_document_links(multiline_comment_with_links: Workspace) {
+    let (root, document) = get_html_file(&multiline_comment_with_links);
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
     let results = root.find_all_with_regex(&document, &regex);

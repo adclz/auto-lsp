@@ -1,14 +1,14 @@
 use crate::core::ast::BuildCompletionItems;
-use crate::core::document::Document;
-use crate::core::root::Root;
+use crate::tests::python_utils::{get_mut_python_file, get_python_file};
 use auto_lsp_core::ast::{BuildTriggeredCompletionItems, Traverse};
+use auto_lsp_core::workspace::Workspace;
 use rstest::{fixture, rstest};
 
 use super::python_utils::create_python_workspace;
 use super::python_workspace::ast::Module;
 
 #[fixture]
-fn foo_bar() -> (Root, Document) {
+fn foo_bar() -> Workspace {
     create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -22,12 +22,11 @@ def bar():
 }
 
 #[rstest]
-fn global_completion_items(foo_bar: (Root, Document)) {
-    let ast = foo_bar.0.ast.as_ref().unwrap();
-    let document = &foo_bar.1;
+fn global_completion_items(foo_bar: Workspace) {
+    let (root, document) = get_python_file(&foo_bar);
 
     // Module returns globally available completion items
-    let module = ast.read();
+    let module = root.ast.as_ref().unwrap().read();
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut completion_items = vec![];
@@ -47,9 +46,8 @@ fn global_completion_items(foo_bar: (Root, Document)) {
 }
 
 #[rstest]
-fn triggered_completion_items(foo_bar: (Root, Document)) {
-    let mut root = foo_bar.0;
-    let mut document = foo_bar.1;
+fn triggered_completion_items(mut foo_bar: Workspace) {
+    let (root, document) = get_mut_python_file(&mut foo_bar);
 
     let change = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {

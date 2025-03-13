@@ -1,14 +1,14 @@
 use crate::core::ast::Comment;
-use crate::core::document::Document;
-use crate::core::root::Root;
+use crate::tests::python_utils::get_mut_python_file;
 use auto_lsp_core::ast::GetSymbolData;
+use auto_lsp_core::workspace::Workspace;
 use rstest::{fixture, rstest};
 
-use super::python_utils::create_python_workspace;
+use super::python_utils::{create_python_workspace, get_python_file};
 use super::python_workspace::ast::Module;
 
 #[fixture]
-fn foo_bar() -> (Root, Document) {
+fn foo_bar() -> Workspace {
     create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -21,9 +21,9 @@ def bar():
 }
 
 #[rstest]
-fn foo_bar_comment(foo_bar: (Root, Document)) {
-    let ast = foo_bar.0.ast.as_ref().unwrap();
-    let document = &foo_bar.1;
+fn foo_bar_comment(foo_bar: Workspace) {
+    let (root, document) = get_python_file(&foo_bar);
+    let ast = root.ast.as_ref().unwrap();
 
     // Root node should be module
 
@@ -40,7 +40,7 @@ fn foo_bar_comment(foo_bar: (Root, Document)) {
 }
 
 #[fixture]
-fn foo_bar_no_comments() -> (Root, Document) {
+fn foo_bar_no_comments() -> Workspace {
     create_python_workspace(
         r#"def foo(param1, param2: int, param3: int = 5):
     pass
@@ -52,10 +52,10 @@ def bar():
 }
 
 #[rstest]
-fn add_comments(mut foo_bar_no_comments: (Root, Document)) {
-    let mut root = foo_bar_no_comments.0;
-    let document = &mut foo_bar_no_comments.1;
+fn add_comments(mut foo_bar_no_comments: Workspace) {
+    let (root, document) = get_mut_python_file(&mut foo_bar_no_comments);
     let ast = root.ast.as_ref().unwrap();
+
     let ast = ast.read();
 
     // foo has no comment
@@ -132,7 +132,7 @@ fn add_comments(mut foo_bar_no_comments: (Root, Document)) {
 }
 
 #[fixture]
-fn foo_bar_with_comments() -> (Root, Document) {
+fn foo_bar_with_comments() -> Workspace {
     create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -146,9 +146,8 @@ def bar():
 }
 
 #[rstest]
-fn remove_comments(mut foo_bar_with_comments: (Root, Document)) {
-    let mut root = foo_bar_with_comments.0;
-    let document = &mut foo_bar_with_comments.1;
+fn remove_comments(mut foo_bar_with_comments: Workspace) {
+    let (root, document) = get_mut_python_file(&mut foo_bar_with_comments);
     let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();
 

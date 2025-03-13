@@ -1,12 +1,14 @@
 use crate::core::ast::AstSymbol;
-use crate::core::document::Document;
-use crate::core::root::Root;
+use auto_lsp_core::workspace::Workspace;
 use rstest::{fixture, rstest};
 
-use super::{html_utils::create_html_workspace, html_workspace::*};
+use super::{
+    html_utils::{create_html_workspace, get_html_file},
+    html_workspace::*,
+};
 
 #[fixture]
-fn sample_file() -> (Root, Document) {
+fn sample_file() -> Workspace {
     create_html_workspace(
         r#"<!DOCTYPE html>
 <script></script>
@@ -19,9 +21,8 @@ fn sample_file() -> (Root, Document) {
 }
 
 #[rstest]
-fn html_ast(sample_file: (Root, Document)) {
-    let root = sample_file.0;
-    let document = sample_file.1;
+fn html_ast(sample_file: Workspace) {
+    let (root, document) = get_html_file(&sample_file);
 
     let ast = root.ast.as_ref().unwrap();
     let ast = ast.read();

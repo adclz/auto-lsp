@@ -1,5 +1,4 @@
-use crate::core::document::Document;
-use crate::core::root::Root;
+use crate::{core::workspace::Workspace, tests::python_utils::get_python_file};
 use auto_lsp_core::ast::BuildSemanticTokens;
 use rstest::{fixture, rstest};
 
@@ -7,7 +6,7 @@ use super::{python_utils::create_python_workspace, python_workspace::ast::Module
 use crate::python::semantic_tokens::{DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
 
 #[fixture]
-fn foo_bar() -> (Root, Document) {
+fn foo_bar() -> Workspace {
     create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -20,9 +19,9 @@ def bar():
 }
 
 #[rstest]
-fn foo_bar_semantic_tokens(foo_bar: (Root, Document)) {
-    let ast = foo_bar.0.ast.as_ref().unwrap();
-    let document = &foo_bar.1;
+fn foo_bar_semantic_tokens(foo_bar: Workspace) {
+    let (root, document) = get_python_file(&foo_bar);
+    let ast = root.ast.as_ref().unwrap();
 
     let mut builder = auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder::new("".into());
     let module = ast.read();

@@ -1,11 +1,10 @@
 use super::python_utils::create_python_workspace;
-use crate::core::document::Document;
-use crate::core::root::Root;
+use crate::{core::workspace::Workspace, tests::python_utils::get_python_file};
 use auto_lsp_core::{ast::BuildDocumentSymbols, document_symbols_builder::DocumentSymbolsBuilder};
 use rstest::{fixture, rstest};
 
 #[fixture]
-fn foo_bar() -> (Root, Document) {
+fn foo_bar() -> Workspace {
     create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -18,9 +17,9 @@ def bar():
 }
 
 #[rstest]
-fn foo_bar_document_symbols(foo_bar: (Root, Document)) {
-    let ast = foo_bar.0.ast.as_ref().unwrap();
-    let document = &foo_bar.1;
+fn foo_bar_document_symbols(foo_bar: Workspace) {
+    let (root, document) = get_python_file(&foo_bar);
+    let ast = root.ast.as_ref().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
     ast.build_document_symbols(document, &mut builder);
@@ -36,7 +35,7 @@ fn foo_bar_document_symbols(foo_bar: (Root, Document)) {
 }
 
 #[fixture]
-fn foo_bar_nested_baz() -> (Root, Document) {
+fn foo_bar_nested_baz() -> Workspace {
     create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -50,9 +49,9 @@ def bar():
 }
 
 #[rstest]
-fn foo_bar_nested_bazdocument_symbols(foo_bar_nested_baz: (Root, Document)) {
-    let ast = foo_bar_nested_baz.0.ast.as_ref().unwrap();
-    let document = &foo_bar_nested_baz.1;
+fn foo_bar_nested_bazdocument_symbols(foo_bar_nested_baz: Workspace) {
+    let (root, document) = get_python_file(&foo_bar_nested_baz);
+    let ast = root.ast.as_ref().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
     ast.build_document_symbols(document, &mut builder);

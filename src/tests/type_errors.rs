@@ -1,11 +1,13 @@
-use crate::core::document::Document;
-use crate::core::root::Root;
+use crate::{
+    core::workspace::Workspace,
+    tests::python_utils::{get_mut_python_file, get_python_file},
+};
 use rstest::{fixture, rstest};
 
 use super::python_utils::create_python_workspace;
 
 #[fixture]
-fn foo_bar() -> (Root, Document) {
+fn foo_bar() -> Workspace {
     create_python_workspace(
         r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
@@ -18,7 +20,7 @@ def bar():
 }
 
 #[fixture]
-fn foo_bar_with_type_error() -> (Root, Document) {
+fn foo_bar_with_type_error() -> Workspace {
     create_python_workspace(
         r#"# foo comment
         def foo(param1, param2: int = "string"):
@@ -31,14 +33,15 @@ fn foo_bar_with_type_error() -> (Root, Document) {
 }
 
 #[rstest]
-fn foo_has_type_error(foo_bar: (Root, Document), foo_bar_with_type_error: (Root, Document)) {
-    let foo_bar = foo_bar.0;
+fn foo_has_type_error(foo_bar: Workspace, foo_bar_with_type_error: Workspace) {
+    let (foo_bar, _) = get_python_file(&foo_bar);
+    let (foo_bar_with_type_error, _) = get_python_file(&foo_bar_with_type_error);
+
     // foo_bar has no type errors
     assert!(foo_bar.diagnostics.is_empty());
     assert!(foo_bar.unsolved_checks.is_empty());
     assert!(foo_bar.unsolved_references.is_empty());
 
-    let foo_bar_with_type_error = foo_bar_with_type_error.0;
     // foo_bar_with_type_error has one type error
     assert!(!foo_bar_with_type_error.diagnostics.is_empty());
     assert!(!foo_bar_with_type_error.unsolved_checks.is_empty());
@@ -51,17 +54,16 @@ fn foo_has_type_error(foo_bar: (Root, Document), foo_bar_with_type_error: (Root,
 }
 
 #[fixture]
-fn foo_with_type_error() -> (Root, Document) {
+fn foo_with_type_error() -> Workspace {
     create_python_workspace(r#"def foo(p: int = "x"): pass "#)
 }
 
 #[rstest]
-fn non_redundant_edited_type_error(mut foo_with_type_error: (Root, Document)) {
+fn non_redundant_edited_type_error(mut foo_with_type_error: Workspace) {
+    let (root, document) = get_mut_python_file(&mut foo_with_type_error);
     // test to check if a same error is not reported twice between edits of the same error
 
     // foo_with_type_error has one type error
-    let mut root = foo_with_type_error.0;
-    let document = &mut foo_with_type_error.1;
     assert!(!root.diagnostics.is_empty());
     assert!(!root.unsolved_checks.is_empty());
     assert!(root.unsolved_references.is_empty());
@@ -92,7 +94,6 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: (Root, Document)) {
         .unwrap();
 
     root.parse(document);
-    root.resolve_references(document);
     root.resolve_checks(document);
 
     // foo_with_type_error should have 1 error
@@ -106,12 +107,11 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: (Root, Document)) {
 }
 
 #[rstest]
-fn fix_type_error(mut foo_with_type_error: (Root, Document)) {
+fn fix_type_error(mut foo_with_type_error: Workspace) {
+    let (root, document) = get_mut_python_file(&mut foo_with_type_error);
     // Replaces "x" with 1 and therefore fixes the type error
 
     // foo_with_type_error has one type error
-    let mut root = foo_with_type_error.0;
-    let document = &mut foo_with_type_error.1;
     assert!(!root.diagnostics.is_empty());
     assert!(!root.unsolved_checks.is_empty());
     assert!(root.unsolved_references.is_empty());
@@ -141,7 +141,6 @@ fn fix_type_error(mut foo_with_type_error: (Root, Document)) {
         .unwrap();
 
     root.parse(document);
-    root.resolve_references(document);
     root.resolve_checks(document);
 
     // foo_with_type_error should have no type errors
