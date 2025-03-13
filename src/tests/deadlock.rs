@@ -4,7 +4,7 @@ use rstest::{fixture, rstest};
 use std::time::Duration;
 
 use super::python_workspace::ast::Module;
-use crate::tests::python_utils::{create_python_workspace, get_python_file, into_python_file};
+use crate::tests::python_utils::{create_python_workspace, into_python_file};
 
 #[fixture]
 fn foo_bar() -> Workspace {

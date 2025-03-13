@@ -68,12 +68,12 @@ fn triggered_completion_items(mut foo_bar: Workspace) {
         .update(&mut root.parsers.tree_sitter.parser.write(), &vec![change])
         .unwrap();
 
-    root.parse(&document);
+    root.parse(document);
 
     let node = root.ast.as_ref().unwrap().descendant_at(75).unwrap();
 
     let mut completion_items = vec![];
-    node.build_triggered_completion_items(".", &document, &mut completion_items);
+    node.build_triggered_completion_items(".", document, &mut completion_items);
 
     assert_eq!(completion_items.len(), 1);
     assert_eq!(completion_items[0].label, "triggered! ...");

@@ -73,7 +73,7 @@ impl Root {
                     .par_iter()
                     .filter_map(|item| {
                         Self::validate_reference(
-                            &item,
+                            item,
                             &mut diagnostics.write(),
                             document,
                             workspace,
@@ -91,10 +91,7 @@ impl Root {
         document: &Document,
         workspace: &Workspace,
     ) -> Option<WeakSymbol> {
-        let dyn_item = match item.to_dyn() {
-            Some(read) => read,
-            None => return None,
-        };
+        let dyn_item = item.to_dyn()?;
         let read = dyn_item.read();
         match read.find_reference(document, workspace, diagnostics) {
             Some(target) => {

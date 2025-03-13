@@ -21,8 +21,8 @@ impl NotificationRegistry {
         let method = N::METHOD.to_string();
         let callback: RequestCallback = Box::new(move |session, params| {
             let parsed_params: N::Params = serde_json::from_value(params)?;
-            let result = handler(session, parsed_params)?;
-            Ok(serde_json::to_value(result)?)
+            handler(session, parsed_params)?;
+            Ok(serde_json::to_value(())?)
         });
 
         self.handlers.insert(method, callback);

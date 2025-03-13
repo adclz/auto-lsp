@@ -26,5 +26,5 @@ pub fn create_html_workspace(source_code: &'static str) -> Workspace {
 
 pub fn get_html_file(workspace: &Workspace) -> (&Root, &Document) {
     let (_url, (root, document)) = workspace.roots.iter().next().unwrap();
-    (&root, &document)
+    (root, document)
 }

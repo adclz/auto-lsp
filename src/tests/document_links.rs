@@ -21,7 +21,7 @@ fn document_links(comments_with_link: Workspace) {
     let (root, document) = get_html_file(&comments_with_link);
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(&document, &regex);
+    let results = root.find_all_with_regex(document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");
@@ -48,7 +48,7 @@ fn multiline_document_links(multiline_comment_with_links: Workspace) {
     let (root, document) = get_html_file(&multiline_comment_with_links);
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(&document, &regex);
+    let results = root.find_all_with_regex(document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");
