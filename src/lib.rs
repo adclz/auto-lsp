@@ -94,6 +94,7 @@ pub mod core {
     pub use auto_lsp_core::document_symbols_builder;
     pub use auto_lsp_core::root;
     pub use auto_lsp_core::semantic_tokens_builder;
+    pub use auto_lsp_core::workspace;
     #[doc(hidden)]
     pub use auto_lsp_core::{builder_error, builder_warning};
 }
