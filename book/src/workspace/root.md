@@ -4,7 +4,7 @@
 
  - `url`: The url of the document associated with the workspace.
  - `parsers`: A static `Parsers` struct that contains all the necessary tools to generate an AST.
- - `tree_diagnostics`: A list of tree sitter parse errors
+ - `lexer_diagnostics`: A list of tree sitter parse errors
  - `ast_diagnostics`: A list of  diagnostics kept in sync with the AST.
  - `ast`: The AST (if any).
  - `unsolved_checks`: A list of symbols that still need to be resolved.
@@ -26,7 +26,7 @@ If you have a Texter instance, use `from_texter` instead.
 `Root` will create both the AST and virtual document, returned as a tuple of ([`Root`](https://docs.rs/auto-lsp/latest/auto_lsp/core/root/struct.Root.html), [`Document`](https://docs.rs/auto-lsp/latest/auto_lsp/core/document/struct.Document.html)).
 
 ```admonish
-`Root` requires a properly configured AST parser. For details on setting up parsers, see, see [`#configuring-parsers`](auto_lsp/workspace/configuring-parsers.html)
+`Root` requires a properly configured AST parser. For details on setting up parsers, see, see [`#configuring-parsers`](configuring-parsers.html)
 ```
 
 ### Example: Creating a Root from a String

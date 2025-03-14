@@ -26,7 +26,7 @@ graph TD
 
     B -.".ast".-> B1
     B -.".ast_diagnostics
-    .tree_diagnostics".-> B2
+    .lexer_diagnostics".-> B2
     B -.".parsers".-> B3
 
     C -.".tree".-> C1
