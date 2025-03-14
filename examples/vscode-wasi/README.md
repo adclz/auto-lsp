@@ -1,7 +1,7 @@
 > [!NOTE]
 > This is the official README from [vscode-extension-samples](https://github.com/microsoft/vscode-extension-samples/tree/main/wasm-language-server).
 > In addition to the instructions below, ensure that you enable the **wasm** feature.
-> Please note that the **rayon** and **deadlock_detection** features are not available in the wasm environment for now.
+> Please note that  **deadlock_detection** feature is  not available.
 
 # WASM Language Server Example (python)
 
