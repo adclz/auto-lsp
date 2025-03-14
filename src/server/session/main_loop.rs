@@ -17,7 +17,11 @@ impl Session {
                                 return Ok(());
                             };
 
-                            if let Some(response) = REQUEST_REGISTRY.lock().handle(self, req)? {
+                            self.req_queue.incoming.register(req.id.clone(), req.method.clone());
+
+                            let id = req.id.clone();
+                            if let Some(response) = REQUEST_REGISTRY.lock().handle(self, req.clone())? {
+                                self.req_queue.incoming.complete(&id);
                                 self.connection.sender.send(Message::Response(response))?;
                             }
                         }

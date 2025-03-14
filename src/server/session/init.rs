@@ -3,7 +3,7 @@ use std::collections::HashMap;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 
-use lsp_server::Connection;
+use lsp_server::{Connection, ReqQueue};
 use lsp_types::WorkspaceServerCapabilities;
 use lsp_types::{
     CodeLensOptions, DiagnosticOptions, DiagnosticServerCapabilities, DocumentLinkOptions,
@@ -60,6 +60,7 @@ impl Session {
             connection,
             text_fn,
             extensions: HashMap::new(),
+            req_queue: ReqQueue::default(),
         }
     }
 
@@ -243,9 +244,18 @@ impl Session {
             lsp_types::notification::DidOpenTextDocument => |session, params| session.open_text_document(params),
             lsp_types::notification::DidChangeTextDocument => |session, params| session.edit_text_document(params),
             lsp_types::notification::DidChangeWatchedFiles => |session, params| session.changed_watched_files(params),
+            lsp_types::notification::Cancel => |session, params| {
+                let id: lsp_server::RequestId = match params.id {
+                    lsp_types::NumberOrString::Number(id) => id.into(),
+                    lsp_types::NumberOrString::String(id) => id.into(),
+                };
+                if let Some(response) = session.req_queue.incoming.cancel(id) {
+                    session.connection.sender.send(response.into())?;
+                }
+                Ok(())
+            },
 
-            // Disabled notifications (temporary)
-            lsp_types::notification::Cancel => |_, _| Ok(()),
+             // Disabled notifications (temporary)
             lsp_types::notification::DidSaveTextDocument => |_, _| Ok(()),
             lsp_types::notification::DidCloseTextDocument => |_, _| Ok(()),
             lsp_types::notification::SetTrace => |_, _| Ok(()),

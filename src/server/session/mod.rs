@@ -27,6 +27,9 @@ pub(crate) static REQUEST_REGISTRY: LazyLock<Mutex<RequestRegistry>> =
 pub(crate) static NOTIFICATION_REGISTRY: LazyLock<Mutex<NotificationRegistry>> =
     LazyLock::new(Mutex::default);
 
+pub(crate) type ReqHandler = fn(&mut Session, lsp_server::Response);
+type ReqQueue = lsp_server::ReqQueue<String, ReqHandler>;
+
 /// Main session object that holds both lsp server connection and initialization options.
 ///
 /// Documents are stored in [`WORKSPACE`].
@@ -40,6 +43,8 @@ pub struct Session {
     pub text_fn: TextFn,
     /// Language extensions to parser mappings.
     pub extensions: HashMap<String, String>,
+    /// Request queue for incoming requests
+    pub req_queue: ReqQueue,
 }
 
 impl Session {
