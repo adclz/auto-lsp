@@ -31,5 +31,5 @@ pub mod document_symbols_builder;
 pub mod document;
 /// Root (AST) handling
 pub mod root;
-/// Workspace handling (Document and Root)
+/// Workspace handling
 pub mod workspace;

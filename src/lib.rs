@@ -6,7 +6,8 @@
 //! and <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a> (LSP) servers powered by <a href="https://tree-sitter.github.io/tree-sitter/">Tree-sitter</a> queries
 //!  </p>
 //!
-//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/ci.yml)
+//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml)
+//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/lsp-server-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/)
 //! [![Book](https://img.shields.io/badge/📚-book-blue)](https://adclz.github.io/auto-lsp/)
 //! [![crates.io](https://img.shields.io/crates/v/auto-lsp)](https://crates.io/crates/auto-lsp)
 //! ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
@@ -50,18 +51,37 @@
 //! ```
 //!
 //! Now that you have your AST defined, you can:
-//!  - Implement [traits](core::ast) and create a LSP server (with the `lsp_server` feature).
-//!  - Add your own logic for testing purposes, code_generation, etc.
+//!  - Implement the [AST traits](core::ast) and create a LSP server (with the `lsp_server` feature).
+//!  - Add your own logic for testing purposes, code generation, etc.
 //!
-//! You can find more examples in the `tests` folder.
+//! # Documentation
+//!
+//!  - [book](https://adclz.github.io/auto-lsp/)
+//!  - [docs.rs](https://docs.rs/auto-lsp)
+//!
+//! ## Examples
+//!
+//! - [HTML Ast](https://github.com/adclz/auto-lsp/blob/main/src/tests/html_workspace/mod.rs)
+//! - [Python Ast](https://github.com/adclz/auto-lsp/blob/main/src/tests/python_workspace/ast.rs)
+//! - [Simple LSP Server](https://github.com/adclz/auto-lsp/tree/main/examples/native)
+//! - [Vscode extension with WASI](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
+//!
 //! # Features
+//!
 //! - `deadlock_detection`: Enable [`parking_lot`]'s deadlock detection (not compatible with `wasm`).
 //! - `log`: Enable logging. (uses [`stderrlog`])
 //! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
-//! - `rayon`: Enable [`rayon`] support (not compatible with `wasm`).
+//! - `rayon`: Enable [`rayon`] support (only compatible with `wasi-p1-threads`).
 //! - `wasm`: Enable wasm support.
 //! - `html`: Enable the html root mock for testing purposes.
 //! - `python`: Enable the python root mock for testing purposes.
+//!
+//! # Inspirations / Similar projects
+//!
+//! - [Volar](https://volarjs.dev/)
+//! - [Rust-sitter](https://github.com/hydro-project/rust-sitter)
+//! - [StackGraphs](https://github.com/github/stack-graphs)
+//! - [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache
 
 /// LSP server (enabled with feature `lsp_server`)
 #[cfg(any(feature = "lsp_server", test))]
