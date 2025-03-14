@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.4.0...auto-lsp-core-v0.5.0)
+
+### Features
+
+- *(core)* Update reference resolution to include workspace and diagnostics - ([42e3c64](https://github.com/adclz/auto-lsp/commit/42e3c6421401dea5237a37040854b27604858480))
+- *(core)* Move checks and references modulesto core_ast module - ([f185fb7](https://github.com/adclz/auto-lsp/commit/f185fb7cc819e1df94d567e84122ebc9d7fe2d92))
+- Add optional rayon support for workspace init - ([7c79786](https://github.com/adclz/auto-lsp/commit/7c79786274400404ca125950d2f89cb12f1e13dd))
+
+### Bug Fixes
+
+- Update capabilities - ([b7d903a](https://github.com/adclz/auto-lsp/commit/b7d903ab06ae06733a2c160870149946c08f5cdd))
+
+### Refactor
+
+- Split out tree sitter and ast diagnostics - ([e19eb4d](https://github.com/adclz/auto-lsp/commit/e19eb4de7ddae36485a6d4306c888bef18588c0c))
+- Remove unused parse_symbols method and simplify build function - ([8be148f](https://github.com/adclz/auto-lsp/commit/8be148f72b28022939f236ead13597c547110d2a))
+
+### Documentation
+
+- Update crates doc - ([27ba4c2](https://github.com/adclz/auto-lsp/commit/27ba4c28be55a58fd7759551ef9a82459af109dc))
+
+### Miscellaneous Tasks
+
+- Update dependencies - ([4a1b3a4](https://github.com/adclz/auto-lsp/commit/4a1b3a4011dbc119b4fa5c453722af391caf2c83))
+- Remove duplicated 'Unreleased' section from changelogs - ([cc416ef](https://github.com/adclz/auto-lsp/commit/cc416efc6cc0737360c993d2b0d86b8a77c416ca))
+
+
 ## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.3.0...auto-lsp-core-v0.4.0)
 
 ### Features
