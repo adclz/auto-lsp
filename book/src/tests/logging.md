@@ -14,5 +14,5 @@ Logs are displayed with a timestamp and log levels.
 
 Logs show in real time:
  - All nodes received from the Core query, including unknown nodes.
- - Number of unsolved checks and refercnes.
+ - Number of unsolved checks and references.
 

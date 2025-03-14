@@ -1,11 +1,11 @@
 # Configuring Parsers
 
-In order to create a workspace, you need to configure the parsers that will be used to create an AST.
-To simplify parser configuration, you can use the [`configure_parsers!`](https://docs.rs/auto-lsp/latest/auto_lsp/macro.configure_parsers.html) macro to create a list of parsers.
+To create a workspace, you must configure the parsers that will generate the AST.
+
+
+To simplify parser configuration, you can use the [`configure_parsers!`](https://docs.rs/auto-lsp/latest/auto_lsp/macro.configure_parsers.html) macro to define a list of parsers.
 
 `configure_parsers!` takes as first argument the name of the list, then each entry is a parser configuration.
-
-specifies the language for which the parser will be used and the value is a struct that contains the following fields:
 
 A parser requires the following informations:
  - The tree-sitter language fn.

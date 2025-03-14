@@ -9,4 +9,4 @@ Any AST is created in two main steps:
 
 There is no specific order to follow; you can perform both steps in parallel.
 
-In the next chapter, we will explore how to write the core query to capture the nodes.
+In the next section, we will explore how to write the core query to capture the nodes.

@@ -1,20 +1,15 @@
 # Configuring a server
 
-```admonish
-LSP Server is only available in the `lsp_server` feature.
-```
-
 ## Starting a server
 
-`auto-lsp` uses [`lsp_server`](https://crates.io/crates/lsp_server) from rust analyzer and [`crossbeam`](https://docs.rs/crossbeam/latest/crossbeam/) to launch the server.
-
-To configure the `lsp_server`, you need to use the `create` method from the [`Session`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.Session.html) struct wich takes 2 arguments.
+To configure a server, you need to use the `create` method from the [`Session`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.Session.html) struct wich takes 2 arguments.
 
 - `Parsers`: A list of parsers (previously defined with the [`configure_parsers!`](/workspace-and-document/configuring-parsers.html) macro)
 - `LspOptions`: Options to configure the LSP server, see [LSP Options](#lsp-options).
 
-```rust, ignore
-To start a session, you need to provide the InitOptions struct.
+To start a new [`Session`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.Session.html), you need to provide the InitOptions struct.
+
+TThe server communicates with an LSP client using one of lsp_server's tranport methods: `stdio`, `tcp` or `memory`.
 
 ```rust
 use std::error::Error;
@@ -22,14 +17,17 @@ use auto_lsp::server::{InitOptions, LspOptions, Session};
 use auto_lsp::python::PYTHON_PARSERS;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
-    let mut session = Session::create(InitOptions {
-        parsers: &PYTHON_PARSERS,
-        lsp_options: LspOptions {
-            document_symbols: true,
-            diagnostics: true,
-            ..Default::default()
+    let (connection, io_threads) = Connection::stdio();
+
+    let mut session = Session::create(
+        InitOptions {
+            parsers: &PYTHON_PARSERS,
+            lsp_options: LspOptions {
+                ..Default::default()
+            },
         },
-    })?;
+        connection,
+    )?;
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop()?;

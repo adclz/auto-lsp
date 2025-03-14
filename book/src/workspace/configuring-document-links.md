@@ -4,16 +4,12 @@
 
 `auto-lsp` enables finding document links by running a regular expression on the comments.
 
-```admonish
-Document links will only work if the comments query is provided.
-```
-
 ## Example
 
 ```rust, ignore
 // Create a document or use an existing one
 
-let (workspace, document) = Workspace::from_utf8(
+let (root, document) = Root::from_utf8(
     &PARSER_LIST.get("HTML").unwrap(),
     Url::parse("file://index.html").unwrap(),
     r#"<!DOCTYPE html>
@@ -25,7 +21,7 @@ let (workspace, document) = Workspace::from_utf8(
 ).unwrap();
 
 let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-let results = workspace.find_all_with_regex(&document, &regex);
+let results = root.find_all_with_regex(&document, &regex);
 
 assert_eq!(results.len(), 2);
 ```
