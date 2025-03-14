@@ -173,7 +173,7 @@ where
                 self.roots.push(node.clone());
                 self.stack.push(node);
             }
-            None => self.root.diagnostics.push(builder_warning!(
+            None => self.root.ast_diagnostics.push(builder_warning!(
                 tree_sitter_range_to_lsp_range(&capture.node.range()),
                 format!(
                     "Syntax error: Unexpected {:?}",
@@ -192,11 +192,11 @@ where
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.
-                self.root.diagnostics.push(e);
+                self.root.ast_diagnostics.push(e);
             }
             Ok(None) => {
                 // Parent did not accept the child node.
-                self.root.diagnostics.push(builder_warning!(
+                self.root.ast_diagnostics.push(builder_warning!(
                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                     format!(
                         "Syntax error: Unexpected {:?} in {:?}",

@@ -40,7 +40,7 @@ impl Root {
                     Some(read) => read,
                     None => return false,
                 };
-                let check_result = item.read().check(document, &mut self.diagnostics);
+                let check_result = item.read().check(document, &mut self.ast_diagnostics);
                 match check_result {
                     CheckStatus::Ok => {
                         item.write().update_check_pending(false);
@@ -82,7 +82,7 @@ impl Root {
                     }
                 })
                 .collect::<Vec<WeakSymbol>>();
-            self.diagnostics.extend(diagnostics.into_inner());
+            self.ast_diagnostics.extend(diagnostics.into_inner());
         }
     }
 }

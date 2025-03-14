@@ -26,7 +26,7 @@ impl Workspace {
         self.roots.iter_mut().for_each(|(_url, (root, _document))| {
             let result = result.pop().unwrap();
             root.unsolved_references = result.0;
-            root.diagnostics = result.1;
+            root.ast_diagnostics = result.1;
         });
     }
 }

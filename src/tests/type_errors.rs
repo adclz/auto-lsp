@@ -38,17 +38,17 @@ fn foo_has_type_error(foo_bar: Workspace, foo_bar_with_type_error: Workspace) {
     let (foo_bar_with_type_error, _) = get_python_file(&foo_bar_with_type_error);
 
     // foo_bar has no type errors
-    assert!(foo_bar.diagnostics.is_empty());
+    assert!(foo_bar.ast_diagnostics.is_empty());
     assert!(foo_bar.unsolved_checks.is_empty());
     assert!(foo_bar.unsolved_references.is_empty());
 
     // foo_bar_with_type_error has one type error
-    assert!(!foo_bar_with_type_error.diagnostics.is_empty());
+    assert!(!foo_bar_with_type_error.ast_diagnostics.is_empty());
     assert!(!foo_bar_with_type_error.unsolved_checks.is_empty());
     assert!(foo_bar.unsolved_references.is_empty());
 
     assert_eq!(
-        foo_bar_with_type_error.diagnostics[0].message,
+        foo_bar_with_type_error.ast_diagnostics[0].message,
         "Invalid value \"string\" for type int"
     );
 }
@@ -64,11 +64,11 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: Workspace) {
     // test to check if a same error is not reported twice between edits of the same error
 
     // foo_with_type_error has one type error
-    assert!(!root.diagnostics.is_empty());
+    assert!(!root.ast_diagnostics.is_empty());
     assert!(!root.unsolved_checks.is_empty());
     assert!(root.unsolved_references.is_empty());
     assert_eq!(
-        root.diagnostics[0].message,
+        root.ast_diagnostics[0].message,
         "Invalid value \"x\" for type int"
     );
 
@@ -97,11 +97,11 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: Workspace) {
     root.resolve_checks(document);
 
     // foo_with_type_error should have 1 error
-    assert_eq!(root.diagnostics.len(), 1);
+    assert_eq!(root.ast_diagnostics.len(), 1);
     assert_eq!(root.unsolved_checks.len(), 1);
     assert_eq!(root.unsolved_references.len(), 0);
     assert_eq!(
-        root.diagnostics[0].message,
+        root.ast_diagnostics[0].message,
         "Invalid value \"xxxx\" for type int"
     );
 }
@@ -112,11 +112,11 @@ fn fix_type_error(mut foo_with_type_error: Workspace) {
     // Replaces "x" with 1 and therefore fixes the type error
 
     // foo_with_type_error has one type error
-    assert!(!root.diagnostics.is_empty());
+    assert!(!root.ast_diagnostics.is_empty());
     assert!(!root.unsolved_checks.is_empty());
     assert!(root.unsolved_references.is_empty());
     assert_eq!(
-        root.diagnostics[0].message,
+        root.ast_diagnostics[0].message,
         "Invalid value \"x\" for type int"
     );
 
@@ -144,7 +144,7 @@ fn fix_type_error(mut foo_with_type_error: Workspace) {
     root.resolve_checks(document);
 
     // foo_with_type_error should have no type errors
-    assert_eq!(root.diagnostics.len(), 0);
+    assert_eq!(root.ast_diagnostics.len(), 0);
     assert_eq!(root.unsolved_checks.len(), 0);
     assert_eq!(root.unsolved_references.len(), 0);
 }

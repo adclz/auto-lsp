@@ -11,13 +11,14 @@ impl Root {
     /// This method assumes the document has already been updated and parsed by the tree-sitter parser.
     pub fn parse(&mut self, document: &Document) -> &mut Self {
         // Clear diagnostics
-        self.diagnostics.clear();
+        self.ast_diagnostics.clear();
+        self.lexer_diagnostics.clear();
 
         // Get new diagnostics from tree sitter
         Root::get_tree_sitter_errors(
             &document.tree.root_node(),
             document.texter.text.as_bytes(),
-            &mut self.diagnostics,
+            &mut self.lexer_diagnostics,
         );
 
         // Clear AST if document is empty
@@ -47,7 +48,7 @@ impl Root {
         self.ast = match ast_parser(self, document, None) {
             Ok(ast) => Some(ast),
             Err(e) => {
-                self.diagnostics.push(e);
+                self.ast_diagnostics.push(e);
                 None
             }
         };

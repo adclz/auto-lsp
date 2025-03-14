@@ -57,8 +57,10 @@ pub struct Root {
     pub url: Arc<Url>,
     /// Parsers used for processing the document.
     pub parsers: &'static Parsers,
-    /// Diagnostics collected during parsing or analysis.
-    pub diagnostics: Vec<Diagnostic>,
+    /// Diagnostics collected during parsing by tree-sitter.
+    pub lexer_diagnostics: Vec<Diagnostic>,
+    /// Diagnostics collected during AST parsing and/or running checks.
+    pub ast_diagnostics: Vec<Diagnostic>,
     /// The AST for the document, if available.
     pub ast: Option<DynSymbol>,
     /// Nodes flagged as unresolved during checks.
@@ -105,7 +107,8 @@ impl Root {
         let mut root = Root {
             url: Arc::new(uri.clone()),
             parsers,
-            diagnostics: vec![],
+            ast_diagnostics: vec![],
+            lexer_diagnostics: vec![],
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
@@ -151,7 +154,8 @@ impl Root {
         let mut root = Root {
             url: Arc::new(uri.clone()),
             parsers,
-            diagnostics: vec![],
+            ast_diagnostics: vec![],
+            lexer_diagnostics: vec![],
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],

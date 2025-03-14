@@ -116,14 +116,14 @@ where
 
         let result: Result<Y, lsp_types::Diagnostic> = Y::parse_symbol(&mut root, &document, None);
 
-        match &root.diagnostics.is_empty() {
+        match &root.ast_diagnostics.is_empty() {
             false => {
                 let mut colors = ColorGenerator::new();
                 let mut report = Report::build(ReportKind::Error, 0..test_code.len()).with_message(
-                    format!("Parsing failed: {} error(s)", root.diagnostics.len()),
+                    format!("Parsing failed: {} error(s)", root.ast_diagnostics.len()),
                 );
 
-                for diagnostic in &root.diagnostics {
+                for diagnostic in &root.ast_diagnostics {
                     let range = diagnostic.range;
                     let start_line = source.line(range.start.line as usize).unwrap().offset();
                     let end_line = source.line(range.end.line as usize).unwrap().offset();

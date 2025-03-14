@@ -18,7 +18,10 @@ impl Session {
             .roots
             .iter()
             .map(|(uri, (root, _))| {
-                let errors = root.diagnostics.clone();
+                let errors = [root.lexer_diagnostics.clone(), root.ast_diagnostics.clone()]
+                    .into_iter()
+                    .flatten()
+                    .collect();
                 WorkspaceDocumentDiagnosticReport::Full(WorkspaceFullDocumentDiagnosticReport {
                     version: None,
                     full_document_diagnostic_report: FullDocumentDiagnosticReport {

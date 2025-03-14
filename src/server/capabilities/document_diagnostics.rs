@@ -27,7 +27,10 @@ impl Session {
                 related_documents: None,
                 full_document_diagnostic_report: FullDocumentDiagnosticReport {
                     result_id: None,
-                    items: root.diagnostics.clone(),
+                    items: [root.lexer_diagnostics.clone(), root.ast_diagnostics.clone()]
+                        .into_iter()
+                        .flatten()
+                        .collect(),
                 },
             }),
         ))
