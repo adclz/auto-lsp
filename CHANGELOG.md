@@ -2,6 +2,58 @@
 
 ## [Unreleased]
 
+## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.4.0...auto-lsp-v0.5.0)
+
+### Features
+
+- *(ci)* Add workflow for running LSP server tests in native environment - ([f209901](https://github.com/adclz/auto-lsp/commit/f20990174f969249ba1be13ebdacfbc36aa05c2f))
+- *(examples)* Add stdio LSP server and tests - ([27a569a](https://github.com/adclz/auto-lsp/commit/27a569a59567284dd389a5ac7f047e4f84689f80))
+- *(server)* Enhance open_text_document method to add file to workspace if not present - ([6d02a1f](https://github.com/adclz/auto-lsp/commit/6d02a1faf1e34e091f5c33bcd93a34a81b199a23))
+- *(server)* Send error notifications for failed message handling - ([376dbcd](https://github.com/adclz/auto-lsp/commit/376dbcd32ee2e47c29866d08533f62c420da8549))
+- *(server)* Add get_workspace method to access workspace mutex - ([5886cf8](https://github.com/adclz/auto-lsp/commit/5886cf86fcda21558b27758efb0f1378315f5e9f))
+- *(server)* Custom LSP notifications registration - ([ae769e3](https://github.com/adclz/auto-lsp/commit/ae769e35d9e0a905614170072d11d294b8f4f0e7))
+- *(server)* Custom LSP requests registration - ([5b03384](https://github.com/adclz/auto-lsp/commit/5b03384edfdc0370f8c3cb7b18330157b650bb26))
+- *(session)* Implement request queue for handling incoming LSP requests - ([82626c9](https://github.com/adclz/auto-lsp/commit/82626c9a5c76200a0a12d2fbcb41b531f84e8400))
+- Add optional rayon support for workspace init - ([7c79786](https://github.com/adclz/auto-lsp/commit/7c79786274400404ca125950d2f89cb12f1e13dd))
+
+### Bug Fixes
+
+- *(core)* Expose workspace module in core - ([914d6ac](https://github.com/adclz/auto-lsp/commit/914d6accea0293441d0944950ab7ca5e1fee5b90))
+- *(doc)* Server module - ([baa96ad](https://github.com/adclz/auto-lsp/commit/baa96ad7c998c1f6766943402217fdaeb844b5aa))
+- *(session)* Temporarily disable certain LSP notifications - ([5b17179](https://github.com/adclz/auto-lsp/commit/5b17179de334657e3d0158ebc2466b1a2e52b705))
+- Invalid re-exports of texter and lsp_server - ([9636dee](https://github.com/adclz/auto-lsp/commit/9636deedac47132c20a4b58a546026316da403a5))
+- Add GCC multilib installation step in WASI CI - ([5a53315](https://github.com/adclz/auto-lsp/commit/5a53315bfe7615f4394fb261e29644fd56ba42b3))
+
+### Refactor
+
+- *(ci)* Rename CI jobs - ([6725518](https://github.com/adclz/auto-lsp/commit/67255185f730b5a61436b5d5276e06555e586efa))
+- *(code_actions)* Update build_code_actions signature to use CodeActionOrCommand - ([d74ba87](https://github.com/adclz/auto-lsp/commit/d74ba87280e9bf4cfcf66d64be283cc3630a7e1f))
+- *(examples)* Rename extensions to examples - ([4f4048d](https://github.com/adclz/auto-lsp/commit/4f4048d000f5654c1ba05162a533f41c362100e3))
+- *(server)* Rename file_to_root method to read_file - ([d6da3f8](https://github.com/adclz/auto-lsp/commit/d6da3f849f78732911d7ecb41baad88b56366dc9))
+- *(tests)* Replace Document and Root with Workspace in test fixtures - ([235c9fe](https://github.com/adclz/auto-lsp/commit/235c9fe42f0dfaf814a13b520309beb07f94271d))
+- Split out tree sitter and ast diagnostics - ([e19eb4d](https://github.com/adclz/auto-lsp/commit/e19eb4de7ddae36485a6d4306c888bef18588c0c))
+- Allow defining lsp_server Connection before Session init - ([97da1c7](https://github.com/adclz/auto-lsp/commit/97da1c7568255cf41c01ac6588c8dd0579af3b16))
+
+### Documentation
+
+- Correct diagnostics terminology in workspace documentation - ([20c1c75](https://github.com/adclz/auto-lsp/commit/20c1c759c7e7cf3f3a9dd51de639acb086ea99cb))
+- Update book - ([7710acc](https://github.com/adclz/auto-lsp/commit/7710acc025ebe32aa5229806952371f031f36aba))
+- Update crates doc - ([27ba4c2](https://github.com/adclz/auto-lsp/commit/27ba4c28be55a58fd7759551ef9a82459af109dc))
+- Update README files - ([e38b623](https://github.com/adclz/auto-lsp/commit/e38b623dd8c5265a591e57df6a876846a8ff6948))
+
+### Testing
+
+- WASI config and CI workflow - ([0589308](https://github.com/adclz/auto-lsp/commit/058930885c682cbdb73efb781e43eaabe7a2d4b2))
+- Add utility functions for HTML and Python workspace creation - ([9fbd614](https://github.com/adclz/auto-lsp/commit/9fbd614120e427e1c6731cb8f7f63b359da3b5fd))
+
+### Miscellaneous Tasks
+
+- *(tests)* Dead code warnings in HTML and Python utilities - ([2c9f57e](https://github.com/adclz/auto-lsp/commit/2c9f57e502e3a2e97fa1effb4fadc0350cfb94a7))
+- Update dependencies - ([4a1b3a4](https://github.com/adclz/auto-lsp/commit/4a1b3a4011dbc119b4fa5c453722af391caf2c83))
+- Remove duplicated 'Unreleased' section from changelogs - ([cc416ef](https://github.com/adclz/auto-lsp/commit/cc416efc6cc0737360c993d2b0d86b8a77c416ca))
+- Remove unused test file main copy.py - ([5703fdc](https://github.com/adclz/auto-lsp/commit/5703fdc3d69cbd427c1bcb72d7a1a06e1672b344))
+
+
 ## [0.4.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.3.0...auto-lsp-v0.4.0)
 
 ### Features

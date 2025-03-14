@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.1.4](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.3...auto-lsp-macros-v0.1.4)
+
+### Features
+
+- *(core)* Update reference resolution to include workspace and diagnostics - ([42e3c64](https://github.com/adclz/auto-lsp/commit/42e3c6421401dea5237a37040854b27604858480))
+
+### Refactor
+
+- *(code_actions)* Update build_code_actions signature to use CodeActionOrCommand - ([d74ba87](https://github.com/adclz/auto-lsp/commit/d74ba87280e9bf4cfcf66d64be283cc3630a7e1f))
+
+### Miscellaneous Tasks
+
+- Remove duplicated 'Unreleased' section from changelogs - ([cc416ef](https://github.com/adclz/auto-lsp/commit/cc416efc6cc0737360c993d2b0d86b8a77c416ca))
+
+
 ## [0.1.3](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.2...auto-lsp-macros-v0.1.3)
 
 ### Features
