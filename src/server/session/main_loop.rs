@@ -21,8 +21,10 @@ impl Session {
 
                             let id = req.id.clone();
                             if let Some(response) = REQUEST_REGISTRY.lock().handle(self, req.clone())? {
-                                self.req_queue.incoming.complete(&id);
-                                self.connection.sender.send(Message::Response(response))?;
+                                if !self.req_queue.incoming.is_completed(&id) {
+                                    self.req_queue.incoming.complete(&id);
+                                    self.connection.sender.send(Message::Response(response))?;
+                                }
                             }
                         }
                         Message::Notification(not) => {
