@@ -51,7 +51,7 @@
 //! ```
 //!
 //! Now that you have your AST defined, you can:
-//!  - Implement the [AST traits](core::ast) and create a LSP server (with the `lsp_server` feature).
+//!  - Implement the [AST traits](https://adclz.github.io/auto-lsp/ast-and-queries/seq.html#seq-attributes) and create a LSP server (with the `lsp_server` feature).
 //!  - Add your own logic for testing purposes, code generation, etc.
 //!
 //! # Documentation
