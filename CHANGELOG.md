@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.5.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.0...auto-lsp-v0.5.1)
+
+### Bug Fixes
+
+- *(server)* Prevent duplicate completion of request IDs in main loop - ([9ae8d71](https://github.com/adclz/auto-lsp/commit/9ae8d71492e6ff79e62f6d00abb99237a44fcf22))
+
+### Documentation
+
+- Fix AST traits link - ([6e83bb2](https://github.com/adclz/auto-lsp/commit/6e83bb2d495432e115f098ba4515e2f38260f2ca))
+
+
 ## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.4.0...auto-lsp-v0.5.0)
 
 ### Features
