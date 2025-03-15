@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.5](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.4...auto-lsp-macros-v0.1.5)
+
+### Bug Fixes
+
+- *(docs)* Update TestServer struct reference in README and remove outdated comment in meta.rs - ([5348539](https://github.com/adclz/auto-lsp/commit/5348539e5e988ca23a27bfe77953325f3b151043))
+
+
 ## [0.1.4](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.3...auto-lsp-macros-v0.1.4)
 
 ### Features

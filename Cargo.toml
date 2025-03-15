@@ -8,13 +8,13 @@ A rust crate for creating AST and LSP servers powered by tree-sitter queries.
 """
 categories = ["parsing"]
 keywords = ["parser", "tree-sitter", "lsp"]
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 readme = "README.MD"
 
 [dependencies]
 auto-lsp-core = { path = "./core", version = "0.5.0" }
-auto-lsp-macros = { path = "./proc-macros", version = "0.1.4" }
+auto-lsp-macros = { path = "./proc-macros", version = "0.1.5" }
 tree-sitter = "0.24.7"
 tree-sitter-language = "0.1.5"
 lsp-types = "0.94.1"
