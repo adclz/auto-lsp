@@ -16,7 +16,6 @@ pub struct StructHelpers {
     pub ty: Type,
 }
 
-/// Mandatory `query_name` field and `kind` field (reference or symbol)
 #[derive(Debug, FromMeta)]
 pub struct DarlingInput {
     /// The query name
