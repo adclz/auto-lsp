@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.5.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.1...auto-lsp-v0.5.2)
+
+### Miscellaneous Tasks
+
+- Updated the following local packages: auto-lsp-core - ([0000000](https://github.com/adclz/auto-lsp/commit/0000000))
+
+
 ## [0.5.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.0...auto-lsp-v0.5.1)
 
 ### Bug Fixes
