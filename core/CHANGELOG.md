@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.5.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.5.0...auto-lsp-core-v0.5.1)
+
+### Refactor
+
+- *(document)* Update position retrieval methods - ([bd77be2](https://github.com/adclz/auto-lsp/commit/bd77be275c931d57f9e22a5a1aa92689ec0e37b8))
+
+
 ## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.4.0...auto-lsp-core-v0.5.0)
 
 ### Features
