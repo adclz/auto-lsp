@@ -45,7 +45,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -94,7 +94,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-macros"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "darling",
  "nested-struct",
