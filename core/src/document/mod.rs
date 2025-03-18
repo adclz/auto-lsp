@@ -1,4 +1,7 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::{
+    ops::Range,
+    sync::atomic::{AtomicUsize, Ordering},
+};
 use texter::core::text::Text;
 use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
@@ -86,6 +89,18 @@ impl Document {
         let mut last_br_index = 0;
         let last_line = LAST_LINE.load(Ordering::SeqCst);
 
+        // If the document is a single line, we can avoid the loop
+        if self.texter.br_indexes.0.len() == 1 {
+            return if offset > self.texter.text.len() {
+                None
+            } else {
+                Some(lsp_types::Position {
+                    line: 0,
+                    character: offset as u32,
+                })
+            }
+        }
+
         // Determine the starting line for the search
         let start = match self.texter.br_indexes.0.get(last_line) {
             Some(&br_index) if offset > br_index && last_line >= 1 => last_line, // Start from cached line if offset is beyond it
@@ -95,13 +110,13 @@ impl Document {
         for (i, &br_index) in self.texter.br_indexes.0.iter().skip(start).enumerate() {
             if offset <= br_index {
                 // Cache this line for future calls
-                LAST_LINE.store(i, Ordering::Release);
+                LAST_LINE.store(i + (start - 1), Ordering::Release);
 
                 // Compute column by subtracting the last break index
                 let col = offset.saturating_sub(last_br_index);
 
                 return Some(lsp_types::Position {
-                    line: i as u32,
+                    line: (i + (start - 1)) as u32,
                     character: col as u32,
                 });
             }
@@ -109,6 +124,13 @@ impl Document {
             last_br_index = br_index + 1; // Move past the EOL character
         }
         None
+    }
+
+    /// Converts a byte offset in the document to its corresponding range (start and end positions).
+    pub fn range_at(&self, range: Range<usize>) -> Option<lsp_types::Range> {
+        let start = self.position_at(range.start)?;
+        let end = self.position_at(range.end)?;
+        Some(lsp_types::Range { start, end })
     }
 
     /// Converts a position (line and character) in the document to its corresponding byte offset.
@@ -191,6 +213,125 @@ mod test {
 
         // Offset 40 is out of bounds
         assert_eq!(document.position_at(40), None);
+    }
+
+    #[rstest]
+    fn position_at_single_line(mut parser: Parser) {
+        let source = "<div>AREALLYREALLYREALLYLONGTEXT<div>";
+        let text = Text::new(source.into());
+        let document = Document::new(text, parser.parse(source, None).unwrap());
+
+        assert_eq!(&document.texter.br_indexes.0, &[0]);
+
+        assert_eq!(document.position_at(0), Some(Position { line: 0, character: 0 }));
+        assert_eq!(document.position_at(5), Some(Position { line: 0, character: 5 }));
+        assert_eq!(document.position_at(30), Some(Position { line: 0, character: 30 }));
+    }
+
+    #[rstest]
+    fn range_at(mut parser: Parser) {
+        let source = "<div>こんにちは\nGoodbye\r\nSee you!\n</div>";
+        let text = Text::new(source.into());
+        let document = Document::new(text, parser.parse(source, None).unwrap());
+
+        assert_eq!(&document.texter.br_indexes.0, &[0, 20, 29, 38]);
+
+        // Test range covering part of first line
+        assert_eq!(
+            document.range_at(0..11),
+            Some(lsp_types::Range {
+                start: Position {
+                    line: 0,
+                    character: 0
+                },
+                end: Position {
+                    line: 0,
+                    character: 11
+                },
+            })
+        );
+
+        // Test range spanning multiple lines
+        assert_eq!(
+            document.range_at(15..28),
+            Some(lsp_types::Range {
+                start: Position {
+                    line: 0,
+                    character: 15
+                },
+                end: Position {
+                    line: 1,
+                    character: 7
+                },
+            })
+        );
+
+        // Test range from start of a line to another
+        assert_eq!(
+            document.range_at(21..30),
+            Some(lsp_types::Range {
+                start: Position {
+                    line: 1,
+                    character: 0
+                },
+                end: Position {
+                    line: 2,
+                    character: 0
+                },
+            })
+        );
+
+        // Test range entirely in one line
+        assert_eq!(
+            document.range_at(30..35),
+            Some(lsp_types::Range {
+                start: Position {
+                    line: 2,
+                    character: 0
+                },
+                end: Position {
+                    line: 2,
+                    character: 5
+                },
+            })
+        );
+
+        // Test out-of-bounds range
+        assert_eq!(document.range_at(35..50), None);
+    }
+
+    #[rstest]
+    fn range_at_single_line(mut parser: Parser) {
+        let source = "<div>AREALLYREALLYREALLYLONGTEXT<div>";
+        let text = Text::new(source.into());
+        let document = Document::new(text, parser.parse(source, None).unwrap());
+
+        assert_eq!(&document.texter.br_indexes.0, &[0]);
+
+        // Ensure the line break indexes are correct
+        assert_eq!(&document.texter.br_indexes.0, &[0]);
+
+        // Check range from start to some offset
+        assert_eq!(
+            document.range_at(0..5),
+            Some(lsp_types::Range {
+                start: Position { line: 0, character: 0 },
+                end: Position { line: 0, character: 5 }
+            })
+        );
+
+        // Check range covering the entire line
+        let length = source.len();
+        assert_eq!(
+            document.range_at(0..length),
+            Some(lsp_types::Range {
+                start: Position { line: 0, character: 0 },
+                end: Position { line: 0, character: length as u32 }
+            })
+        );
+
+        // Out-of-bounds check
+        assert_eq!(document.range_at(0..(length+5)), None);
     }
 
     #[rstest]
