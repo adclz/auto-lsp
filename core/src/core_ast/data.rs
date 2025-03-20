@@ -15,8 +15,6 @@ pub struct SymbolData {
     pub parent: Option<WeakSymbol>,
     /// The comment's byte range in the source code
     pub comment: Option<std::ops::Range<usize>>,
-    /// The referrers of the symbol (symbols that refer to this symbol)
-    pub referrers: Option<Referrers>,
     /// The target this symbol refers to
     pub target: Option<WeakSymbol>,
     /// The byte range of the symbol in the source code
@@ -31,7 +29,6 @@ impl SymbolData {
             url,
             parent: None,
             comment: None,
-            referrers: None,
             target: None,
             range,
             check_pending: false,
@@ -67,14 +64,6 @@ pub trait GetSymbolData {
     fn set_target_reference(&mut self, target: WeakSymbol);
     /// Reset the target of the symbol
     fn reset_target_reference_reference(&mut self);
-    /// Get the referrers of the symbol
-    ///
-    /// Referrers are symbols that refer to this symbol
-    fn get_referrers(&self) -> &Option<Referrers>;
-    /// Get a mutable reference to the referrers of the symbol
-    ///
-    /// Referrers are symbols that refer to this symbol
-    fn get_mut_referrers(&mut self) -> &mut Referrers;
 
     /// Get whether the symbol has been checked for errors
     fn has_check_pending(&self) -> bool;
@@ -129,72 +118,11 @@ impl GetSymbolData for SymbolData {
         self.target = None;
     }
 
-    fn get_referrers(&self) -> &Option<Referrers> {
-        &self.referrers
-    }
-
-    fn get_mut_referrers(&mut self) -> &mut Referrers {
-        self.referrers.get_or_insert_default()
-    }
-
     fn has_check_pending(&self) -> bool {
         self.check_pending
     }
 
     fn update_check_pending(&mut self, unchecked: bool) {
         self.check_pending = unchecked;
-    }
-}
-
-/// List of weak symbols that refer to this symbol
-#[derive(Default, Clone)]
-pub struct Referrers(Vec<WeakSymbol>);
-
-/// Trait for managing [`Referrers`]
-pub trait ReferrersTrait {
-    /// Add a referrer to the symbol list
-    fn add_referrer(&mut self, symbol: WeakSymbol);
-
-    /// Clean up any null referrers
-    fn clean_null_referrers(&mut self);
-
-    /// Drop any referrers that have an reference
-    ///
-    /// If the referrer was not dropped, add it to the unsolved checks field of [`Root`]
-    fn drop_referrers(&mut self, root: &mut Root);
-}
-
-impl<'a> IntoIterator for &'a Referrers {
-    type Item = &'a WeakSymbol;
-    type IntoIter = std::slice::Iter<'a, WeakSymbol>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.iter()
-    }
-}
-
-impl<T: AstSymbol + ?Sized> ReferrersTrait for T {
-    fn add_referrer(&mut self, symbol: WeakSymbol) {
-        self.get_mut_referrers().0.push(symbol);
-    }
-
-    fn clean_null_referrers(&mut self) {
-        self.get_mut_referrers()
-            .0
-            .retain(|r| r.get_ptr().weak_count() > 0);
-    }
-
-    fn drop_referrers(&mut self, root: &mut Root) {
-        self.get_mut_referrers().0.retain(|r| {
-            if let Some(symbol) = r.to_dyn() {
-                let read = symbol.read();
-                if read.get_target().is_some() {
-                    drop(read);
-                    symbol.write().reset_target_reference_reference();
-                    root.add_unsolved_reference(&symbol.clone());
-                }
-            }
-            false
-        });
     }
 }

@@ -40,9 +40,6 @@ impl<T: AstSymbol> Symbol<T> {
     /// If the symbol requires checking ([`super::capabilities::Check`]), add it to the unsolved checks list
     pub fn new_and_check(symbol: T, root: &mut Root) -> Self {
         let symbol = Symbol::new(symbol);
-        if symbol.read().is_reference() {
-            root.add_unsolved_reference(&symbol.to_dyn());
-        }
         if symbol.read().must_check() {
             root.add_unsolved_check(&symbol.to_dyn());
         }

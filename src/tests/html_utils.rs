@@ -19,7 +19,6 @@ pub fn create_html_workspace(source_code: &'static str) -> Workspace {
         .roots
         .insert(Url::parse("file:///test.html").unwrap(), root);
 
-    workspace.resolve_references();
     workspace.resolve_checks();
     workspace
 }
