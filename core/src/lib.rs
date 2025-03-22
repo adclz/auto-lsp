@@ -33,3 +33,5 @@ pub mod document;
 pub mod root;
 /// Workspace handling
 pub mod workspace;
+
+pub mod salsa;

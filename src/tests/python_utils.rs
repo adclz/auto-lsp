@@ -20,7 +20,6 @@ pub fn create_python_workspace(source_code: &'static str) -> Workspace {
         .roots
         .insert(Url::parse("file:///test.py").unwrap(), root);
 
-    workspace.resolve_references();
     workspace.resolve_checks();
     workspace
 }

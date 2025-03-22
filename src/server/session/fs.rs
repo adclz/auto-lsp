@@ -91,8 +91,6 @@ impl Session {
                     },
                 ));
             }
-
-            workspace.resolve_references();
             workspace.resolve_checks();
         }
 

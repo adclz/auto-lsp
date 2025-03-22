@@ -17,6 +17,7 @@ pub mod regex;
 /// Parsers available in a [`Root`].
 ///
 /// Contains instances of both the [`tree_sitter`] parser and the AST parser.
+#[derive(Debug)]
 pub struct Parsers {
     /// The [`TreeSitter`] parser configuration and queries.
     pub tree_sitter: TreeSitter,
@@ -38,7 +39,18 @@ pub struct TreeSitter {
     pub queries: Queries,
 }
 
+impl std::fmt::Debug for TreeSitter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TreeSitter")
+            .field("node_types", &self.node_types)
+            .field("language", &self.language)
+            .field("queries", &self.queries)
+            .finish()
+    }
+}
+
 /// A collection of queries used within [`TreeSitter`].
+#[derive(Debug)]
 pub struct Queries {
     /// The core query used to build the AST.
     pub core: Query,
@@ -52,6 +64,7 @@ pub struct Queries {
 
 /// Contains diagnostics, parser lists, URL, and AST for a document.
 /// Note: The document text and the [`tree_sitter::Tree`] are not stored in this struct.
+#[derive(Debug)]
 pub struct Root {
     /// The URI of the document associated with this Root.
     pub url: Arc<Url>,

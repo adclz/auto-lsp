@@ -136,15 +136,7 @@ impl<T: AstSymbol + ?Sized> GetSymbolData for T {
     fn reset_target_reference_reference(&mut self) {
         self.get_mut_data().reset_target_reference_reference();
     }
-
-    fn get_referrers(&self) -> &Option<Referrers> {
-        self.get_data().get_referrers()
-    }
-
-    fn get_mut_referrers(&mut self) -> &mut Referrers {
-        self.get_mut_data().get_mut_referrers()
-    }
-
+    
     fn has_check_pending(&self) -> bool {
         self.get_data().has_check_pending()
     }

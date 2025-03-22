@@ -13,6 +13,7 @@ pub(crate) mod texter_impl;
 /// This struct allows for incremental updates of both the text content and the syntax tree,
 /// ensuring they stay synchronized after each change. It provides utility functions for querying
 /// the syntax tree, such as finding nodes by position or range.
+#[derive(Debug, Clone)]
 pub struct Document {
     pub texter: Text,
     pub tree: Tree,
@@ -98,7 +99,7 @@ impl Document {
                     line: 0,
                     character: offset as u32,
                 })
-            }
+            };
         }
 
         // Determine the starting line for the search
@@ -223,9 +224,27 @@ mod test {
 
         assert_eq!(&document.texter.br_indexes.0, &[0]);
 
-        assert_eq!(document.position_at(0), Some(Position { line: 0, character: 0 }));
-        assert_eq!(document.position_at(5), Some(Position { line: 0, character: 5 }));
-        assert_eq!(document.position_at(30), Some(Position { line: 0, character: 30 }));
+        assert_eq!(
+            document.position_at(0),
+            Some(Position {
+                line: 0,
+                character: 0
+            })
+        );
+        assert_eq!(
+            document.position_at(5),
+            Some(Position {
+                line: 0,
+                character: 5
+            })
+        );
+        assert_eq!(
+            document.position_at(30),
+            Some(Position {
+                line: 0,
+                character: 30
+            })
+        );
     }
 
     #[rstest]
@@ -315,8 +334,14 @@ mod test {
         assert_eq!(
             document.range_at(0..5),
             Some(lsp_types::Range {
-                start: Position { line: 0, character: 0 },
-                end: Position { line: 0, character: 5 }
+                start: Position {
+                    line: 0,
+                    character: 0
+                },
+                end: Position {
+                    line: 0,
+                    character: 5
+                }
             })
         );
 
@@ -325,13 +350,19 @@ mod test {
         assert_eq!(
             document.range_at(0..length),
             Some(lsp_types::Range {
-                start: Position { line: 0, character: 0 },
-                end: Position { line: 0, character: length as u32 }
+                start: Position {
+                    line: 0,
+                    character: 0
+                },
+                end: Position {
+                    line: 0,
+                    character: length as u32
+                }
             })
         );
 
         // Out-of-bounds check
-        assert_eq!(document.range_at(0..(length+5)), None);
+        assert_eq!(document.range_at(0..(length + 5)), None);
     }
 
     #[rstest]
