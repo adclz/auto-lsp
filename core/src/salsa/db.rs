@@ -4,16 +4,14 @@ use dashmap::{DashMap, Entry};
 use lsp_types::Url;
 use parking_lot::Mutex;
 use salsa::{Database, Storage};
+use ustr::UstrMap;
 
-use crate::{document::Document, root::Root};
+use crate::{ast::WeakSymbol, document::Document, root::Root};
 
 #[salsa::input]
 pub struct File {
-    pub url: Url,
     #[return_ref]
-    pub document: Document,
-    #[return_ref]
-    pub ast: Root,
+    data: (Root, Document),
 }
 
 #[salsa::db]
@@ -22,6 +20,7 @@ struct Workspace {
     storage: Storage<Self>,
     logs: Arc<Mutex<Vec<String>>>,
     pub files: DashMap<Url, File>,
+    pub symbol_table: UstrMap<WeakSymbol>,
 }
 
 impl Workspace {
@@ -33,7 +32,7 @@ impl Workspace {
 
 #[salsa::db]
 pub trait WorkspaceDatabase: Database {
-    fn add(&self, file: Url, document: Document, root: Root) -> File;
+    fn input(&self, file: Url, document: Document, root: Root) -> File;
 }
 
 #[salsa::db]
@@ -51,10 +50,10 @@ impl salsa::Database for Workspace {
 
 #[salsa::db]
 impl WorkspaceDatabase for Workspace {
-    fn add(&self, url: Url, document: Document, root: Root) -> File {
+    fn input(&self, url: Url, document: Document, root: Root) -> File {
         match self.files.entry(url.clone()) {
             Entry::Occupied(entry) => *entry.get(),
-            Entry::Vacant(entry) => *entry.insert(File::new(self, url, document, root)),
+            Entry::Vacant(entry) => *entry.insert(File::new(self, (root, document))),
         }
     }
 }

@@ -22,6 +22,7 @@ cfg-if = { workspace = true }
 aho-corasick = { workspace = true }
 salsa = { workspace = true }
 dashmap = { workspace = true }
+ustr = { workspace = true }
 ariadne = { workspace = true, features = ["auto-color"] }
 log = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
