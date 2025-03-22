@@ -1,8 +1,5 @@
 use std::sync::Arc;
 
-use crate::root::Root;
-
-use super::core::AstSymbol;
 use super::symbol::*;
 use lsp_types::Url;
 

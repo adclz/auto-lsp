@@ -1,5 +1,8 @@
 use crate::root::Root;
-use std::sync::{Arc, Weak};
+use std::{
+    fmt::Debug,
+    sync::{Arc, Weak},
+};
 
 use super::core::AstSymbol;
 use parking_lot::RwLock;
@@ -84,10 +87,16 @@ impl DynSymbol {
     }
 }
 
+impl Debug for DynSymbol {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Symbol {:?}", self.read().get_range())
+    }
+}
+
 /// Generic Thread-safe wrapper around a [Weak] reference to an [AstSymbol] using [Weak] and [parking_lot::RwLock]
 ///
 /// Must be upgraded to a [DynSymbol] before use
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct WeakSymbol(Weak<RwLock<dyn AstSymbol>>);
 
 impl WeakSymbol {
