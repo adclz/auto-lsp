@@ -24,6 +24,29 @@ pub fn create_python_workspace(source_code: &'static str) -> Workspace {
     workspace
 }
 
+pub fn create_python_workspace2(source_code: &'static [&str]) -> Workspace {
+    let mut workspace = Workspace::default();
+
+    source_code.iter().enumerate().for_each(|(i, source_code)| {
+        let url = Url::parse(&format!("file:///test{}.py", i)).unwrap();
+        let mut root = Root::from_utf8(
+            PYTHON_PARSERS.get("python").unwrap(),
+            url.clone(),
+            source_code.to_string(),
+        )
+            .unwrap();
+
+        root.0.set_comments(&root.1);
+
+        workspace
+            .roots
+            .insert(url.clone(), root);
+    });
+
+    workspace.resolve_checks();
+    workspace
+}
+
 pub fn get_python_file(workspace: &Workspace) -> (&Root, &Document) {
     let (_url, (root, document)) = workspace.roots.iter().next().unwrap();
     (root, document)

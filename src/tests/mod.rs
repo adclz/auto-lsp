@@ -35,6 +35,9 @@ pub mod proc_macros;
 #[cfg(test)]
 pub mod python_corpus;
 #[cfg(test)]
+#[cfg(feature = "log")]
+pub mod salsa;
+#[cfg(test)]
 pub mod semantic_tokens;
 #[cfg(test)]
 pub mod traverse;
