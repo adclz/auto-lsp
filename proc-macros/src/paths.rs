@@ -103,14 +103,6 @@ nested_struct!(
             pub path: Path,
             pub build_semantic_tokens: Method
         },
-        pub is_reference: IsReference {
-            pub path: Path,
-            pub is_reference: Method
-        },
-        pub reference: Reference {
-            pub path: Path,
-            pub find: Method
-        },
         pub is_comment: Comment {
             pub path: Path,
             pub is_comment: Method
@@ -286,24 +278,6 @@ impl Default for Paths {
                 build_semantic_tokens: Method {
                     sig: quote! { fn build_semantic_tokens(&self, doc: &auto_lsp::core::document::Document, builder: &mut auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder) },
                     variant: quote! { build_semantic_tokens(doc, builder) },
-                },
-            },
-            is_reference: IsReference {
-                path: core_ast(parse_quote!(IsReference)),
-                is_reference: Method {
-                    sig: quote! { fn is_reference(&self) -> bool},
-                    variant: quote! { is_reference() },
-                },
-            },
-            reference: Reference {
-                path: core_ast(parse_quote!(Reference)),
-                find: Method {
-                    sig: quote! { fn find_reference(&self,
-                    doc: &auto_lsp::core::document::Document,
-                    workspace: &auto_lsp::core::workspace::Workspace,
-                    diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>)
-                    -> Option<auto_lsp::core::ast::DynSymbol> },
-                    variant: quote! { find_reference(doc, workspace, diagnostics) },
                 },
             },
             is_comment: Comment {

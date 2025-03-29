@@ -143,27 +143,6 @@ impl ToTokens for Features<'_> {
             });
         }
 
-        if !self.darling_input.reference.is_present() {
-            let is_reference_path = &self.paths.is_reference.path;
-            let reference_path = &self.paths.reference.path;
-
-            tokens.extend(quote! {
-                impl #is_reference_path for #input_name {}
-                impl #reference_path for #input_name {}
-            });
-        } else {
-            let is_reference_path = &self.paths.is_reference.path;
-            let is_reference_sig = &self.paths.is_reference.is_reference.sig;
-
-            tokens.extend(quote! {
-                impl #is_reference_path for #input_name {
-                    #is_reference_sig {
-                        true
-                    }
-                }
-            });
-        }
-
         if !self.darling_input.scope.is_present() {
             let is_scope_path = &self.paths.scope.path;
 

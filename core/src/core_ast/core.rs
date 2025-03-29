@@ -36,7 +36,6 @@ pub trait AstSymbol:
     // special
     + Traverse
     + Check
-    + Reference
     + Scope
     + Comment
     + GetSymbolData
