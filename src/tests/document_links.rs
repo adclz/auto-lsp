@@ -1,27 +1,30 @@
-use crate::tests::html_utils::get_html_file;
-use auto_lsp_core::workspace::Workspace;
+use lsp_types::Url;
 use regex::Regex;
 use rstest::{fixture, rstest};
-
-use super::html_utils::create_html_workspace;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use super::{html_utils::create_html_db};
 
 #[fixture]
-fn comments_with_link() -> Workspace {
-    create_html_workspace(
+fn comments_with_link() -> impl WorkspaceDatabase  {
+    create_html_db(&[
         r#"<!DOCTYPE html>
 <!-- source:file1.txt:52 -->         
 <div>
     <!-- source:file2.txt:25 -->    
-</div>"#,
+</div>"#],
     )
 }
 
 #[rstest]
-fn document_links(comments_with_link: Workspace) {
-    let (root, document) = get_html_file(&comments_with_link);
+fn document_links(comments_with_link: impl WorkspaceDatabase ) {
+    let file = comments_with_link
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let document = file.document(&comments_with_link).read();
+    let root = file.get_ast(&comments_with_link).clone().into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(document, &regex);
+    let results = root.find_all_with_regex(&document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");
@@ -31,24 +34,28 @@ fn document_links(comments_with_link: Workspace) {
 }
 
 #[fixture]
-fn multiline_comment_with_links() -> Workspace {
-    create_html_workspace(
+fn multiline_comment_with_links() -> impl WorkspaceDatabase  {
+    create_html_db(&[
         r#"<!DOCTYPE html>
 <div>
     <!-- 
         source:file1.txt:52
         source:file2.txt:25
     -->    
-</div>"#,
+</div>"#],
     )
 }
 
 #[rstest]
-fn multiline_document_links(multiline_comment_with_links: Workspace) {
-    let (root, document) = get_html_file(&multiline_comment_with_links);
+fn multiline_document_links(multiline_comment_with_links: impl WorkspaceDatabase ) {
+    let file = multiline_comment_with_links
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let document = file.document(&multiline_comment_with_links).read();
+    let root = file.get_ast(&multiline_comment_with_links).clone().into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(document, &regex);
+    let results = root.find_all_with_regex(&document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");

@@ -1,14 +1,13 @@
 use std::ops::Deref;
-
-use crate::{core::workspace::Workspace, tests::html_utils::get_html_file};
+use lsp_types::Url;
 use auto_lsp_core::ast::{GetSymbolData, Traverse};
 use rstest::{fixture, rstest};
-
-use super::{html_utils::create_html_workspace, html_workspace::*};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use super::{html_utils::create_html_db, html_workspace::*};
 
 #[fixture]
-fn nested_divs() -> Workspace {
-    create_html_workspace(
+fn nested_divs() -> impl WorkspaceDatabase {
+    create_html_db(&[
         r#"<!DOCTYPE html>
 <div>
     <div>
@@ -16,17 +15,19 @@ fn nested_divs() -> Workspace {
             <div></div>
         </div>
     </div>
-</div>"#,
+</div>"#],
     )
 }
 
 #[rstest]
-fn descendant(nested_divs: Workspace) {
-    let (root, _document) = get_html_file(&nested_divs);
-    let ast = root.ast.as_ref().unwrap();
+fn descendant(nested_divs: impl WorkspaceDatabase) {
+    let file = nested_divs
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let root = file.get_ast(&nested_divs).clone().into_inner();
 
-    let guard = ast.read();
-    let document = guard.downcast_ref::<HtmlDocument>().unwrap();
+    let ast = root.ast.as_ref().unwrap().read();
+    let document = ast.downcast_ref::<HtmlDocument>().unwrap();
     let div1 = &document.tags[1];
 
     if let Node::Element(Element::FullTag(div1)) = div1.read().deref() {
@@ -54,13 +55,17 @@ fn descendant(nested_divs: Workspace) {
     };
 
     // Find the last element
-    let descendant = ast.read().descendant_at(59);
+    let descendant = ast.descendant_at(59);
     assert_eq!(descendant.as_ref().unwrap().read().get_range().start, 59);
 }
 
 #[rstest]
-fn descendant_at_and_collect(nested_divs: Workspace) {
-    let (root, _document) = get_html_file(&nested_divs);
+fn descendant_at_and_collect(nested_divs: impl WorkspaceDatabase) {
+    let file = nested_divs
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let root = file.get_ast(&nested_divs).clone().into_inner();
+
     let ast = root.ast.as_ref().unwrap();
 
     let mut collected = vec![];
@@ -80,8 +85,13 @@ fn descendant_at_and_collect(nested_divs: Workspace) {
 }
 
 #[rstest]
-fn traverse_and_collect(nested_divs: Workspace) {
-    let (root, document) = get_html_file(&nested_divs);
+fn traverse_and_collect(nested_divs: impl WorkspaceDatabase) {
+    let file = nested_divs
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let document = file.document(&nested_divs).read();
+    let root = file.get_ast(&nested_divs).clone().into_inner();
+
     let ast = root.ast.as_ref().unwrap();
 
     let source_code = document.texter.text.as_bytes();
