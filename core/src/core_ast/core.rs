@@ -17,7 +17,7 @@ use std::sync::Arc;
 ///
 /// This trait supports downcasting via [downcast_rs].
 ///
-/// It inherits the vast majority of the capabilities defined in the `ast` module
+/// It inherits capabilities defined in the `ast` module
 pub trait AstSymbol:
     DowncastSync
     + Send
@@ -43,59 +43,59 @@ pub trait AstSymbol:
     + Display
     + IndentedDisplay
     {
-    
-        /// Retrieves the data of the symbol.
-        fn get_data(&self) -> &SymbolData;
+    /// Retrieves the data of the symbol.
+    fn get_data(&self) -> &SymbolData;
 
-        /// Retrieves the mutable data of the symbol.
-        fn get_mut_data(&mut self) -> &mut SymbolData;
+    /// Retrieves the mutable data of the symbol.
+    fn get_mut_data(&mut self) -> &mut SymbolData;
 
-        /// Retrieves the text of the symbol based on its range within the provided source code.
-        fn get_text<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
-            let range = self.get_data().get_range();
-            // Check if the range is within bounds and valid
-            if range.start <= range.end && range.end <= source_code.len() {
-                std::str::from_utf8(&source_code[range.start..range.end]).ok()
-            } else {
-                None
-            }
+    /// Retrieves the text of the symbol based on its range within the provided source code.
+    fn get_text<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
+        let range = self.get_data().get_range();
+        // Check if the range is within bounds and valid
+        if range.start <= range.end && range.end <= source_code.len() {
+            std::str::from_utf8(&source_code[range.start..range.end]).ok()
+        } else {
+            None
         }
-
-        /// Get the symbol's scope.
-        ///
-        /// The scope defines the search area for references and completion items.
-        fn get_parent_scope(&self) -> Option<DynSymbol> {
-            let mut parent = self.get_data().get_parent();
-            while let Some(weak) = parent {
-                let symbol = weak.to_dyn()?;
-                let read = symbol.read();
-                if symbol.read().is_scope() {
-                    return Some(symbol.clone());
-                }
-                    parent = read.get_parent();
-                }
-                None
-            }
-
-            /// Checks if the symbol is within the given offset.
-            fn is_inside_offset(&self, offset: usize) -> bool {
-                let range = self.get_data().get_range();
-                range.start <= offset && offset <= range.end
-            }
-
-            /// Returns the LSP start position of the symbol.
-            fn get_start_position(&self, document: &Document) -> Position {
-                document.position_at(self.get_range().start).unwrap()
-            }
-            fn get_end_position(&self, document: &Document) -> Position {
-                document.position_at(self.get_range().end).unwrap()
-            }
-
-            /// Returns the LSP range (start and end position) of the symbol.
-            fn get_lsp_range(&self, document: &Document) -> Range {
-                document.range_at(self.get_range()).unwrap()
-            }
     }
+
+    /// Get the symbol's nearest scope.
+    ///
+    /// The scope defines the search area for references and completion items.
+    fn get_parent_scope(&self) -> Option<DynSymbol> {
+        let mut parent = self.get_data().get_parent();
+        while let Some(weak) = parent {
+            let symbol = weak.to_dyn()?;
+            let read = symbol.read();
+            if symbol.read().is_scope() {
+                return Some(symbol.clone());
+            }
+                parent = read.get_parent();
+            }
+        None
+    }
+
+    /// Checks if the symbol is within the given offset.
+    fn is_inside_offset(&self, offset: usize) -> bool {
+        let range = self.get_data().get_range();
+        range.start <= offset && offset <= range.end
+    }
+
+    /// Returns the LSP start position of the symbol.
+    fn get_start_position(&self, document: &Document) -> Position {
+        document.position_at(self.get_range().start).unwrap()
+    }
+
+    fn get_end_position(&self, document: &Document) -> Position {
+        document.position_at(self.get_range().end).unwrap()
+    }
+
+    /// Returns the LSP range (start and end position) of the symbol.
+    fn get_lsp_range(&self, document: &Document) -> Range {
+        document.range_at(self.get_range()).unwrap()
+    }
+}
 
 impl_downcast!(AstSymbol);
 
@@ -122,25 +122,5 @@ impl<T: AstSymbol + ?Sized> GetSymbolData for T {
 
     fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
         self.get_mut_data().set_comment(range)
-    }
-
-    fn get_target(&self) -> Option<&WeakSymbol> {
-        self.get_data().get_target()
-    }
-
-    fn set_target_reference(&mut self, target: WeakSymbol) {
-        self.get_mut_data().set_target_reference(target)
-    }
-
-    fn reset_target_reference_reference(&mut self) {
-        self.get_mut_data().reset_target_reference_reference();
-    }
-    
-    fn has_check_pending(&self) -> bool {
-        self.get_data().has_check_pending()
-    }
-
-    fn update_check_pending(&mut self, status: bool) {
-        self.get_mut_data().update_check_pending(status)
     }
 }
