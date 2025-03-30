@@ -44,7 +44,7 @@ impl<T: AstSymbol> Symbol<T> {
     pub fn new_and_check(symbol: T, root: &mut Root) -> Self {
         let symbol = Symbol::new(symbol);
         if symbol.read().must_check() {
-            root.add_unsolved_check(&symbol.to_dyn());
+            root.unsolved_checks.push(symbol.to_weak());
         }
         symbol.write().inject_parent(symbol.to_weak());
         symbol

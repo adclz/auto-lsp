@@ -27,7 +27,6 @@ impl Session {
 
         // Update AST
         root.parse(document);
-        workspace.resolve_checks();
         Ok(())
     }
 }

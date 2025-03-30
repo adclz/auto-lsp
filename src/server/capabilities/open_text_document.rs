@@ -37,7 +37,6 @@ impl Session {
         let (root, document) = Root::from_texter(parsers, url.clone(), text)?;
 
         workspace.roots.insert(url.clone(), (root, document));
-        workspace.resolve_checks();
         Ok(())
     }
 }

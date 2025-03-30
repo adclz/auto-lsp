@@ -12,10 +12,10 @@ use texter::core::text::Text;
 #[salsa::input]
 pub struct File {
     #[id]
-    url: Url,
-    parsers: &'static Parsers,
+    pub url: Url,
+    pub parsers: &'static Parsers,
     #[return_ref]
-    document: Arc<RwLock<Document>>,
+    pub document: Arc<RwLock<Document>>,
 }
 
 #[salsa::db]
@@ -124,17 +124,20 @@ impl WorkspaceDatabase for WorkspaceDb {
     }
 }
 
-#[salsa::tracked(no_eq, return_ref)]
-pub fn get_ast<'db>(db: &'db dyn WorkspaceDatabase, file: File) -> ParsedAst {
-    let parsers = file.parsers(db);
-    let doc = file.document(db);
-    let url = file.url(db);
+#[salsa::tracked()]
+impl<'db> File {
+    #[salsa::tracked(no_eq, return_ref)]
+    pub fn get_ast(self, db: &'db dyn WorkspaceDatabase) -> ParsedAst {
+        let parsers = self.parsers(db);
+        let doc = self.document(db);
+        let url = self.url(db);
 
-    ParsedAst::new(
-        Root::from_texter(parsers, url, doc.read().texter.clone())
-            .unwrap()
-            .0,
-    )
+        ParsedAst::new(
+            Root::from_texter(parsers, url, doc.read().texter.clone())
+                .unwrap()
+                .0,
+        )
+    }
 }
 
 /// Cheap cloneable wrapper around a parsed AST

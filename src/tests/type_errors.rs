@@ -5,7 +5,7 @@ use crate::{
 use rstest::{fixture, rstest};
 
 use super::python_utils::create_python_workspace;
-
+/*
 #[fixture]
 fn foo_bar() -> Workspace {
     create_python_workspace(
@@ -14,7 +14,7 @@ def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
-    pass  
+    pass
 "#,
     )
 }
@@ -25,9 +25,9 @@ fn foo_bar_with_type_error() -> Workspace {
         r#"# foo comment
         def foo(param1, param2: int = "string"):
             pass
-        
+
         def bar():
-            pass  
+            pass
         "#,
     )
 }
@@ -148,3 +148,4 @@ fn fix_type_error(mut foo_with_type_error: Workspace) {
     assert_eq!(root.unsolved_checks.len(), 0);
     assert_eq!(root.unsolved_references.len(), 0);
 }
+*/

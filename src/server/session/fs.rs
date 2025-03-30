@@ -91,7 +91,6 @@ impl Session {
                     },
                 ));
             }
-            workspace.resolve_checks();
         }
 
         Ok(())
