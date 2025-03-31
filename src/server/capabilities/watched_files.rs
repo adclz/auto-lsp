@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 
-use crate::server::session::Session;
+use crate::server::session::{self, Session};
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
@@ -9,15 +9,15 @@ use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 /// The differences between this and the document requests is that the watched files are not necessarily modified by the client.
 ///
 /// Some changes can be made by external tools, github, someone editing the project with NotePad while the IDE is active, etc ...
-pub(crate) fn changed_watched_files<Db: WorkspaceDatabase>(
-    db: &mut Db,
+pub fn changed_watched_files<Db: WorkspaceDatabase>(
+    session: &mut Session<Db>,
     params: DidChangeWatchedFilesParams,
 ) -> anyhow::Result<()> {
     params.changes.iter().try_for_each(|file| match file.typ {
         FileChangeType::CREATED => {
             let uri = &file.uri;
 
-            if db.get_file(&uri).is_some() {
+            if session.db.get_file(&uri).is_some() {
                 // The file is already in db
                 // We can ignore this change
                 return Ok(());
@@ -26,9 +26,8 @@ pub(crate) fn changed_watched_files<Db: WorkspaceDatabase>(
                 .to_file_path()
                 .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
 
-            //let (_url, root, document) = self.read_file(&file_path)?;
-            //db.add_file_from_texter().insert(uri.clone(), (root, document));
-            Ok(())
+            let (parsers, url, text) = session.read_file(&file_path)?;
+            session.db.add_file_from_texter(parsers, &url, text)
         }
         FileChangeType::CHANGED => {
             let uri = &file.uri;
@@ -37,27 +36,28 @@ pub(crate) fn changed_watched_files<Db: WorkspaceDatabase>(
                 .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
             let open_file = File::open(file_path)?;
 
-            /*if workspace.get_file(&uri).is_some() {
-                // The file is already in db
-                // We compare the stored document with the new file content
-                // If there's a single byte difference, we replace the document
-                if (is_file_content_different(
-                    &open_file,
-                    &workspace.roots.get(uri).unwrap().1.texter.text,
-                ))? {
-                    workspace.roots.remove(uri);
-                    let file_path = uri.to_file_path().map_err(|_| {
-                        anyhow::anyhow!("Failed to read file {}", uri.to_string())
-                    })?;
-
-                    let (_url, root, document) = self.read_file(&file_path)?;
-                    workspace.roots.insert(uri.clone(), (root, document));
+            match session.db.get_file(&uri) {
+                Some(file) => {
+                    if is_file_content_different(
+                        &open_file,
+                        &file.document(&session.db).read().texter.text,
+                    )? {
+                        session.db.remove_file(uri)?;
+                        let file_path = uri.to_file_path().map_err(|_| {
+                            anyhow::anyhow!("Failed to read file {}", uri.to_string())
+                        })?;
+                        let (parsers, url, text) = session.read_file(&file_path)?;
+                        session.db.add_file_from_texter(parsers, &url, text)
+                    } else {
+                        // The file is already in db and the content is the same
+                        // We can ignore this change
+                        Ok(())
+                    }
                 }
-            }*/
-
-            Ok(())
+                None => Ok(()),
+            }
         }
-        FileChangeType::DELETED => db.remove_file(&file.uri),
+        FileChangeType::DELETED => session.db.remove_file(&file.uri),
         // Should never happen
         _ => Ok(()),
     })
