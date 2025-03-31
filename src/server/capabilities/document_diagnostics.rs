@@ -1,10 +1,10 @@
-use std::ops::Deref;
+use crate::server::session::Session;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_types::{
     DocumentDiagnosticParams, DocumentDiagnosticReport, DocumentDiagnosticReportResult,
     FullDocumentDiagnosticReport, RelatedFullDocumentDiagnosticReport,
 };
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get diagnostics for a document.
@@ -13,12 +13,13 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         params: DocumentDiagnosticParams,
     ) -> anyhow::Result<DocumentDiagnosticReportResult> {
         let uri = params.text_document.uri;
-        let db = &*self.db.lock();
 
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let root = file.get_ast(db.deref()).clone().into_inner();
+        let root = file.get_ast(&self.db).clone().into_inner();
 
         Ok(DocumentDiagnosticReportResult::Report(
             DocumentDiagnosticReport::Full(RelatedFullDocumentDiagnosticReport {

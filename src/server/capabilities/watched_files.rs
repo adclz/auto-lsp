@@ -1,8 +1,8 @@
 use std::{fs::File, io::Read};
 
-use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
+use crate::server::session::Session;
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Handle the watched files change notification.
@@ -17,9 +17,8 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         params.changes.iter().try_for_each(|file| match file.typ {
             FileChangeType::CREATED => {
                 let uri = &file.uri;
-                let mut db = &mut *self.db.lock();
 
-                if db.get_file(&uri).is_some() {
+                if self.db.get_file(&uri).is_some() {
                     // The file is already in db
                     // We can ignore this change
                     return Ok(());
@@ -34,7 +33,6 @@ impl<Db: WorkspaceDatabase> Session<Db> {
             }
             FileChangeType::CHANGED => {
                 let uri = &file.uri;
-                let mut workspace = &mut *self.db.lock();
                 let file_path = uri
                     .to_file_path()
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
@@ -60,11 +58,7 @@ impl<Db: WorkspaceDatabase> Session<Db> {
 
                 Ok(())
             }
-            FileChangeType::DELETED => {
-                let mut db = &mut *self.db.lock();
-                let uri = &file.uri;
-                db.remove_file(&uri)
-            }
+            FileChangeType::DELETED => self.db.remove_file(&file.uri),
             // Should never happen
             _ => Ok(()),
         })

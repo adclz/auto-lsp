@@ -1,13 +1,13 @@
-use super::{Session};
+use super::Session;
 use auto_lsp_core::document::Document;
 use auto_lsp_core::root::{Parsers, Root};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_types::{InitializeParams, Url};
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::Read};
 use texter::core::text::Text;
 use walkdir::WalkDir;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
 
 #[allow(non_snake_case, reason = "JSON")]
 #[derive(Debug, Deserialize)]
@@ -44,7 +44,6 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         let mut errors: Vec<Result<(), anyhow::Error>> = vec![];
 
         if let Some(folders) = params.workspace_folders {
-            let mut workspace = self.db.lock();
             let files = folders
                 .into_iter()
                 .flat_map(|folder| {
@@ -66,7 +65,7 @@ impl<Db: WorkspaceDatabase> Session<Db> {
                     .into_iter()
                     .map(|file| match self.read_file(&file.into_path()) {
                         Ok((parsers, url, text)) => {
-                            workspace.add_file_from_texter(parsers, &url, text)
+                            self.db.add_file_from_texter(parsers, &url, text)
                         }
                         Err(err) => Err(err),
                     })
@@ -83,7 +82,7 @@ impl<Db: WorkspaceDatabase> Session<Db> {
                         file_iter
                             .map(|file| match self.read_file(&file.into_path()) {
                                 Ok((parsers, url, text)) => {
-                                    workspace.add_file_from_texter(parsers, &url, text)
+                                    self.db.add_file_from_texter(parsers, &url, text)
                                 }
                                 Err(err) => Err(err),
                             })
@@ -96,7 +95,10 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         Ok(())
     }
 
-    pub(crate) fn read_file(&self, file: &PathBuf) -> anyhow::Result<(&'static Parsers, Url, Text)> {
+    pub(crate) fn read_file(
+        &self,
+        file: &PathBuf,
+    ) -> anyhow::Result<(&'static Parsers, Url, Text)> {
         let url = Url::from_file_path(file)
             .map_err(|_| anyhow::anyhow!("Failed to read file {}", file.display()))?;
 
@@ -122,9 +124,7 @@ impl<Db: WorkspaceDatabase> Session<Db> {
             .parsers
             .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
-
-        ;
-        Ok((parsers, url,  text))
+        Ok((parsers, url, text))
     }
 }
 

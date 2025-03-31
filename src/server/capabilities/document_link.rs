@@ -1,7 +1,7 @@
-use std::ops::Deref;
-use crate::server::session::{Session};
-use lsp_types::{DocumentLink, DocumentLinkParams};
+use crate::server::session::Session;
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use lsp_types::{DocumentLink, DocumentLinkParams};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get document links for a document.
@@ -23,13 +23,14 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         let re = &with_regex.regex;
         let to_document_link = &with_regex.to_document_link;
         let uri = params.text_document.uri;
-        let db = &*self.db.lock();
 
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let document = file.document(db.deref()).read();
-        let root = file.get_ast(db.deref()).clone().into_inner();
+        let document = file.document(&self.db).read();
+        let root = file.get_ast(&self.db).clone().into_inner();
 
         let mut results = vec![];
         let matches = root.find_all_with_regex(&document, re);

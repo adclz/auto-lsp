@@ -1,8 +1,7 @@
+use crate::server::session::Session;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_types::DidChangeTextDocumentParams;
 use texter::updateables::Updateable;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::Session;
-
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Edit a document in [`WORKSPACE`].
@@ -14,7 +13,6 @@ impl<Db: WorkspaceDatabase> Session<Db> {
     ) -> anyhow::Result<()> {
         let uri = &params.text_document.uri;
 
-        let mut workspace = self.db.lock();
-        workspace.update(uri, &params.content_changes)
+        self.db.update(uri, &params.content_changes)
     }
 }

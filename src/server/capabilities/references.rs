@@ -1,7 +1,7 @@
-use std::ops::Deref;
-use lsp_types::{Location, ReferenceParams};
+use crate::server::session::Session;
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use lsp_types::{Location, ReferenceParams};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Request to get references of a symbol
@@ -14,12 +14,12 @@ impl<Db: WorkspaceDatabase> Session<Db> {
     ) -> anyhow::Result<Option<Vec<Location>>> {
         let uri = &params.text_document_position.text_document.uri;
 
-        let db = &*self.db.lock();
-
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let document = file.document(db.deref()).read();
+        let document = file.document(&self.db).read();
         let position = params.text_document_position.position;
 
         // todo

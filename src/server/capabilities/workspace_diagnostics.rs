@@ -1,11 +1,11 @@
-use std::ops::Deref;
+use crate::server::session::Session;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_types::{
     FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport,
     WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport,
     WorkspaceFullDocumentDiagnosticReport,
 };
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get diagnostics for all documents.
@@ -13,14 +13,13 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         &mut self,
         _params: WorkspaceDiagnosticParams,
     ) -> anyhow::Result<WorkspaceDiagnosticReportResult> {
-        let db = &*self.db.lock();
-        
-        let result: Vec<lsp_types::WorkspaceDocumentDiagnosticReport> = db
+        let result: Vec<lsp_types::WorkspaceDocumentDiagnosticReport> = self
+            .db
             .get_files()
             .iter()
             .map(|file| {
                 let file = *file;
-                let ast = file.get_ast(db.deref()).clone().into_inner();
+                let ast = file.get_ast(&self.db).clone().into_inner();
                 let errors = [ast.lexer_diagnostics.clone(), ast.ast_diagnostics.clone()]
                     .into_iter()
                     .flatten()
@@ -31,7 +30,7 @@ impl<Db: WorkspaceDatabase> Session<Db> {
                         result_id: None,
                         items: errors,
                     },
-                    uri: file.url(db.deref()).clone(),
+                    uri: file.url(&self.db).clone(),
                 })
             })
             .collect();

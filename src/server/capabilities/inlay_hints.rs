@@ -1,8 +1,8 @@
-use std::ops::Deref;
 use crate::core::ast::BuildInlayHints;
-use lsp_types::{InlayHint, InlayHintParams};
+use crate::server::session::Session;
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use lsp_types::{InlayHint, InlayHintParams};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get inlay hints for a document.
@@ -13,13 +13,14 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         let mut results = vec![];
 
         let uri = params.text_document.uri;
-        let db = &*self.db.lock();
 
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let document = file.document(db.deref()).read();
-        let root = file.get_ast(db.deref()).clone().into_inner();
+        let document = file.document(&self.db).read();
+        let root = file.get_ast(&self.db).clone().into_inner();
 
         root.ast.iter().for_each(|ast| {
             ast.build_inlay_hints(&document, &mut results);

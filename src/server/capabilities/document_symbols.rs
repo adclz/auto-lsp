@@ -1,9 +1,9 @@
-use std::ops::Deref;
 use crate::core::ast::BuildDocumentSymbols;
+use crate::server::session::Session;
 use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
-use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Request to get document symbols for a file
@@ -14,14 +14,14 @@ impl<Db: WorkspaceDatabase> Session<Db> {
         params: DocumentSymbolParams,
     ) -> anyhow::Result<Option<DocumentSymbolResponse>> {
         let uri = params.text_document.uri;
-        let db = &*self.db.lock();
 
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let document = file.document(db.deref()).read();
-        let root = file.get_ast(db.deref()).clone().into_inner();
-
+        let document = file.document(&self.db).read();
+        let root = file.get_ast(&self.db).clone().into_inner();
 
         let mut builder = DocumentSymbolsBuilder::default();
 

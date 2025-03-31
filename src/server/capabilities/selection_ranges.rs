@@ -1,7 +1,7 @@
-use std::ops::Deref;
-use lsp_types::{SelectionRange, SelectionRangeParams};
+use crate::server::session::Session;
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use lsp_types::{SelectionRange, SelectionRangeParams};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Request for selection ranges
@@ -13,12 +13,12 @@ impl<Db: WorkspaceDatabase> Session<Db> {
     ) -> anyhow::Result<Option<Vec<SelectionRange>>> {
         let uri = &params.text_document.uri;
 
-        let db = &*self.db.lock();
-
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let document = file.document(db.deref()).read();
+        let document = file.document(&self.db).read();
         let root_node = document.tree.root_node();
 
         let mut query_cursor = document.tree.walk();

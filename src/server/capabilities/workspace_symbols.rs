@@ -1,8 +1,8 @@
-use std::ops::Deref;
-use crate::server::session::{Session};
+use crate::server::session::Session;
 use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
-use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Request to get root symbols
@@ -18,17 +18,16 @@ impl<Db: WorkspaceDatabase> Session<Db> {
 
         let mut symbols = vec![];
 
-        let db = &*self.db.lock();
-
-        db.get_files().iter().for_each(|file| {
+        self.db.get_files().iter().for_each(|file| {
             let file = *file;
-            let url = file.url(db.deref());
-            let document = file.document(db.deref()).read();
-            let ast = file.get_ast(db.deref()).clone().into_inner();
+            let url = file.url(&self.db);
+            let document = file.document(&self.db).read();
+            let ast = file.get_ast(&self.db).clone().into_inner();
 
             let mut builder = DocumentSymbolsBuilder::default();
 
-            ast.ast.iter()
+            ast.ast
+                .iter()
                 .for_each(|p| p.read().build_document_symbols(&document, &mut builder));
 
             symbols.extend(

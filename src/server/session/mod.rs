@@ -1,9 +1,9 @@
-use std::{collections::HashMap};
-use parking_lot::Mutex;
 use crate::server::session::init::TextFn;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_server::Connection;
 use options::InitOptions;
-use auto_lsp_core::salsa::db::{WorkspaceDatabase};
+use parking_lot::Mutex;
+use std::collections::HashMap;
 
 pub mod documents;
 pub mod fs;
@@ -12,7 +12,6 @@ pub mod main_loop;
 pub mod notification_registry;
 pub mod options;
 pub mod request_registry;
-
 
 pub(crate) type ReqHandler<Db> = fn(&mut Session<Db>, lsp_server::Response);
 type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
@@ -30,5 +29,5 @@ pub struct Session<Db: WorkspaceDatabase> {
     pub extensions: HashMap<String, String>,
     /// Request queue for incoming requests
     pub req_queue: ReqQueue<Db>,
-    pub db: Mutex<Box<Db>>
+    pub db: Db,
 }

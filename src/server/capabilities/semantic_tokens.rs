@@ -1,12 +1,12 @@
-use std::ops::Deref;
 use crate::core::ast::BuildSemanticTokens;
+use crate::server::session::Session;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
 use lsp_types::{
     SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
     SemanticTokensResult,
 };
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
-use crate::server::session::{Session};
+use std::ops::Deref;
 
 impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get all semantic tokens for a document.
@@ -16,13 +16,13 @@ impl<Db: WorkspaceDatabase> Session<Db> {
     ) -> anyhow::Result<Option<SemanticTokensResult>> {
         let uri = &params.text_document.uri;
 
-        let db = &*self.db.lock();
-
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let document = file.document(db.deref()).read();
-        let root = file.get_ast(db.deref()).clone().into_inner();
+        let document = file.document(&self.db).read();
+        let root = file.get_ast(&self.db).clone().into_inner();
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
 
@@ -40,13 +40,13 @@ impl<Db: WorkspaceDatabase> Session<Db> {
     ) -> anyhow::Result<Option<SemanticTokensRangeResult>> {
         let uri = &params.text_document.uri;
 
-        let db = &*self.db.lock();
-
-        let file = db.get_file(&uri)
+        let file = self
+            .db
+            .get_file(&uri)
             .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let document = file.document(db.deref()).read();
-        let root = file.get_ast(db.deref()).clone().into_inner();
+        let document = file.document(&self.db).read();
+        let root = file.get_ast(&self.db).clone().into_inner();
 
         let mut builder = SemanticTokensBuilder::new(0.to_string());
 
