@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use super::InitOptions;
 use super::Session;
-use crate::server::session::notification_registry::NotificationRegistry;
-use crate::server::session::request_registry::RequestRegistry;
 use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_server::{Connection, ReqQueue};
 use lsp_types::WorkspaceServerCapabilities;
@@ -38,22 +36,6 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
     }
 
     DEFAULT
-}
-
-macro_rules! register_default_requests {
-    ($session:expr, { $($req:ty => $handler:expr),* $(,)? }) => {
-        $(
-            $session.register_request::<$req, _>($handler);
-        )*
-    };
-}
-
-macro_rules! register_default_notifications {
-    ($session:expr, { $($req:ty => $handler:expr),* $(,)? }) => {
-        $(
-            $session.register_notification::<$req, _>($handler);
-        )*
-    };
 }
 
 impl<Db: WorkspaceDatabase + Default> Session<Db> {
@@ -213,48 +195,6 @@ impl<Db: WorkspaceDatabase + Default> Session<Db> {
         connection.initialize_finish(id, server_capabilities)?;
 
         let mut session = Session::new(init_options, connection, t_fn, db);
-
-        /*register_default_requests!(session, {
-            lsp_types::request::DocumentDiagnosticRequest => |session, params| session.get_diagnostics(params),
-            lsp_types::request::DocumentLinkRequest => |session, params| session.get_document_links(params),
-            lsp_types::request::DocumentSymbolRequest => |session, params| session.get_document_symbols(params),
-            lsp_types::request::FoldingRangeRequest => |session, params| session.get_folding_ranges(params),
-            lsp_types::request::HoverRequest => |session, params| session.get_hover(params),
-            lsp_types::request::SemanticTokensFullRequest => |session, params| session.get_semantic_tokens_full(params),
-            lsp_types::request::SemanticTokensRangeRequest => |session, params| session.get_semantic_tokens_range(params),
-            lsp_types::request::SelectionRangeRequest => |session, params| session.get_selection_ranges(params),
-            lsp_types::request::WorkspaceSymbolRequest => |session, params| session.get_workspace_symbols(params),
-            lsp_types::request::WorkspaceDiagnosticRequest => |session, params| session.get_workspace_diagnostics(params),
-            lsp_types::request::InlayHintRequest => |session, params| session.get_inlay_hints(params),
-            lsp_types::request::CodeActionRequest => |session, params| session.get_code_actions(params),
-            lsp_types::request::CodeLensRequest => |session, params| session.get_code_lenses(params),
-            lsp_types::request::Completion => |session, params| session.get_completion_items(params),
-            lsp_types::request::GotoDefinition => |session, params| session.go_to_definition(params),
-            lsp_types::request::GotoDeclaration => |session, params| session.go_to_declaration(params),
-            lsp_types::request::References => |session, params| session.get_references(params),
-        });
-
-        register_default_notifications!(session, {
-            lsp_types::notification::DidOpenTextDocument => |session, params| session.open_text_document(params),
-            lsp_types::notification::DidChangeTextDocument => |session, params| session.edit_text_document(params),
-            lsp_types::notification::DidChangeWatchedFiles => |session, params| session.changed_watched_files(params),
-            lsp_types::notification::Cancel => |session, params| {
-                let id: lsp_server::RequestId = match params.id {
-                    lsp_types::NumberOrString::Number(id) => id.into(),
-                    lsp_types::NumberOrString::String(id) => id.into(),
-                };
-                if let Some(response) = session.req_queue.incoming.cancel(id) {
-                    session.connection.sender.send(response.into())?;
-                }
-                Ok(())
-            },
-
-             // Disabled notifications (temporary)
-            lsp_types::notification::DidSaveTextDocument => |_, _| Ok(()),
-            lsp_types::notification::DidCloseTextDocument => |_, _| Ok(()),
-            lsp_types::notification::SetTrace => |_, _| Ok(()),
-            lsp_types::notification::LogTrace => |_, _| Ok(()),
-        });*/
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.

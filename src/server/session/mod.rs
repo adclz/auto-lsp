@@ -5,7 +5,6 @@ use options::InitOptions;
 use parking_lot::Mutex;
 use std::collections::HashMap;
 
-pub mod documents;
 pub mod fs;
 pub mod init;
 pub mod main_loop;
