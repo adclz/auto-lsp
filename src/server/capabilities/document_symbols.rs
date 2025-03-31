@@ -1,10 +1,11 @@
+use std::ops::Deref;
 use crate::core::ast::BuildDocumentSymbols;
 use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use crate::server::session::{Session};
 
-use crate::server::session::{Session, WORKSPACE};
-
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Request to get document symbols for a file
     ///
     /// This function will recursively traverse the ast and return all symbols found.
@@ -12,20 +13,21 @@ impl Session {
         &mut self,
         params: DocumentSymbolParams,
     ) -> anyhow::Result<Option<DocumentSymbolResponse>> {
-        let uri = &params.text_document.uri;
+        let uri = params.text_document.uri;
+        let db = &*self.db.lock();
 
-        let workspace = WORKSPACE.lock();
+        let file = db.get_file(&uri)
+            .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let (root, document) = workspace
-            .roots
-            .get(uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+        let document = file.document(db.deref()).read();
+        let root = file.get_ast(db.deref()).clone().into_inner();
+
 
         let mut builder = DocumentSymbolsBuilder::default();
 
         root.ast
             .iter()
-            .for_each(|p| p.build_document_symbols(document, &mut builder));
+            .for_each(|p| p.build_document_symbols(&document, &mut builder));
 
         Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
     }

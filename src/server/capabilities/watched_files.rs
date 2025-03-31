@@ -1,10 +1,10 @@
 use std::{fs::File, io::Read};
 
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use crate::server::session::{Session};
 
-use crate::server::session::{Session, WORKSPACE};
-
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Handle the watched files change notification.
     ///
     /// The differences between this and the document requests is that the watched files are not necessarily modified by the client.
@@ -17,10 +17,10 @@ impl Session {
         params.changes.iter().try_for_each(|file| match file.typ {
             FileChangeType::CREATED => {
                 let uri = &file.uri;
-                let mut workspace = WORKSPACE.lock();
+                let mut db = &mut *self.db.lock();
 
-                if workspace.roots.contains_key(uri) {
-                    // The file is already in the root
+                if db.get_file(&uri).is_some() {
+                    // The file is already in db
                     // We can ignore this change
                     return Ok(());
                 };
@@ -28,20 +28,20 @@ impl Session {
                     .to_file_path()
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
 
-                let (_url, root, document) = self.read_file(&file_path)?;
-                workspace.roots.insert(uri.clone(), (root, document));
+                //let (_url, root, document) = self.read_file(&file_path)?;
+                //db.add_file_from_texter().insert(uri.clone(), (root, document));
                 Ok(())
             }
             FileChangeType::CHANGED => {
                 let uri = &file.uri;
-                let mut workspace = WORKSPACE.lock();
+                let mut workspace = &mut *self.db.lock();
                 let file_path = uri
                     .to_file_path()
                     .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
                 let open_file = File::open(file_path)?;
 
-                if workspace.roots.contains_key(uri) {
-                    // The file is already in the root
+                /*if workspace.get_file(&uri).is_some() {
+                    // The file is already in db
                     // We compare the stored document with the new file content
                     // If there's a single byte difference, we replace the document
                     if (is_file_content_different(
@@ -56,15 +56,14 @@ impl Session {
                         let (_url, root, document) = self.read_file(&file_path)?;
                         workspace.roots.insert(uri.clone(), (root, document));
                     }
-                }
+                }*/
 
                 Ok(())
             }
             FileChangeType::DELETED => {
-                let mut root = WORKSPACE.lock();
+                let mut db = &mut *self.db.lock();
                 let uri = &file.uri;
-                root.roots.remove(uri);
-                Ok(())
+                db.remove_file(&uri)
             }
             // Should never happen
             _ => Ok(()),

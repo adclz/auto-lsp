@@ -1,8 +1,10 @@
-use crate::server::session::{Session, WORKSPACE};
+use std::ops::Deref;
+use crate::server::session::{Session};
 use auto_lsp_core::ast::BuildCodeActions;
 use lsp_types::{CodeActionOrCommand, CodeActionParams};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get code actions for a document.
     pub fn get_code_actions(
         &mut self,
@@ -11,15 +13,16 @@ impl Session {
         let mut results = vec![];
 
         let uri = params.text_document.uri;
-        let workspace = WORKSPACE.lock();
+        let db = &*self.db.lock();
 
-        let (root, document) = workspace
-            .roots
-            .get(&uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+        let file = db.get_file(&uri)
+            .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+        let document = file.document(db.deref()).read();
+        let root = file.get_ast(db.deref()).clone().into_inner();
 
         if let Some(a) = root.ast.as_ref() {
-            a.build_code_actions(document, &mut results)
+            a.build_code_actions(&document, &mut results)
         }
 
         Ok(Some(results))

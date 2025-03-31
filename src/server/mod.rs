@@ -100,3 +100,5 @@ mod session;
 
 pub use session::options::*;
 pub use session::Session;
+pub use session::request_registry::RequestRegistry;
+pub use session::notification_registry::NotificationRegistry;

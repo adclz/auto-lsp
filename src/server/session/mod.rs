@@ -1,12 +1,9 @@
-use std::{collections::HashMap, sync::LazyLock};
-
-use crate::server::session::init::TextFn;
-use auto_lsp_core::workspace::Workspace;
-use lsp_server::Connection;
-use notification_registry::NotificationRegistry;
-use options::InitOptions;
+use std::{collections::HashMap};
 use parking_lot::Mutex;
-use request_registry::RequestRegistry;
+use crate::server::session::init::TextFn;
+use lsp_server::Connection;
+use options::InitOptions;
+use auto_lsp_core::salsa::db::{WorkspaceDatabase};
 
 pub mod documents;
 pub mod fs;
@@ -16,24 +13,12 @@ pub mod notification_registry;
 pub mod options;
 pub mod request_registry;
 
-/// Workspace
-pub(crate) static WORKSPACE: LazyLock<Mutex<Workspace>> = LazyLock::new(Mutex::default);
 
-/// Request registry
-pub(crate) static REQUEST_REGISTRY: LazyLock<Mutex<RequestRegistry>> =
-    LazyLock::new(Mutex::default);
-
-/// Notification registry
-pub(crate) static NOTIFICATION_REGISTRY: LazyLock<Mutex<NotificationRegistry>> =
-    LazyLock::new(Mutex::default);
-
-pub(crate) type ReqHandler = fn(&mut Session, lsp_server::Response);
-type ReqQueue = lsp_server::ReqQueue<String, ReqHandler>;
+pub(crate) type ReqHandler<Db> = fn(&mut Session<Db>, lsp_server::Response);
+type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
 
 /// Main session object that holds both lsp server connection and initialization options.
-///
-/// Documents are stored in [`WORKSPACE`].
-pub struct Session {
+pub struct Session<Db: WorkspaceDatabase> {
     /// Initialization options provided by the library user.
     pub init_options: InitOptions,
     pub connection: Connection,
@@ -44,11 +29,6 @@ pub struct Session {
     /// Language extensions to parser mappings.
     pub extensions: HashMap<String, String>,
     /// Request queue for incoming requests
-    pub req_queue: ReqQueue,
-}
-
-impl Session {
-    pub fn get_workspace(&self) -> parking_lot::MutexGuard<'_, Workspace> {
-        WORKSPACE.lock()
-    }
+    pub req_queue: ReqQueue<Db>,
+    pub db: Mutex<Box<Db>>
 }

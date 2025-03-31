@@ -1,8 +1,10 @@
-use crate::server::session::{Session, WORKSPACE};
+use std::ops::Deref;
+use crate::server::session::{Session};
 use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Request to get root symbols
     ///
     /// This function will return all symbols found in the root recursively
@@ -16,15 +18,18 @@ impl Session {
 
         let mut symbols = vec![];
 
-        let lock = WORKSPACE.lock();
+        let db = &*self.db.lock();
 
-        lock.roots.iter().for_each(|(uri, (root, document))| {
-            let ast = &root.ast;
+        db.get_files().iter().for_each(|file| {
+            let file = *file;
+            let url = file.url(db.deref());
+            let document = file.document(db.deref()).read();
+            let ast = file.get_ast(db.deref()).clone().into_inner();
 
             let mut builder = DocumentSymbolsBuilder::default();
 
-            ast.iter()
-                .for_each(|p| p.read().build_document_symbols(document, &mut builder));
+            ast.ast.iter()
+                .for_each(|p| p.read().build_document_symbols(&document, &mut builder));
 
             symbols.extend(
                 builder
@@ -36,7 +41,7 @@ impl Session {
                         tags: None,
                         container_name: None,
                         location: OneOf::Left(Location {
-                            uri: uri.to_owned(),
+                            uri: url.to_owned(),
                             range: p.range,
                         }),
                         data: None,

@@ -1,10 +1,10 @@
 use lsp_types::DidChangeTextDocumentParams;
-
+use texter::updateables::Updateable;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use crate::server::session::Session;
 
-use super::WORKSPACE;
 
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Edit a document in [`WORKSPACE`].
     ///
     /// Edits are incremental, meaning that the entire document is not parsed.
@@ -14,19 +14,7 @@ impl Session {
     ) -> anyhow::Result<()> {
         let uri = &params.text_document.uri;
 
-        let mut workspace = WORKSPACE.lock();
-        let (root, document) = workspace
-            .roots
-            .get_mut(uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
-
-        document.update(
-            &mut root.parsers.tree_sitter.parser.write(),
-            &params.content_changes,
-        )?;
-
-        // Update AST
-        root.parse(document);
-        Ok(())
+        let mut workspace = self.db.lock();
+        workspace.update(uri, &params.content_changes)
     }
 }

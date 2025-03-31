@@ -1,7 +1,9 @@
-use crate::server::session::{Session, WORKSPACE};
+use std::ops::Deref;
+use crate::server::session::{Session};
 use lsp_types::{DocumentLink, DocumentLinkParams};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get document links for a document.
     ///
     /// To find a document link, we need the comment [`tree_sitter::Query`] to find all comments,
@@ -20,19 +22,19 @@ impl Session {
 
         let re = &with_regex.regex;
         let to_document_link = &with_regex.to_document_link;
-        let uri = &params.text_document.uri;
+        let uri = params.text_document.uri;
+        let db = &*self.db.lock();
 
-        let workspace = WORKSPACE.lock();
+        let file = db.get_file(&uri)
+            .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let (root, document) = workspace
-            .roots
-            .get(uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+        let document = file.document(db.deref()).read();
+        let root = file.get_ast(db.deref()).clone().into_inner();
 
         let mut results = vec![];
-        let matches = root.find_all_with_regex(document, re);
+        let matches = root.find_all_with_regex(&document, re);
         matches.into_iter().for_each(|(m, line)| {
-            to_document_link(m, line, document, root, &mut results);
+            to_document_link(m, line, &document, &root, &mut results);
         });
 
         Ok(Some(results))

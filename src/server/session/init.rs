@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 #[cfg(target_arch = "wasm32")]
 use std::fs;
-
+use std::sync::{Arc, LazyLock};
 use lsp_server::{Connection, ReqQueue};
 use lsp_types::WorkspaceServerCapabilities;
 use lsp_types::{
@@ -11,11 +11,14 @@ use lsp_types::{
     SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
     SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
 };
+use parking_lot::Mutex;
 use serde::Serialize;
 use texter::core::text::Text;
-
-use super::{InitOptions, REQUEST_REGISTRY};
-use super::{Session, NOTIFICATION_REGISTRY};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use crate::server::session::notification_registry::NotificationRegistry;
+use crate::server::session::request_registry::RequestRegistry;
+use super::{InitOptions};
+use super::{Session};
 
 /// Function to create a new [`Text`] from a [`String`]
 pub(crate) type TextFn = fn(String) -> Text;
@@ -53,40 +56,41 @@ macro_rules! register_default_notifications {
     };
 }
 
-impl Session {
-    pub(crate) fn new(init_options: InitOptions, connection: Connection, text_fn: TextFn) -> Self {
+impl<Db: WorkspaceDatabase + Default> Session<Db> {
+    pub(crate) fn new(init_options: InitOptions, connection: Connection, text_fn: TextFn, db: Db) -> Self {
         Self {
             init_options,
             connection,
             text_fn,
             extensions: HashMap::new(),
             req_queue: ReqQueue::default(),
+            db: Mutex::new(Box::new(db)),
         }
     }
 
-    pub fn register_request<R, F>(&mut self, handler: F)
+    pub fn register_request<R, F>(req_registry: &mut RequestRegistry<Db>, handler: F)
     where
         R: lsp_types::request::Request,
         R::Params: serde::de::DeserializeOwned,
         R::Result: Serialize,
-        F: Fn(&mut Session, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
+        F: Fn(&mut Session<Db>, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
     {
-        REQUEST_REGISTRY.lock().register::<R, F>(handler);
+        req_registry.register::<R, F>(handler);
     }
 
-    pub fn register_notification<N, F>(&mut self, handler: F)
+    pub fn register_notification<N, F>(not_registry: &mut NotificationRegistry<Db>, handler: F)
     where
         N: lsp_types::notification::Notification,
         N::Params: serde::de::DeserializeOwned,
-        F: Fn(&mut Session, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
+        F: Fn(&mut Session<Db>, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
     {
-        NOTIFICATION_REGISTRY.lock().register::<N, F>(handler);
+        not_registry.register::<N, F>(handler);
     }
 
     /// Create a new session with the given initialization options.
     ///
     /// This will establish the connection with the client and send the server capabilities.
-    pub fn create(init_options: InitOptions, connection: Connection) -> anyhow::Result<Session> {
+    pub fn create(init_options: InitOptions, connection: Connection, db: Db) -> anyhow::Result<Session<Db>> {
         // This is a workaround for a deadlock issue in WASI libc.
         // See https://github.com/WebAssembly/wasi-libc/pull/491
         #[cfg(target_arch = "wasm32")]
@@ -218,9 +222,9 @@ impl Session {
 
         connection.initialize_finish(id, server_capabilities)?;
 
-        let mut session = Session::new(init_options, connection, t_fn);
+        let mut session = Session::new(init_options, connection, t_fn, db);
 
-        register_default_requests!(session, {
+        /*register_default_requests!(session, {
             lsp_types::request::DocumentDiagnosticRequest => |session, params| session.get_diagnostics(params),
             lsp_types::request::DocumentLinkRequest => |session, params| session.get_document_links(params),
             lsp_types::request::DocumentSymbolRequest => |session, params| session.get_document_symbols(params),
@@ -260,7 +264,7 @@ impl Session {
             lsp_types::notification::DidCloseTextDocument => |_, _| Ok(()),
             lsp_types::notification::SetTrace => |_, _| Ok(()),
             lsp_types::notification::LogTrace => |_, _| Ok(()),
-        });
+        });*/
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.

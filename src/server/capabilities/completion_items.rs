@@ -1,22 +1,25 @@
+use std::ops::Deref;
 use crate::core::ast::{BuildCompletionItems, BuildTriggeredCompletionItems};
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use crate::server::session::{Session};
 
-use crate::server::session::{Session, WORKSPACE};
-
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Get completion items for a document.
     pub fn get_completion_items(
         &mut self,
         params: CompletionParams,
     ) -> anyhow::Result<Option<CompletionResponse>> {
         let mut results = vec![];
-        let uri = &params.text_document_position.text_document.uri;
 
-        let lock = WORKSPACE.lock();
-        let (root, document) = lock
-            .roots
-            .get(uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+        let uri = &params.text_document_position.text_document.uri;
+        let db = &*self.db.lock();
+
+        let file = db.get_file(&uri)
+            .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+        let document = file.document(db.deref()).read();
+        let root = file.get_ast(db.deref()).clone().into_inner();
 
         match params.context {
             Some(context) => match context.trigger_kind {
@@ -40,7 +43,7 @@ impl Session {
                         None => return Ok(None),
                     };
 
-                    item.build_completion_items(document, &mut results)
+                    item.build_completion_items(&document, &mut results)
                 }
                 CompletionTriggerKind::TRIGGER_CHARACTER => {
                     let trigger_character = context.trigger_character.unwrap();
@@ -58,7 +61,7 @@ impl Session {
                     };
                     item.build_triggered_completion_items(
                         &trigger_character,
-                        document,
+                        &document,
                         &mut results,
                     )
                 }

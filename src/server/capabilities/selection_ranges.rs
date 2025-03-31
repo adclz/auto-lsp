@@ -1,8 +1,9 @@
+use std::ops::Deref;
 use lsp_types::{SelectionRange, SelectionRangeParams};
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use crate::server::session::{Session};
 
-use crate::server::session::{Session, WORKSPACE};
-
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     /// Request for selection ranges
     ///
     /// This is a port of [vscode anycode](https://github.com/microsoft/vscode-anycode/blob/main/anycode/server/src/common/features/selectionRanges.ts)
@@ -12,13 +13,12 @@ impl Session {
     ) -> anyhow::Result<Option<Vec<SelectionRange>>> {
         let uri = &params.text_document.uri;
 
-        let workspace = WORKSPACE.lock();
+        let db = &*self.db.lock();
 
-        let (_, document) = workspace
-            .roots
-            .get(uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+        let file = db.get_file(&uri)
+            .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
+        let document = file.document(db.deref()).read();
         let root_node = document.tree.root_node();
 
         let mut query_cursor = document.tree.walk();

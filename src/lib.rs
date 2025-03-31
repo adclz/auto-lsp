@@ -109,6 +109,7 @@ pub mod core {
         pub use auto_lsp_core::build::*;
     }
 
+    pub use auto_lsp_core::salsa;
     pub use auto_lsp_core::ast;
     pub use auto_lsp_core::document;
     pub use auto_lsp_core::document_symbols_builder;
@@ -137,3 +138,4 @@ pub use parking_lot;
 pub use rayon;
 pub use texter;
 pub use tree_sitter;
+pub use salsa;

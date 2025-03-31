@@ -1,15 +1,15 @@
 use auto_lsp_core::root::Root;
 use lsp_types::DidOpenTextDocumentParams;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use crate::server::session::{Session};
 
-use crate::server::session::{Session, WORKSPACE};
-
-impl Session {
+impl<Db: WorkspaceDatabase> Session<Db> {
     pub fn open_text_document(&mut self, params: DidOpenTextDocumentParams) -> anyhow::Result<()> {
         let url = &params.text_document.uri;
-        let mut workspace = WORKSPACE.lock();
+        let mut db = &mut *self.db.lock();
 
-        if workspace.roots.contains_key(url) {
-            // The file is already in the root
+        if db.get_file(url).is_some() {
+            // The file is already in db
             // We can ignore this change
             return Ok(());
         };
@@ -34,9 +34,6 @@ impl Session {
             .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
-        let (root, document) = Root::from_texter(parsers, url.clone(), text)?;
-
-        workspace.roots.insert(url.clone(), (root, document));
-        Ok(())
+        db.add_file_from_texter(parsers, url,text)
     }
 }
