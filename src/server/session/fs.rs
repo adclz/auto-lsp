@@ -1,7 +1,7 @@
 use super::Session;
 use auto_lsp_core::document::Document;
 use auto_lsp_core::root::{Parsers, Root};
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{InitializeParams, Url};
 use serde::Deserialize;
 use std::path::PathBuf;
@@ -19,7 +19,7 @@ struct InitializationOptions {
     perFileParser: HashMap<String, String>,
 }
 
-impl<Db: WorkspaceDatabase> Session<Db> {
+impl<Db: BaseDatabase> Session<Db> {
     /// Initializes the workspace by loading files and associating them with parsers.
     pub(crate) fn init_workspace(&mut self, params: InitializeParams) -> anyhow::Result<()> {
         let options = InitializationOptions::deserialize(

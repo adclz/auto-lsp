@@ -1,5 +1,5 @@
 use crate::server::session::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 use std::ops::Deref;
 use streaming_iterator::StreamingIterator;
@@ -7,7 +7,7 @@ use streaming_iterator::StreamingIterator;
 /// Request for folding ranges
 ///
 /// Uses the folding_range [`tree_sitter::Query`] if orovided in the initilization options.
-pub fn get_folding_ranges<Db: WorkspaceDatabase>(
+pub fn get_folding_ranges<Db: BaseDatabase>(
     db: &Db,
     params: FoldingRangeParams,
 ) -> anyhow::Result<Option<Vec<FoldingRange>>> {
@@ -18,7 +18,7 @@ pub fn get_folding_ranges<Db: WorkspaceDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = file.get_ast(db).clone().into_inner();
+    let root = get_ast(db, file).clone().into_inner();
 
     let query = match root.parsers.tree_sitter.queries.fold {
         Some(ref query) => query,

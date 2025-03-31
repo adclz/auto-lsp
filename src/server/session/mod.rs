@@ -1,5 +1,5 @@
 use crate::server::session::init::TextFn;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::Connection;
 use options::InitOptions;
 use parking_lot::Mutex;
@@ -16,7 +16,7 @@ pub(crate) type ReqHandler<Db> = fn(&mut Session<Db>, lsp_server::Response);
 type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
 
 /// Main session object that holds both lsp server connection and initialization options.
-pub struct Session<Db: WorkspaceDatabase> {
+pub struct Session<Db: BaseDatabase> {
     /// Initialization options provided by the library user.
     pub init_options: InitOptions,
     pub connection: Connection,

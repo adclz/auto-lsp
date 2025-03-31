@@ -1,4 +1,4 @@
-use auto_lsp::core::salsa::db::{WorkspaceDatabase, WorkspaceDb};
+use auto_lsp::core::salsa::db::{BaseDb, BaseDatabase};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::notification::{
@@ -14,7 +14,7 @@ use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
 use std::ops::Deref;
 
-pub trait ExtendDb: WorkspaceDatabase {
+pub trait ExtendDb: BaseDatabase {
     fn get_urls(&self) -> Vec<String> {
         self.get_files()
             .iter()
@@ -23,11 +23,11 @@ pub trait ExtendDb: WorkspaceDatabase {
     }
 }
 
-impl ExtendDb for WorkspaceDb {}
+impl ExtendDb for BaseDb {}
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
-    let db = WorkspaceDb::default();
+    let db = BaseDb::default();
 
     let mut session = Session::create(
         InitOptions {
@@ -40,8 +40,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         db,
     )?;
 
-    let mut request_registry = RequestRegistry::<WorkspaceDb>::default();
-    let mut notification_registry = NotificationRegistry::<WorkspaceDb>::default();
+    let mut request_registry = RequestRegistry::<BaseDb>::default();
+    let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
     request_registry.register::<GetWorkspaceFiles, _>(|session, _| Ok(session.db.get_urls()));
 
@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-fn register_notifications<Db: WorkspaceDatabase>(
+fn register_notifications<Db: BaseDatabase>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry

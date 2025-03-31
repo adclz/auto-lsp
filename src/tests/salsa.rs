@@ -1,11 +1,11 @@
 use super::python_utils::create_python_db;
 use crate::python::PYTHON_PARSERS;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::{salsa::db::BaseDatabase, salsa::tracked::get_ast};
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
 #[fixture]
-fn foo_bar() -> impl WorkspaceDatabase {
+fn foo_bar() -> impl BaseDatabase {
     create_python_db(&[
         r#"def foo():
     pass
@@ -24,7 +24,7 @@ def bar2():
 }
 
 #[rstest]
-fn query_ast(foo_bar: impl WorkspaceDatabase) {
+fn query_ast(foo_bar: impl BaseDatabase) {
     let file0 = foo_bar
         .get_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
         .expect("Expected file0 to exist");
@@ -33,21 +33,21 @@ fn query_ast(foo_bar: impl WorkspaceDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = file0.get_ast(&foo_bar).clone().into_inner();
+    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
     assert!(file0_ast.ast.is_some());
 
-    let file1_ast = file1.get_ast(&foo_bar).clone().into_inner();
+    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
     assert!(file1_ast.ast.is_some());
 
     let logs = foo_bar.take_logs();
 
     assert_eq!(logs.len(), 2);
-    assert!(logs[0].contains("WillExecute { database_key: inner_fn_name_(Id(0)) }"));
-    assert!(logs[1].contains("WillExecute { database_key: inner_fn_name_(Id(1)) }"));
+    assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
+    assert!(logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
 }
 
 #[rstest]
-fn update_file(mut foo_bar: impl WorkspaceDatabase) {
+fn update_file(mut foo_bar: impl BaseDatabase) {
     let file0 = foo_bar
         .get_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
         .expect("Expected file0 to exist");
@@ -56,17 +56,17 @@ fn update_file(mut foo_bar: impl WorkspaceDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = file0.get_ast(&foo_bar).clone().into_inner();
+    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
     assert!(file0_ast.ast.is_some());
 
-    let file1_ast = file1.get_ast(&foo_bar).clone().into_inner();
+    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
     assert!(file1_ast.ast.is_some());
 
     let logs = foo_bar.take_logs();
 
     assert_eq!(logs.len(), 2);
-    assert!(logs[0].contains("WillExecute { database_key: inner_fn_name_(Id(0)) }"));
-    assert!(logs[1].contains("WillExecute { database_key: inner_fn_name_(Id(1)) }"));
+    assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
+    assert!(logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
 
     let change = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
@@ -90,18 +90,18 @@ fn update_file(mut foo_bar: impl WorkspaceDatabase) {
         )
         .expect("Failed to update file");
 
-    let file0_ast = file0.get_ast(&foo_bar).clone().into_inner();
+    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
     assert!(file0_ast.ast.is_some());
 
-    let file1_ast = file1.get_ast(&foo_bar).clone().into_inner();
+    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
     assert!(file1_ast.ast.is_some());
 
     let logs = foo_bar.take_logs();
-    assert!(logs[0].contains("WillExecute { database_key: inner_fn_name_(Id(0)) }"));
+    assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
 }
 
 #[rstest]
-fn remove_file(mut foo_bar: impl WorkspaceDatabase) {
+fn remove_file(mut foo_bar: impl BaseDatabase) {
     let file0 = foo_bar
         .get_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
         .expect("Expected file0 to exist");
@@ -110,17 +110,17 @@ fn remove_file(mut foo_bar: impl WorkspaceDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = file0.get_ast(&foo_bar).clone().into_inner();
+    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
     assert!(file0_ast.ast.is_some());
 
-    let file1_ast = file1.get_ast(&foo_bar).clone().into_inner();
+    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
     assert!(file1_ast.ast.is_some());
 
     let logs = foo_bar.take_logs();
 
     assert_eq!(logs.len(), 2);
-    assert!(logs[0].contains("WillExecute { database_key: inner_fn_name_(Id(0)) }"));
-    assert!(logs[1].contains("WillExecute { database_key: inner_fn_name_(Id(1)) }"));
+    assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
+    assert!(logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
 
     foo_bar
         .remove_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
@@ -135,7 +135,7 @@ fn remove_file(mut foo_bar: impl WorkspaceDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .is_some());
 
-    let file1_ast = file1.get_ast(&foo_bar).clone().into_inner();
+    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
     assert!(file1_ast.ast.is_some());
 
     assert!(foo_bar.take_logs().is_empty());

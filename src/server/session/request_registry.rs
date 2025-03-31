@@ -1,5 +1,5 @@
 use super::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Request, Response};
 use serde::{de::DeserializeOwned, Serialize};
 use std::collections::HashMap;
@@ -9,11 +9,11 @@ type RequestCallback<Db> = Box<
 >;
 
 #[derive(Default)]
-pub struct RequestRegistry<Db: WorkspaceDatabase> {
+pub struct RequestRegistry<Db: BaseDatabase> {
     handlers: HashMap<String, RequestCallback<Db>>,
 }
 
-impl<Db: WorkspaceDatabase> RequestRegistry<Db> {
+impl<Db: BaseDatabase> RequestRegistry<Db> {
     pub fn register<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,

@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use auto_lsp::core::salsa::db::{WorkspaceDatabase, WorkspaceDb};
+use auto_lsp::core::salsa::db::{BaseDb, BaseDatabase};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
@@ -22,7 +22,7 @@ use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, RequestReg
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
-    let db = WorkspaceDb::default();
+    let db = BaseDb::default();
 
     let mut session = Session::create(
         InitOptions {
@@ -45,8 +45,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         db,
     )?;
 
-    let mut request_registry = RequestRegistry::<WorkspaceDb>::default();
-    let mut notification_registry = NotificationRegistry::<WorkspaceDb>::default();
+    let mut request_registry = RequestRegistry::<BaseDb>::default();
+    let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop(
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-fn register_requests<Db: WorkspaceDatabase>(
+fn register_requests<Db: BaseDatabase>(
     registry: &mut RequestRegistry<Db>,
 ) -> &mut RequestRegistry<Db> {
     registry
@@ -77,7 +77,7 @@ fn register_requests<Db: WorkspaceDatabase>(
         .register::<Completion, _>(|s, p| get_completion_items(&s.db, p))
 }
 
-fn register_notifications<Db: WorkspaceDatabase>(
+fn register_notifications<Db: BaseDatabase>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry

@@ -3,7 +3,7 @@ use crate::{document::Document, root::Root};
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
 use parking_lot::RwLock;
-use salsa::Setter;
+use salsa::{Accumulator, Setter};
 use salsa::{Database, Storage};
 use std::fmt::Formatter;
 use std::{hash::Hash, sync::Arc};
@@ -20,7 +20,7 @@ pub struct File {
 
 #[salsa::db]
 #[derive(Default, Clone)]
-pub struct WorkspaceDb {
+pub struct BaseDb {
     storage: Storage<Self>,
     #[cfg(feature = "log")]
     logs: Arc<parking_lot::Mutex<Vec<String>>>,
@@ -28,7 +28,7 @@ pub struct WorkspaceDb {
 }
 
 #[salsa::db]
-pub trait WorkspaceDatabase: Database {
+pub trait BaseDatabase: Database {
     fn add_file_from_texter(
         &mut self,
         parsers: &'static Parsers,
@@ -49,7 +49,7 @@ pub trait WorkspaceDatabase: Database {
 }
 
 #[salsa::db]
-impl salsa::Database for WorkspaceDb {
+impl salsa::Database for BaseDb {
     fn salsa_event(&self, _event: &dyn Fn() -> salsa::Event) {
         #[cfg(feature = "log")]
         {
@@ -62,7 +62,7 @@ impl salsa::Database for WorkspaceDb {
 }
 
 #[salsa::db]
-impl WorkspaceDatabase for WorkspaceDb {
+impl BaseDatabase for BaseDb {
     fn add_file_from_texter(
         &mut self,
         parsers: &'static Parsers,
@@ -121,53 +121,5 @@ impl WorkspaceDatabase for WorkspaceDb {
     #[cfg(feature = "log")]
     fn take_logs(&self) -> Vec<String> {
         std::mem::take(&mut self.logs.lock())
-    }
-}
-
-#[salsa::tracked()]
-impl<'db> File {
-    #[salsa::tracked(no_eq, return_ref)]
-    pub fn get_ast(self, db: &'db dyn WorkspaceDatabase) -> ParsedAst {
-        let parsers = self.parsers(db);
-        let doc = self.document(db);
-        let url = self.url(db);
-
-        ParsedAst::new(
-            Root::from_texter(parsers, url, doc.read().texter.clone())
-                .unwrap()
-                .0,
-        )
-    }
-}
-
-/// Cheap cloneable wrapper around a parsed AST
-#[derive(Clone)]
-pub struct ParsedAst {
-    inner: Arc<Root>,
-}
-
-impl std::fmt::Debug for ParsedAst {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ParsedAst").field(&self.inner).finish()
-    }
-}
-
-impl PartialEq for ParsedAst {
-    fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.inner, &other.inner)
-    }
-}
-
-impl Eq for ParsedAst {}
-
-impl ParsedAst {
-    fn new(root: Root) -> Self {
-        Self {
-            inner: Arc::new(root),
-        }
-    }
-
-    pub fn into_inner(self) -> Arc<Root> {
-        self.inner
     }
 }

@@ -1,5 +1,5 @@
 use crate::server::{session::Session, RegexToDocumentLink};
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{DocumentLink, DocumentLinkParams};
 use std::ops::Deref;
 
@@ -8,7 +8,7 @@ use std::ops::Deref;
 /// To find a document link, we need the comment [`tree_sitter::Query`] to find all comments,
 /// then we use the regex from the [`crate::server::RegexToDocumentLink`] to find the links,
 /// and finally we pass matches to the **to_document_link** function.
-pub fn get_document_links<Db: WorkspaceDatabase>(
+pub fn get_document_links<Db: BaseDatabase>(
     db: &Db,
     with_regex: RegexToDocumentLink,
     params: DocumentLinkParams,
@@ -22,7 +22,7 @@ pub fn get_document_links<Db: WorkspaceDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = file.get_ast(db).clone().into_inner();
+    let root = get_ast(db, file).clone().into_inner();
 
     let mut results = vec![];
     let matches = root.find_all_with_regex(&document, re);

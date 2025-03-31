@@ -1,30 +1,29 @@
-use std::ops::Deref;
-use lsp_types::Url;
-use auto_lsp_core::ast::{GetSymbolData, Traverse};
-use rstest::{fixture, rstest};
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use super::{html_utils::create_html_db, html_workspace::*};
+use auto_lsp_core::ast::{GetSymbolData, Traverse};
+use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::salsa::tracked::get_ast;
+use lsp_types::Url;
+use rstest::{fixture, rstest};
+use std::ops::Deref;
 
 #[fixture]
-fn nested_divs() -> impl WorkspaceDatabase {
-    create_html_db(&[
-        r#"<!DOCTYPE html>
+fn nested_divs() -> impl BaseDatabase {
+    create_html_db(&[r#"<!DOCTYPE html>
 <div>
     <div>
          <div>
             <div></div>
         </div>
     </div>
-</div>"#],
-    )
+</div>"#])
 }
 
 #[rstest]
-fn descendant(nested_divs: impl WorkspaceDatabase) {
+fn descendant(nested_divs: impl BaseDatabase) {
     let file = nested_divs
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
-    let root = file.get_ast(&nested_divs).clone().into_inner();
+    let root = get_ast(&nested_divs, file).clone().into_inner();
 
     let ast = root.ast.as_ref().unwrap().read();
     let document = ast.downcast_ref::<HtmlDocument>().unwrap();
@@ -60,11 +59,11 @@ fn descendant(nested_divs: impl WorkspaceDatabase) {
 }
 
 #[rstest]
-fn descendant_at_and_collect(nested_divs: impl WorkspaceDatabase) {
+fn descendant_at_and_collect(nested_divs: impl BaseDatabase) {
     let file = nested_divs
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
-    let root = file.get_ast(&nested_divs).clone().into_inner();
+    let root = get_ast(&nested_divs, file).clone().into_inner();
 
     let ast = root.ast.as_ref().unwrap();
 
@@ -85,12 +84,12 @@ fn descendant_at_and_collect(nested_divs: impl WorkspaceDatabase) {
 }
 
 #[rstest]
-fn traverse_and_collect(nested_divs: impl WorkspaceDatabase) {
+fn traverse_and_collect(nested_divs: impl BaseDatabase) {
     let file = nested_divs
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
     let document = file.document(&nested_divs).read();
-    let root = file.get_ast(&nested_divs).clone().into_inner();
+    let root = get_ast(&nested_divs, file).clone().into_inner();
 
     let ast = root.ast.as_ref().unwrap();
 

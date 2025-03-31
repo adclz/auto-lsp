@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::InitOptions;
 use super::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Connection, ReqQueue};
 use lsp_types::WorkspaceServerCapabilities;
 use lsp_types::{
@@ -38,7 +38,7 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
     DEFAULT
 }
 
-impl<Db: WorkspaceDatabase + Default> Session<Db> {
+impl<Db: BaseDatabase + Default> Session<Db> {
     pub(crate) fn new(
         init_options: InitOptions,
         connection: Connection,

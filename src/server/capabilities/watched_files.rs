@@ -1,7 +1,7 @@
 use std::{fs::File, io::Read};
 
 use crate::server::session::{self, Session};
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
 /// Handle the watched files change notification.
@@ -9,7 +9,7 @@ use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 /// The differences between this and the document requests is that the watched files are not necessarily modified by the client.
 ///
 /// Some changes can be made by external tools, github, someone editing the project with NotePad while the IDE is active, etc ...
-pub fn changed_watched_files<Db: WorkspaceDatabase>(
+pub fn changed_watched_files<Db: BaseDatabase>(
     session: &mut Session<Db>,
     params: DidChangeWatchedFilesParams,
 ) -> anyhow::Result<()> {

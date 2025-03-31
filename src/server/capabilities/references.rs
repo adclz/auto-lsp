@@ -1,5 +1,5 @@
 use crate::server::session::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{Location, ReferenceParams};
 use std::ops::Deref;
 
@@ -7,7 +7,7 @@ use std::ops::Deref;
 ///
 /// To get the references, the server will look for the symbol at the given position,
 /// then read `get_referrers` from the symbol and return the references.
-pub fn get_references<Db: WorkspaceDatabase>(
+pub fn get_references<Db: BaseDatabase>(
     db: &Db,
     params: ReferenceParams,
 ) -> anyhow::Result<Option<Vec<Location>>> {

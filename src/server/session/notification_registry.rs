@@ -1,5 +1,5 @@
 use super::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::Notification;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
@@ -9,11 +9,11 @@ type RequestCallback<Db> = Box<
 >;
 
 #[derive(Default)]
-pub struct NotificationRegistry<Db: WorkspaceDatabase> {
+pub struct NotificationRegistry<Db: BaseDatabase> {
     handlers: HashMap<String, RequestCallback<Db>>,
 }
 
-impl<Db: WorkspaceDatabase> NotificationRegistry<Db> {
+impl<Db: BaseDatabase> NotificationRegistry<Db> {
     pub fn register<N, F>(&mut self, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,

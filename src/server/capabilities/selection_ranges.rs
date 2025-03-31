@@ -1,12 +1,12 @@
 use crate::server::session::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{SelectionRange, SelectionRangeParams};
 use std::ops::Deref;
 
 /// Request for selection ranges
 ///
 /// This is a port of [vscode anycode](https://github.com/microsoft/vscode-anycode/blob/main/anycode/server/src/common/features/selectionRanges.ts)
-pub fn get_selection_ranges<Db: WorkspaceDatabase>(
+pub fn get_selection_ranges<Db: BaseDatabase>(
     db: &Db,
     params: SelectionRangeParams,
 ) -> anyhow::Result<Option<Vec<SelectionRange>>> {

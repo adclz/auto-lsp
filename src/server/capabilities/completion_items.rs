@@ -1,10 +1,11 @@
 use crate::core::ast::{BuildCompletionItems, BuildTriggeredCompletionItems};
 use crate::server::session::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::salsa::tracked::get_ast;
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
 use std::ops::Deref;
 
-pub fn get_completion_items<Db: WorkspaceDatabase>(
+pub fn get_completion_items<Db: BaseDatabase>(
     db: &Db,
     params: CompletionParams,
 ) -> anyhow::Result<Option<CompletionResponse>> {
@@ -17,7 +18,7 @@ pub fn get_completion_items<Db: WorkspaceDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = file.get_ast(db).clone().into_inner();
+    let root = get_ast(db, file).clone().into_inner();
 
     match params.context {
         Some(context) => match context.trigger_kind {

@@ -1,6 +1,7 @@
 use crate::core::ast::BuildCompletionItems;
 use auto_lsp_core::ast::{BuildTriggeredCompletionItems, Traverse};
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::salsa::tracked::get_ast;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
@@ -8,7 +9,7 @@ use super::python_utils::create_python_db;
 use super::python_workspace::ast::Module;
 
 #[fixture]
-fn foo_bar() -> impl WorkspaceDatabase {
+fn foo_bar() -> impl BaseDatabase {
     create_python_db(&[r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
@@ -20,12 +21,12 @@ def bar():
 }
 
 #[rstest]
-fn global_completion_items(foo_bar: impl WorkspaceDatabase) {
+fn global_completion_items(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = file.get_ast(&foo_bar).clone().into_inner();
+    let root = get_ast(&foo_bar, file).clone().into_inner();
 
     // Module returns globally available completion items
     let module = root.ast.as_ref().unwrap().read();
@@ -48,11 +49,11 @@ fn global_completion_items(foo_bar: impl WorkspaceDatabase) {
 }
 
 #[rstest]
-fn triggered_completion_items(mut foo_bar: impl WorkspaceDatabase) {
+fn triggered_completion_items(mut foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let root = file.get_ast(&foo_bar).clone().into_inner();
+    let root = get_ast(&foo_bar, file).clone().into_inner();
 
     let change = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {

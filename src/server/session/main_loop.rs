@@ -1,14 +1,18 @@
-use parking_lot::Mutex;
-use crossbeam_channel::select;
-use lsp_server::{Message, Notification};
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use super::Session;
 use crate::server::session::notification_registry::NotificationRegistry;
 use crate::server::session::request_registry::RequestRegistry;
-use super::Session;
+use auto_lsp_core::salsa::db::BaseDatabase;
+use crossbeam_channel::select;
+use lsp_server::{Message, Notification};
+use parking_lot::Mutex;
 
-impl<Db: WorkspaceDatabase> Session<Db> {
+impl<Db: BaseDatabase> Session<Db> {
     /// Main loop of the LSP server, backed by [`lsp-server`] and [`crossbeam-channel`] crates.
-    pub fn main_loop(&mut self, req_registry: &RequestRegistry<Db>, not_registry: &NotificationRegistry<Db>) -> anyhow::Result<()> {
+    pub fn main_loop(
+        &mut self,
+        req_registry: &RequestRegistry<Db>,
+        not_registry: &NotificationRegistry<Db>,
+    ) -> anyhow::Result<()> {
         loop {
             select! {
                 recv(self.connection.receiver) -> msg => {

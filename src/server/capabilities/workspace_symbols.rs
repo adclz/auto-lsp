@@ -1,13 +1,13 @@
 use crate::server::session::Session;
-use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
 use std::ops::Deref;
 
 /// Request to get root symbols
 ///
 /// This function will return all symbols found in the root recursively
-pub fn get_workspace_symbols<Db: WorkspaceDatabase>(
+pub fn get_workspace_symbols<Db: BaseDatabase>(
     db: &Db,
     params: WorkspaceSymbolParams,
 ) -> anyhow::Result<Option<WorkspaceSymbolResponse>> {
@@ -21,7 +21,7 @@ pub fn get_workspace_symbols<Db: WorkspaceDatabase>(
         let file = *file;
         let url = file.url(db);
         let document = file.document(db).read();
-        let ast = file.get_ast(db).clone().into_inner();
+        let ast = get_ast(db, file).clone().into_inner();
 
         let mut builder = DocumentSymbolsBuilder::default();
 

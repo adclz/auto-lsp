@@ -1,6 +1,6 @@
 use crate::core::ast::BuildSemanticTokens;
 use crate::server::session::Session;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
 use lsp_types::{
     SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
@@ -9,7 +9,7 @@ use lsp_types::{
 use std::ops::Deref;
 
 /// Get all semantic tokens for a document.
-pub fn get_semantic_tokens_full<Db: WorkspaceDatabase>(
+pub fn get_semantic_tokens_full<Db: BaseDatabase>(
     db: &Db,
     params: SemanticTokensParams,
 ) -> anyhow::Result<Option<SemanticTokensResult>> {
@@ -20,7 +20,7 @@ pub fn get_semantic_tokens_full<Db: WorkspaceDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = file.get_ast(db).clone().into_inner();
+    let root = get_ast(db, file).clone().into_inner();
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 
@@ -32,7 +32,7 @@ pub fn get_semantic_tokens_full<Db: WorkspaceDatabase>(
 }
 
 /// Get semantic tokens for a range in a document.
-pub fn get_semantic_tokens_range<Db: WorkspaceDatabase>(
+pub fn get_semantic_tokens_range<Db: BaseDatabase>(
     db: &Db,
     params: SemanticTokensRangeParams,
 ) -> anyhow::Result<Option<SemanticTokensRangeResult>> {
@@ -43,7 +43,7 @@ pub fn get_semantic_tokens_range<Db: WorkspaceDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = file.get_ast(db).clone().into_inner();
+    let root = get_ast(db, file).clone().into_inner();
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 

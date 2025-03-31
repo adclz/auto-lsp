@@ -1,9 +1,9 @@
 use crate::server::session::Session;
 use auto_lsp_core::root::Root;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::DidOpenTextDocumentParams;
 
-pub fn open_text_document<Db: WorkspaceDatabase>(
+pub fn open_text_document<Db: BaseDatabase>(
     session: &mut Session<Db>,
     params: DidOpenTextDocumentParams,
 ) -> anyhow::Result<()> {

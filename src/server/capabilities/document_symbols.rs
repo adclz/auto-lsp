@@ -1,14 +1,14 @@
 use crate::core::ast::BuildDocumentSymbols;
 use crate::server::session::Session;
-use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
+use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 use std::ops::Deref;
 
 /// Request to get document symbols for a file
 ///
 /// This function will recursively traverse the ast and return all symbols found.
-pub fn get_document_symbols<Db: WorkspaceDatabase>(
+pub fn get_document_symbols<Db: BaseDatabase>(
     db: &Db,
     params: DocumentSymbolParams,
 ) -> anyhow::Result<Option<DocumentSymbolResponse>> {
@@ -19,7 +19,7 @@ pub fn get_document_symbols<Db: WorkspaceDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = file.get_ast(db).clone().into_inner();
+    let root = get_ast(db, file).clone().into_inner();
 
     let mut builder = DocumentSymbolsBuilder::default();
 
