@@ -43,9 +43,6 @@ impl<T: AstSymbol> Symbol<T> {
     /// If the symbol requires checking ([`super::capabilities::Check`]), add it to the unsolved checks list
     pub fn new_and_check(symbol: T, root: &mut Root) -> Self {
         let symbol = Symbol::new(symbol);
-        if symbol.read().must_check() {
-            root.unsolved_checks.push(symbol.to_weak());
-        }
         symbol.write().inject_parent(symbol.to_weak());
         symbol
     }

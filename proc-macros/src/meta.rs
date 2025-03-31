@@ -43,11 +43,7 @@ pub struct DarlingInput {
     pub semantic_tokens: Flag,
     // Special
     #[darling(default)]
-    pub check: Flag,
-    #[darling(default)]
     pub comment: Flag,
     #[darling(default)]
     pub scope: Flag,
-    #[darling(default)]
-    pub reference: Flag,
 }

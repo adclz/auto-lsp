@@ -42,7 +42,6 @@ impl ToTokens for EnumBuilder<'_> {
         self.impl_scope(&mut builder);
         self.impl_comment(&mut builder);
 
-        self.impl_check(&mut builder);
         self.impl_code_actions(&mut builder);
         self.impl_code_lens(&mut builder);
         self.impl_completion_items(&mut builder);
@@ -106,24 +105,6 @@ impl EnumBuilder<'_> {
                 &self.paths.symbol_trait.get_mut_data.variant,
             )
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
-    }
-
-    fn impl_check(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.is_check.must_check.sig,
-                &self.paths.is_check.must_check.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.is_check.path);
-
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.check.check.sig,
-                &self.paths.check.check.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.check.path);
     }
 
     fn impl_traverse(&self, builder: &mut VariantBuilder) {

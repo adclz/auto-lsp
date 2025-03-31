@@ -121,14 +121,6 @@ nested_struct!(
             pub path: Path,
             pub inject_parent: Method
         },
-        pub is_check: IsCheck {
-            pub path: Path,
-            pub must_check: Method
-        },
-        pub check: Check {
-            pub path: Path,
-            pub check: Method
-        },
         pub display: Display {
             pub path: Path,
             pub fmt: Method
@@ -314,20 +306,6 @@ impl Default for Paths {
                 inject_parent: Method {
                     sig: quote! { fn inject_parent(&mut self, parent: auto_lsp::core::ast::WeakSymbol) },
                     variant: quote! { inject_parent(parent) },
-                },
-            },
-            is_check: IsCheck {
-                path: core_ast(parse_quote!(IsCheck)),
-                must_check: Method {
-                    sig: quote! { fn must_check(&self) -> bool },
-                    variant: quote! { must_check() },
-                },
-            },
-            check: Check {
-                path: core_ast(parse_quote!(Check)),
-                check: Method {
-                    sig: quote! { fn check(&self, doc: &auto_lsp::core::document::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> auto_lsp::core::ast::CheckStatus },
-                    variant: quote! { check(doc, diagnostics) },
                 },
             },
             display: Display {

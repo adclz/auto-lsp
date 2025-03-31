@@ -398,36 +398,6 @@ impl<T: AstSymbol> Traverse for Vec<Symbol<T>> {
     }
 }
 
-#[doc(hidden)]
-pub trait IsCheck {
-    /// Tell this symbol has to be checked during the build process
-    ///
-    /// By default, `false`
-    fn must_check(&self) -> bool {
-        false
-    }
-}
-
-/// Check Status of a symbol
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum CheckStatus {
-    Ok,
-    Fail,
-}
-
-/// Checking a symbol
-pub trait Check: IsCheck {
-    /// Perform a check on the symbol during the last step of build process
-    ///
-    /// If the check fails, push your [`Diagnostic`] to the accumulator and return `CheckStatus::Fail`
-    /// If the check succeeds, return `CheckStatus::Ok`
-    ///
-    /// By default, `CheckStatus::Ok`
-    fn check(&self, doc: &Document, diagnostics: &mut Vec<Diagnostic>) -> CheckStatus {
-        CheckStatus::Ok
-    }
-}
-
 /// Delimiting a symbol's scope
 pub trait Scope {
     /// Tell this symbol is a scope

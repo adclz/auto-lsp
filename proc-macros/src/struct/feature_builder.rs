@@ -103,27 +103,6 @@ impl ToTokens for Features<'_> {
 
         // Special
 
-        if !self.darling_input.check.is_present() {
-            let is_check = &self.paths.is_check.path;
-            let check = &self.paths.check.path;
-
-            tokens.extend(quote! {
-                impl #is_check for #input_name {}
-                impl #check for #input_name {}
-            });
-        } else {
-            let is_check = &self.paths.is_check.path;
-            let must_check = &self.paths.is_check.must_check.sig;
-
-            tokens.extend(quote! {
-                impl #is_check for #input_name {
-                    #must_check {
-                        true
-                    }
-                }
-            });
-        }
-
         if !self.darling_input.comment.is_present() {
             let is_comment = &self.paths.is_comment.path;
 
