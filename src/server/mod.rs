@@ -94,11 +94,11 @@
 //!
 
 /// LSP server capabilities (executed when receiving requests or notifications from client)
-pub(crate) mod capabilities;
+pub mod capabilities;
 /// Session handling
 mod session;
 
-pub use session::options::*;
-pub use session::Session;
-pub use session::request_registry::RequestRegistry;
 pub use session::notification_registry::NotificationRegistry;
+pub use session::options::*;
+pub use session::request_registry::RequestRegistry;
+pub use session::Session;

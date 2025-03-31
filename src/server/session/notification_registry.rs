@@ -1,11 +1,12 @@
 use super::Session;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_server::Notification;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
 
-type RequestCallback<Db> =
-    Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync>;
+type RequestCallback<Db> = Box<
+    dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync,
+>;
 
 #[derive(Default)]
 pub struct NotificationRegistry<Db: WorkspaceDatabase> {
@@ -13,7 +14,7 @@ pub struct NotificationRegistry<Db: WorkspaceDatabase> {
 }
 
 impl<Db: WorkspaceDatabase> NotificationRegistry<Db> {
-    pub fn register<N, F>(&mut self, handler: F)
+    pub fn register<N, F>(&mut self, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned,
@@ -27,6 +28,7 @@ impl<Db: WorkspaceDatabase> NotificationRegistry<Db> {
         });
 
         self.handlers.insert(method, callback);
+        self
     }
 
     pub fn handle(&self, session: &mut Session<Db>, req: Notification) -> anyhow::Result<()> {

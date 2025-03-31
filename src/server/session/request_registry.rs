@@ -1,11 +1,12 @@
 use super::Session;
+use auto_lsp_core::salsa::db::WorkspaceDatabase;
 use lsp_server::{Request, Response};
 use serde::{de::DeserializeOwned, Serialize};
 use std::collections::HashMap;
-use auto_lsp_core::salsa::db::WorkspaceDatabase;
 
-type RequestCallback<Db> =
-    Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync>;
+type RequestCallback<Db> = Box<
+    dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync,
+>;
 
 #[derive(Default)]
 pub struct RequestRegistry<Db: WorkspaceDatabase> {
@@ -13,7 +14,7 @@ pub struct RequestRegistry<Db: WorkspaceDatabase> {
 }
 
 impl<Db: WorkspaceDatabase> RequestRegistry<Db> {
-    pub fn register<R, F>(&mut self, handler: F)
+    pub fn register<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned,
@@ -28,9 +29,14 @@ impl<Db: WorkspaceDatabase> RequestRegistry<Db> {
         });
 
         self.handlers.insert(method, callback);
+        self
     }
 
-    pub fn handle(&self, session: &mut Session<Db>, req: Request) -> anyhow::Result<Option<Response>> {
+    pub fn handle(
+        &self,
+        session: &mut Session<Db>,
+        req: Request,
+    ) -> anyhow::Result<Option<Response>> {
         let id = req.id.clone();
         let params = req.params;
         if let Some(callback) = self.handlers.get(&req.method) {
