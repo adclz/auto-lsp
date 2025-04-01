@@ -18,8 +18,6 @@ impl Root {
         // Clear AST if document is empty
         if document.texter.text.is_empty() {
             self.ast = None;
-            self.unsolved_checks.clear();
-            self.unsolved_references.clear();
             return self;
         }
 
@@ -34,9 +32,6 @@ impl Root {
     }
 
     fn set_ast(&mut self, db: &dyn BaseDatabase, document: &Document) -> &mut Self {
-        self.unsolved_checks.clear();
-        self.unsolved_references.clear();
-
         let ast_parser = self.parsers.ast_parser;
 
         self.ast = match ast_parser(db, self, document, None) {
@@ -52,17 +47,9 @@ impl Root {
 
 impl Display for Root {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if !self.unsolved_checks.is_empty() {
-            writeln!(f, "Unsolved checks: {:?}", self.unsolved_checks.len())?;
-        };
-
-        if !self.unsolved_references.is_empty() {
-            writeln!(
-                f,
-                "Unsolved references: {:?}",
-                self.unsolved_references.len()
-            )?;
-        };
+        if let Some(ast) = &self.ast {
+            write!(f, "{}", ast.read())?;
+        }
         Ok(())
     }
 }

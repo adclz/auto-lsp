@@ -73,10 +73,6 @@ pub struct Root {
     pub parsers: &'static Parsers,
     /// The AST for the document, if available.
     pub ast: Option<DynSymbol>,
-    /// Nodes flagged as unresolved during checks.
-    pub unsolved_checks: Vec<WeakSymbol>,
-    /// References flagged as unresolved during analysis.
-    pub unsolved_references: Vec<WeakSymbol>,
 }
 
 impl Root {
@@ -119,8 +115,6 @@ impl Root {
             url: Arc::new(uri.clone()),
             parsers,
             ast: None,
-            unsolved_checks: vec![],
-            unsolved_references: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
@@ -165,8 +159,6 @@ impl Root {
             url: Arc::new(uri.clone()),
             parsers,
             ast: None,
-            unsolved_checks: vec![],
-            unsolved_references: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
