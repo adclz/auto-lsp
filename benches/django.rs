@@ -5,99 +5,105 @@ use auto_lsp_core::{
         BuildSemanticTokens,
     },
     document_symbols_builder::DocumentSymbolsBuilder,
+    salsa::{db::BaseDatabase, tracked::get_ast},
     semantic_tokens_builder::SemanticTokensBuilder,
     workspace::Workspace,
 };
 use criterion::{criterion_group, criterion_main, Criterion};
 use lsp_types::Url;
+use texter::core::text;
 
 pub static DJANGO: &str = include_str!("django.py");
 
 pub fn parse(c: &mut Criterion) {
+    let mut db = auto_lsp_core::salsa::db::BaseDb::default();
+
+    let uri = Url::parse("file:///test.py").unwrap();
+    let text = text::Text::new(DJANGO.to_string());
+
+    db.add_file_from_texter(
+        auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
+        &uri,
+        text,
+    );
+
     c.bench_function("parse_django_file", move |b| {
         b.iter(|| {
-            let uri = Url::parse("file:///test.py").unwrap();
-            let root = Root::from_utf8(
-                auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
-                uri,
-                DJANGO.to_string().clone(),
-            )
-            .unwrap();
-            assert!(root.0.ast.is_some())
+            let file = db.get_file(&uri).unwrap();
+            let ast = get_ast(&db, file).clone().into_inner();
+            assert!(ast.ast.is_some())
         });
     });
 }
 
 pub fn lsp_requests(c: &mut Criterion) {
-    let mut workspace = Workspace::default();
+    let mut db = auto_lsp_core::salsa::db::BaseDb::default();
 
     let uri = Url::parse("file:///test.py").unwrap();
-    let root = Root::from_utf8(
+    let text = text::Text::new(DJANGO.to_string());
+    db.add_file_from_texter(
         auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
-        uri.clone(),
-        DJANGO.to_string().clone(),
-    )
-    .unwrap();
+        &uri,
+        text,
+    );
 
-    workspace.roots.insert(uri.clone(), root);
+    let file = db.get_file(&uri).unwrap();
+
+    let ast = get_ast(&db, file).clone().into_inner();
+    let document = file.document(&db).read();
 
     c.bench_function("code_actions", |b| {
         b.iter(|| {
-            let (root, document) = workspace.roots.get(&uri).as_ref().unwrap();
             let mut acc = vec![];
-            root.ast
+            ast.ast
                 .as_ref()
                 .unwrap()
-                .build_code_actions(document, &mut acc);
-            assert_eq!(acc.len(), 4);
+                .build_code_actions(&document, &mut acc);
+            assert_eq!(acc.len(), 2);
         });
     });
 
     c.bench_function("code_lenses", |b| {
         b.iter(|| {
-            let (root, document) = workspace.roots.get(&uri).as_ref().unwrap();
             let mut acc = vec![];
-            root.ast
+            ast.ast
                 .as_ref()
                 .unwrap()
-                .build_code_lenses(document, &mut acc);
-            assert_eq!(acc.len(), 4);
+                .build_code_lenses(&document, &mut acc);
+            assert_eq!(acc.len(), 2);
         });
     });
 
     c.bench_function("document_symbols", |b| {
         b.iter(|| {
-            let (root, document) = workspace.roots.get(&uri).as_ref().unwrap();
             let mut acc = DocumentSymbolsBuilder::default();
-            root.ast
+            ast.ast
                 .as_ref()
                 .unwrap()
-                .build_document_symbols(document, &mut acc);
-            assert_eq!(acc.finalize().len(), 4);
+                .build_document_symbols(&document, &mut acc);
+            assert_eq!(acc.finalize().len(), 2);
         });
     });
 
     c.bench_function("inlay_hints", |b| {
         b.iter(|| {
-            let (root, document) = workspace.roots.get(&uri).as_ref().unwrap();
             let mut acc = vec![];
-            root.ast
+            ast.ast
                 .as_ref()
                 .unwrap()
-                .build_inlay_hints(document, &mut acc);
-            assert_eq!(acc.len(), 4);
+                .build_inlay_hints(&document, &mut acc);
+            assert_eq!(acc.len(), 2);
         });
     });
 
     c.bench_function("semantic_tokens", |b| {
         b.iter(|| {
-            let (root, document) = workspace.roots.get(&uri).as_ref().unwrap();
             let mut acc = SemanticTokensBuilder::new("".into());
-            root.ast
+            ast.ast
                 .as_ref()
                 .unwrap()
-                .build_semantic_tokens(document, &mut acc);
-            assert_eq!(acc.build().data.len(), 4);
+                .build_semantic_tokens(&document, &mut acc);
+            assert_eq!(acc.build().data.len(), 2);
         });
     });
 }
