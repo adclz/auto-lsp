@@ -40,7 +40,6 @@ impl ToTokens for EnumBuilder<'_> {
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
-        self.impl_comment(&mut builder);
 
         self.impl_code_actions(&mut builder);
         self.impl_code_lens(&mut builder);
@@ -180,16 +179,6 @@ impl EnumBuilder<'_> {
                 &self.paths.scope.is_scope.variant,
             )
             .stage_trait(self.input_name, &self.paths.scope.path);
-    }
-
-    fn impl_comment(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.is_comment.is_comment.sig,
-                &self.paths.is_comment.is_comment.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.is_comment.path);
     }
 
     fn impl_code_actions(&self, builder: &mut VariantBuilder) {

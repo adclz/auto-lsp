@@ -10,8 +10,6 @@ pub struct SymbolData {
     pub url: Arc<Url>,
     /// The parent of the symbol
     pub parent: Option<WeakSymbol>,
-    /// The comment's byte range in the source code
-    pub comment: Option<std::ops::Range<usize>>,
     /// The byte range of the symbol in the source code
     pub range: std::ops::Range<usize>,
 }
@@ -21,7 +19,6 @@ impl SymbolData {
         Self {
             url,
             parent: None,
-            comment: None,
             range,
         }
     }
@@ -39,12 +36,6 @@ pub trait GetSymbolData {
     fn get_parent(&self) -> Option<WeakSymbol>;
     /// Set the parent of the symbol
     fn set_parent(&mut self, parent: WeakSymbol);
-    /// Get the comment of the symbol (if any)
-    ///
-    /// Requires the source code to be passed since symobls only store byte ranges
-    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str>;
-    /// Set the comment of the symbol, where range is the byte range of the comment's text location
-    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>);
 }
 
 impl GetSymbolData for SymbolData {
@@ -62,23 +53,5 @@ impl GetSymbolData for SymbolData {
 
     fn set_parent(&mut self, parent: WeakSymbol) {
         self.parent = Some(parent);
-    }
-
-    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
-        match self.comment {
-            Some(ref range) => {
-                // Check if the range is within bounds and valid
-                if range.start <= range.end && range.end <= source_code.len() {
-                    std::str::from_utf8(&source_code[range.start..range.end]).ok()
-                } else {
-                    None
-                }
-            }
-            None => None,
-        }
-    }
-
-    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
-        self.comment = range;
     }
 }

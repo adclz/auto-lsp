@@ -34,7 +34,6 @@ pub trait AstSymbol:
     // special
     + Traverse
     + Scope
-    + Comment
     + GetSymbolData
     + Parent
     + Display
@@ -111,13 +110,5 @@ impl<T: AstSymbol + ?Sized> GetSymbolData for T {
 
     fn set_parent(&mut self, parent: WeakSymbol) {
         self.get_mut_data().set_parent(parent)
-    }
-
-    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
-        self.get_data().get_comment(source_code)
-    }
-
-    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
-        self.get_mut_data().set_comment(range)
     }
 }

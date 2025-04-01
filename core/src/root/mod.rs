@@ -10,7 +10,6 @@ use std::sync::Arc;
 use texter::core::text::Text;
 use tree_sitter::{Language, Parser, Query};
 
-pub mod comments;
 pub mod lexer;
 pub mod parse;
 pub mod regex;

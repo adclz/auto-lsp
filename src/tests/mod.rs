@@ -14,8 +14,6 @@ pub mod code_actions;
 #[cfg(test)]
 pub mod code_lenses;
 #[cfg(test)]
-pub mod comments;
-#[cfg(test)]
 pub mod completion_items;
 #[cfg(test)]
 #[cfg(feature = "deadlock_detection")]

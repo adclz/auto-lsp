@@ -44,7 +44,7 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
             foo_hover.contents,
             lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
-                value: "# foo comment\nhover foo".into(),
+                value: "hover foo".into(),
             })
         );
     } else {

@@ -494,7 +494,6 @@ pub struct WithItem {
 #[seq(
     query = "function",
     scope,
-    comment,
     code_actions,
     code_lenses,
     completions,

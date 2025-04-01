@@ -3,7 +3,6 @@ use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::salsa::tracked::get_ast;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
-use salsa::plumbing::input::FieldIngredientImpl;
 
 use super::python_utils::create_python_db;
 use super::python_workspace::ast::Module;

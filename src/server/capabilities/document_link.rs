@@ -10,6 +10,7 @@ use std::ops::Deref;
 /// and finally we pass matches to the **to_document_link** function.
 pub fn get_document_links<Db: BaseDatabase>(
     db: &Db,
+    query: &tree_sitter::Query,
     with_regex: RegexToDocumentLink,
     params: DocumentLinkParams,
 ) -> anyhow::Result<Option<Vec<DocumentLink>>> {
@@ -25,7 +26,7 @@ pub fn get_document_links<Db: BaseDatabase>(
     let root = get_ast(db, file).clone().into_inner();
 
     let mut results = vec![];
-    let matches = root.find_all_with_regex(&document, re);
+    let matches = root.find_all_with_regex(query, &document, re);
     matches.into_iter().for_each(|(m, line)| {
         to_document_link(m, line, &document, &root, &mut results);
     });

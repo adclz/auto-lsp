@@ -1,3 +1,5 @@
+use crate::html::HTML_PARSERS;
+
 use super::html_utils::create_html_db;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::Url;
@@ -15,6 +17,15 @@ fn comments_with_link() -> impl BaseDatabase {
 
 #[rstest]
 fn document_links(comments_with_link: impl BaseDatabase) {
+    let comment_query = HTML_PARSERS
+        .get("html")
+        .unwrap()
+        .tree_sitter
+        .queries
+        .comments
+        .as_ref()
+        .unwrap();
+
     let file = comments_with_link
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
@@ -22,7 +33,7 @@ fn document_links(comments_with_link: impl BaseDatabase) {
     let root = get_ast(&comments_with_link, file).clone().into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(&document, &regex);
+    let results = root.find_all_with_regex(&comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");
@@ -44,6 +55,15 @@ fn multiline_comment_with_links() -> impl BaseDatabase {
 
 #[rstest]
 fn multiline_document_links(multiline_comment_with_links: impl BaseDatabase) {
+    let comment_query = HTML_PARSERS
+        .get("html")
+        .unwrap()
+        .tree_sitter
+        .queries
+        .comments
+        .as_ref()
+        .unwrap();
+
     let file = multiline_comment_with_links
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
@@ -53,7 +73,7 @@ fn multiline_document_links(multiline_comment_with_links: impl BaseDatabase) {
         .into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(&document, &regex);
+    let results = root.find_all_with_regex(&comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");

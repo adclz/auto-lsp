@@ -101,26 +101,7 @@ impl ToTokens for Features<'_> {
             });
         }
 
-        // Special
-
-        if !self.darling_input.comment.is_present() {
-            let is_comment = &self.paths.is_comment.path;
-
-            tokens.extend(quote! {
-                impl #is_comment for #input_name {}
-            });
-        } else {
-            let is_comment = &self.paths.is_comment.path;
-            let is_comment_sig = &self.paths.is_comment.is_comment.sig;
-
-            tokens.extend(quote! {
-                impl #is_comment for #input_name {
-                    #is_comment_sig {
-                        true
-                    }
-                }
-            });
-        }
+        // Speciald
 
         if !self.darling_input.scope.is_present() {
             let is_scope_path = &self.paths.scope.path;
