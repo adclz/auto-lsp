@@ -17,7 +17,8 @@ pub fn parse_rayon(c: &mut Criterion) {
         auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
         &uri,
         text,
-    );
+    )
+    .unwrap();
 
     c.bench_function("parse_django_file_with_rayon", move |b| {
         b.iter(|| {

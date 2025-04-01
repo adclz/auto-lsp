@@ -1,5 +1,4 @@
 use crate::core::ast::BuildCodeLenses;
-use crate::server::session::Session;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{CodeLens, CodeLensParams};
 

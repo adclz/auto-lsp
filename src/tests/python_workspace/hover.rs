@@ -1,6 +1,6 @@
 use super::ast::{Identifier, PassStatement};
 use crate::{self as auto_lsp};
-use auto_lsp::core::ast::{AstSymbol, GetHover, GetSymbolData};
+use auto_lsp::core::ast::{AstSymbol, GetHover};
 use auto_lsp_core::document::Document;
 
 impl GetHover for PassStatement {

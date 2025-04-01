@@ -1,5 +1,4 @@
 use crate::server::session::Session;
-use auto_lsp_core::root::Root;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::DidOpenTextDocumentParams;
 

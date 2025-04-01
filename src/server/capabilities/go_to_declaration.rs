@@ -1,8 +1,6 @@
 use crate::core::ast::GetGoToDeclaration;
-use crate::server::session::Session;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse};
-use std::ops::Deref;
 
 /// Request to go to the declaration of a symbol
 ///

@@ -1,4 +1,3 @@
-use auto_lsp::core::root::Root;
 use auto_lsp_core::{
     ast::{
         BuildCodeActions, BuildCodeLenses, BuildDocumentSymbols, BuildInlayHints,
@@ -7,7 +6,6 @@ use auto_lsp_core::{
     document_symbols_builder::DocumentSymbolsBuilder,
     salsa::{db::BaseDatabase, tracked::get_ast},
     semantic_tokens_builder::SemanticTokensBuilder,
-    workspace::Workspace,
 };
 use criterion::{criterion_group, criterion_main, Criterion};
 use lsp_types::Url;
@@ -25,7 +23,8 @@ pub fn parse(c: &mut Criterion) {
         auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
         &uri,
         text,
-    );
+    )
+    .unwrap();
 
     c.bench_function("parse_django_file", move |b| {
         b.iter(|| {
@@ -45,7 +44,8 @@ pub fn lsp_requests(c: &mut Criterion) {
         auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
         &uri,
         text,
-    );
+    )
+    .unwrap();
 
     let file = db.get_file(&uri).unwrap();
 

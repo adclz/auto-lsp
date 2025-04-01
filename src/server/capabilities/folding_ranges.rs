@@ -1,7 +1,5 @@
-use crate::server::session::Session;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
-use std::ops::Deref;
 use streaming_iterator::StreamingIterator;
 
 /// Request for folding ranges

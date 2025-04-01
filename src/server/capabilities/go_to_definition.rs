@@ -1,8 +1,6 @@
 use crate::core::ast::GetGoToDefinition;
-use crate::server::session::Session;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
-use std::ops::Deref;
 
 /// Request to go to the definition of a symbol
 ///
@@ -14,7 +12,7 @@ pub fn go_to_definition<Db: BaseDatabase>(
     let uri = &params.text_document_position_params.text_document.uri;
 
     let file = db
-        .get_file(&uri)
+        .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();

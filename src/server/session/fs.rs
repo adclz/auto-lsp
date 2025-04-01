@@ -1,6 +1,5 @@
 use super::Session;
-use auto_lsp_core::document::Document;
-use auto_lsp_core::root::{Parsers, Root};
+use auto_lsp_core::root::Parsers;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{InitializeParams, Url};
 use serde::Deserialize;

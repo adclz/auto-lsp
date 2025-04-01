@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 
-use crate::server::session::{self, Session};
+use crate::server::session::{Session};
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
@@ -17,7 +17,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
         FileChangeType::CREATED => {
             let uri = &file.uri;
 
-            if session.db.get_file(&uri).is_some() {
+            if session.db.get_file(uri).is_some() {
                 // The file is already in db
                 // We can ignore this change
                 return Ok(());
@@ -36,7 +36,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                 .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
             let open_file = File::open(file_path)?;
 
-            match session.db.get_file(&uri) {
+            match session.db.get_file(uri) {
                 Some(file) => {
                     if is_file_content_different(
                         &open_file,

@@ -1,5 +1,4 @@
 use super::python_utils::create_python_db;
-use crate::python::PYTHON_PARSERS;
 use auto_lsp_core::{salsa::db::BaseDatabase, salsa::tracked::get_ast};
 use lsp_types::Url;
 use rstest::{fixture, rstest};

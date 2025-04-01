@@ -1,7 +1,5 @@
-use crate::server::session::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{SelectionRange, SelectionRangeParams};
-use std::ops::Deref;
 
 /// Request for selection ranges
 ///
@@ -13,7 +11,7 @@ pub fn get_selection_ranges<Db: BaseDatabase>(
     let uri = &params.text_document.uri;
 
     let file = db
-        .get_file(&uri)
+        .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();

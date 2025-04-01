@@ -3,9 +3,8 @@ use crate::{document::Document, root::Root};
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
 use parking_lot::RwLock;
-use salsa::{Accumulator, Setter};
+use salsa::Setter;
 use salsa::{Database, Storage};
-use std::fmt::Formatter;
 use std::{hash::Hash, sync::Arc};
 use texter::core::text::Text;
 

@@ -1,12 +1,10 @@
 use crate::core::ast::BuildSemanticTokens;
-use crate::server::session::Session;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
 use lsp_types::{
     SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
     SemanticTokensResult,
 };
-use std::ops::Deref;
 
 /// Get all semantic tokens for a document.
 pub fn get_semantic_tokens_full<Db: BaseDatabase>(
@@ -16,7 +14,7 @@ pub fn get_semantic_tokens_full<Db: BaseDatabase>(
     let uri = &params.text_document.uri;
 
     let file = db
-        .get_file(&uri)
+        .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
@@ -39,7 +37,7 @@ pub fn get_semantic_tokens_range<Db: BaseDatabase>(
     let uri = &params.text_document.uri;
 
     let file = db
-        .get_file(&uri)
+        .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();

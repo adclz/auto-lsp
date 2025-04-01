@@ -1,10 +1,10 @@
 use crate::{
-    core_ast::symbol::{DynSymbol, WeakSymbol},
+    core_ast::symbol::DynSymbol,
     core_build::parse::InvokeParserFn,
     document::Document,
     salsa::db::BaseDatabase,
 };
-use lsp_types::{Diagnostic, Url};
+use lsp_types::Url;
 use parking_lot::RwLock;
 use std::sync::Arc;
 use texter::core::text::Text;

@@ -4,7 +4,6 @@ use tree_sitter::Node;
 
 use crate::salsa::{db::BaseDatabase, tracked::DiagnosticAccumulator};
 
-use super::Root;
 
 /// Traverse a tree-sitter syntax tree to collect error nodes.
 ///

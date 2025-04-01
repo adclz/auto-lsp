@@ -1,7 +1,4 @@
-use auto_lsp_core::salsa::{
-    db::{BaseDatabase, BaseDb},
-    tracked::get_ast,
-};
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use criterion::{criterion_group, criterion_main, Criterion};
 use lsp_types::Url;
 use texter::core::text;
@@ -22,7 +19,8 @@ pub fn parse(c: &mut Criterion) {
         auto_lsp::python::PYTHON_PARSERS.get("python").unwrap(),
         &uri,
         text,
-    );
+    )
+    .unwrap();
     c.bench_function("parse_flamegraph", move |b| {
         b.iter(|| {
             let file = db.get_file(&uri).unwrap();

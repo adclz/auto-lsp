@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use super::ast::{
-    CompoundStatement, Expression, Function, PrimaryExpression, Statement, TypedDefaultParameter,
+    CompoundStatement, Expression, PrimaryExpression, Statement, TypedDefaultParameter,
 };
 use crate::{
     self as auto_lsp,

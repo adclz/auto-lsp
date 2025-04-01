@@ -1,8 +1,6 @@
 use crate::core::ast::BuildInlayHints;
-use crate::server::session::Session;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{InlayHint, InlayHintParams};
-use std::ops::Deref;
 
 /// Get inlay hints for a document.
 pub fn get_inlay_hints<Db: BaseDatabase>(

@@ -1,7 +1,6 @@
-use crate::server::{session::Session, RegexToDocumentLink};
+use crate::server::RegexToDocumentLink;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{DocumentLink, DocumentLinkParams};
-use std::ops::Deref;
 
 /// Get document links for a document.
 ///

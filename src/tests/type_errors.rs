@@ -1,7 +1,7 @@
-use crate::{core::workspace::Workspace, python::check::type_check_default_parameters};
+use crate::python::check::type_check_default_parameters;
 use auto_lsp_core::salsa::{
     db::BaseDatabase,
-    tracked::{get_ast, DiagnosticAccumulator},
+    tracked::DiagnosticAccumulator,
 };
 use lsp_types::Url;
 use rstest::{fixture, rstest};

@@ -2,7 +2,6 @@ use crate::server::session::init::TextFn;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::Connection;
 use options::InitOptions;
-use parking_lot::Mutex;
 use std::collections::HashMap;
 
 pub mod fs;

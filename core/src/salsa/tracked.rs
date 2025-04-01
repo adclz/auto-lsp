@@ -1,15 +1,8 @@
 use super::db::{BaseDatabase, File};
 use crate::root::lexer::get_tree_sitter_errors;
-use crate::root::Parsers;
-use crate::{document::Document, root::Root};
-use dashmap::{DashMap, Entry};
-use lsp_types::Url;
-use parking_lot::RwLock;
-use salsa::{Accumulator, Setter};
-use salsa::{Database, Storage};
+use crate::root::Root;
 use std::fmt::Formatter;
-use std::{hash::Hash, sync::Arc};
-use texter::core::text::Text;
+use std::sync::Arc;
 
 #[salsa::tracked(no_eq, return_ref)]
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {

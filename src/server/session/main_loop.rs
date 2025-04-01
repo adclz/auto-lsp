@@ -4,7 +4,6 @@ use crate::server::session::request_registry::RequestRegistry;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use crossbeam_channel::select;
 use lsp_server::{Message, Notification};
-use parking_lot::Mutex;
 
 impl<Db: BaseDatabase> Session<Db> {
     /// Main loop of the LSP server, backed by [`lsp-server`] and [`crossbeam-channel`] crates.

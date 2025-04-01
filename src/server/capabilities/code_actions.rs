@@ -1,8 +1,6 @@
-use crate::server::session::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::{ast::BuildCodeActions, salsa::tracked::get_ast};
 use lsp_types::{CodeActionOrCommand, CodeActionParams};
-use std::ops::Deref;
 
 pub fn get_code_actions<Db: BaseDatabase>(
     db: &Db,

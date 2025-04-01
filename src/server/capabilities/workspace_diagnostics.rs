@@ -1,4 +1,3 @@
-use crate::server::session::Session;
 use auto_lsp_core::salsa::{
     db::BaseDatabase,
     tracked::{get_ast, DiagnosticAccumulator},
@@ -8,7 +7,6 @@ use lsp_types::{
     WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport,
     WorkspaceFullDocumentDiagnosticReport,
 };
-use std::ops::Deref;
 
 /// Get diagnostics for all documents.
 pub fn get_workspace_diagnostics<Db: BaseDatabase>(

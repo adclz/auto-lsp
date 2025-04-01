@@ -1,8 +1,6 @@
-use crate::server::session::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
 use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
-use std::ops::Deref;
 
 /// Request to get root symbols
 ///

@@ -33,7 +33,7 @@ fn document_links(comments_with_link: impl BaseDatabase) {
     let root = get_ast(&comments_with_link, file).clone().into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(&comment_query, &document, &regex);
+    let results = root.find_all_with_regex(comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");
@@ -73,7 +73,7 @@ fn multiline_document_links(multiline_comment_with_links: impl BaseDatabase) {
         .into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(&comment_query, &document, &regex);
+    let results = root.find_all_with_regex(comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");

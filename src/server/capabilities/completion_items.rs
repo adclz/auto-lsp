@@ -1,9 +1,7 @@
 use crate::core::ast::{BuildCompletionItems, BuildTriggeredCompletionItems};
-use crate::server::session::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::salsa::tracked::get_ast;
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
-use std::ops::Deref;
 
 pub fn get_completion_items<Db: BaseDatabase>(
     db: &Db,
@@ -14,7 +12,7 @@ pub fn get_completion_items<Db: BaseDatabase>(
     let uri = &params.text_document_position.text_document.uri;
 
     let file = db
-        .get_file(&uri)
+        .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();

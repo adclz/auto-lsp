@@ -11,11 +11,8 @@ use lsp_types::{
     SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
     SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
 };
-use parking_lot::Mutex;
-use serde::Serialize;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
-use std::sync::{Arc, LazyLock};
 use texter::core::text::Text;
 
 /// Function to create a new [`Text`] from a [`String`]
