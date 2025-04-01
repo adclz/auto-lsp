@@ -1,7 +1,12 @@
 #![allow(unused)]
 use std::fmt::Display;
 
-use crate::document::Document;
+use salsa::Accumulator;
+
+use crate::{
+    document::Document,
+    salsa::{db::BaseDatabase, tracked::DiagnosticAccumulator},
+};
 
 use super::Root;
 
@@ -9,18 +14,7 @@ impl Root {
     /// Parses a document and updates the AST.
     ///
     /// This method assumes the document has already been updated and parsed by the tree-sitter parser.
-    pub fn parse(&mut self, document: &Document) -> &mut Self {
-        // Clear diagnostics
-        self.ast_diagnostics.clear();
-        self.lexer_diagnostics.clear();
-
-        // Get new diagnostics from tree sitter
-        Root::get_tree_sitter_errors(
-            &document.tree.root_node(),
-            document.texter.text.as_bytes(),
-            &mut self.lexer_diagnostics,
-        );
-
+    pub fn parse(&mut self, db: &dyn BaseDatabase, document: &Document) -> &mut Self {
         // Clear AST if document is empty
         if document.texter.text.is_empty() {
             self.ast = None;
@@ -32,23 +26,23 @@ impl Root {
         // Create a new AST if none exists and returns
         let root = match self.ast.clone() {
             Some(root) => root,
-            None => return self.set_ast(document),
+            None => return self.set_ast(db, document),
         };
 
-        self.set_ast(document);
+        self.set_ast(db, document);
         self
     }
 
-    fn set_ast(&mut self, document: &Document) -> &mut Self {
+    fn set_ast(&mut self, db: &dyn BaseDatabase, document: &Document) -> &mut Self {
         self.unsolved_checks.clear();
         self.unsolved_references.clear();
 
         let ast_parser = self.parsers.ast_parser;
 
-        self.ast = match ast_parser(self, document, None) {
+        self.ast = match ast_parser(db, self, document, None) {
             Ok(ast) => Some(ast),
             Err(e) => {
-                self.ast_diagnostics.push(e);
+                DiagnosticAccumulator::accumulate(e.clone().into(), db);
                 None
             }
         };

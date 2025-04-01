@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use lsp_types::Diagnostic;
+use salsa::Accumulator;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::QueryCapture;
 
@@ -11,6 +12,8 @@ use super::symbol::*;
 use super::utils::{intersecting_ranges, tree_sitter_range_to_lsp_range};
 use crate::document::Document;
 use crate::root::Root;
+use crate::salsa::db::BaseDatabase;
+use crate::salsa::tracked::DiagnosticAccumulator;
 use crate::{builder_error, builder_warning, core_ast::core::AstSymbol};
 
 /// Stack builder for constructing Abstract Syntax Trees (ASTs).
@@ -22,6 +25,7 @@ where
     T: Buildable + Queryable,
 {
     _meta: PhantomData<T>,
+    db: &'a dyn BaseDatabase,
     root: &'a mut Root,
     document: &'a Document,
     /// Symbols created while building the AST
@@ -36,9 +40,10 @@ where
     T: Buildable + Queryable,
 {
     /// Creates a new `StackBuilder` instance.
-    pub fn new(root: &'a mut Root, document: &'a Document) -> Self {
+    pub fn new(db: &'a dyn BaseDatabase, root: &'a mut Root, document: &'a Document) -> Self {
         Self {
             _meta: PhantomData,
+            db,
             root,
             document,
             roots: vec![],
@@ -173,13 +178,17 @@ where
                 self.roots.push(node.clone());
                 self.stack.push(node);
             }
-            None => self.root.ast_diagnostics.push(builder_warning!(
-                tree_sitter_range_to_lsp_range(&capture.node.range()),
-                format!(
-                    "Syntax error: Unexpected {:?}",
-                    self.root.parsers.tree_sitter.queries.core.capture_names()[capture_index],
+            None => DiagnosticAccumulator::accumulate(
+                builder_warning!(
+                    tree_sitter_range_to_lsp_range(&capture.node.range()),
+                    format!(
+                        "Syntax error: Unexpected {:?}",
+                        self.root.parsers.tree_sitter.queries.core.capture_names()[capture_index],
+                    )
                 )
-            )),
+                .into(),
+                self.db,
+            ),
         }
     }
 
@@ -192,20 +201,24 @@ where
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.
-                self.root.ast_diagnostics.push(e);
+                DiagnosticAccumulator::accumulate(e.into(), self.db);
             }
             Ok(None) => {
                 // Parent did not accept the child node.
-                self.root.ast_diagnostics.push(builder_warning!(
-                    tree_sitter_range_to_lsp_range(&capture.node.range()),
-                    format!(
-                        "Syntax error: Unexpected {:?} in {:?}",
-                        self.root.parsers.tree_sitter.queries.core.capture_names()
-                            [capture.index as usize],
-                        self.root.parsers.tree_sitter.queries.core.capture_names()
-                            [parent.get_rc().borrow().get_query_index()],
+                DiagnosticAccumulator::accumulate(
+                    builder_warning!(
+                        tree_sitter_range_to_lsp_range(&capture.node.range()),
+                        format!(
+                            "Syntax error: Unexpected {:?} in {:?}",
+                            self.root.parsers.tree_sitter.queries.core.capture_names()
+                                [capture.index as usize],
+                            self.root.parsers.tree_sitter.queries.core.capture_names()
+                                [parent.get_rc().borrow().get_query_index()],
+                        )
                     )
-                ));
+                    .into(),
+                    self.db,
+                );
             }
             Ok(Some(node)) => {
                 self.stack.push(parent.clone());

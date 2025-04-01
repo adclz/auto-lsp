@@ -1,5 +1,8 @@
 use crate::server::session::Session;
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use auto_lsp_core::salsa::{
+    db::BaseDatabase,
+    tracked::{get_ast, DiagnosticAccumulator},
+};
 use lsp_types::{
     FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport,
     WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport,
@@ -17,10 +20,9 @@ pub fn get_workspace_diagnostics<Db: BaseDatabase>(
         .iter()
         .map(|file| {
             let file = *file;
-            let ast = get_ast(db, file).clone().into_inner();
-            let errors = [ast.lexer_diagnostics.clone(), ast.ast_diagnostics.clone()]
+            let errors = get_ast::accumulated::<DiagnosticAccumulator>(db, file)
                 .into_iter()
-                .flatten()
+                .map(|d| d.into())
                 .collect();
             WorkspaceDocumentDiagnosticReport::Full(WorkspaceFullDocumentDiagnosticReport {
                 version: None,

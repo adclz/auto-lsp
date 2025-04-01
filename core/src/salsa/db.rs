@@ -69,7 +69,7 @@ impl BaseDatabase for BaseDb {
         url: &Url,
         text: Text,
     ) -> anyhow::Result<()> {
-        let (_root, document) = Root::from_texter(parsers, url.clone(), text)?;
+        let (_root, document) = Root::from_texter(self, parsers, url.clone(), text)?;
         let file = File::new(self, url.clone(), parsers, Arc::new(RwLock::new(document)));
         match self.files.entry(url.clone()) {
             Entry::Occupied(_) => Err(anyhow::anyhow!("File {:?} not found", url)),

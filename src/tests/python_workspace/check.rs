@@ -1,47 +1,41 @@
 use super::ast::{Expression, PrimaryExpression, TypedDefaultParameter};
 use crate::{self as auto_lsp};
 use auto_lsp::core::ast::AstSymbol;
-use auto_lsp_core::document::Document;
-
-pub(crate) enum CheckStatus {
-    Ok,
-    Fail,
-}
+use auto_lsp_core::{document::Document, salsa::tracked::DiagnosticAccumulator};
+use salsa::{Accumulator, Database};
 
 impl TypedDefaultParameter {
-    fn check(&self, doc: &Document, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> CheckStatus {
+    fn check(&self, db: &dyn Database, doc: &Document) {
         let source = doc.texter.text.as_bytes();
 
         match self.parameter_type.read().get_text(source).unwrap() {
             "int" => match self.value.read().is_integer() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
             "float" => match self.value.read().is_float() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
             "str" => match self.value.read().is_string() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
             "bool" => match self.value.read().is_true() || self.value.read().is_false() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
-            _ => CheckStatus::Fail,
+            _ => {
+                DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
+            }
         }
     }
 }

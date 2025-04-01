@@ -1,4 +1,5 @@
-use super::db::{File, BaseDatabase};
+use super::db::{BaseDatabase, File};
+use crate::root::lexer::get_tree_sitter_errors;
 use crate::root::Parsers;
 use crate::{document::Document, root::Root};
 use dashmap::{DashMap, Entry};
@@ -16,17 +17,16 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let doc = file.document(db);
     let url = file.url(db);
 
-    let ast = Root::from_texter(parsers, url, doc.read().texter.clone())
+    let ast = Root::from_texter(db, parsers, url, doc.read().texter.clone())
         .unwrap()
         .0;
 
-    ast.lexer_diagnostics.iter().for_each(|diag| {
-        DiagnosticAccumulator::accumulate(diag.into(), db);
-    });
+    let doc = doc.read();
 
-    ast.ast_diagnostics.iter().for_each(|diag| {
-        DiagnosticAccumulator::accumulate(diag.into(), db);
-    });
+    let node = doc.tree.root_node();
+    let source_code = doc.texter.text.as_bytes();
+
+    get_tree_sitter_errors(db, &node, source_code);
 
     ParsedAst::new(ast)
 }
@@ -43,6 +43,12 @@ impl From<&lsp_types::Diagnostic> for DiagnosticAccumulator {
 impl From<lsp_types::Diagnostic> for DiagnosticAccumulator {
     fn from(diagnostic: lsp_types::Diagnostic) -> Self {
         Self(diagnostic)
+    }
+}
+
+impl From<&DiagnosticAccumulator> for lsp_types::Diagnostic {
+    fn from(diagnostic: &DiagnosticAccumulator) -> Self {
+        diagnostic.0.clone()
     }
 }
 

@@ -2,6 +2,7 @@ use crate::{
     core_ast::symbol::{DynSymbol, WeakSymbol},
     core_build::parse::InvokeParserFn,
     document::Document,
+    salsa::db::BaseDatabase,
 };
 use lsp_types::{Diagnostic, Url};
 use parking_lot::RwLock;
@@ -70,10 +71,6 @@ pub struct Root {
     pub url: Arc<Url>,
     /// Parsers used for processing the document.
     pub parsers: &'static Parsers,
-    /// Diagnostics collected during parsing by tree-sitter.
-    pub lexer_diagnostics: Vec<Diagnostic>,
-    /// Diagnostics collected during AST parsing and/or running checks.
-    pub ast_diagnostics: Vec<Diagnostic>,
     /// The AST for the document, if available.
     pub ast: Option<DynSymbol>,
     /// Nodes flagged as unresolved during checks.
@@ -98,6 +95,7 @@ impl Root {
     /// # Returns
     /// A tuple containing the newly created [`Root`] and [`Document`].
     pub fn from_utf8(
+        db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         uri: Url,
         source_code: String,
@@ -120,15 +118,13 @@ impl Root {
         let mut root = Root {
             url: Arc::new(uri.clone()),
             parsers,
-            ast_diagnostics: vec![],
-            lexer_diagnostics: vec![],
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
-        root.parse(&document);
+        root.parse(db, &document);
 
         Ok((root, document))
     }
@@ -148,6 +144,7 @@ impl Root {
     /// # Returns
     /// A tuple containing the newly created [`Root`] and [`Document`].
     pub fn from_texter(
+        db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         uri: Url,
         texter: texter::core::text::Text,
@@ -167,15 +164,13 @@ impl Root {
         let mut root = Root {
             url: Arc::new(uri.clone()),
             parsers,
-            ast_diagnostics: vec![],
-            lexer_diagnostics: vec![],
             ast: None,
             unsolved_checks: vec![],
             unsolved_references: vec![],
         };
 
         // Build the AST using the core query and AST parser function.
-        root.parse(&document);
+        root.parse(db, &document);
 
         Ok((root, document))
     }

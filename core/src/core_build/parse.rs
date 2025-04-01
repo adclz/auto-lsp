@@ -2,6 +2,10 @@ use crate::ast::DynSymbol;
 use crate::document::Document;
 use crate::root::Parsers;
 use crate::root::Root;
+use crate::salsa::db::BaseDatabase;
+use crate::salsa::db::BaseDb;
+use crate::salsa::tracked::get_ast;
+use crate::salsa::tracked::DiagnosticAccumulator;
 use crate::{
     ast::AstSymbol,
     build::{Buildable, Queryable, TryFromBuilder},
@@ -9,8 +13,10 @@ use crate::{
 use ariadne::Fmt;
 use ariadne::{ColorGenerator, Label, Report, ReportKind, Source};
 use lsp_types::Url;
+use texter::core::text::Text;
 
 use super::stack_builder::StackBuilder;
+
 /// Trait for invoking the stack builder
 ///
 /// This trait is implemented for all types that implement [`Buildable`] and [`Queryable`].
@@ -24,6 +30,7 @@ pub trait InvokeParser<
     /// This method internally initializes a stack builder to build the AST and derive a symbol
     /// of type Y.
     fn parse_symbol(
+        db: &dyn BaseDatabase,
         root: &mut Root,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
@@ -36,11 +43,12 @@ where
     Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = lsp_types::Diagnostic>,
 {
     fn parse_symbol(
+        db: &dyn BaseDatabase,
         root: &mut Root,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic> {
-        StackBuilder::<T>::new(root, document).create_symbol(&range)
+        StackBuilder::<T>::new(db, root, document).create_symbol(&range)
     }
 }
 
@@ -49,6 +57,7 @@ where
 /// This type alias is useful for mapping language IDs to specific parsers,
 /// avoiding ambiguity.
 pub type InvokeParserFn = fn(
+    &dyn BaseDatabase,
     &mut Root,
     &Document,
     Option<std::ops::Range<usize>>,
@@ -96,34 +105,24 @@ where
     Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = lsp_types::Diagnostic>,
 {
     fn test_parse(test_code: &'static str, parsers: &'static Parsers) -> TestParseResult {
+        let mut db = BaseDb::default();
+        let url = Url::parse("file://test.txt").unwrap();
+        let text = Text::new(test_code.to_string());
         let source = Source::from(test_code);
 
-        let (mut root, document) = match Root::from_utf8(
-            parsers,
-            Url::parse("file://test.txt").unwrap(),
-            test_code.into(),
-        ) {
-            Ok(root) => root,
-            Err(err) => {
-                return Err(AriadneReport {
-                    result: Report::build(ReportKind::Error, 0..test_code.len())
-                        .with_message(err.to_string())
-                        .finish(),
-                    cache: source,
-                });
-            }
-        };
+        db.add_file_from_texter(parsers, &url, text);
+        let file = db.get_file(&url).unwrap();
+        let ast = get_ast(&db, file);
+        let diagnostics = get_ast::accumulated::<DiagnosticAccumulator>(&db, file);
 
-        let result: Result<Y, lsp_types::Diagnostic> = Y::parse_symbol(&mut root, &document, None);
-
-        match &root.ast_diagnostics.is_empty() {
+        match diagnostics.is_empty() {
             false => {
                 let mut colors = ColorGenerator::new();
-                let mut report = Report::build(ReportKind::Error, 0..test_code.len()).with_message(
-                    format!("Parsing failed: {} error(s)", root.ast_diagnostics.len()),
-                );
+                let mut report = Report::build(ReportKind::Error, 0..test_code.len())
+                    .with_message(format!("Parsing failed: {} error(s)", diagnostics.len()));
 
-                for diagnostic in &root.ast_diagnostics {
+                for diagnostic in &diagnostics {
+                    let diagnostic = diagnostic.0.clone();
                     let range = diagnostic.range;
                     let start_line = source.line(range.start.line as usize).unwrap().offset();
                     let end_line = source.line(range.end.line as usize).unwrap().offset();
@@ -139,8 +138,8 @@ where
                     );
                 }
 
-                if let Ok(ast) = result {
-                    report.add_note(format!("{}", ast));
+                if let Some(ast) = &ast.clone().into_inner().ast {
+                    report.add_note(format!("{}", ast.read()));
                 }
 
                 Err(AriadneReport {
