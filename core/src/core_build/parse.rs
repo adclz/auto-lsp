@@ -110,7 +110,18 @@ where
         let text = Text::new(test_code.to_string());
         let source = Source::from(test_code);
 
-        db.add_file_from_texter(parsers, &url, text);
+        match db.add_file_from_texter(parsers, &url, text) {
+            Ok(_) => {}
+            Err(e) => {
+                return Err(AriadneReport {
+                    result: Report::build(ReportKind::Error, 0..test_code.len())
+                        .with_message(format!("Failed to create file: {}", e))
+                        .finish(),
+                    cache: source,
+                });
+            }
+        }
+
         let file = db.get_file(&url).unwrap();
         let ast = get_ast(&db, file);
         let diagnostics = get_ast::accumulated::<DiagnosticAccumulator>(&db, file);
