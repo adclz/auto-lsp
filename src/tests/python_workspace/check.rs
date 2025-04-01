@@ -1,11 +1,49 @@
-use super::ast::{Expression, PrimaryExpression, TypedDefaultParameter};
-use crate::{self as auto_lsp};
+use std::ops::Deref;
+
+use super::ast::{
+    CompoundStatement, Expression, Function, PrimaryExpression, Statement, TypedDefaultParameter,
+};
+use crate::{
+    self as auto_lsp,
+    python::ast::{Module, Parameter},
+};
 use auto_lsp::core::ast::AstSymbol;
-use auto_lsp_core::{document::Document, salsa::tracked::DiagnosticAccumulator};
-use salsa::{Accumulator, Database};
+use auto_lsp_core::{
+    document::Document,
+    salsa::{
+        db::{BaseDatabase, File},
+        tracked::{get_ast, DiagnosticAccumulator},
+    },
+};
+use salsa::Accumulator;
+
+#[salsa::tracked]
+pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file: File) {
+    let doc = file.document(db).read();
+    let root = get_ast(db, file).clone().into_inner();
+
+    let module = root.ast.as_ref().unwrap();
+    let module = module.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    for node in &module.statements {
+        if let Statement::Compound(CompoundStatement::Function(function)) = node.read().deref() {
+            function
+                .parameters
+                .read()
+                .parameters
+                .iter()
+                .for_each(|param| {
+                    if let Parameter::TypedDefault(typed_param) = param.read().deref() {
+                        typed_param.check(db, &doc);
+                    }
+                });
+        }
+    }
+}
 
 impl TypedDefaultParameter {
-    fn check(&self, db: &dyn Database, doc: &Document) {
+    fn check(&self, db: &dyn BaseDatabase, doc: &Document) {
         let source = doc.texter.text.as_bytes();
 
         match self.parameter_type.read().get_text(source).unwrap() {
