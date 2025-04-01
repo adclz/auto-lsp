@@ -1,33 +1,40 @@
-use crate::{core::workspace::Workspace, tests::python_utils::get_python_file};
-use auto_lsp_core::ast::BuildSemanticTokens;
+use crate::python::ast::Module;
+use auto_lsp_core::{
+    ast::BuildSemanticTokens,
+    salsa::{db::BaseDatabase, tracked::get_ast},
+};
+use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::{python_utils::create_python_workspace, python_workspace::ast::Module};
+use super::python_utils::create_python_db;
 use crate::python::semantic_tokens::{DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
 
 #[fixture]
-fn foo_bar() -> Workspace {
-    create_python_workspace(
-        r#"# foo comment
+fn foo_bar() -> impl BaseDatabase {
+    create_python_db(&[r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#,
-    )
+"#])
 }
 
 #[rstest]
-fn foo_bar_semantic_tokens(foo_bar: Workspace) {
-    let (root, document) = get_python_file(&foo_bar);
+fn foo_bar_semantic_tokens(foo_bar: impl BaseDatabase) {
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+    let document = file.document(&foo_bar).read();
+    let root = get_ast(&foo_bar, file).clone().into_inner();
+
     let ast = root.ast.as_ref().unwrap();
 
     let mut builder = auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder::new("".into());
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
-    module.build_semantic_tokens(document, &mut builder);
+    module.build_semantic_tokens(&document, &mut builder);
 
     let tokens = builder.build().data;
 

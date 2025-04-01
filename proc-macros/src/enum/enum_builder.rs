@@ -40,10 +40,7 @@ impl ToTokens for EnumBuilder<'_> {
         self.impl_queryable(&mut builder);
         self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
-        self.impl_comment(&mut builder);
 
-        self.impl_check(&mut builder);
-        self.impl_reference(&mut builder);
         self.impl_code_actions(&mut builder);
         self.impl_code_lens(&mut builder);
         self.impl_completion_items(&mut builder);
@@ -107,40 +104,6 @@ impl EnumBuilder<'_> {
                 &self.paths.symbol_trait.get_mut_data.variant,
             )
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
-    }
-
-    fn impl_check(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.is_check.must_check.sig,
-                &self.paths.is_check.must_check.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.is_check.path);
-
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.check.check.sig,
-                &self.paths.check.check.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.check.path);
-    }
-
-    fn impl_reference(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.is_reference.is_reference.sig,
-                &self.paths.is_reference.is_reference.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.is_reference.path)
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.reference.find.sig,
-                &self.paths.reference.find.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.reference.path);
     }
 
     fn impl_traverse(&self, builder: &mut VariantBuilder) {
@@ -216,16 +179,6 @@ impl EnumBuilder<'_> {
                 &self.paths.scope.is_scope.variant,
             )
             .stage_trait(self.input_name, &self.paths.scope.path);
-    }
-
-    fn impl_comment(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.is_comment.is_comment.sig,
-                &self.paths.is_comment.is_comment.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.is_comment.path);
     }
 
     fn impl_code_actions(&self, builder: &mut VariantBuilder) {

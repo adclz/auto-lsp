@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-#[cfg(target_arch = "wasm32")]
-use std::fs;
-
+use super::InitOptions;
+use super::Session;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Connection, ReqQueue};
 use lsp_types::WorkspaceServerCapabilities;
 use lsp_types::{
@@ -11,11 +11,9 @@ use lsp_types::{
     SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
     SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
 };
-use serde::Serialize;
+#[cfg(target_arch = "wasm32")]
+use std::fs;
 use texter::core::text::Text;
-
-use super::{InitOptions, REQUEST_REGISTRY};
-use super::{Session, NOTIFICATION_REGISTRY};
 
 /// Function to create a new [`Text`] from a [`String`]
 pub(crate) type TextFn = fn(String) -> Text;
@@ -37,56 +35,31 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
     DEFAULT
 }
 
-macro_rules! register_default_requests {
-    ($session:expr, { $($req:ty => $handler:expr),* $(,)? }) => {
-        $(
-            $session.register_request::<$req, _>($handler);
-        )*
-    };
-}
-
-macro_rules! register_default_notifications {
-    ($session:expr, { $($req:ty => $handler:expr),* $(,)? }) => {
-        $(
-            $session.register_notification::<$req, _>($handler);
-        )*
-    };
-}
-
-impl Session {
-    pub(crate) fn new(init_options: InitOptions, connection: Connection, text_fn: TextFn) -> Self {
+impl<Db: BaseDatabase + Default> Session<Db> {
+    pub(crate) fn new(
+        init_options: InitOptions,
+        connection: Connection,
+        text_fn: TextFn,
+        db: Db,
+    ) -> Self {
         Self {
             init_options,
             connection,
             text_fn,
             extensions: HashMap::new(),
             req_queue: ReqQueue::default(),
+            db,
         }
-    }
-
-    pub fn register_request<R, F>(&mut self, handler: F)
-    where
-        R: lsp_types::request::Request,
-        R::Params: serde::de::DeserializeOwned,
-        R::Result: Serialize,
-        F: Fn(&mut Session, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
-    {
-        REQUEST_REGISTRY.lock().register::<R, F>(handler);
-    }
-
-    pub fn register_notification<N, F>(&mut self, handler: F)
-    where
-        N: lsp_types::notification::Notification,
-        N::Params: serde::de::DeserializeOwned,
-        F: Fn(&mut Session, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
-    {
-        NOTIFICATION_REGISTRY.lock().register::<N, F>(handler);
     }
 
     /// Create a new session with the given initialization options.
     ///
     /// This will establish the connection with the client and send the server capabilities.
-    pub fn create(init_options: InitOptions, connection: Connection) -> anyhow::Result<Session> {
+    pub fn create(
+        init_options: InitOptions,
+        connection: Connection,
+        db: Db,
+    ) -> anyhow::Result<Session<Db>> {
         // This is a workaround for a deadlock issue in WASI libc.
         // See https://github.com/WebAssembly/wasi-libc/pull/491
         #[cfg(target_arch = "wasm32")]
@@ -218,49 +191,7 @@ impl Session {
 
         connection.initialize_finish(id, server_capabilities)?;
 
-        let mut session = Session::new(init_options, connection, t_fn);
-
-        register_default_requests!(session, {
-            lsp_types::request::DocumentDiagnosticRequest => |session, params| session.get_diagnostics(params),
-            lsp_types::request::DocumentLinkRequest => |session, params| session.get_document_links(params),
-            lsp_types::request::DocumentSymbolRequest => |session, params| session.get_document_symbols(params),
-            lsp_types::request::FoldingRangeRequest => |session, params| session.get_folding_ranges(params),
-            lsp_types::request::HoverRequest => |session, params| session.get_hover(params),
-            lsp_types::request::SemanticTokensFullRequest => |session, params| session.get_semantic_tokens_full(params),
-            lsp_types::request::SemanticTokensRangeRequest => |session, params| session.get_semantic_tokens_range(params),
-            lsp_types::request::SelectionRangeRequest => |session, params| session.get_selection_ranges(params),
-            lsp_types::request::WorkspaceSymbolRequest => |session, params| session.get_workspace_symbols(params),
-            lsp_types::request::WorkspaceDiagnosticRequest => |session, params| session.get_workspace_diagnostics(params),
-            lsp_types::request::InlayHintRequest => |session, params| session.get_inlay_hints(params),
-            lsp_types::request::CodeActionRequest => |session, params| session.get_code_actions(params),
-            lsp_types::request::CodeLensRequest => |session, params| session.get_code_lenses(params),
-            lsp_types::request::Completion => |session, params| session.get_completion_items(params),
-            lsp_types::request::GotoDefinition => |session, params| session.go_to_definition(params),
-            lsp_types::request::GotoDeclaration => |session, params| session.go_to_declaration(params),
-            lsp_types::request::References => |session, params| session.get_references(params),
-        });
-
-        register_default_notifications!(session, {
-            lsp_types::notification::DidOpenTextDocument => |session, params| session.open_text_document(params),
-            lsp_types::notification::DidChangeTextDocument => |session, params| session.edit_text_document(params),
-            lsp_types::notification::DidChangeWatchedFiles => |session, params| session.changed_watched_files(params),
-            lsp_types::notification::Cancel => |session, params| {
-                let id: lsp_server::RequestId = match params.id {
-                    lsp_types::NumberOrString::Number(id) => id.into(),
-                    lsp_types::NumberOrString::String(id) => id.into(),
-                };
-                if let Some(response) = session.req_queue.incoming.cancel(id) {
-                    session.connection.sender.send(response.into())?;
-                }
-                Ok(())
-            },
-
-             // Disabled notifications (temporary)
-            lsp_types::notification::DidSaveTextDocument => |_, _| Ok(()),
-            lsp_types::notification::DidCloseTextDocument => |_, _| Ok(()),
-            lsp_types::notification::SetTrace => |_, _| Ok(()),
-            lsp_types::notification::LogTrace => |_, _| Ok(()),
-        });
+        let mut session = Session::new(init_options, connection, t_fn, db);
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.

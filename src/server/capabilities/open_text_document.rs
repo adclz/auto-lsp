@@ -1,44 +1,38 @@
-use auto_lsp_core::root::Root;
+use crate::server::session::Session;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::DidOpenTextDocumentParams;
 
-use crate::server::session::{Session, WORKSPACE};
+pub fn open_text_document<Db: BaseDatabase>(
+    session: &mut Session<Db>,
+    params: DidOpenTextDocumentParams,
+) -> anyhow::Result<()> {
+    let url = &params.text_document.uri;
 
-impl Session {
-    pub fn open_text_document(&mut self, params: DidOpenTextDocumentParams) -> anyhow::Result<()> {
-        let url = &params.text_document.uri;
-        let mut workspace = WORKSPACE.lock();
+    if session.db.get_file(url).is_some() {
+        // The file is already in db
+        // We can ignore this change
+        return Ok(());
+    };
 
-        if workspace.roots.contains_key(url) {
-            // The file is already in the root
-            // We can ignore this change
-            return Ok(());
-        };
+    let extension = params.text_document.language_id;
 
-        let extension = params.text_document.language_id;
+    let extension = match session.extensions.get(&extension) {
+        Some(extension) => extension,
+        None => {
+            return Err(anyhow::format_err!(
+                "Extension {} is not registered",
+                extension
+            ))
+        }
+    };
 
-        let extension = match self.extensions.get(&extension) {
-            Some(extension) => extension,
-            None => {
-                return Err(anyhow::format_err!(
-                    "Extension {} is not registered",
-                    extension
-                ))
-            }
-        };
+    let text = (session.text_fn)(params.text_document.text.clone());
 
-        let text = (self.text_fn)(params.text_document.text.clone());
+    let parsers = session
+        .init_options
+        .parsers
+        .get(extension.as_str())
+        .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
-        let parsers = self
-            .init_options
-            .parsers
-            .get(extension.as_str())
-            .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
-
-        let (root, document) = Root::from_texter(parsers, url.clone(), text)?;
-
-        workspace.roots.insert(url.clone(), (root, document));
-        workspace.resolve_references();
-        workspace.resolve_checks();
-        Ok(())
-    }
+    session.db.add_file_from_texter(parsers, url, text)
 }

@@ -14,8 +14,6 @@ pub mod code_actions;
 #[cfg(test)]
 pub mod code_lenses;
 #[cfg(test)]
-pub mod comments;
-#[cfg(test)]
 pub mod completion_items;
 #[cfg(test)]
 #[cfg(feature = "deadlock_detection")]
@@ -34,6 +32,9 @@ pub mod inlay_hints;
 pub mod proc_macros;
 #[cfg(test)]
 pub mod python_corpus;
+#[cfg(test)]
+#[cfg(feature = "log")]
+pub mod salsa;
 #[cfg(test)]
 pub mod semantic_tokens;
 #[cfg(test)]

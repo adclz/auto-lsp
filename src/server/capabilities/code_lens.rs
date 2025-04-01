@@ -1,28 +1,25 @@
 use crate::core::ast::BuildCodeLenses;
-use crate::server::session::{Session, WORKSPACE};
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{CodeLens, CodeLensParams};
 
-impl Session {
-    /// Get code lenses for a document.
-    pub fn get_code_lenses(
-        &mut self,
-        params: CodeLensParams,
-    ) -> anyhow::Result<Option<Vec<CodeLens>>> {
-        let mut results = vec![];
+pub fn get_code_lenses<Db: BaseDatabase>(
+    db: &Db,
+    params: CodeLensParams,
+) -> anyhow::Result<Option<Vec<CodeLens>>> {
+    let mut results = vec![];
 
-        let uri = params.text_document.uri;
+    let uri = params.text_document.uri;
 
-        let workspace = WORKSPACE.lock();
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let (root, document) = workspace
-            .roots
-            .get(&uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+    let document = file.document(db).read();
+    let root = get_ast(db, file).clone().into_inner();
 
-        if let Some(a) = root.ast.as_ref() {
-            a.build_code_lenses(document, &mut results)
-        }
-
-        Ok(Some(results))
+    if let Some(a) = root.ast.as_ref() {
+        a.build_code_lenses(&document, &mut results)
     }
+
+    Ok(Some(results))
 }

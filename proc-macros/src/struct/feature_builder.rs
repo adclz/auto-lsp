@@ -101,68 +101,7 @@ impl ToTokens for Features<'_> {
             });
         }
 
-        // Special
-
-        if !self.darling_input.check.is_present() {
-            let is_check = &self.paths.is_check.path;
-            let check = &self.paths.check.path;
-
-            tokens.extend(quote! {
-                impl #is_check for #input_name {}
-                impl #check for #input_name {}
-            });
-        } else {
-            let is_check = &self.paths.is_check.path;
-            let must_check = &self.paths.is_check.must_check.sig;
-
-            tokens.extend(quote! {
-                impl #is_check for #input_name {
-                    #must_check {
-                        true
-                    }
-                }
-            });
-        }
-
-        if !self.darling_input.comment.is_present() {
-            let is_comment = &self.paths.is_comment.path;
-
-            tokens.extend(quote! {
-                impl #is_comment for #input_name {}
-            });
-        } else {
-            let is_comment = &self.paths.is_comment.path;
-            let is_comment_sig = &self.paths.is_comment.is_comment.sig;
-
-            tokens.extend(quote! {
-                impl #is_comment for #input_name {
-                    #is_comment_sig {
-                        true
-                    }
-                }
-            });
-        }
-
-        if !self.darling_input.reference.is_present() {
-            let is_reference_path = &self.paths.is_reference.path;
-            let reference_path = &self.paths.reference.path;
-
-            tokens.extend(quote! {
-                impl #is_reference_path for #input_name {}
-                impl #reference_path for #input_name {}
-            });
-        } else {
-            let is_reference_path = &self.paths.is_reference.path;
-            let is_reference_sig = &self.paths.is_reference.is_reference.sig;
-
-            tokens.extend(quote! {
-                impl #is_reference_path for #input_name {
-                    #is_reference_sig {
-                        true
-                    }
-                }
-            });
-        }
+        // Speciald
 
         if !self.darling_input.scope.is_present() {
             let is_scope_path = &self.paths.scope.path;

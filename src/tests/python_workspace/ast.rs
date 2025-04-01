@@ -494,7 +494,6 @@ pub struct WithItem {
 #[seq(
     query = "function",
     scope,
-    comment,
     code_actions,
     code_lenses,
     completions,
@@ -770,7 +769,7 @@ pub enum OneOfIdentifierOrTuplePattern {
     TuplePattern(TuplePattern),
 }
 
-#[seq(query = "typed_default_parameter", check)]
+#[seq(query = "typed_default_parameter")]
 pub struct TypedDefaultParameter {
     name: Identifier,
     parameter_type: Type,

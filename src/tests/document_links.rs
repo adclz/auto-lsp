@@ -1,27 +1,39 @@
-use crate::tests::html_utils::get_html_file;
-use auto_lsp_core::workspace::Workspace;
+use crate::html::HTML_PARSERS;
+
+use super::html_utils::create_html_db;
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use lsp_types::Url;
 use regex::Regex;
 use rstest::{fixture, rstest};
 
-use super::html_utils::create_html_workspace;
-
 #[fixture]
-fn comments_with_link() -> Workspace {
-    create_html_workspace(
-        r#"<!DOCTYPE html>
+fn comments_with_link() -> impl BaseDatabase {
+    create_html_db(&[r#"<!DOCTYPE html>
 <!-- source:file1.txt:52 -->         
 <div>
     <!-- source:file2.txt:25 -->    
-</div>"#,
-    )
+</div>"#])
 }
 
 #[rstest]
-fn document_links(comments_with_link: Workspace) {
-    let (root, document) = get_html_file(&comments_with_link);
+fn document_links(comments_with_link: impl BaseDatabase) {
+    let comment_query = HTML_PARSERS
+        .get("html")
+        .unwrap()
+        .tree_sitter
+        .queries
+        .comments
+        .as_ref()
+        .unwrap();
+
+    let file = comments_with_link
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let document = file.document(&comments_with_link).read();
+    let root = get_ast(&comments_with_link, file).clone().into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(document, &regex);
+    let results = root.find_all_with_regex(comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");
@@ -31,24 +43,37 @@ fn document_links(comments_with_link: Workspace) {
 }
 
 #[fixture]
-fn multiline_comment_with_links() -> Workspace {
-    create_html_workspace(
-        r#"<!DOCTYPE html>
+fn multiline_comment_with_links() -> impl BaseDatabase {
+    create_html_db(&[r#"<!DOCTYPE html>
 <div>
     <!-- 
         source:file1.txt:52
         source:file2.txt:25
     -->    
-</div>"#,
-    )
+</div>"#])
 }
 
 #[rstest]
-fn multiline_document_links(multiline_comment_with_links: Workspace) {
-    let (root, document) = get_html_file(&multiline_comment_with_links);
+fn multiline_document_links(multiline_comment_with_links: impl BaseDatabase) {
+    let comment_query = HTML_PARSERS
+        .get("html")
+        .unwrap()
+        .tree_sitter
+        .queries
+        .comments
+        .as_ref()
+        .unwrap();
+
+    let file = multiline_comment_with_links
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let document = file.document(&multiline_comment_with_links).read();
+    let root = get_ast(&multiline_comment_with_links, file)
+        .clone()
+        .into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(document, &regex);
+    let results = root.find_all_with_regex(comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");

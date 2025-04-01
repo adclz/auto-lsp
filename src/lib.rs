@@ -113,8 +113,8 @@ pub mod core {
     pub use auto_lsp_core::document;
     pub use auto_lsp_core::document_symbols_builder;
     pub use auto_lsp_core::root;
+    pub use auto_lsp_core::salsa;
     pub use auto_lsp_core::semantic_tokens_builder;
-    pub use auto_lsp_core::workspace;
     #[doc(hidden)]
     pub use auto_lsp_core::{builder_error, builder_warning};
 }
@@ -135,5 +135,6 @@ pub use lsp_types;
 pub use parking_lot;
 #[cfg(feature = "rayon")]
 pub use rayon;
+pub use salsa;
 pub use texter;
 pub use tree_sitter;

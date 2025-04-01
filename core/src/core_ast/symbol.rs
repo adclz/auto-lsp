@@ -1,5 +1,8 @@
 use crate::root::Root;
-use std::sync::{Arc, Weak};
+use std::{
+    fmt::Debug,
+    sync::{Arc, Weak},
+};
 
 use super::core::AstSymbol;
 use parking_lot::RwLock;
@@ -40,12 +43,6 @@ impl<T: AstSymbol> Symbol<T> {
     /// If the symbol requires checking ([`super::capabilities::Check`]), add it to the unsolved checks list
     pub fn new_and_check(symbol: T, root: &mut Root) -> Self {
         let symbol = Symbol::new(symbol);
-        if symbol.read().is_reference() {
-            root.add_unsolved_reference(&symbol.to_dyn());
-        }
-        if symbol.read().must_check() {
-            root.add_unsolved_check(&symbol.to_dyn());
-        }
         symbol.write().inject_parent(symbol.to_weak());
         symbol
     }
@@ -87,10 +84,16 @@ impl DynSymbol {
     }
 }
 
+impl Debug for DynSymbol {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Symbol {:?}", self.read().get_range())
+    }
+}
+
 /// Generic Thread-safe wrapper around a [Weak] reference to an [AstSymbol] using [Weak] and [parking_lot::RwLock]
 ///
 /// Must be upgraded to a [DynSymbol] before use
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct WeakSymbol(Weak<RwLock<dyn AstSymbol>>);
 
 impl WeakSymbol {

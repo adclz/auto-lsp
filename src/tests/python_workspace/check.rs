@@ -1,42 +1,79 @@
-use super::ast::{Expression, PrimaryExpression, TypedDefaultParameter};
-use crate::{self as auto_lsp};
-use auto_lsp::core::ast::{AstSymbol, Check};
-use auto_lsp_core::{ast::CheckStatus, document::Document};
+use std::ops::Deref;
 
-impl Check for TypedDefaultParameter {
-    fn check(&self, doc: &Document, diagnostics: &mut Vec<lsp_types::Diagnostic>) -> CheckStatus {
+use super::ast::{
+    CompoundStatement, Expression, PrimaryExpression, Statement, TypedDefaultParameter,
+};
+use crate::{
+    self as auto_lsp,
+    python::ast::{Module, Parameter},
+};
+use auto_lsp::core::ast::AstSymbol;
+use auto_lsp_core::{
+    document::Document,
+    salsa::{
+        db::{BaseDatabase, File},
+        tracked::{get_ast, DiagnosticAccumulator},
+    },
+};
+use salsa::Accumulator;
+
+#[salsa::tracked]
+pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file: File) {
+    let doc = file.document(db).read();
+    let root = get_ast(db, file).clone().into_inner();
+
+    let module = root.ast.as_ref().unwrap();
+    let module = module.read();
+    let module = module.downcast_ref::<Module>().unwrap();
+
+    for node in &module.statements {
+        if let Statement::Compound(CompoundStatement::Function(function)) = node.read().deref() {
+            function
+                .parameters
+                .read()
+                .parameters
+                .iter()
+                .for_each(|param| {
+                    if let Parameter::TypedDefault(typed_param) = param.read().deref() {
+                        typed_param.check(db, &doc);
+                    }
+                });
+        }
+    }
+}
+
+impl TypedDefaultParameter {
+    fn check(&self, db: &dyn BaseDatabase, doc: &Document) {
         let source = doc.texter.text.as_bytes();
 
         match self.parameter_type.read().get_text(source).unwrap() {
             "int" => match self.value.read().is_integer() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
             "float" => match self.value.read().is_float() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
             "str" => match self.value.read().is_string() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
             "bool" => match self.value.read().is_true() || self.value.read().is_false() {
-                true => CheckStatus::Ok,
+                true => (),
                 false => {
-                    diagnostics.push(self.type_error_message(doc));
-                    CheckStatus::Fail
+                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
                 }
             },
-            _ => CheckStatus::Fail,
+            _ => {
+                DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
+            }
         }
     }
 }

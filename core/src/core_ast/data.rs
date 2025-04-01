@@ -1,8 +1,5 @@
 use std::sync::Arc;
 
-use crate::root::Root;
-
-use super::core::AstSymbol;
 use super::symbol::*;
 use lsp_types::Url;
 
@@ -13,16 +10,8 @@ pub struct SymbolData {
     pub url: Arc<Url>,
     /// The parent of the symbol
     pub parent: Option<WeakSymbol>,
-    /// The comment's byte range in the source code
-    pub comment: Option<std::ops::Range<usize>>,
-    /// The referrers of the symbol (symbols that refer to this symbol)
-    pub referrers: Option<Referrers>,
-    /// The target this symbol refers to
-    pub target: Option<WeakSymbol>,
     /// The byte range of the symbol in the source code
     pub range: std::ops::Range<usize>,
-    /// Whether the symbol is being checked for errors
-    pub check_pending: bool,
 }
 
 impl SymbolData {
@@ -30,11 +19,7 @@ impl SymbolData {
         Self {
             url,
             parent: None,
-            comment: None,
-            referrers: None,
-            target: None,
             range,
-            check_pending: false,
         }
     }
 }
@@ -51,35 +36,6 @@ pub trait GetSymbolData {
     fn get_parent(&self) -> Option<WeakSymbol>;
     /// Set the parent of the symbol
     fn set_parent(&mut self, parent: WeakSymbol);
-    /// Get the comment of the symbol (if any)
-    ///
-    /// Requires the source code to be passed since symobls only store byte ranges
-    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str>;
-    /// Set the comment of the symbol, where range is the byte range of the comment's text location
-    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>);
-    /// The target this symbol refers to
-    ///
-    /// Note that this only works if the symbol implements [`super::capabilities::Reference`] trait
-    fn get_target(&self) -> Option<&WeakSymbol>;
-    /// Set the target of the symbol
-    ///
-    /// Note that this only works if the symbol implements [`super::capabilities::Reference`] trait
-    fn set_target_reference(&mut self, target: WeakSymbol);
-    /// Reset the target of the symbol
-    fn reset_target_reference_reference(&mut self);
-    /// Get the referrers of the symbol
-    ///
-    /// Referrers are symbols that refer to this symbol
-    fn get_referrers(&self) -> &Option<Referrers>;
-    /// Get a mutable reference to the referrers of the symbol
-    ///
-    /// Referrers are symbols that refer to this symbol
-    fn get_mut_referrers(&mut self) -> &mut Referrers;
-
-    /// Get whether the symbol has been checked for errors
-    fn has_check_pending(&self) -> bool;
-    /// Set whether the symbol has been checked for errors
-    fn update_check_pending(&mut self, unchecked: bool);
 }
 
 impl GetSymbolData for SymbolData {
@@ -97,104 +53,5 @@ impl GetSymbolData for SymbolData {
 
     fn set_parent(&mut self, parent: WeakSymbol) {
         self.parent = Some(parent);
-    }
-
-    fn get_comment<'a>(&self, source_code: &'a [u8]) -> Option<&'a str> {
-        match self.comment {
-            Some(ref range) => {
-                // Check if the range is within bounds and valid
-                if range.start <= range.end && range.end <= source_code.len() {
-                    std::str::from_utf8(&source_code[range.start..range.end]).ok()
-                } else {
-                    None
-                }
-            }
-            None => None,
-        }
-    }
-
-    fn set_comment(&mut self, range: Option<std::ops::Range<usize>>) {
-        self.comment = range;
-    }
-
-    fn get_target(&self) -> Option<&WeakSymbol> {
-        self.target.as_ref()
-    }
-
-    fn set_target_reference(&mut self, target: WeakSymbol) {
-        self.target = Some(target);
-    }
-
-    fn reset_target_reference_reference(&mut self) {
-        self.target = None;
-    }
-
-    fn get_referrers(&self) -> &Option<Referrers> {
-        &self.referrers
-    }
-
-    fn get_mut_referrers(&mut self) -> &mut Referrers {
-        self.referrers.get_or_insert_default()
-    }
-
-    fn has_check_pending(&self) -> bool {
-        self.check_pending
-    }
-
-    fn update_check_pending(&mut self, unchecked: bool) {
-        self.check_pending = unchecked;
-    }
-}
-
-/// List of weak symbols that refer to this symbol
-#[derive(Default, Clone)]
-pub struct Referrers(Vec<WeakSymbol>);
-
-/// Trait for managing [`Referrers`]
-pub trait ReferrersTrait {
-    /// Add a referrer to the symbol list
-    fn add_referrer(&mut self, symbol: WeakSymbol);
-
-    /// Clean up any null referrers
-    fn clean_null_referrers(&mut self);
-
-    /// Drop any referrers that have an reference
-    ///
-    /// If the referrer was not dropped, add it to the unsolved checks field of [`Root`]
-    fn drop_referrers(&mut self, root: &mut Root);
-}
-
-impl<'a> IntoIterator for &'a Referrers {
-    type Item = &'a WeakSymbol;
-    type IntoIter = std::slice::Iter<'a, WeakSymbol>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.iter()
-    }
-}
-
-impl<T: AstSymbol + ?Sized> ReferrersTrait for T {
-    fn add_referrer(&mut self, symbol: WeakSymbol) {
-        self.get_mut_referrers().0.push(symbol);
-    }
-
-    fn clean_null_referrers(&mut self) {
-        self.get_mut_referrers()
-            .0
-            .retain(|r| r.get_ptr().weak_count() > 0);
-    }
-
-    fn drop_referrers(&mut self, root: &mut Root) {
-        self.get_mut_referrers().0.retain(|r| {
-            if let Some(symbol) = r.to_dyn() {
-                let read = symbol.read();
-                if read.get_target().is_some() {
-                    drop(read);
-                    symbol.write().reset_target_reference_reference();
-                    root.add_unsolved_reference(&symbol.clone());
-                }
-            }
-            false
-        });
     }
 }

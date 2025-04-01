@@ -1,74 +1,82 @@
-use crate::{
-    core::workspace::Workspace,
-    tests::python_utils::{get_mut_python_file, get_python_file},
+use crate::python::check::type_check_default_parameters;
+use auto_lsp_core::salsa::{
+    db::BaseDatabase,
+    tracked::DiagnosticAccumulator,
 };
+use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::python_utils::create_python_workspace;
+use super::python_utils::create_python_db;
 
 #[fixture]
-fn foo_bar() -> Workspace {
-    create_python_workspace(
-        r#"# foo comment
+fn foo_bar() -> impl BaseDatabase {
+    create_python_db(&[r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
-    pass  
-"#,
-    )
+    pass
+"#])
 }
 
 #[fixture]
-fn foo_bar_with_type_error() -> Workspace {
-    create_python_workspace(
-        r#"# foo comment
+fn foo_bar_with_type_error() -> impl BaseDatabase {
+    create_python_db(&[r#"# foo comment
         def foo(param1, param2: int = "string"):
             pass
-        
+
         def bar():
-            pass  
-        "#,
-    )
+            pass
+        "#])
 }
 
 #[rstest]
-fn foo_has_type_error(foo_bar: Workspace, foo_bar_with_type_error: Workspace) {
-    let (foo_bar, _) = get_python_file(&foo_bar);
-    let (foo_bar_with_type_error, _) = get_python_file(&foo_bar_with_type_error);
+fn foo_has_type_error(foo_bar: impl BaseDatabase, foo_bar_with_type_error: impl BaseDatabase) {
+    let file0_url = Url::parse("file:///test0.py").unwrap();
+    let file = foo_bar.get_file(&file0_url).unwrap();
+
+    let foo_bar_diagnostics =
+        type_check_default_parameters::accumulated::<DiagnosticAccumulator>(&foo_bar, file);
 
     // foo_bar has no type errors
-    assert!(foo_bar.ast_diagnostics.is_empty());
-    assert!(foo_bar.unsolved_checks.is_empty());
-    assert!(foo_bar.unsolved_references.is_empty());
+    assert!(foo_bar_diagnostics.is_empty());
+
+    let file = foo_bar_with_type_error.get_file(&file0_url).unwrap();
+
+    let foo_bar_diagnostics = type_check_default_parameters::accumulated::<DiagnosticAccumulator>(
+        &foo_bar_with_type_error,
+        file,
+    );
 
     // foo_bar_with_type_error has one type error
-    assert!(!foo_bar_with_type_error.ast_diagnostics.is_empty());
-    assert!(!foo_bar_with_type_error.unsolved_checks.is_empty());
-    assert!(foo_bar.unsolved_references.is_empty());
+    assert!(!foo_bar_diagnostics.is_empty());
 
     assert_eq!(
-        foo_bar_with_type_error.ast_diagnostics[0].message,
+        foo_bar_diagnostics[0].0.message,
         "Invalid value \"string\" for type int"
     );
 }
 
 #[fixture]
-fn foo_with_type_error() -> Workspace {
-    create_python_workspace(r#"def foo(p: int = "x"): pass "#)
+fn foo_with_type_error() -> impl BaseDatabase {
+    create_python_db(&[r#"def foo(p: int = "x"): pass "#])
 }
 
 #[rstest]
-fn non_redundant_edited_type_error(mut foo_with_type_error: Workspace) {
-    let (root, document) = get_mut_python_file(&mut foo_with_type_error);
+fn non_redundant_edited_type_error(mut foo_with_type_error: impl BaseDatabase) {
+    let file0_url = Url::parse("file:///test0.py").unwrap();
+    let file = foo_with_type_error.get_file(&file0_url).unwrap();
+
+    let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
+        DiagnosticAccumulator,
+    >(&foo_with_type_error, file);
+
     // test to check if a same error is not reported twice between edits of the same error
 
     // foo_with_type_error has one type error
-    assert!(!root.ast_diagnostics.is_empty());
-    assert!(!root.unsolved_checks.is_empty());
-    assert!(root.unsolved_references.is_empty());
+    assert!(!foo_with_type_error_diagnostics.is_empty());
     assert_eq!(
-        root.ast_diagnostics[0].message,
+        foo_with_type_error_diagnostics[0].0.message,
         "Invalid value \"x\" for type int"
     );
 
@@ -89,34 +97,36 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: Workspace) {
         text: "xxxx".into(),
     };
 
-    document
-        .update(&mut root.parsers.tree_sitter.parser.write(), &vec![change])
+    foo_with_type_error
+        .update(&file0_url, &vec![change])
         .unwrap();
 
-    root.parse(document);
-    root.resolve_checks(document);
+    let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
+        DiagnosticAccumulator,
+    >(&foo_with_type_error, file);
 
     // foo_with_type_error should have 1 error
-    assert_eq!(root.ast_diagnostics.len(), 1);
-    assert_eq!(root.unsolved_checks.len(), 1);
-    assert_eq!(root.unsolved_references.len(), 0);
+    assert_eq!(foo_with_type_error_diagnostics.len(), 1);
     assert_eq!(
-        root.ast_diagnostics[0].message,
+        foo_with_type_error_diagnostics[0].0.message,
         "Invalid value \"xxxx\" for type int"
     );
 }
 
 #[rstest]
-fn fix_type_error(mut foo_with_type_error: Workspace) {
-    let (root, document) = get_mut_python_file(&mut foo_with_type_error);
+fn fix_type_error(mut foo_with_type_error: impl BaseDatabase) {
+    let file0_url = Url::parse("file:///test0.py").unwrap();
+    let file = foo_with_type_error.get_file(&file0_url).unwrap();
+
+    let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
+        DiagnosticAccumulator,
+    >(&foo_with_type_error, file);
     // Replaces "x" with 1 and therefore fixes the type error
 
     // foo_with_type_error has one type error
-    assert!(!root.ast_diagnostics.is_empty());
-    assert!(!root.unsolved_checks.is_empty());
-    assert!(root.unsolved_references.is_empty());
+    assert!(!foo_with_type_error_diagnostics.is_empty());
     assert_eq!(
-        root.ast_diagnostics[0].message,
+        foo_with_type_error_diagnostics[0].0.message,
         "Invalid value \"x\" for type int"
     );
 
@@ -136,15 +146,15 @@ fn fix_type_error(mut foo_with_type_error: Workspace) {
         range_length: Some(3),
         text: "1".into(),
     };
-    document
-        .update(&mut root.parsers.tree_sitter.parser.write(), &vec![change])
+
+    foo_with_type_error
+        .update(&file0_url, &vec![change])
         .unwrap();
 
-    root.parse(document);
-    root.resolve_checks(document);
+    let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
+        DiagnosticAccumulator,
+    >(&foo_with_type_error, file);
 
     // foo_with_type_error should have no type errors
-    assert_eq!(root.ast_diagnostics.len(), 0);
-    assert_eq!(root.unsolved_checks.len(), 0);
-    assert_eq!(root.unsolved_references.len(), 0);
+    assert_eq!(foo_with_type_error_diagnostics.len(), 0);
 }

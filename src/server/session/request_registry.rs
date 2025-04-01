@@ -1,35 +1,42 @@
 use super::Session;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Request, Response};
 use serde::{de::DeserializeOwned, Serialize};
 use std::collections::HashMap;
 
-type RequestCallback =
-    Box<dyn Fn(&mut Session, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync>;
+type RequestCallback<Db> = Box<
+    dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync,
+>;
 
 #[derive(Default)]
-pub struct RequestRegistry {
-    handlers: HashMap<String, RequestCallback>,
+pub struct RequestRegistry<Db: BaseDatabase> {
+    handlers: HashMap<String, RequestCallback<Db>>,
 }
 
-impl RequestRegistry {
-    pub fn register<R, F>(&mut self, handler: F)
+impl<Db: BaseDatabase> RequestRegistry<Db> {
+    pub fn register<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned,
         R::Result: Serialize,
-        F: Fn(&mut Session, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
+        F: Fn(&mut Session<Db>, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
     {
         let method = R::METHOD.to_string();
-        let callback: RequestCallback = Box::new(move |session, params| {
+        let callback: RequestCallback<Db> = Box::new(move |session, params| {
             let parsed_params: R::Params = serde_json::from_value(params)?;
             let result = handler(session, parsed_params)?;
             Ok(serde_json::to_value(result)?)
         });
 
         self.handlers.insert(method, callback);
+        self
     }
 
-    pub fn handle(&self, session: &mut Session, req: Request) -> anyhow::Result<Option<Response>> {
+    pub fn handle(
+        &self,
+        session: &mut Session<Db>,
+        req: Request,
+    ) -> anyhow::Result<Option<Response>> {
         let id = req.id.clone();
         let params = req.params;
         if let Some(callback) = self.handlers.get(&req.method) {

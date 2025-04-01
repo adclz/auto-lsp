@@ -1,29 +1,33 @@
 use crate::core::ast::BuildCodeLenses;
-use crate::core::workspace::Workspace;
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::python_utils::{create_python_workspace, get_python_file};
+use super::python_utils::create_python_db;
 
 #[fixture]
-fn foo_bar() -> Workspace {
-    create_python_workspace(
-        r#"# foo comment
+fn foo_bar() -> impl BaseDatabase {
+    create_python_db(&[r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#,
-    )
+"#])
 }
 
 #[rstest]
-fn foo_bar_code_lens(foo_bar: Workspace) {
-    let (root, document) = get_python_file(&foo_bar);
+fn foo_bar_code_lens(foo_bar: impl BaseDatabase) {
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+    let document = file.document(&foo_bar).read();
+    let root = get_ast(&foo_bar, file).clone().into_inner();
+
     let ast = root.ast.as_ref().unwrap();
 
     let mut code_lens = vec![];
-    ast.build_code_lenses(document, &mut code_lens);
+    ast.build_code_lenses(&document, &mut code_lens);
 
     assert_eq!(code_lens.len(), 2);
 

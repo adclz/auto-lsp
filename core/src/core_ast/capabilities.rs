@@ -11,7 +11,6 @@ use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
-use crate::workspace::Workspace;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
 use aho_corasick::AhoCorasick;
 
@@ -398,67 +397,6 @@ impl<T: AstSymbol> Traverse for Vec<Symbol<T>> {
     }
 }
 
-#[doc(hidden)]
-pub trait IsReference {
-    /// Check if the symbol is an reference
-    ///
-    /// References are symbols used to access other symbols.
-    ///
-    /// By default, `false`
-    fn is_reference(&self) -> bool {
-        false
-    }
-}
-
-/// Finding a target symbol
-pub trait Reference: IsReference {
-    /// Find the target symbol
-    ///
-    /// This method is called during the last step of the build process
-    ///
-    /// If the symbol cannot be found, return a [Diagnostic] with the reason
-    ///
-    /// By default, `Ok(None)`
-    fn find_reference(
-        &self,
-        doc: &Document,
-        workspace: &Workspace,
-        diagnostics: &mut Vec<Diagnostic>,
-    ) -> Option<DynSymbol> {
-        None
-    }
-}
-
-#[doc(hidden)]
-pub trait IsCheck {
-    /// Tell this symbol has to be checked during the build process
-    ///
-    /// By default, `false`
-    fn must_check(&self) -> bool {
-        false
-    }
-}
-
-/// Check Status of a symbol
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum CheckStatus {
-    Ok,
-    Fail,
-}
-
-/// Checking a symbol
-pub trait Check: IsCheck {
-    /// Perform a check on the symbol during the last step of build process
-    ///
-    /// If the check fails, push your [`Diagnostic`] to the accumulator and return `CheckStatus::Fail`
-    /// If the check succeeds, return `CheckStatus::Ok`
-    ///
-    /// By default, `CheckStatus::Ok`
-    fn check(&self, doc: &Document, diagnostics: &mut Vec<Diagnostic>) -> CheckStatus {
-        CheckStatus::Ok
-    }
-}
-
 /// Delimiting a symbol's scope
 pub trait Scope {
     /// Tell this symbol is a scope
@@ -478,82 +416,6 @@ pub trait Comment {
     /// By default, `false`
     fn is_comment(&self) -> bool {
         false
-    }
-}
-
-/// A trait for finding symbols within a specified range of a document using a pattern.
-///
-/// This trait provides a method to search for a symbol matching a given pattern
-/// within a specified range of a document. The search can either match the pattern
-/// exactly or partially, depending on the `exact_match` flag.
-pub trait FindPattern {
-    fn find_with_pattern(
-        &self,
-        doc: &Document,
-        ac: &AhoCorasick,
-        range: std::ops::Range<usize>,
-        exact_match: bool,
-    ) -> Option<(DynSymbol, bool)>;
-}
-
-impl<T: AstSymbol + ?Sized> FindPattern for T {
-    /// Searches the document for a symbol matching the given pattern within the specified range.
-    ///
-    /// # Arguments
-    /// - `doc`: A reference to the document containing the source code.
-    /// - `ac`: The pattern to search for.
-    /// - `range`: The range of the document (start and end indices) to search within.
-    /// - `exact_match`: If `true`, only returns results where the matched text exactly matches the pattern.
-    ///
-    /// # Returns
-    /// An `Option` containing a tuple:
-    /// - The found symbol (`DynSymbol`).
-    /// - A `bool` indicating whether the match was exact (`true`) or partial (`false`).
-    ///
-    /// Returns `None` if no matching symbol is found.
-    fn find_with_pattern(
-        &self,
-        doc: &Document,
-        ac: &AhoCorasick,
-        range: std::ops::Range<usize>,
-        exact_match: bool,
-    ) -> Option<(DynSymbol, bool)> {
-        let source_code = &doc.texter.text;
-
-        // Validate the range and slice the text
-        let area = match source_code.as_str().get(range.start..range.end) {
-            Some(a) => a,
-            None => {
-                #[cfg(feature = "log")]
-                log::warn!("Invalid document range: {:?}", range);
-                return None;
-            }
-        };
-
-        if exact_match {
-            for mat in ac.find_iter(area) {
-                let start_idx = range.start + mat.start();
-                let end_idx = range.end + mat.end();
-                // Lookup the corresponding element
-                if let Some(elem) = self.descendant_at(start_idx) {
-                    if elem.read().get_range() != self.get_range() {
-                        return Some((elem.clone(), true));
-                    }
-                }
-            }
-        } else {
-            for mat in ac.find_overlapping_iter(area) {
-                let start_idx = range.start + mat.start();
-                let end_idx = range.end + mat.end();
-                // Lookup the corresponding element
-                if let Some(elem) = self.descendant_at(start_idx) {
-                    if elem.read().get_range() != self.get_range() {
-                        return Some((elem.clone(), false));
-                    }
-                }
-            }
-        }
-        None
     }
 }
 

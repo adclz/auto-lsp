@@ -13,14 +13,10 @@ impl Root {
     /// A vector of tuples containing the [`Match`] and the line number
     pub fn find_all_with_regex<'a>(
         &'a self,
+        query: &tree_sitter::Query,
         document: &'a Document,
         regex: &Regex,
     ) -> Vec<(Match<'a>, usize)> {
-        let query = match self.parsers.tree_sitter.queries.comments {
-            Some(ref query) => query,
-            None => return vec![],
-        };
-
         let root_node = document.tree.root_node();
         let source = document.texter.text.as_str();
 

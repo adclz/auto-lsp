@@ -1,29 +1,26 @@
 use crate::core::ast::BuildInlayHints;
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{InlayHint, InlayHintParams};
 
-use crate::server::session::{Session, WORKSPACE};
+/// Get inlay hints for a document.
+pub fn get_inlay_hints<Db: BaseDatabase>(
+    db: &Db,
+    params: InlayHintParams,
+) -> anyhow::Result<Option<Vec<InlayHint>>> {
+    let mut results = vec![];
 
-impl Session {
-    /// Get inlay hints for a document.
-    pub fn get_inlay_hints(
-        &mut self,
-        params: InlayHintParams,
-    ) -> anyhow::Result<Option<Vec<InlayHint>>> {
-        let mut results = vec![];
+    let uri = params.text_document.uri;
 
-        let uri = params.text_document.uri;
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let workspace = WORKSPACE.lock();
+    let document = file.document(db).read();
+    let root = get_ast(db, file).clone().into_inner();
 
-        let (root, document) = workspace
-            .roots
-            .get(&uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+    root.ast.iter().for_each(|ast| {
+        ast.build_inlay_hints(&document, &mut results);
+    });
 
-        root.ast.iter().for_each(|ast| {
-            ast.build_inlay_hints(document, &mut results);
-        });
-
-        Ok(Some(results))
-    }
+    Ok(Some(results))
 }

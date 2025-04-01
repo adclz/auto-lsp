@@ -58,11 +58,11 @@ macro_rules! configure_parsers {
                 map.insert(
                     $($extension, $crate::core::root::Parsers {
                         tree_sitter: $crate::configure::parsers::create_parser($language, $node_types, $core, $comment, $fold, $highlights),
-                        ast_parser: |root: &mut $crate::core::root::Root, document: &$crate::core::document::Document, range: Option<std::ops::Range<usize>>| {
+                        ast_parser: |db: &dyn $crate::core::salsa::db::BaseDatabase, root: &mut $crate::core::root::Root, document: &$crate::core::document::Document, range: Option<std::ops::Range<usize>>| {
                             use $crate::core::build::InvokeParser;
 
                             Ok::<$crate::core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::core::ast::Symbol::new_and_check($root::parse_symbol(root, document, range)?, root).to_dyn(),
+                                $crate::core::ast::Symbol::new_and_check($root::parse_symbol(db, root, document, range)?, root).to_dyn(),
                             )
                         },
                     }),*

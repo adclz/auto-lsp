@@ -1,22 +1,21 @@
-use crate::core::workspace::Workspace;
+use auto_lsp_core::{salsa::db::BaseDatabase, salsa::tracked::get_ast};
+use lsp_types::Url;
 use parking_lot::Mutex;
 use rstest::{fixture, rstest};
 use std::time::Duration;
 
+use super::python_utils::create_python_db;
 use super::python_workspace::ast::Module;
-use crate::tests::python_utils::{create_python_workspace, into_python_file};
 
 #[fixture]
-fn foo_bar() -> Workspace {
-    create_python_workspace(
-        r#"# foo comment
+fn foo_bar() -> impl BaseDatabase {
+    create_python_db(&[r#"# foo comment
 def foo(param1, param2: int, param3: int = 5):
     pass
 
 def bar():
     pass  
-"#,
-    )
+"#])
 }
 
 static DEADLOCK_DETECTION_LOCK: Mutex<()> = parking_lot::const_mutex(());
@@ -27,11 +26,15 @@ fn has_deadlock() -> bool {
 }
 
 #[rstest]
-fn read_write(foo_bar: Workspace) {
-    let (root, _) = into_python_file(foo_bar);
-    let ast = root.ast.unwrap();
-
+fn read_write(foo_bar: impl BaseDatabase) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
+
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+    let root = get_ast(&foo_bar, file).clone().into_inner();
+
+    let ast = root.ast.as_ref().unwrap().clone();
 
     // not allowed in the same thread
     let _t = std::thread::spawn(move || {
@@ -45,11 +48,16 @@ fn read_write(foo_bar: Workspace) {
 }
 
 #[rstest]
-fn multiple_readers(foo_bar: Workspace) {
+fn multiple_readers(foo_bar: impl BaseDatabase) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
 
-    let (root, _) = into_python_file(foo_bar);
-    let ast = root.ast.unwrap();
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+    let root = get_ast(&foo_bar, file).clone().into_inner();
+
+    let ast = root.ast.as_ref().unwrap().clone();
+
     let ast_clone = ast.clone();
 
     let _t1 = std::thread::spawn(move || {
@@ -68,11 +76,15 @@ fn multiple_readers(foo_bar: Workspace) {
 }
 
 #[rstest]
-fn multiple_writers(foo_bar: Workspace) {
+fn multiple_writers(foo_bar: impl BaseDatabase) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
 
-    let (root, _) = into_python_file(foo_bar);
-    let ast = root.ast.unwrap();
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+    let root = get_ast(&foo_bar, file).clone().into_inner();
+
+    let ast = root.ast.as_ref().unwrap().clone();
 
     let ast_clone = ast.clone();
 
@@ -91,11 +103,16 @@ fn multiple_writers(foo_bar: Workspace) {
 }
 
 #[rstest]
-fn nested_writer(foo_bar: Workspace) {
+fn nested_writer(foo_bar: impl BaseDatabase) {
     let _guard = DEADLOCK_DETECTION_LOCK.lock();
 
-    let (root, _) = into_python_file(foo_bar);
-    let ast = root.ast.unwrap();
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+
+    let root = get_ast(&foo_bar, file).clone().into_inner();
+
+    let ast = root.ast.as_ref().unwrap().clone();
 
     let ast_clone = ast.clone();
 

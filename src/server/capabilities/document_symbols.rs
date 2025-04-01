@@ -1,32 +1,29 @@
 use crate::core::ast::BuildDocumentSymbols;
-use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
+use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 
-use crate::server::session::{Session, WORKSPACE};
+/// Request to get document symbols for a file
+///
+/// This function will recursively traverse the ast and return all symbols found.
+pub fn get_document_symbols<Db: BaseDatabase>(
+    db: &Db,
+    params: DocumentSymbolParams,
+) -> anyhow::Result<Option<DocumentSymbolResponse>> {
+    let uri = params.text_document.uri;
 
-impl Session {
-    /// Request to get document symbols for a file
-    ///
-    /// This function will recursively traverse the ast and return all symbols found.
-    pub fn get_document_symbols(
-        &mut self,
-        params: DocumentSymbolParams,
-    ) -> anyhow::Result<Option<DocumentSymbolResponse>> {
-        let uri = &params.text_document.uri;
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-        let workspace = WORKSPACE.lock();
+    let document = file.document(db).read();
+    let root = get_ast(db, file).clone().into_inner();
 
-        let (root, document) = workspace
-            .roots
-            .get(uri)
-            .ok_or(anyhow::anyhow!("Root not found"))?;
+    let mut builder = DocumentSymbolsBuilder::default();
 
-        let mut builder = DocumentSymbolsBuilder::default();
+    root.ast
+        .iter()
+        .for_each(|p| p.build_document_symbols(&document, &mut builder));
 
-        root.ast
-            .iter()
-            .for_each(|p| p.build_document_symbols(document, &mut builder));
-
-        Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
-    }
+    Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
 }

@@ -1,31 +1,29 @@
-use crate::core::ast::AstSymbol;
-use auto_lsp_core::workspace::Workspace;
+use super::{html_utils::create_html_db, html_workspace::*};
+use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::{ast::AstSymbol, salsa::tracked::get_ast};
+use lsp_types::Url;
 use rstest::{fixture, rstest};
 
-use super::{
-    html_utils::{create_html_workspace, get_html_file},
-    html_workspace::*,
-};
-
 #[fixture]
-fn sample_file() -> Workspace {
-    create_html_workspace(
-        r#"<!DOCTYPE html>
+fn sample_file() -> impl BaseDatabase {
+    create_html_db(&[r#"<!DOCTYPE html>
 <script></script>
 <style></style>
 <div>
     <span> </span>
     <br/>
-</div>"#,
-    )
+</div>"#])
 }
 
 #[rstest]
-fn html_ast(sample_file: Workspace) {
-    let (root, document) = get_html_file(&sample_file);
+fn html_ast(sample_file: impl BaseDatabase) {
+    let file = sample_file
+        .get_file(&Url::parse("file:///test0.html").unwrap())
+        .unwrap();
+    let document = file.document(&sample_file).read();
+    let root = get_ast(&sample_file, file).clone().into_inner();
 
-    let ast = root.ast.as_ref().unwrap();
-    let ast = ast.read();
+    let ast = root.ast.as_ref().unwrap().read();
 
     // Root node should be HtmlDocument
 

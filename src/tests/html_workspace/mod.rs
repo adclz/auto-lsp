@@ -74,7 +74,7 @@ pub enum Element {
 pub struct FullTag {
     start_tag: StartTag,
     elements: Vec<Node>,
-    end_tag: Option<EndTag>
+    end_tag: Option<EndTag>,
 }
 
 #[seq(query = "self_closing_tag")]
@@ -87,14 +87,14 @@ pub struct SelfClosingTag {
 pub struct ScriptElement {
     start_tag: StartTag,
     raw_text: Option<RawText>,
-    end_tag: EndTag
+    end_tag: EndTag,
 }
 
 #[seq(query = "style_element")]
 pub struct StyleElement {
     start_tag: StartTag,
     raw_text: Option<RawText>,
-    end_tag: EndTag
+    end_tag: EndTag,
 }
 
 #[seq(query = "start_tag")]
@@ -145,7 +145,7 @@ pub struct Entity {}
 
 #[seq(query = "quoted_attribute_value")]
 pub struct QuotedAttributeValue {
-    attribute_value: AttributeValue
+    attribute_value: AttributeValue,
 }
 
 #[seq(query = "text")]

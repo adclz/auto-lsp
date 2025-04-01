@@ -1,10 +1,11 @@
-use super::{Session, WORKSPACE};
-use auto_lsp_core::document::Document;
-use auto_lsp_core::root::Root;
+use super::Session;
+use auto_lsp_core::root::Parsers;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{InitializeParams, Url};
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::Read};
+use texter::core::text::Text;
 use walkdir::WalkDir;
 
 #[allow(non_snake_case, reason = "JSON")]
@@ -17,7 +18,7 @@ struct InitializationOptions {
     perFileParser: HashMap<String, String>,
 }
 
-impl Session {
+impl<Db: BaseDatabase> Session<Db> {
     /// Initializes the workspace by loading files and associating them with parsers.
     pub(crate) fn init_workspace(&mut self, params: InitializeParams) -> anyhow::Result<()> {
         let options = InitializationOptions::deserialize(
@@ -42,7 +43,6 @@ impl Session {
         let mut errors: Vec<Result<(), anyhow::Error>> = vec![];
 
         if let Some(folders) = params.workspace_folders {
-            let mut workspace = WORKSPACE.lock();
             let files = folders
                 .into_iter()
                 .flat_map(|folder| {
@@ -63,9 +63,8 @@ impl Session {
                 files
                     .into_iter()
                     .map(|file| match self.read_file(&file.into_path()) {
-                        Ok((url, root, document)) => {
-                            workspace.roots.insert(url, (root, document));
-                            Ok(())
+                        Ok((parsers, url, text)) => {
+                            self.db.add_file_from_texter(parsers, &url, text)
                         }
                         Err(err) => Err(err),
                     })
@@ -81,9 +80,8 @@ impl Session {
                     |file_iter| {
                         file_iter
                             .map(|file| match self.read_file(&file.into_path()) {
-                                Ok((url, root, document)) => {
-                                    workspace.roots.insert(url, (root, document));
-                                    Ok(())
+                                Ok((parsers, url, text)) => {
+                                    self.db.add_file_from_texter(parsers, &url, text)
                                 }
                                 Err(err) => Err(err),
                             })
@@ -91,15 +89,15 @@ impl Session {
                     },
                 ));
             }
-
-            workspace.resolve_references();
-            workspace.resolve_checks();
         }
 
         Ok(())
     }
 
-    pub(crate) fn read_file(&self, file: &PathBuf) -> anyhow::Result<(Url, Root, Document)> {
+    pub(crate) fn read_file(
+        &self,
+        file: &PathBuf,
+    ) -> anyhow::Result<(&'static Parsers, Url, Text)> {
         let url = Url::from_file_path(file)
             .map_err(|_| anyhow::anyhow!("Failed to read file {}", file.display()))?;
 
@@ -125,9 +123,7 @@ impl Session {
             .parsers
             .get(extension.as_str())
             .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
-
-        let result = Root::from_texter(parsers, url.clone(), text)?;
-        Ok((url, result.0, result.1))
+        Ok((parsers, url, text))
     }
 }
 

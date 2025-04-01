@@ -103,14 +103,6 @@ nested_struct!(
             pub path: Path,
             pub build_semantic_tokens: Method
         },
-        pub is_reference: IsReference {
-            pub path: Path,
-            pub is_reference: Method
-        },
-        pub reference: Reference {
-            pub path: Path,
-            pub find: Method
-        },
         pub is_comment: Comment {
             pub path: Path,
             pub is_comment: Method
@@ -128,14 +120,6 @@ nested_struct!(
         pub parent: Parent {
             pub path: Path,
             pub inject_parent: Method
-        },
-        pub is_check: IsCheck {
-            pub path: Path,
-            pub must_check: Method
-        },
-        pub check: Check {
-            pub path: Path,
-            pub check: Method
         },
         pub display: Display {
             pub path: Path,
@@ -288,24 +272,6 @@ impl Default for Paths {
                     variant: quote! { build_semantic_tokens(doc, builder) },
                 },
             },
-            is_reference: IsReference {
-                path: core_ast(parse_quote!(IsReference)),
-                is_reference: Method {
-                    sig: quote! { fn is_reference(&self) -> bool},
-                    variant: quote! { is_reference() },
-                },
-            },
-            reference: Reference {
-                path: core_ast(parse_quote!(Reference)),
-                find: Method {
-                    sig: quote! { fn find_reference(&self,
-                    doc: &auto_lsp::core::document::Document,
-                    workspace: &auto_lsp::core::workspace::Workspace,
-                    diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>)
-                    -> Option<auto_lsp::core::ast::DynSymbol> },
-                    variant: quote! { find_reference(doc, workspace, diagnostics) },
-                },
-            },
             is_comment: Comment {
                 path: core_ast(parse_quote!(Comment)),
                 is_comment: Method {
@@ -340,20 +306,6 @@ impl Default for Paths {
                 inject_parent: Method {
                     sig: quote! { fn inject_parent(&mut self, parent: auto_lsp::core::ast::WeakSymbol) },
                     variant: quote! { inject_parent(parent) },
-                },
-            },
-            is_check: IsCheck {
-                path: core_ast(parse_quote!(IsCheck)),
-                must_check: Method {
-                    sig: quote! { fn must_check(&self) -> bool },
-                    variant: quote! { must_check() },
-                },
-            },
-            check: Check {
-                path: core_ast(parse_quote!(Check)),
-                check: Method {
-                    sig: quote! { fn check(&self, doc: &auto_lsp::core::document::Document, diagnostics: &mut Vec<auto_lsp::lsp_types::Diagnostic>) -> auto_lsp::core::ast::CheckStatus },
-                    variant: quote! { check(doc, diagnostics) },
                 },
             },
             display: Display {
