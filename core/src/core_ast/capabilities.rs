@@ -11,7 +11,6 @@ use super::core::AstSymbol;
 use super::data::*;
 use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
-use crate::workspace::Workspace;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
 use aho_corasick::AhoCorasick;
 
