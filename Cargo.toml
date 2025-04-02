@@ -13,8 +13,8 @@ edition = "2021"
 readme = "README.MD"
 
 [dependencies]
-auto-lsp-core = { path = "./core", version = "0.5.0" }
-auto-lsp-macros = { path = "./proc-macros", version = "0.1.5" }
+auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
+auto-lsp-macros = { path = "./crates/proc-macros", version = "0.1.5" }
 tree-sitter = "0.24.7"
 tree-sitter-language = "0.1.5"
 lsp-types = "0.94.1"
@@ -42,7 +42,7 @@ tree-sitter-python = { version = "0.23.6", optional = true }
 tree-sitter-html = { version = "0.23.2", optional = true }
 
 [workspace]
-members = ["core", "proc-macros"]
+members = ["crates/core", "crates/proc-macros"]
 exclude = ["examples/vscode-wasi/server", "examples/native"]
 
 [workspace.dependencies]
