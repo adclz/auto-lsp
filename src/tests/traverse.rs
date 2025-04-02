@@ -23,9 +23,9 @@ fn descendant(nested_divs: impl BaseDatabase) {
     let file = nested_divs
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
-    let root = get_ast(&nested_divs, file).clone().into_inner();
+    let root = get_ast(&nested_divs, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap().read();
+    let ast = root.as_ref().unwrap().read();
     let document = ast.downcast_ref::<HtmlDocument>().unwrap();
     let div1 = &document.tags[1];
 
@@ -63,9 +63,9 @@ fn descendant_at_and_collect(nested_divs: impl BaseDatabase) {
     let file = nested_divs
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
-    let root = get_ast(&nested_divs, file).clone().into_inner();
+    let root = get_ast(&nested_divs, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap();
+    let ast = root.as_ref().unwrap();
 
     let mut collected = vec![];
     let descendant = ast.descendant_at_and_collect(
@@ -89,9 +89,9 @@ fn traverse_and_collect(nested_divs: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
     let document = file.document(&nested_divs).read();
-    let root = get_ast(&nested_divs, file).clone().into_inner();
+    let root = get_ast(&nested_divs, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap();
+    let ast = root.as_ref().unwrap();
 
     let source_code = document.texter.text.as_bytes();
 

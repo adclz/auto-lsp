@@ -24,8 +24,8 @@ pub fn parse(c: &mut Criterion) {
     c.bench_function("parse_flamegraph", move |b| {
         b.iter(|| {
             let file = db.get_file(&uri).unwrap();
-            let ast = get_ast(&db, file).clone().into_inner();
-            assert!(ast.ast.is_some())
+            let ast = get_ast(&db, file).to_symbol();
+            assert!(ast.is_some())
         });
     });
 }

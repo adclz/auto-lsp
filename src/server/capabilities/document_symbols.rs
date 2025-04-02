@@ -17,13 +17,11 @@ pub fn get_document_symbols<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).clone().into_inner();
+    let root = get_ast(db, file).to_symbol();
 
     let mut builder = DocumentSymbolsBuilder::default();
 
-    root.ast
-        .iter()
-        .for_each(|p| p.build_document_symbols(&document, &mut builder));
+    root.map(|p| p.build_document_symbols(&document, &mut builder));
 
     Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
 }

@@ -15,11 +15,9 @@ pub fn get_code_actions<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).clone().into_inner();
+    let root = get_ast(db, file).to_symbol();
 
-    if let Some(a) = root.ast.as_ref() {
-        a.build_code_actions(&document, &mut results)
-    }
+    root.map(|root| root.build_code_actions(&document, &mut results));
 
     Ok(Some(results))
 }

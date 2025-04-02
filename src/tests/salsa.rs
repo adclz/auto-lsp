@@ -32,11 +32,11 @@ fn query_ast(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
-    assert!(file0_ast.ast.is_some());
+    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
-    assert!(file1_ast.ast.is_some());
+    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
 
@@ -55,11 +55,11 @@ fn update_file(mut foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
-    assert!(file0_ast.ast.is_some());
+    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
-    assert!(file1_ast.ast.is_some());
+    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
 
@@ -89,11 +89,11 @@ fn update_file(mut foo_bar: impl BaseDatabase) {
         )
         .expect("Failed to update file");
 
-    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
-    assert!(file0_ast.ast.is_some());
+    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
-    assert!(file1_ast.ast.is_some());
+    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
     assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
@@ -109,11 +109,11 @@ fn remove_file(mut foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = get_ast(&foo_bar, file0).clone().into_inner();
-    assert!(file0_ast.ast.is_some());
+    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
-    assert!(file1_ast.ast.is_some());
+    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
 
@@ -134,8 +134,8 @@ fn remove_file(mut foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).clone().into_inner();
-    assert!(file1_ast.ast.is_some());
+    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    assert!(file1_ast.is_some());
 
     assert!(foo_bar.take_logs().is_empty());
 }

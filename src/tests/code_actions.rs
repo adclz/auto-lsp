@@ -24,9 +24,9 @@ fn foo_bar_code_actions(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).clone().into_inner();
+    let root = get_ast(&foo_bar, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap();
+    let ast = root.as_ref().unwrap();
 
     let mut code_actions = vec![];
     ast.build_code_actions(&document, &mut code_actions);

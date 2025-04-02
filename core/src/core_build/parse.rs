@@ -1,7 +1,8 @@
+use std::sync::Arc;
+
 use crate::ast::DynSymbol;
 use crate::document::Document;
-use crate::root::Parsers;
-use crate::root::Root;
+use crate::parsers::Parsers;
 use crate::salsa::db::BaseDatabase;
 use crate::salsa::db::BaseDb;
 use crate::salsa::tracked::get_ast;
@@ -31,7 +32,8 @@ pub trait InvokeParser<
     /// of type Y.
     fn parse_symbol(
         db: &dyn BaseDatabase,
-        root: &mut Root,
+        parsers: &'static Parsers,
+        url: &Arc<Url>,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic>;
@@ -44,11 +46,12 @@ where
 {
     fn parse_symbol(
         db: &dyn BaseDatabase,
-        root: &mut Root,
+        parsers: &'static Parsers,
+        url: &Arc<Url>,
         document: &Document,
         range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic> {
-        StackBuilder::<T>::new(db, root, document).create_symbol(&range)
+        StackBuilder::<T>::new(db, parsers, url, document).create_symbol(&range)
     }
 }
 
@@ -58,7 +61,8 @@ where
 /// avoiding ambiguity.
 pub type InvokeParserFn = fn(
     &dyn BaseDatabase,
-    &mut Root,
+    &'static Parsers,
+    &Arc<Url>,
     &Document,
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
@@ -149,7 +153,7 @@ where
                     );
                 }
 
-                if let Some(ast) = &ast.clone().into_inner().ast {
+                if let Some(ast) = ast.to_symbol() {
                     report.add_note(format!("{}", ast.read()));
                 }
 

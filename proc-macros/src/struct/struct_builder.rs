@@ -278,7 +278,7 @@ impl StructBuilder<'_> {
           #sig {
             let range = capture.node.range();
             Some(Self {
-                url,
+                url: url.clone(),
                 query_index: capture.index as usize,
                 range: std::ops::Range {
                     start: range.start_byte,
@@ -300,7 +300,7 @@ impl StructBuilder<'_> {
             |_, _, name, field_type, builder| {
                 quote! {
                     
-                    if let Some(node) =  self.#name.add::<#builder>(capture, root, stringify!(#input_name), stringify!(#field_type))? {
+                    if let Some(node) =  self.#name.add::<#builder>(capture, parsers, url, stringify!(#input_name), stringify!(#field_type))? {
                        return Ok(Some(node))
                     };
                 }
@@ -318,10 +318,10 @@ impl StructBuilder<'_> {
         let try_from_builder = &self.paths.try_from_builder;
 
         let symbol_data = &self.paths.symbol_data;
-        let root = &self.paths.root;
         let try_downcast = &self.paths.try_downcast_trait;
         let finalize = &self.paths.finalize_trait;
         let symbol = &self.paths.symbol;
+        let parsers = &self.paths.parsers;
 
         let _builder = FieldBuilder::default()
             .add(quote! {
@@ -343,31 +343,32 @@ impl StructBuilder<'_> {
                                 stringify!(#input_name),
                             )
                         ))?
-                        .try_downcast(root, document, stringify!(#field_type), builder_range, stringify!(#input_name))?, root);
+                        .try_downcast(parsers, url, document, stringify!(#field_type), builder_range, stringify!(#input_name))?);
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(root, document, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize(root);
+                            .try_downcast(parsers, url, document, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize();
                     }
             })
             .stage()
             .to_token_stream();
 
         let builder_trait = &self.paths.symbol_builder_trait.path;
+        let parsers = &self.paths.parsers;
 
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #input_name {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, root: &mut #root, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, parsers: &'static #parsers, url: &std::sync::Arc<auto_lsp::lsp_types::Url>, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
                     use #builder_trait;
                     let builder_range = builder.get_lsp_range(document);
 
                     #_builder
 
                     Ok(#input_name {
-                        _data: #symbol_data::new(builder.url.clone(), builder.range.clone()),
+                        _data: #symbol_data::new(url.clone(), builder.range.clone()),
                         #(#fields),*
                     })
                 }

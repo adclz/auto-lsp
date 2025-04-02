@@ -1,5 +1,8 @@
 use crate::server::RegexToDocumentLink;
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use auto_lsp_core::{
+    regex::find_all_with_regex,
+    salsa::{db::BaseDatabase, tracked::get_ast},
+};
 use lsp_types::{DocumentLink, DocumentLinkParams};
 
 /// Get document links for a document.
@@ -22,12 +25,11 @@ pub fn get_document_links<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).clone().into_inner();
 
     let mut results = vec![];
-    let matches = root.find_all_with_regex(query, &document, re);
+    let matches = find_all_with_regex(query, &document, re);
     matches.into_iter().for_each(|(m, line)| {
-        to_document_link(m, line, &document, &root, &mut results);
+        to_document_link(m, line, &document, &mut results);
     });
 
     Ok(Some(results))

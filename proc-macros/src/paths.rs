@@ -23,8 +23,6 @@ pub struct Method {
     pub variant: TokenStream,
 }
 
-unsafe impl Sync for Paths {}
-
 nested_struct!(
     pub struct Paths {
         pub symbol: Path,
@@ -34,7 +32,7 @@ nested_struct!(
         pub symbol_data: Path,
         pub pending_symbol: Path,
         pub maybe_pending_symbol: Path,
-        pub root: Path,
+        pub parsers: Path,
 
         pub queryable: Queryable {
             pub path: Path,
@@ -142,7 +140,7 @@ impl Default for Paths {
             referrers: core_ast(parse_quote!(Referrers)),
             pending_symbol: core_build(parse_quote!(PendingSymbol)),
             maybe_pending_symbol: core_build(parse_quote!(MaybePendingSymbol)),
-            root: parse_quote!(auto_lsp::core::root::Root),
+            parsers: parse_quote!(auto_lsp::core::parsers::Parsers),
 
             queryable: Queryable {
                 path: core_build(parse_quote!(Queryable)),
@@ -168,7 +166,7 @@ impl Default for Paths {
                 path: core_build(parse_quote!(Buildable)),
                 new: Method {
                     sig: quote! { fn new(
-                        url: std::sync::Arc<auto_lsp::lsp_types::Url>,
+                        url: &std::sync::Arc<auto_lsp::lsp_types::Url>,
                         query: &auto_lsp::tree_sitter::Query,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
                     ) -> Option<Self> },
@@ -178,10 +176,11 @@ impl Default for Paths {
                     sig: quote! { fn add(
                         &mut self,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
-                        root: &mut auto_lsp::core::root::Root,
+                        parsers: &'static auto_lsp::core::parsers::Parsers,
+                        url: &std::sync::Arc<auto_lsp::lsp_types::Url>,
                         document: &auto_lsp::core::document::Document,
                     ) -> Result<Option<auto_lsp::core::build::PendingSymbol>, auto_lsp::lsp_types::Diagnostic> },
-                    variant: quote! { add(capture, root, document) },
+                    variant: quote! { add(capture, parsers, url, document) },
                 },
                 get_url: Method {
                     sig: quote! { fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> },

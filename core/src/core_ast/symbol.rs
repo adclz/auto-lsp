@@ -1,4 +1,3 @@
-use crate::root::Root;
 use std::{
     fmt::Debug,
     sync::{Arc, Weak},
@@ -41,7 +40,7 @@ impl<T: AstSymbol> Symbol<T> {
     /// If the symbol is a reference ([`super::capabilities::Reference`]), add it to the unsolved references list
     ///
     /// If the symbol requires checking ([`super::capabilities::Check`]), add it to the unsolved checks list
-    pub fn new_and_check(symbol: T, root: &mut Root) -> Self {
+    pub fn new_and_check(symbol: T) -> Self {
         let symbol = Symbol::new(symbol);
         symbol.write().inject_parent(symbol.to_weak());
         symbol

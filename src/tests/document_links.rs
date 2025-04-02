@@ -1,7 +1,10 @@
 use crate::html::HTML_PARSERS;
 
 use super::html_utils::create_html_db;
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use auto_lsp_core::{
+    regex::find_all_with_regex,
+    salsa::{db::BaseDatabase, tracked::get_ast},
+};
 use lsp_types::Url;
 use regex::Regex;
 use rstest::{fixture, rstest};
@@ -30,10 +33,9 @@ fn document_links(comments_with_link: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
     let document = file.document(&comments_with_link).read();
-    let root = get_ast(&comments_with_link, file).clone().into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(comment_query, &document, &regex);
+    let results = find_all_with_regex(comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");
@@ -68,12 +70,9 @@ fn multiline_document_links(multiline_comment_with_links: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
     let document = file.document(&multiline_comment_with_links).read();
-    let root = get_ast(&multiline_comment_with_links, file)
-        .clone()
-        .into_inner();
 
     let regex = Regex::new(r" source:(\w+\.\w+):(\d+)").unwrap();
-    let results = root.find_all_with_regex(comment_query, &document, &regex);
+    let results = find_all_with_regex(comment_query, &document, &regex);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].0.as_str(), " source:file1.txt:52");

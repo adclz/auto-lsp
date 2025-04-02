@@ -1,5 +1,5 @@
-use crate::root::Parsers;
-use crate::{document::Document, root::Root};
+use crate::document::Document;
+use crate::parsers::Parsers;
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
 use parking_lot::RwLock;
@@ -66,9 +66,18 @@ impl BaseDatabase for BaseDb {
         &mut self,
         parsers: &'static Parsers,
         url: &Url,
-        text: Text,
+        texter: Text,
     ) -> anyhow::Result<()> {
-        let (_root, document) = Root::from_texter(self, parsers, url.clone(), text)?;
+        let tree = parsers
+            .tree_sitter
+            .parser
+            .write()
+            .parse(texter.text.as_bytes(), None)
+            .ok_or_else(|| anyhow::format_err!("Tree-sitter failed to parse source code"))?;
+
+        // Initialize the document with the source code and syntax tree.
+        let document = Document { texter, tree };
+
         let file = File::new(self, url.clone(), parsers, Arc::new(RwLock::new(document)));
         match self.files.entry(url.clone()) {
             Entry::Occupied(_) => Err(anyhow::anyhow!("File {:?} not found", url)),

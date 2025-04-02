@@ -24,9 +24,9 @@ fn foo_bar_document_symbols(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).clone().into_inner();
+    let root = get_ast(&foo_bar, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap();
+    let ast = root.as_ref().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
     ast.build_document_symbols(&document, &mut builder);
@@ -59,9 +59,9 @@ fn foo_bar_nested_bazdocument_symbols(foo_bar_nested_baz: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar_nested_baz).read();
-    let root = get_ast(&foo_bar_nested_baz, file).clone().into_inner();
+    let root = get_ast(&foo_bar_nested_baz, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap();
+    let ast = root.as_ref().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
     ast.build_document_symbols(&document, &mut builder);

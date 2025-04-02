@@ -29,7 +29,7 @@ pub mod document_symbols_builder;
 
 /// Document handling
 pub mod document;
-/// Root (AST) handling
-pub mod root;
 
+pub mod parsers;
+pub mod regex;
 pub mod salsa;

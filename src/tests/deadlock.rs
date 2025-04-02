@@ -32,9 +32,9 @@ fn read_write(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let root = get_ast(&foo_bar, file).clone().into_inner();
+    let root = get_ast(&foo_bar, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap().clone();
+    let ast = root.unwrap().clone();
 
     // not allowed in the same thread
     let _t = std::thread::spawn(move || {
@@ -54,10 +54,9 @@ fn multiple_readers(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let root = get_ast(&foo_bar, file).clone().into_inner();
+    let root = get_ast(&foo_bar, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap().clone();
-
+    let ast = root.unwrap().clone();
     let ast_clone = ast.clone();
 
     let _t1 = std::thread::spawn(move || {
@@ -82,10 +81,9 @@ fn multiple_writers(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let root = get_ast(&foo_bar, file).clone().into_inner();
+    let root = get_ast(&foo_bar, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap().clone();
-
+    let ast = root.unwrap().clone();
     let ast_clone = ast.clone();
 
     let _t1 = std::thread::spawn(move || {
@@ -110,9 +108,8 @@ fn nested_writer(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
 
-    let root = get_ast(&foo_bar, file).clone().into_inner();
-
-    let ast = root.ast.as_ref().unwrap().clone();
+    let root = get_ast(&foo_bar, file).to_symbol();
+    let ast = root.unwrap().clone();
 
     let ast_clone = ast.clone();
 

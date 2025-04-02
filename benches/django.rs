@@ -29,8 +29,8 @@ pub fn parse(c: &mut Criterion) {
     c.bench_function("parse_django_file", move |b| {
         b.iter(|| {
             let file = db.get_file(&uri).unwrap();
-            let ast = get_ast(&db, file).clone().into_inner();
-            assert!(ast.ast.is_some())
+            let ast = get_ast(&db, file).to_symbol();
+            assert!(ast.is_some())
         });
     });
 }
@@ -49,14 +49,13 @@ pub fn lsp_requests(c: &mut Criterion) {
 
     let file = db.get_file(&uri).unwrap();
 
-    let ast = get_ast(&db, file).clone().into_inner();
+    let ast = get_ast(&db, file).to_symbol();
     let document = file.document(&db).read();
 
     c.bench_function("code_actions", |b| {
         b.iter(|| {
             let mut acc = vec![];
-            ast.ast
-                .as_ref()
+            ast.as_ref()
                 .unwrap()
                 .build_code_actions(&document, &mut acc);
             assert_eq!(acc.len(), 2);
@@ -66,10 +65,7 @@ pub fn lsp_requests(c: &mut Criterion) {
     c.bench_function("code_lenses", |b| {
         b.iter(|| {
             let mut acc = vec![];
-            ast.ast
-                .as_ref()
-                .unwrap()
-                .build_code_lenses(&document, &mut acc);
+            ast.as_ref().unwrap().build_code_lenses(&document, &mut acc);
             assert_eq!(acc.len(), 2);
         });
     });
@@ -77,8 +73,7 @@ pub fn lsp_requests(c: &mut Criterion) {
     c.bench_function("document_symbols", |b| {
         b.iter(|| {
             let mut acc = DocumentSymbolsBuilder::default();
-            ast.ast
-                .as_ref()
+            ast.as_ref()
                 .unwrap()
                 .build_document_symbols(&document, &mut acc);
             assert_eq!(acc.finalize().len(), 2);
@@ -88,10 +83,7 @@ pub fn lsp_requests(c: &mut Criterion) {
     c.bench_function("inlay_hints", |b| {
         b.iter(|| {
             let mut acc = vec![];
-            ast.ast
-                .as_ref()
-                .unwrap()
-                .build_inlay_hints(&document, &mut acc);
+            ast.as_ref().unwrap().build_inlay_hints(&document, &mut acc);
             assert_eq!(acc.len(), 2);
         });
     });
@@ -99,8 +91,7 @@ pub fn lsp_requests(c: &mut Criterion) {
     c.bench_function("semantic_tokens", |b| {
         b.iter(|| {
             let mut acc = SemanticTokensBuilder::new("".into());
-            ast.ast
-                .as_ref()
+            ast.as_ref()
                 .unwrap()
                 .build_semantic_tokens(&document, &mut acc);
             assert_eq!(acc.build().data.len(), 2);

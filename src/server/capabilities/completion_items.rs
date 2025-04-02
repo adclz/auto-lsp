@@ -1,6 +1,6 @@
 use crate::core::ast::{BuildCompletionItems, BuildTriggeredCompletionItems};
-use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::salsa::tracked::get_ast;
+use auto_lsp_core::{ast::Traverse, salsa::db::BaseDatabase};
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
 
 pub fn get_completion_items<Db: BaseDatabase>(
@@ -16,7 +16,10 @@ pub fn get_completion_items<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).clone().into_inner();
+    let root = match get_ast(db, file).to_symbol() {
+        Some(root) => root,
+        None => return Ok(None),
+    };
 
     match params.context {
         Some(context) => match context.trigger_kind {

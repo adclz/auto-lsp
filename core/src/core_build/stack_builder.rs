@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use lsp_types::Diagnostic;
+use lsp_types::Url;
 use salsa::Accumulator;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::QueryCapture;
@@ -11,7 +12,7 @@ use super::downcast::*;
 use super::symbol::*;
 use super::utils::{intersecting_ranges, tree_sitter_range_to_lsp_range};
 use crate::document::Document;
-use crate::root::Root;
+use crate::parsers::Parsers;
 use crate::salsa::db::BaseDatabase;
 use crate::salsa::tracked::DiagnosticAccumulator;
 use crate::{builder_error, builder_warning, core_ast::core::AstSymbol};
@@ -26,7 +27,9 @@ where
 {
     _meta: PhantomData<T>,
     db: &'a dyn BaseDatabase,
-    root: &'a mut Root,
+    /// Parsers used for building the AST
+    parsers: &'static Parsers,
+    url: &'a Arc<Url>,
     document: &'a Document,
     /// Symbols created while building the AST
     roots: Vec<PendingSymbol>,
@@ -40,11 +43,17 @@ where
     T: Buildable + Queryable,
 {
     /// Creates a new `StackBuilder` instance.
-    pub fn new(db: &'a dyn BaseDatabase, root: &'a mut Root, document: &'a Document) -> Self {
+    pub fn new(
+        db: &'a dyn BaseDatabase,
+        parsers: &'static Parsers,
+        url: &'a Arc<Url>,
+        document: &'a Document,
+    ) -> Self {
         Self {
             _meta: PhantomData,
             db,
-            root,
+            parsers,
+            url,
             document,
             roots: vec![],
             stack: vec![],
@@ -72,7 +81,7 @@ where
                 result.get_lsp_range(self.document),
                 format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
             ))?
-            .try_into_builder(self.root, self.document)?;
+            .try_into_builder(self.parsers, self.url, self.document)?;
         #[cfg(feature = "log")]
         log::debug!("\n{}", result);
         Ok(result)
@@ -86,7 +95,7 @@ where
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
-            &self.root.parsers.tree_sitter.queries.core,
+            &self.parsers.tree_sitter.queries.core,
             self.document.tree.root_node(),
             self.document.texter.text.as_bytes(),
         );
@@ -111,7 +120,7 @@ where
                     if ((capture.node.range().start_byte > range.start)
                         || (capture.node.range().start_byte == range.start))
                         && T::QUERY_NAMES.contains(
-                            &self.root.parsers.tree_sitter.queries.core.capture_names()
+                            &self.parsers.tree_sitter.queries.core.capture_names()
                                 [capture.index as usize],
                         )
                     {
@@ -120,8 +129,7 @@ where
                         continue;
                     }
                 } else if T::QUERY_NAMES.contains(
-                    &self.root.parsers.tree_sitter.queries.core.capture_names()
-                        [capture.index as usize],
+                    &self.parsers.tree_sitter.queries.core.capture_names()[capture.index as usize],
                 ) {
                     self.build = true;
                 } else {
@@ -166,11 +174,7 @@ where
     ///
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
-        let mut node = T::new(
-            self.root.url.clone(),
-            &self.root.parsers.tree_sitter.queries.core,
-            capture,
-        );
+        let mut node = T::new(&self.url, &self.parsers.tree_sitter.queries.core, capture);
 
         match node.take() {
             Some(builder) => {
@@ -183,7 +187,7 @@ where
                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                     format!(
                         "Syntax error: Unexpected {:?}",
-                        self.root.parsers.tree_sitter.queries.core.capture_names()[capture_index],
+                        self.parsers.tree_sitter.queries.core.capture_names()[capture_index],
                     )
                 )
                 .into(),
@@ -197,7 +201,8 @@ where
         let add = parent
             .get_rc()
             .borrow_mut()
-            .add(capture, self.root, self.document);
+            .add(capture, self.parsers, &self.url, self.document);
+
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.
@@ -210,9 +215,9 @@ where
                         tree_sitter_range_to_lsp_range(&capture.node.range()),
                         format!(
                             "Syntax error: Unexpected {:?} in {:?}",
-                            self.root.parsers.tree_sitter.queries.core.capture_names()
+                            self.parsers.tree_sitter.queries.core.capture_names()
                                 [capture.index as usize],
-                            self.root.parsers.tree_sitter.queries.core.capture_names()
+                            self.parsers.tree_sitter.queries.core.capture_names()
                                 [parent.get_rc().borrow().get_query_index()],
                         )
                     )

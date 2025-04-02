@@ -26,10 +26,10 @@ fn global_completion_items(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).clone().into_inner();
+    let root = get_ast(&foo_bar, file).to_symbol();
 
     // Module returns globally available completion items
-    let module = root.ast.as_ref().unwrap().read();
+    let module = root.as_ref().unwrap().read();
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut completion_items = vec![];
@@ -50,11 +50,6 @@ fn global_completion_items(foo_bar: impl BaseDatabase) {
 
 #[rstest]
 fn triggered_completion_items(mut foo_bar: impl BaseDatabase) {
-    let file = foo_bar
-        .get_file(&Url::parse("file:///test0.py").unwrap())
-        .unwrap();
-    let root = get_ast(&foo_bar, file).clone().into_inner();
-
     let change = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
             start: lsp_types::Position {
@@ -82,8 +77,9 @@ fn triggered_completion_items(mut foo_bar: impl BaseDatabase) {
         .unwrap();
 
     let document = file.document(&foo_bar).read();
+    let root = get_ast(&foo_bar, file).to_symbol();
 
-    let node = root.ast.as_ref().unwrap().descendant_at(75).unwrap();
+    let node = root.as_ref().unwrap().descendant_at(75).unwrap();
 
     let mut completion_items = vec![];
     node.build_triggered_completion_items(".", &document, &mut completion_items);

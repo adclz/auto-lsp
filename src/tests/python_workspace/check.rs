@@ -20,9 +20,9 @@ use salsa::Accumulator;
 #[salsa::tracked]
 pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file: File) {
     let doc = file.document(db).read();
-    let root = get_ast(db, file).clone().into_inner();
+    let root = get_ast(db, file).to_symbol();
 
-    let module = root.ast.as_ref().unwrap();
+    let module = root.as_ref().unwrap();
     let module = module.read();
     let module = module.downcast_ref::<Module>().unwrap();
 

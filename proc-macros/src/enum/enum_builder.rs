@@ -355,18 +355,18 @@ impl EnumBuilder<'_> {
         let try_from_builder = &self.paths.try_from_builder;
         let try_into_builder = &self.paths.try_into_builder;
 
-        let root = &self.paths.root;
+        let parsers = &self.paths.parsers;
 
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #name {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
-                fn try_from_builder(builder: &#input_builder_name, root: &mut #root, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
+                fn try_from_builder(builder: &#input_builder_name, parsers: &'static #parsers, url: &std::sync::Arc<auto_lsp::lsp_types::Url>, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
                     use #try_into_builder;
 
                     #(
                         if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(variant.try_into_builder(root, document)?));
+                            return Ok(Self::#variant_names(variant.try_into_builder(parsers, url, document)?));
                         };
                     )*
                     Err(auto_lsp::core::builder_error!(

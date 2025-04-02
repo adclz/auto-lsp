@@ -16,9 +16,8 @@ pub fn get_folding_ranges<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).clone().into_inner();
 
-    let query = match root.parsers.tree_sitter.queries.fold {
+    let query = match file.parsers(db).tree_sitter.queries.fold {
         Some(ref query) => query,
         None => return Ok(None),
     };

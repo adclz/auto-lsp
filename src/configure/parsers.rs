@@ -1,6 +1,4 @@
-#[cfg(doc)]
-use auto_lsp_core::root::Root;
-use auto_lsp_core::root::{Queries, TreeSitter};
+use auto_lsp_core::parsers::{Queries, TreeSitter};
 
 /// Create the parsers with any given language and queries.
 ///
@@ -52,17 +50,22 @@ macro_rules! configure_parsers {
             fold: $fold: expr,
             highlights: $highlights: expr
         }),*) => {
-        pub static $parser_list_name: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::root::Parsers>> =
+        pub static $parser_list_name: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::parsers::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
                 map.insert(
-                    $($extension, $crate::core::root::Parsers {
+                    $($extension, $crate::core::parsers::Parsers {
                         tree_sitter: $crate::configure::parsers::create_parser($language, $node_types, $core, $comment, $fold, $highlights),
-                        ast_parser: |db: &dyn $crate::core::salsa::db::BaseDatabase, root: &mut $crate::core::root::Root, document: &$crate::core::document::Document, range: Option<std::ops::Range<usize>>| {
+                        ast_parser: |
+                            db: &dyn $crate::core::salsa::db::BaseDatabase,
+                            parsers: &'static $crate::core::parsers::Parsers,
+                            url: &std::sync::Arc<lsp_types::Url>,
+                            document: &$crate::core::document::Document,
+                            range: Option<std::ops::Range<usize>>| {
                             use $crate::core::build::InvokeParser;
 
                             Ok::<$crate::core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::core::ast::Symbol::new_and_check($root::parse_symbol(db, root, document, range)?, root).to_dyn(),
+                                $crate::core::ast::Symbol::new_and_check($root::parse_symbol(db, parsers, url, document, range)?).to_dyn(),
                             )
                         },
                     }),*

@@ -1,27 +1,73 @@
+use salsa::Accumulator;
+
 use super::db::{BaseDatabase, File};
-use crate::root::lexer::get_tree_sitter_errors;
-use crate::root::Root;
+use crate::ast::DynSymbol;
+use crate::core_build::lexer::get_tree_sitter_errors;
 use std::fmt::Formatter;
+use std::ops::Deref;
 use std::sync::Arc;
 
 #[salsa::tracked(no_eq, return_ref)]
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
-    let doc = file.document(db);
+    let doc = file.document(db).read();
     let url = file.url(db);
+    let url_shared = Arc::new(url.clone());
 
-    let ast = Root::from_texter(db, parsers, url, doc.read().texter.clone())
-        .unwrap()
-        .0;
-
-    let doc = doc.read();
+    if doc.texter.text.is_empty() {
+        return ParsedAst::default();
+    }
 
     let node = doc.tree.root_node();
     let source_code = doc.texter.text.as_bytes();
 
     get_tree_sitter_errors(db, &node, source_code);
 
-    ParsedAst::new(ast)
+    match (parsers.ast_parser)(db, parsers, &url_shared, &doc, None) {
+        Ok(ast) => ParsedAst::new(ast),
+        Err(e) => {
+            DiagnosticAccumulator::accumulate(e.clone().into(), db);
+            ParsedAst::default()
+        }
+    }
+}
+
+/// Cheap cloneable wrapper around a parsed AST
+#[derive(Default, Clone)]
+pub struct ParsedAst {
+    inner: Arc<Option<DynSymbol>>,
+}
+
+impl std::fmt::Debug for ParsedAst {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ParsedAst").field(&self.inner).finish()
+    }
+}
+
+impl PartialEq for ParsedAst {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.inner, &other.inner)
+    }
+}
+
+impl Eq for ParsedAst {}
+
+impl ParsedAst {
+    fn new(ast: DynSymbol) -> Self {
+        Self {
+            inner: Arc::new(Some(ast)),
+        }
+    }
+
+    pub fn to_symbol(&self) -> Option<&DynSymbol> {
+        self.inner.as_ref().as_ref()
+    }
+}
+
+impl<'a> From<&'a ParsedAst> for Option<&'a DynSymbol> {
+    fn from(parsed_ast: &'a ParsedAst) -> Option<&'a DynSymbol> {
+        parsed_ast.inner.as_ref().as_ref()
+    }
 }
 
 #[salsa::accumulator]
@@ -42,37 +88,5 @@ impl From<lsp_types::Diagnostic> for DiagnosticAccumulator {
 impl From<&DiagnosticAccumulator> for lsp_types::Diagnostic {
     fn from(diagnostic: &DiagnosticAccumulator) -> Self {
         diagnostic.0.clone()
-    }
-}
-
-/// Cheap cloneable wrapper around a parsed AST
-#[derive(Clone)]
-pub struct ParsedAst {
-    inner: Arc<Root>,
-}
-
-impl std::fmt::Debug for ParsedAst {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ParsedAst").field(&self.inner).finish()
-    }
-}
-
-impl PartialEq for ParsedAst {
-    fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.inner, &other.inner)
-    }
-}
-
-impl Eq for ParsedAst {}
-
-impl ParsedAst {
-    fn new(root: Root) -> Self {
-        Self {
-            inner: Arc::new(root),
-        }
-    }
-
-    pub fn into_inner(self) -> Arc<Root> {
-        self.inner
     }
 }

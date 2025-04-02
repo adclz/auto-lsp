@@ -21,9 +21,9 @@ fn html_ast(sample_file: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
     let document = file.document(&sample_file).read();
-    let root = get_ast(&sample_file, file).clone().into_inner();
+    let root = get_ast(&sample_file, file).to_symbol();
 
-    let ast = root.ast.as_ref().unwrap().read();
+    let ast = root.as_ref().unwrap().read();
 
     // Root node should be HtmlDocument
 

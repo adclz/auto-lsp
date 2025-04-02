@@ -1,5 +1,9 @@
 use crate::core::ast::GetGoToDefinition;
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use anyhow::Ok;
+use auto_lsp_core::{
+    ast::Traverse,
+    salsa::{db::BaseDatabase, tracked::get_ast},
+};
 use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
 
 /// Request to go to the definition of a symbol
@@ -16,7 +20,10 @@ pub fn go_to_definition<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).clone().into_inner();
+    let root = match get_ast(db, file).to_symbol() {
+        Some(root) => root,
+        None => return Ok(None),
+    };
 
     let position = params.text_document_position_params.position;
 

@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use crate::{self as auto_lsp};
 use auto_lsp::{choice, seq};
 use auto_lsp_core::ast::AstSymbol;
@@ -6,6 +5,7 @@ use auto_lsp_core::build::{Buildable, InvokeParser, Queryable, TryFromBuilder};
 use downcast_rs::Downcast;
 use impls::impls;
 use static_assertions::{assert_fields, assert_impl_all};
+use std::fmt::Display;
 
 #[test]
 fn simple_seq() {

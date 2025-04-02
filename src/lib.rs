@@ -112,7 +112,8 @@ pub mod core {
     pub use auto_lsp_core::ast;
     pub use auto_lsp_core::document;
     pub use auto_lsp_core::document_symbols_builder;
-    pub use auto_lsp_core::root;
+    pub use auto_lsp_core::parsers;
+    pub use auto_lsp_core::regex;
     pub use auto_lsp_core::salsa;
     pub use auto_lsp_core::semantic_tokens_builder;
     #[doc(hidden)]
