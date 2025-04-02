@@ -21,7 +21,7 @@ pub fn get_document_symbols<Db: BaseDatabase>(
 
     let mut builder = DocumentSymbolsBuilder::default();
 
-    root.map(|p| p.build_document_symbols(&document, &mut builder));
+    if let Some(p) = root { p.build_document_symbols(&document, &mut builder) }
 
     Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
 }

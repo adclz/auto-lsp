@@ -1,7 +1,7 @@
 use crate::server::RegexToDocumentLink;
 use auto_lsp_core::{
     regex::find_all_with_regex,
-    salsa::{db::BaseDatabase, tracked::get_ast},
+    salsa::db::BaseDatabase,
 };
 use lsp_types::{DocumentLink, DocumentLinkParams};
 

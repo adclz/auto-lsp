@@ -40,7 +40,7 @@ impl Document {
     pub fn update(
         &mut self,
         parser: &mut tree_sitter::Parser,
-        changes: &Vec<lsp_types::TextDocumentContentChangeEvent>,
+        changes: &[lsp_types::TextDocumentContentChangeEvent],
     ) -> anyhow::Result<()> {
         let mut new_tree = WrapTree::from(&mut self.tree);
 

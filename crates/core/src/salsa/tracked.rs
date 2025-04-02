@@ -4,7 +4,6 @@ use super::db::{BaseDatabase, File};
 use crate::ast::DynSymbol;
 use crate::core_build::lexer::get_tree_sitter_errors;
 use std::fmt::Formatter;
-use std::ops::Deref;
 use std::sync::Arc;
 
 #[salsa::tracked(no_eq, return_ref)]

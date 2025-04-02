@@ -76,16 +76,13 @@ impl DynSymbol {
     pub fn write(&self) -> parking_lot::RwLockWriteGuard<dyn AstSymbol> {
         self.0.write()
     }
-
-    /// Downgrade a [DynSymbol] to a [WeakSymbol]
-    pub(crate) fn to_weak(&self) -> WeakSymbol {
-        WeakSymbol::new(self)
-    }
 }
 
 impl Debug for DynSymbol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Symbol {:?}", self.read().get_range())
+        f.debug_struct("Symbol")
+            .field("range", &self.read().get_range())
+            .finish()
     }
 }
 
@@ -107,9 +104,5 @@ impl WeakSymbol {
     /// Upgrade the [WeakSymbol] to a [DynSymbol]
     pub fn to_dyn(&self) -> Option<DynSymbol> {
         self.0.upgrade().map(DynSymbol)
-    }
-
-    pub(crate) fn get_ptr(&self) -> &Weak<RwLock<dyn AstSymbol>> {
-        &self.0
     }
 }

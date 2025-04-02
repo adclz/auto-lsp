@@ -23,7 +23,7 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
 
         let mut builder = DocumentSymbolsBuilder::default();
 
-        ast.map(|root| root.read().build_document_symbols(&document, &mut builder));
+        if let Some(root) = ast { root.read().build_document_symbols(&document, &mut builder) }
 
         symbols.extend(
             builder

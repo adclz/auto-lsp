@@ -3,7 +3,7 @@ use crate::html::HTML_PARSERS;
 use super::html_utils::create_html_db;
 use auto_lsp_core::{
     regex::find_all_with_regex,
-    salsa::{db::BaseDatabase, tracked::get_ast},
+    salsa::db::BaseDatabase,
 };
 use lsp_types::Url;
 use regex::Regex;

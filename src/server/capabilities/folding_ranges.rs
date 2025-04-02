@@ -1,4 +1,4 @@
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 use streaming_iterator::StreamingIterator;
 

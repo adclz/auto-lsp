@@ -22,7 +22,7 @@ pub fn get_semantic_tokens_full<Db: BaseDatabase>(
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 
-    ast.map(|root| root.build_semantic_tokens(&document, &mut builder));
+    if let Some(root) = ast { root.build_semantic_tokens(&document, &mut builder) }
 
     Ok(Some(SemanticTokensResult::Tokens(builder.build())))
 }
@@ -43,7 +43,7 @@ pub fn get_semantic_tokens_range<Db: BaseDatabase>(
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 
-    ast.map(|root| root.build_semantic_tokens(&document, &mut builder));
+    if let Some(root) = ast { root.build_semantic_tokens(&document, &mut builder) }
 
     Ok(Some(SemanticTokensRangeResult::Tokens(builder.build())))
 }

@@ -37,7 +37,7 @@ pub trait BaseDatabase: Database {
     fn update(
         &mut self,
         url: &Url,
-        edits: &Vec<lsp_types::TextDocumentContentChangeEvent>,
+        edits: &[lsp_types::TextDocumentContentChangeEvent],
     ) -> anyhow::Result<()>;
 
     fn remove_file(&mut self, url: &Url) -> anyhow::Result<()>;
@@ -91,7 +91,7 @@ impl BaseDatabase for BaseDb {
     fn update(
         &mut self,
         url: &Url,
-        changes: &Vec<lsp_types::TextDocumentContentChangeEvent>,
+        changes: &[lsp_types::TextDocumentContentChangeEvent],
     ) -> anyhow::Result<()> {
         let file = *self
             .files

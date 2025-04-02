@@ -174,7 +174,7 @@ where
     ///
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
-        let mut node = T::new(&self.url, &self.parsers.tree_sitter.queries.core, capture);
+        let mut node = T::new(self.url, &self.parsers.tree_sitter.queries.core, capture);
 
         match node.take() {
             Some(builder) => {
@@ -201,7 +201,7 @@ where
         let add = parent
             .get_rc()
             .borrow_mut()
-            .add(capture, self.parsers, &self.url, self.document);
+            .add(capture, self.parsers, self.url, self.document);
 
         match add {
             Err(e) => {

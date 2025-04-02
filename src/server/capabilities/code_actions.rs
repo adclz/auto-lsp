@@ -17,7 +17,7 @@ pub fn get_code_actions<Db: BaseDatabase>(
     let document = file.document(db).read();
     let root = get_ast(db, file).to_symbol();
 
-    root.map(|root| root.build_code_actions(&document, &mut results));
+    if let Some(root) = root { root.build_code_actions(&document, &mut results) }
 
     Ok(Some(results))
 }

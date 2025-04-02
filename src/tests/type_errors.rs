@@ -98,7 +98,7 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: impl BaseDatabase) {
     };
 
     foo_with_type_error
-        .update(&file0_url, &vec![change])
+        .update(&file0_url, &[change])
         .unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
@@ -148,7 +148,7 @@ fn fix_type_error(mut foo_with_type_error: impl BaseDatabase) {
     };
 
     foo_with_type_error
-        .update(&file0_url, &vec![change])
+        .update(&file0_url, &[change])
         .unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<

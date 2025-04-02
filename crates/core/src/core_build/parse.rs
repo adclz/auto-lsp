@@ -67,7 +67,7 @@ pub type InvokeParserFn = fn(
     Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
-pub type TestParseResult<E = AriadneReport> = anyhow::Result<(), E>;
+pub type TestParseResult<E = AriadneReport> = anyhow::Result<(), Box<E>>;
 
 pub struct AriadneReport {
     pub result: Report<'static>,
@@ -117,12 +117,12 @@ where
         match db.add_file_from_texter(parsers, &url, text) {
             Ok(_) => {}
             Err(e) => {
-                return Err(AriadneReport {
+                return Err(Box::new(AriadneReport {
                     result: Report::build(ReportKind::Error, 0..test_code.len())
                         .with_message(format!("Failed to create file: {}", e))
                         .finish(),
                     cache: source,
-                });
+                }));
             }
         }
 
@@ -157,10 +157,10 @@ where
                     report.add_note(format!("{}", ast.read()));
                 }
 
-                Err(AriadneReport {
+                Err(Box::new(AriadneReport {
                     result: report.finish(),
                     cache: source,
-                })
+                }))
             }
             true => Ok(()),
         }

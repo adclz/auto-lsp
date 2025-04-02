@@ -68,7 +68,7 @@ fn triggered_completion_items(mut foo_bar: impl BaseDatabase) {
     foo_bar
         .update(
             &Url::parse("file:///test0.py").expect("Invalid URL"),
-            &vec![change],
+            &[change],
         )
         .expect("Failed to update file");
 

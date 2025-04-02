@@ -1,7 +1,4 @@
-use crate::{
-    core_ast::symbol::DynSymbol, core_build::parse::InvokeParserFn, document::Document,
-    salsa::db::BaseDatabase,
-};
+use crate::core_build::parse::InvokeParserFn;
 use parking_lot::RwLock;
 use tree_sitter::{Language, Parser, Query};
 
