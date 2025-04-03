@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_types::{Diagnostic, Position, Url};
+use lsp_types::{Diagnostic, Url};
 
 use crate::{
     ast::WeakSymbol,
@@ -111,23 +111,7 @@ pub trait Buildable: Downcast {
     fn get_query_index(&self) -> usize;
 
     fn get_lsp_range(&self, document: &Document) -> lsp_types::Range {
-        let range = self.get_range();
-        let node = document
-            .tree
-            .root_node()
-            .descendant_for_byte_range(range.start, range.end)
-            .unwrap();
-
-        lsp_types::Range {
-            start: Position {
-                line: node.start_position().row as u32,
-                character: node.start_position().column as u32,
-            },
-            end: Position {
-                line: node.end_position().row as u32,
-                character: node.end_position().column as u32,
-            },
-        }
+        document.range_at(self.get_range()).unwrap()
     }
 
     fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
