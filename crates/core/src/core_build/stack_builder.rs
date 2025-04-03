@@ -110,7 +110,7 @@ where
         // Iterate over the captures.
         // Captures are sorted by their location in the tree, not their pattern.
         while let Some((m, capture_index)) = captures.next() {
-            let capture = Arc::new(m.captures[*capture_index]);
+            let capture = m.captures[*capture_index];
             let capture_index = capture.index as usize;
 
             // To determine if we should start building the AST, we check if the current capture
@@ -241,22 +241,13 @@ where
             Some(node) => Ok(node),
             None => match range {
                 // Since there is no root node, we return an error indicating the expected query names.
-                Some(range) => {
-                    let node = self
-                        .document
-                        .tree
-                        .root_node()
-                        .named_descendant_for_byte_range(range.start, range.end)
-                        .unwrap();
-
-                    Err(builder_error!(
-                        tree_sitter_range_to_lsp_range(&node.range()),
-                        match T::QUERY_NAMES.len() {
-                            1 => format!("Expected {}", T::QUERY_NAMES[0]),
-                            _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),
-                        }
-                    ))
-                }
+                Some(range) => Err(builder_error!(
+                    self.document.range_at(range.clone()).unwrap(),
+                    match T::QUERY_NAMES.len() {
+                        1 => format!("Expected {}", T::QUERY_NAMES[0]),
+                        _ => format!("Expected one of {:?}", T::QUERY_NAMES.join(", ")),
+                    }
+                )),
                 None => Err(builder_error!(
                     tree_sitter_range_to_lsp_range(&self.document.tree.root_node().range()),
                     match T::QUERY_NAMES.len() {
