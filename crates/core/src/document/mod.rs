@@ -146,12 +146,13 @@ impl Document {
 
     /// Converts a position (line and character) in the document to its corresponding byte offset.
     pub fn offset_at(&self, position: lsp_types::Position) -> Option<usize> {
-        let line = self.texter.br_indexes.row_start(position.line as usize)?;
+        let line_index = self.texter.br_indexes.row_start(position.line as usize)?;
+        let line_str = self.texter.get_row(position.line as usize)?;
         let col = position.character as usize;
-        if col > line {
+        if col > line_str.len() {
             None
         } else {
-            Some(line + col)
+            Some(line_index + col)
         }
     }
 }
@@ -396,6 +397,15 @@ mod test {
                 character: 0
             }),
             Some(0)
+        );
+
+        // Test for char at first line
+        assert_eq!(
+            document.offset_at(Position {
+                line: 0,
+                character: 5
+            }),
+            Some(5)
         );
 
         // Test for middle of second line (after "Bash")
