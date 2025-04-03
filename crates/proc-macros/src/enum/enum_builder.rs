@@ -57,10 +57,6 @@ impl ToTokens for EnumBuilder<'_> {
         self.struct_input_builder(&mut builder);
 
         builder.add(quote! {
-            fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> {
-                self.unique_field.get_rc().borrow().get_url()
-            }
-
             fn get_range(&self) -> std::ops::Range<usize> {
                 self.unique_field.get_rc().borrow().get_range()
             }

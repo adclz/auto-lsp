@@ -18,7 +18,7 @@ fn simple_seq() {
     assert_fields!(Module: _data);
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
-    assert_fields!(ModuleBuilder: url, query_index, range);
+    assert_fields!(ModuleBuilder: query_index, range);
     assert_eq!(ModuleBuilder::QUERY_NAMES.len(), 1);
     assert_eq!(ModuleBuilder::QUERY_NAMES[0], "module");
 }
@@ -39,7 +39,7 @@ fn seq_with_field() {
     assert_fields!(Module: _data, function);
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
-    assert_fields!(ModuleBuilder: url, query_index, range);
+    assert_fields!(ModuleBuilder: query_index, range);
     assert_eq!(ModuleBuilder::QUERY_NAMES.len(), 1);
     assert_eq!(ModuleBuilder::QUERY_NAMES[0], "module");
 }
@@ -105,7 +105,7 @@ fn seq_with_optional() {
     assert_fields!(Module: _data, function);
 
     assert_impl_all!(ModuleBuilder: Queryable, Buildable);
-    assert_fields!(ModuleBuilder: url, query_index, range);
+    assert_fields!(ModuleBuilder: query_index, range);
     assert_eq!(ModuleBuilder::QUERY_NAMES.len(), 1);
     assert_eq!(ModuleBuilder::QUERY_NAMES[0], "module");
 }
@@ -123,7 +123,7 @@ fn seq_with_recursive() {
     assert_fields!(A: _data, elems);
 
     assert_impl_all!(ABuilder: Queryable, Buildable);
-    assert_fields!(ABuilder: url, query_index, range);
+    assert_fields!(ABuilder: query_index, range);
     assert_eq!(ABuilder::QUERY_NAMES.len(), 1);
     assert_eq!(ABuilder::QUERY_NAMES[0], "module1");
 }

@@ -77,10 +77,6 @@ impl ToTokens for StructBuilder<'_> {
 
         // Implement `Buildable` trait
         builder.add(quote! {
-            fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> {
-                self.url.clone()
-            }
-
             fn get_range(&self) -> std::ops::Range<usize>{
                 self.range.clone()
             }
@@ -253,7 +249,6 @@ impl StructBuilder<'_> {
         let pending_symbol = &self.paths.pending_symbol;
 
         builder
-            .add(quote! { url: std::sync::Arc<auto_lsp::lsp_types::Url> })
             .add(quote! { query_index: usize })
             .add(quote! { range: std::ops::Range<usize> })
             .add_iter(self.fields, |ty, _, name, _, _| match ty {
@@ -280,7 +275,6 @@ impl StructBuilder<'_> {
           #sig {
             let range = capture.node.range();
             Some(Self {
-                url: url.clone(),
                 query_index: capture.index as usize,
                 range: std::ops::Range {
                     start: range.start_byte,

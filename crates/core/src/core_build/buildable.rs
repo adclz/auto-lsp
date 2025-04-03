@@ -104,8 +104,6 @@ pub trait Buildable: Downcast {
         document: &Document,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
 
-    fn get_url(&self) -> Arc<Url>;
-
     fn get_range(&self) -> std::ops::Range<usize>;
 
     fn get_query_index(&self) -> usize;
