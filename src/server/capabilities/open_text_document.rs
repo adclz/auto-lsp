@@ -14,16 +14,25 @@ pub fn open_text_document<Db: BaseDatabase>(
         return Ok(());
     };
 
-    let extension = params.text_document.language_id;
+    let extension = &params.text_document.language_id;
 
-    let extension = match session.extensions.get(&extension) {
+    let extension = match session.extensions.get(extension) {
         Some(extension) => extension,
         None => {
-            return Err(anyhow::format_err!(
-                "Extension {} is not registered, available extensions are: {:?}",
-                extension,
-                session.extensions
-            ))
+            if session
+                .extensions
+                .values()
+                .find(|x| *x == extension)
+                .is_some()
+            {
+                extension
+            } else {
+                return Err(anyhow::format_err!(
+                    "Extension {} is not registered, available extensions are: {:?}",
+                    extension,
+                    session.extensions
+                ));
+            }
         }
     };
 
