@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 
-use crate::server::session::{Session};
+use crate::server::session::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
@@ -27,6 +27,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                 .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
 
             let (parsers, url, text) = session.read_file(&file_path)?;
+            log::info!("Watched Files: Created - {}", uri.to_string());
             session.db.add_file_from_texter(parsers, &url, text)
         }
         FileChangeType::CHANGED => {
@@ -46,6 +47,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                         let file_path = uri.to_file_path().map_err(|_| {
                             anyhow::anyhow!("Failed to read file {}", uri.to_string())
                         })?;
+                        log::info!("Watched Files: Changed - {}", uri.to_string());
                         let (parsers, url, text) = session.read_file(&file_path)?;
                         session.db.add_file_from_texter(parsers, &url, text)
                     } else {
@@ -57,7 +59,10 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                 None => Ok(()),
             }
         }
-        FileChangeType::DELETED => session.db.remove_file(&file.uri),
+        FileChangeType::DELETED => {
+            log::info!("Watched Files: Deleted - {}", file.uri.to_string());
+            session.db.remove_file(&file.uri)
+        }
         // Should never happen
         _ => Ok(()),
     })

@@ -80,7 +80,7 @@ impl BaseDatabase for BaseDb {
 
         let file = File::new(self, url.clone(), parsers, Arc::new(RwLock::new(document)));
         match self.files.entry(url.clone()) {
-            Entry::Occupied(_) => Err(anyhow::anyhow!("File {:?} not found", url)),
+            Entry::Occupied(_) => Err(anyhow::anyhow!("File {:?} already exists", url)),
             Entry::Vacant(entry) => {
                 entry.insert(file);
                 Ok(())

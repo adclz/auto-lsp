@@ -20,8 +20,9 @@ pub fn open_text_document<Db: BaseDatabase>(
         Some(extension) => extension,
         None => {
             return Err(anyhow::format_err!(
-                "Extension {} is not registered",
-                extension
+                "Extension {} is not registered, available extensions are: {:?}",
+                extension,
+                session.extensions
             ))
         }
     };
@@ -34,5 +35,6 @@ pub fn open_text_document<Db: BaseDatabase>(
         .get(extension.as_str())
         .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
 
+    log::info!("Did Open Text Document: Created - {}", url.to_string());
     session.db.add_file_from_texter(parsers, url, text)
 }
