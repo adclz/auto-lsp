@@ -65,7 +65,7 @@ macro_rules! configure_parsers {
                             use $crate::core::build::InvokeParser;
 
                             Ok::<$crate::core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::core::ast::Symbol::new_and_check($root::parse_symbol(db, parsers, url, document, range)?).to_dyn(),
+                                $crate::core::ast::Symbol::from($root::parse_symbol(db, parsers, url, document, range)?).into(),
                             )
                         },
                     }),*

@@ -9,7 +9,7 @@ use super::buildable::*;
 
 /// A wrapper for a shared, mutable [`Buildable`] object.
 #[derive(Clone)]
-pub struct PendingSymbol(Rc<RefCell<dyn Buildable>>);
+pub struct PendingSymbol(pub(crate) Rc<RefCell<dyn Buildable>>);
 
 impl PendingSymbol {
     pub fn new(builder: impl Buildable) -> Self {
@@ -31,10 +31,10 @@ impl PendingSymbol {
 ///
 /// When a field needs to be converted into a symbol, [`MaybePendingSymbol`] is converted to [`PendingSymbol`].
 ///
-/// If the field is optional or a vector and the symbol is `None`, the conversion is skipped.  
+/// If the field is optional or a vector and the symbol is `None`, the conversion is skipped.
 /// Otherwise, the conversion will return a diagnostic.
 #[derive(Clone)]
-pub struct MaybePendingSymbol(Option<PendingSymbol>);
+pub struct MaybePendingSymbol(pub(crate) Option<PendingSymbol>);
 
 impl MaybePendingSymbol {
     pub fn none() -> Self {
@@ -45,27 +45,31 @@ impl MaybePendingSymbol {
         self.0.is_some()
     }
 
-    pub fn new(builder: impl Buildable) -> Self {
-        MaybePendingSymbol(Some(PendingSymbol::new(builder)))
-    }
-
-    pub fn from_pending(pending: PendingSymbol) -> Self {
-        MaybePendingSymbol(Some(pending))
-    }
-
-    pub fn as_ref(&self) -> Option<&PendingSymbol> {
-        self.0.as_ref()
-    }
-
-    pub fn as_mut(&mut self) -> Option<&mut PendingSymbol> {
-        self.0.as_mut()
-    }
-
-    pub fn into_inner(self) -> Option<PendingSymbol> {
-        self.0
-    }
-
     pub(crate) fn swap(&mut self, other: &mut Self) {
         std::mem::swap(&mut self.0, &mut other.0);
+    }
+}
+
+impl<T: Buildable> From<T> for PendingSymbol {
+    fn from(value: T) -> Self {
+        PendingSymbol::new(value)
+    }
+}
+
+impl<T: Buildable> From<T> for MaybePendingSymbol {
+    fn from(value: T) -> Self {
+        Self(Some(PendingSymbol::new(value)))
+    }
+}
+
+impl AsRef<Option<PendingSymbol>> for MaybePendingSymbol {
+    fn as_ref(&self) -> &Option<PendingSymbol> {
+        &self.0
+    }
+}
+
+impl From<PendingSymbol> for MaybePendingSymbol {
+    fn from(value: PendingSymbol) -> Self {
+        Self(Some(value))
     }
 }

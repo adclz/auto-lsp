@@ -12,67 +12,33 @@ use parking_lot::RwLock;
 ///
 /// [`Symbol<T>`] also provides methods to convert to [DynSymbol] and [WeakSymbol]
 #[derive(Clone)]
-pub struct Symbol<T: AstSymbol>(Arc<RwLock<T>>);
+pub struct Symbol<T: AstSymbol>(pub(crate) Arc<RwLock<T>>);
 
 impl<T: AstSymbol> Symbol<T> {
     pub fn read(&self) -> parking_lot::RwLockReadGuard<T> {
         self.0.read()
     }
 
+    #[doc(hidden)]
     pub fn write(&self) -> parking_lot::RwLockWriteGuard<T> {
         self.0.write()
-    }
-
-    /// Convert the [Symbol] to a [DynSymbol]
-    pub fn to_dyn(&self) -> DynSymbol {
-        DynSymbol::from_symbol(self)
-    }
-
-    /// Convert the [Symbol] to a [WeakSymbol]
-    pub fn to_weak(&self) -> WeakSymbol {
-        WeakSymbol::from_symbol(self)
-    }
-
-    /// Create a new [Symbol]
-    ///
-    /// Inject itself as the parent of the symbol
-    ///
-    /// If the symbol is a reference ([`super::capabilities::Reference`]), add it to the unsolved references list
-    ///
-    /// If the symbol requires checking ([`super::capabilities::Check`]), add it to the unsolved checks list
-    pub fn new_and_check(symbol: T) -> Self {
-        let symbol = Symbol::new(symbol);
-        symbol.write().inject_parent(symbol.to_weak());
-        symbol
-    }
-
-    pub(crate) fn new(symbol: T) -> Self {
-        Self(Arc::new(RwLock::new(symbol)))
-    }
-
-    pub(crate) fn get_ptr(&self) -> &Arc<RwLock<T>> {
-        &self.0
     }
 }
 
 /// Generic Thread-safe wrapper around an [AstSymbol] trait object using [Arc] and [parking_lot::RwLock]
 #[derive(Clone)]
-pub struct DynSymbol(Arc<RwLock<dyn AstSymbol>>);
+pub struct DynSymbol(pub(crate) Arc<RwLock<dyn AstSymbol>>);
 
 impl DynSymbol {
     pub fn new(symbol: impl AstSymbol) -> Self {
         Self(Arc::new(parking_lot::RwLock::new(symbol)))
     }
 
-    /// Create a trait object [DynSymbol] from a concrete [Symbol]
-    pub fn from_symbol<T: AstSymbol>(symbol: &Symbol<T>) -> Self {
-        Self(symbol.0.clone())
-    }
-
     pub fn read(&self) -> parking_lot::RwLockReadGuard<dyn AstSymbol> {
         self.0.read()
     }
 
+    #[doc(hidden)]
     pub fn write(&self) -> parking_lot::RwLockWriteGuard<dyn AstSymbol> {
         self.0.write()
     }
@@ -90,19 +56,48 @@ impl Debug for DynSymbol {
 ///
 /// Must be upgraded to a [DynSymbol] before use
 #[derive(Debug, Clone)]
-pub struct WeakSymbol(Weak<RwLock<dyn AstSymbol>>);
+pub struct WeakSymbol(pub(crate) Weak<RwLock<dyn AstSymbol>>);
 
-impl WeakSymbol {
-    pub fn new(symbol: &DynSymbol) -> Self {
-        Self(Arc::downgrade(&symbol.0))
+impl<T: AstSymbol> From<T> for Symbol<T> {
+    fn from(value: T) -> Self {
+        let symbol = Self(Arc::new(RwLock::new(value)));
+        symbol.write().inject_parent((&symbol).into());
+        symbol
     }
+}
 
-    pub fn from_symbol<T: AstSymbol>(symbol: &Symbol<T>) -> Self {
-        Self(Arc::downgrade(symbol.get_ptr()) as _)
+impl<T: AstSymbol> From<&Symbol<T>> for DynSymbol {
+    fn from(value: &Symbol<T>) -> Self {
+        Self(value.0.clone())
     }
+}
 
-    /// Upgrade the [WeakSymbol] to a [DynSymbol]
-    pub fn to_dyn(&self) -> Option<DynSymbol> {
-        self.0.upgrade().map(DynSymbol)
+impl<T: AstSymbol> From<Symbol<T>> for DynSymbol {
+    fn from(value: Symbol<T>) -> Self {
+        Self(value.0.clone())
+    }
+}
+
+impl<T: AstSymbol> From<&Symbol<T>> for WeakSymbol {
+    fn from(value: &Symbol<T>) -> Self {
+        Self(Arc::downgrade(&value.0) as _)
+    }
+}
+
+impl<T: AstSymbol> From<Symbol<T>> for WeakSymbol {
+    fn from(value: Symbol<T>) -> Self {
+        Self(Arc::downgrade(&value.0) as _)
+    }
+}
+
+impl From<WeakSymbol> for Option<DynSymbol> {
+    fn from(value: WeakSymbol) -> Self {
+        value.0.upgrade().map(DynSymbol)
+    }
+}
+
+impl From<&DynSymbol> for WeakSymbol {
+    fn from(value: &DynSymbol) -> Self {
+        Self(Arc::downgrade(&value.0))
     }
 }

@@ -1,20 +1,20 @@
 #![allow(unused)]
-use super::{feature_builder::Features, field_builder::{FieldBuilder, FieldType, Fields}};
-use crate::{
-    DarlingInput,
-    Paths
+use super::{
+    feature_builder::Features,
+    field_builder::{FieldBuilder, FieldType, Fields},
 };
+use crate::{DarlingInput, Paths};
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{parse_quote, Attribute, Path};
 
 /// Builder for generating the AST symbol from a struct.
-/// 
+///
 /// This is the core builder called by the `#[seq]` macro.
-/// 
+///
 /// It generates:
-///     - The implementation of all capabilitties and `AstSymbol` traits. 
+///     - The implementation of all capabilitties and `AstSymbol` traits.
 ///     - The builder struct (named `input_builder_name`) that is used to create the AST symbol.
 pub struct StructBuilder<'a> {
     // Paths
@@ -57,7 +57,7 @@ impl ToTokens for StructBuilder<'_> {
 
         let mut builder = FieldBuilder::default();
 
-        /// Create the struct 
+        /// Create the struct
         self.struct_input(&mut builder);
 
         // Implement the AstSymbol trait
@@ -91,7 +91,10 @@ impl ToTokens for StructBuilder<'_> {
         });
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
-        builder.stage_trait(self.input_builder_name, &self.paths.symbol_builder_trait.path);
+        builder.stage_trait(
+            self.input_builder_name,
+            &self.paths.symbol_builder_trait.path,
+        );
 
         // Implement `TryFromBuilder`
         self.impl_try_from(&mut builder);
@@ -167,7 +170,7 @@ impl StructBuilder<'_> {
                 },
                 Some(quote! { None }),
             )
-            .add_fn_iter(self.fields, &self.paths.traverse.traverse_and_collect.sig, None, 
+            .add_fn_iter(self.fields, &self.paths.traverse.traverse_and_collect.sig, None,
                 |_, _, name, _, _| {
                     quote! {
                         self.#name.traverse_and_collect(collect_fn, collect);
@@ -201,11 +204,10 @@ impl StructBuilder<'_> {
         builder
             .add(quote! { const QUERY_NAMES: &'static [&'static str] = &[#query_name]; })
             .stage_trait(self.input_builder_name, queryable);
-    
     }
 
     fn impl_indented_display(&self, builder: &mut FieldBuilder) {
-        let  input_name = &self.input_name;
+        let input_name = &self.input_name;
         let indented_display = &self.paths.indented_display.path;
         builder
             .add(quote! {
@@ -220,22 +222,22 @@ impl StructBuilder<'_> {
                 &self.paths.indented_display.fmt_with_indent.sig,
                 Some(quote! {
                     use #indented_display;
-                    writeln!(f, "{}{:?}", " ".repeat(indent + 2), stringify!(#input_name))?; 
+                    writeln!(f, "{}{:?}", " ".repeat(indent + 2), stringify!(#input_name))?;
                 }),
                 |kind, _, name, type_, _| {
                      match kind {
-                        FieldType::Vec => 
-                            quote! { 
+                        FieldType::Vec =>
+                            quote! {
                                 writeln!(f, "{}{}: Vec<{:?}>[{}]", " ".repeat(indent + 4), stringify!(#name), stringify!(#type_), self.#name.len())?;
                                 self.#name.fmt_with_indent(f, indent + 4)?;
                              },
-                        FieldType::Option => 
-                            quote! { 
+                        FieldType::Option =>
+                            quote! {
                                 writeln!(f, "{}{}: Option<{:?}>[{}]", " ".repeat(indent + 4), stringify!(#name), stringify!(#type_), self.#name.is_some())?;
                                 self.#name.fmt_with_indent(f, indent + 4)?;
                          },
-                        _ =>  
-                            quote! {  
+                        _ =>
+                            quote! {
                                 writeln!(f, "{}{}: <{:?}>", " ".repeat(indent + 4), stringify!(#name), stringify!(#type_))?;
                                 self.#name.fmt_with_indent(f, indent + 4)?;
                              }
@@ -299,7 +301,7 @@ impl StructBuilder<'_> {
             Some(quote! { use #add_symbol_trait; }),
             |_, _, name, field_type, builder| {
                 quote! {
-                    
+
                     if let Some(node) =  self.#name.add::<#builder>(capture, parsers, url, stringify!(#input_name), stringify!(#field_type))? {
                        return Ok(Some(node))
                     };
@@ -331,19 +333,19 @@ impl StructBuilder<'_> {
             .add_iter(self.fields,
                 |ty, _, name, field_type, _| match ty  {
                 FieldType::Normal  => quote! {
-                    let #name = #symbol::new_and_check(builder
+                    let #name = builder
                         .#name
-                        .as_ref()
+                        .try_downcast(parsers, url, document, stringify!(#field_type), builder_range, stringify!(#input_name))?
+                        .finalize()
                         .ok_or(auto_lsp::core::builder_error!(
                             auto_lsp,
                             builder_range,
                             format!(
                                 "Syntax error: Missing {:?} for {:?}",
-                                stringify!(#name), 
+                                stringify!(#name),
                                 stringify!(#input_name),
                             )
-                        ))?
-                        .try_downcast(parsers, url, document, stringify!(#field_type), builder_range, stringify!(#input_name))?);
+                        ))?;
                 },
                 _=> quote! {
                         let #name = builder

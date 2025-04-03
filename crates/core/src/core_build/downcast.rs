@@ -98,7 +98,7 @@ where
         field_range: lsp_types::Range,
         input_name: &str,
     ) -> Result<Self::Output, Diagnostic> {
-        self.get_rc()
+        self.0
             .borrow()
             .downcast_ref::<T>()
             .ok_or(builder_error!(
@@ -130,7 +130,7 @@ where
         field_range: lsp_types::Range,
         input_name: &str,
     ) -> Result<Self::Output, Diagnostic> {
-        self.as_ref().map_or(Ok(None), |pending| {
+        self.as_ref().as_ref().map_or(Ok(None), |pending| {
             pending
                 .try_downcast(parsers, url, document, field_name, field_range, input_name)
                 .map(Some)

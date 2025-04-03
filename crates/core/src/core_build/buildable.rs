@@ -211,8 +211,8 @@ impl AddSymbol for MaybePendingSymbol {
                 }
                 None => match Y::new(url, &parsers.tree_sitter.queries.core, capture) {
                     Some(node) => {
-                        self.swap(&mut MaybePendingSymbol::new(node));
-                        return Ok(Some(self.as_ref().unwrap().clone()));
+                        self.swap(&mut node.into());
+                        return Ok(self.as_ref().clone());
                     }
                     None => {
                         return Err(builder_error!(
@@ -280,7 +280,7 @@ impl<T: AstSymbol> Finalize<T> for T {
     type Output = Symbol<T>;
 
     fn finalize(self) -> Self::Output {
-        Symbol::new_and_check(self)
+        Symbol::from(self)
     }
 }
 
@@ -288,7 +288,7 @@ impl<T: AstSymbol> Finalize<T> for Option<T> {
     type Output = Option<Symbol<T>>;
 
     fn finalize(self) -> Self::Output {
-        self.map(|symbol| Symbol::new_and_check(symbol))
+        self.map(|symbol| Symbol::from(symbol))
     }
 }
 
@@ -296,6 +296,6 @@ impl<T: AstSymbol> Finalize<T> for Vec<T> {
     type Output = Vec<Symbol<T>>;
 
     fn finalize(self) -> Self::Output {
-        self.into_iter().map(|f| Symbol::new_and_check(f)).collect()
+        self.into_iter().map(|f| Symbol::from(f)).collect()
     }
 }

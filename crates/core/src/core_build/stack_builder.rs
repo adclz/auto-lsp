@@ -74,7 +74,7 @@ where
     {
         self.build(range);
         let result = self.get_root_node(range)?;
-        let result = result.get_rc().borrow();
+        let result = result.0.borrow();
         let result = result
             .downcast_ref::<T>()
             .ok_or(builder_error!(
@@ -154,10 +154,7 @@ where
                     }
                     // If there's a parent, checks if the parent's range intersects with the current capture.
                     Some(p) => {
-                        if intersecting_ranges(
-                            &p.get_rc().borrow().get_range(),
-                            &capture.node.range(),
-                        ) {
+                        if intersecting_ranges(&p.0.borrow().get_range(), &capture.node.range()) {
                             // If it intersects, create a child node.
                             self.create_child_node(p, &capture);
                             break;
@@ -199,7 +196,7 @@ where
     /// Creates a child node and tries to add it to the parent node.
     fn create_child_node(&mut self, parent: &PendingSymbol, capture: &QueryCapture) {
         let add = parent
-            .get_rc()
+            .0
             .borrow_mut()
             .add(capture, self.parsers, self.url, self.document);
 
@@ -218,7 +215,7 @@ where
                             self.parsers.tree_sitter.queries.core.capture_names()
                                 [capture.index as usize],
                             self.parsers.tree_sitter.queries.core.capture_names()
-                                [parent.get_rc().borrow().get_query_index()],
+                                [parent.0.borrow().get_query_index()],
                         )
                     )
                     .into(),

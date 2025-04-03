@@ -62,7 +62,11 @@ pub trait AstSymbol:
     fn get_parent_scope(&self) -> Option<DynSymbol> {
         let mut parent = self.get_data().get_parent();
         while let Some(weak) = parent {
-            let symbol = weak.to_dyn()?;
+            let symbol: DynSymbol = match weak.into() {
+                Some(symbol) => symbol,
+                None => return None
+            };
+
             let read = symbol.read();
             if symbol.read().is_scope() {
                 return Some(symbol.clone());

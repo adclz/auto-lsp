@@ -306,7 +306,7 @@ impl<T: AstSymbol> Traverse for Symbol<T> {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
         let symbol = self.read();
         match symbol.is_inside_offset(offset) {
-            true => symbol.descendant_at(offset).or_else(|| Some(self.to_dyn())),
+            true => symbol.descendant_at(offset).or_else(|| Some(self.into())),
             false => None,
         }
     }
@@ -317,7 +317,7 @@ impl<T: AstSymbol> Traverse for Symbol<T> {
         collect_fn: fn(DynSymbol) -> bool,
         collect: &mut Vec<DynSymbol>,
     ) -> Option<DynSymbol> {
-        let to_dyn = self.to_dyn();
+        let to_dyn: DynSymbol = self.into();
         let symbol = self.read();
         match symbol.is_inside_offset(offset) {
             true => {
@@ -326,7 +326,7 @@ impl<T: AstSymbol> Traverse for Symbol<T> {
                 }
                 symbol
                     .descendant_at_and_collect(offset, collect_fn, collect)
-                    .or_else(|| Some(self.to_dyn()))
+                    .or_else(|| Some(self.into()))
             }
             false => None,
         }
@@ -338,8 +338,8 @@ impl<T: AstSymbol> Traverse for Symbol<T> {
         collect: &mut Vec<DynSymbol>,
     ) {
         let symbol = self.read();
-        if collect_fn(self.to_dyn()) {
-            collect.push(self.to_dyn());
+        if collect_fn(self.into()) {
+            collect.push(self.into());
         }
         symbol.traverse_and_collect(collect_fn, collect);
     }
