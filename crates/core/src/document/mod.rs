@@ -124,7 +124,17 @@ impl Document {
 
             last_br_index = br_index + 1; // Move past the EOL character
         }
-        None
+
+        if offset <= self.texter.text.len() {
+            let last_known_col = self.texter.br_indexes.0.iter().len();
+            let last_br = *self.texter.br_indexes.0.last().unwrap();
+            Some(lsp_types::Position {
+                line: last_known_col as u32,
+                character: offset.saturating_sub(last_br) as u32,
+            })
+        } else {
+            None
+        }
     }
 
     /// Converts a byte offset in the document to its corresponding range (start and end positions).
@@ -212,8 +222,14 @@ mod test {
             })
         );
 
-        // Offset 40 is out of bounds
-        assert_eq!(document.position_at(40), None);
+        // Offset 40 is at the last line at pos 2
+        assert_eq!(
+            document.position_at(40),
+            Some(Position {
+                line: 4,
+                character: 2
+            })
+        );
     }
 
     #[rstest]
