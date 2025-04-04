@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [0.6.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.5.0...auto-lsp-core-v0.6.0)
+
+### Bug Fixes
+
+- *(document)* Invalid offset position when line is 0 - ([599b475](https://github.com/adclz/auto-lsp/commit/599b47545fccd5bcca1bda7a1b5f58b364d2b70e))
+- Fix(document) get position after last br index - ([1935dc6](https://github.com/adclz/auto-lsp/commit/1935dc6744341e642f09ecaffd72bdc3def4f489))
+
+### Refactor
+
+- *(core_build)* Stack builder - ([604cd7b](https://github.com/adclz/auto-lsp/commit/604cd7b9365405c50afbae8aefc39ae983844023))
+- *(core_build)* Remove url field - ([763aca6](https://github.com/adclz/auto-lsp/commit/763aca6f0283bb6a865d1551948849d39c9a52ba))
+- Buildable trait range getter - ([3927d68](https://github.com/adclz/auto-lsp/commit/3927d688c4320349202d60d17a96dc51e535a24c))
+- Remove new_and_check method and add From trait idioms - ([40a1c42](https://github.com/adclz/auto-lsp/commit/40a1c4284aa7abce1071a8a99802566649b57bbf))
+- Disable salsa default features - ([7161c72](https://github.com/adclz/auto-lsp/commit/7161c728b9656ff12edc1eb6f9ebbacbeccd77fd))
+- Move core and proc-macro to crates folder - ([9ca4d9c](https://github.com/adclz/auto-lsp/commit/9ca4d9c260d764dda4256a0bbbd85684a968c864))
+
+### Miscellaneous Tasks
+
+- Salsa macros feature - ([b9e90dd](https://github.com/adclz/auto-lsp/commit/b9e90ddc54f1c9ad3fb84190bfca784cbb326d50))
+- Logs for file events - ([219a6b2](https://github.com/adclz/auto-lsp/commit/219a6b273633bccddfc62c708ec4517bc36dbb5b))
+
+
 ## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.4.0...auto-lsp-core-v0.5.0)
 
 ### Features

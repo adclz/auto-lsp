@@ -2,6 +2,51 @@
 
 ## [Unreleased]
 
+## [0.6.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.1...auto-lsp-v0.6.0)
+
+### Features
+
+- *(tests)* Salsa file events - ([83b7e7c](https://github.com/adclz/auto-lsp/commit/83b7e7c7838a35277f1524ed1c2b6d1be35aa3c3))
+- Add ustr - ([dc3065f](https://github.com/adclz/auto-lsp/commit/dc3065f91d69ba4eb93be38d94098919d39789de))
+- Add minimal salsa setup - ([311961d](https://github.com/adclz/auto-lsp/commit/311961d5a8be3e553c7f19d6e49aac556e019ce8))
+
+### Bug Fixes
+
+- Look for extension in hashmap values in open document event - ([c8bd28b](https://github.com/adclz/auto-lsp/commit/c8bd28b13564526d3e69920edbf945c1dcb73784))
+- Add 'log' feature towasi CI workflow - ([09ce1d2](https://github.com/adclz/auto-lsp/commit/09ce1d2578ca18cb8f0d30f7ba68e738db986e44))
+
+### Refactor
+
+- *(benches)* Update benchmarks - ([ebd2592](https://github.com/adclz/auto-lsp/commit/ebd259267625bdb42a5c85f3d6e68fe15b0709de))
+- *(capabilities)* Remove unused references module - ([e4a52d0](https://github.com/adclz/auto-lsp/commit/e4a52d0bba6e50f6ee82edfa179acfdadaba663d))
+- *(core_build)* Remove url field - ([763aca6](https://github.com/adclz/auto-lsp/commit/763aca6f0283bb6a865d1551948849d39c9a52ba))
+- *(salsa)* Restructure module and rename core components - ([e7aad9c](https://github.com/adclz/auto-lsp/commit/e7aad9cb6316960c810396fdd9378a820682cccd))
+- *(tests)* Rewrite default_parameters type checks - ([98d6c68](https://github.com/adclz/auto-lsp/commit/98d6c683df2942ea0ac510c1c789464a1c2afb46))
+- Remove new_and_check method and add From trait idioms - ([40a1c42](https://github.com/adclz/auto-lsp/commit/40a1c4284aa7abce1071a8a99802566649b57bbf))
+- Disable salsa default features - ([7161c72](https://github.com/adclz/auto-lsp/commit/7161c728b9656ff12edc1eb6f9ebbacbeccd77fd))
+- Move core and proc-macro to crates folder - ([9ca4d9c](https://github.com/adclz/auto-lsp/commit/9ca4d9c260d764dda4256a0bbbd85684a968c864))
+- Remove root module - ([2658b45](https://github.com/adclz/auto-lsp/commit/2658b45532eb426e2db05f430001419334925da1))
+- Remove workspace module - ([c62d95e](https://github.com/adclz/auto-lsp/commit/c62d95e1deaeb51f1de8fb61ddd14527718f3d74))
+- Remove comment-related fields and references across modules - ([7a3ebf6](https://github.com/adclz/auto-lsp/commit/7a3ebf6d58be6699b945b085e047c32007fa4185))
+- Use salsa accumulators for diagnostics - ([2346eb2](https://github.com/adclz/auto-lsp/commit/2346eb2b5afb1d676040c1c31ad17d64bc864452))
+- Remove Check and IsCheck traits - ([d25ccdd](https://github.com/adclz/auto-lsp/commit/d25ccddd5c51a0962434bd3589e25dd25f7c8793))
+- Remove edit_text_document and related document handling code - ([7cefad4](https://github.com/adclz/auto-lsp/commit/7cefad4f85d1f9dcef23e960d8782f0cee5dce23))
+- Update changed_watched_files method - ([5f11967](https://github.com/adclz/auto-lsp/commit/5f119678277413cbcbd2ac1bd725d1db063981f0))
+- Transform capabilities into standalone methods - ([80c0e4c](https://github.com/adclz/auto-lsp/commit/80c0e4cb0121a36ec669eb944b2e199bb445689e))
+- Reorganize request and notification registration - ([3083033](https://github.com/adclz/auto-lsp/commit/3083033eca90ca42bf33b9c78431e2faacedcd6d))
+- Simplify database access in Session - ([0c75382](https://github.com/adclz/auto-lsp/commit/0c75382f5737d6b29088d7713a70d8f10c6c0c61))
+- Integrate WorkspaceDatabase into Session - ([8535275](https://github.com/adclz/auto-lsp/commit/85352752285ca93a1fcfa5e6dd86a94533a5c9bf))
+- Update tests to use WorkspaceDatabase - ([6896b7b](https://github.com/adclz/auto-lsp/commit/6896b7b6686f1513b27d4523907388b1a93e6005))
+- Remove resolve_checks calls and  checks module - ([acfb8f4](https://github.com/adclz/auto-lsp/commit/acfb8f40ccf3b888dae438511377bc4d6d33f7c1))
+- Remove old references code - ([43f5771](https://github.com/adclz/auto-lsp/commit/43f5771d39e0f6bc9ff6207abd2e084eeee205a5))
+
+### Miscellaneous Tasks
+
+- Salsa macros feature - ([b9e90dd](https://github.com/adclz/auto-lsp/commit/b9e90ddc54f1c9ad3fb84190bfca784cbb326d50))
+- Logs for file events - ([219a6b2](https://github.com/adclz/auto-lsp/commit/219a6b273633bccddfc62c708ec4517bc36dbb5b))
+- Remove ustr - ([8f38ec5](https://github.com/adclz/auto-lsp/commit/8f38ec5c6f33c034a388c7a34bcafd4ddcc38ba0))
+
+
 ## [0.5.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.0...auto-lsp-v0.5.1)
 
 ### Bug Fixes
