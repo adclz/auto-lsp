@@ -82,7 +82,7 @@ impl TypedDefaultParameter {
     fn type_error_message(&self, document: &Document) -> lsp_types::Diagnostic {
         let source_code = document.texter.text.as_bytes();
         lsp_types::Diagnostic {
-            range: self.get_lsp_range(document),
+            range: self.get_lsp_range(document).unwrap(),
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),
             code: None,
             code_description: None,

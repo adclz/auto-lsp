@@ -36,9 +36,12 @@ impl BuildSemanticTokens for Module {
 impl BuildSemanticTokens for Function {
     fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {
         builder.push(
-            self.name.read().get_lsp_range(doc),
+            self.name.read().get_lsp_range(doc).unwrap(),
             SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
-            SUPPORTED_MODIFIERS.iter().position(|x| *x == DECLARATION).unwrap() as u32,
+            SUPPORTED_MODIFIERS
+                .iter()
+                .position(|x| *x == DECLARATION)
+                .unwrap() as u32,
         );
     }
 }

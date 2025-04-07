@@ -367,7 +367,8 @@ impl EnumBuilder<'_> {
                     )*
                     Err(auto_lsp::core::builder_error!(
                         auto_lsp,
-                        builder.unique_field.get_rc().borrow().get_lsp_range(document),
+                        builder.unique_field.get_rc().borrow().get_lsp_range(document)
+                            .expect("Failed to convert LSP range when building Enum symbol"),
                         format!("Failed to downcast builder to enum: {}", stringify!(#name))
                     ))
                 }

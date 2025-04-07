@@ -315,6 +315,7 @@ impl StructBuilder<'_> {
 
         let symbol_data = &self.paths.symbol_data;
         let try_downcast = &self.paths.try_downcast_trait;
+        let builder_trait = &self.paths.symbol_builder_trait.path;
         let finalize = &self.paths.finalize_trait;
         let symbol = &self.paths.symbol;
         let parsers = &self.paths.parsers;
@@ -323,6 +324,7 @@ impl StructBuilder<'_> {
             .add(quote! {
                 use #try_downcast;
                 use #finalize;
+                use #builder_trait;
             })
             .add_iter(self.fields,
                 |ty, _, name, field_type, _| match ty  {
@@ -350,7 +352,6 @@ impl StructBuilder<'_> {
             .stage()
             .to_token_stream();
 
-        let builder_trait = &self.paths.symbol_builder_trait.path;
         let parsers = &self.paths.parsers;
 
         builder.add(quote! {
@@ -358,8 +359,8 @@ impl StructBuilder<'_> {
                 type Error = auto_lsp::lsp_types::Diagnostic;
 
                 fn try_from_builder(builder: &#input_builder_name, parsers: &'static #parsers, url: &std::sync::Arc<auto_lsp::lsp_types::Url>, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
-                    use #builder_trait;
-                    let builder_range = builder.get_lsp_range(document);
+                    let builder_range = builder.get_lsp_range(document)
+                        .expect("Failed to convert LSP range when building Struct symbol");
 
                     #_builder
 

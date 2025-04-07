@@ -24,8 +24,8 @@ impl BuildDocumentSymbols for Function {
                 .unwrap()
                 .to_string(),
             kind: lsp_types::SymbolKind::FUNCTION,
-            range: self.name.read().get_lsp_range(doc),
-            selection_range: self.name.read().get_lsp_range(doc),
+            range: self.name.read().get_lsp_range(doc).unwrap(),
+            selection_range: self.name.read().get_lsp_range(doc).unwrap(),
             tags: None,
             detail: None,
             deprecated: None,

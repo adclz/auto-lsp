@@ -86,16 +86,20 @@ impl Document {
     }
 
     /// Converts a byte offset in the document to its corresponding position (line and character).
-    pub fn position_at(&self, offset: usize) -> Option<lsp_types::Position> {
+    pub fn position_at(&self, offset: usize) -> anyhow::Result<lsp_types::Position> {
         let mut last_br_index = 0;
         let last_line = LAST_LINE.load(Ordering::SeqCst);
 
         // If the document is a single line, we can avoid the loop
         if self.texter.br_indexes.0.len() == 1 {
             return if offset > self.texter.text.len() {
-                None
+                Err(anyhow::format_err!(
+                    "Can not find position of offset {}, line length is {}",
+                    offset,
+                    self.texter.text.len()
+                ))
             } else {
-                Some(lsp_types::Position {
+                Ok(lsp_types::Position {
                     line: 0,
                     character: offset as u32,
                 })
@@ -116,7 +120,7 @@ impl Document {
                 // Compute column by subtracting the last break index
                 let col = offset.saturating_sub(last_br_index);
 
-                return Some(lsp_types::Position {
+                return Ok(lsp_types::Position {
                     line: (i + (start - 1)) as u32,
                     character: col as u32,
                 });
@@ -128,20 +132,23 @@ impl Document {
         if offset <= self.texter.text.len() {
             let last_known_col = self.texter.br_indexes.0.iter().len();
             let last_br = *self.texter.br_indexes.0.last().unwrap();
-            Some(lsp_types::Position {
+            Ok(lsp_types::Position {
                 line: last_known_col as u32,
                 character: offset.saturating_sub(last_br) as u32,
             })
         } else {
-            None
+            Err(anyhow::format_err!(
+                "Failed to get position of offset {}",
+                offset
+            ))
         }
     }
 
     /// Converts a byte offset in the document to its corresponding range (start and end positions).
-    pub fn range_at(&self, range: Range<usize>) -> Option<lsp_types::Range> {
+    pub fn range_at(&self, range: Range<usize>) -> anyhow::Result<lsp_types::Range> {
         let start = self.position_at(range.start)?;
         let end = self.position_at(range.end)?;
-        Some(lsp_types::Range { start, end })
+        Ok(lsp_types::Range { start, end })
     }
 
     /// Converts a position (line and character) in the document to its corresponding byte offset.
@@ -180,56 +187,56 @@ mod test {
         assert_eq!(&document.texter.br_indexes.0, &[0, 20, 29, 38]);
 
         assert_eq!(
-            document.position_at(0),
-            Some(Position {
+            document.position_at(0).unwrap(),
+            Position {
                 line: 0,
                 character: 0
-            })
+            }
         );
 
         // Offset 11 is inside the Japanese text "こんにちは"
         assert_eq!(
-            document.position_at(11),
-            Some(Position {
+            document.position_at(11).unwrap(),
+            Position {
                 line: 0,
                 character: 11
-            })
+            }
         );
 
         // Offset 21 is at the beginning of "Goodbye" (after '\n')
         assert_eq!(
-            document.position_at(21),
-            Some(Position {
+            document.position_at(21).unwrap(),
+            Position {
                 line: 1,
                 character: 0
-            })
+            }
         );
 
         // Offset 28 is in "Goodbye" (before '\r')
         assert_eq!(
-            document.position_at(28),
-            Some(Position {
+            document.position_at(28).unwrap(),
+            Position {
                 line: 1,
                 character: 7
-            })
+            }
         );
 
         // Offset 30 is the last byte of "\r\n", meaning we move to the next line
         assert_eq!(
-            document.position_at(30),
-            Some(Position {
+            document.position_at(30).unwrap(),
+            Position {
                 line: 2,
                 character: 0
-            })
+            }
         );
 
         // Offset 40 is at the last line at pos 2
         assert_eq!(
-            document.position_at(40),
-            Some(Position {
+            document.position_at(40).unwrap(),
+            Position {
                 line: 4,
                 character: 2
-            })
+            }
         );
     }
 
@@ -242,25 +249,27 @@ mod test {
         assert_eq!(&document.texter.br_indexes.0, &[0]);
 
         assert_eq!(
-            document.position_at(0),
-            Some(Position {
+            document.position_at(0).unwrap(),
+            Position {
                 line: 0,
                 character: 0
-            })
+            }
         );
+
         assert_eq!(
-            document.position_at(5),
-            Some(Position {
+            document.position_at(5).unwrap(),
+            Position {
                 line: 0,
                 character: 5
-            })
+            }
         );
+
         assert_eq!(
-            document.position_at(30),
-            Some(Position {
+            document.position_at(30).unwrap(),
+            Position {
                 line: 0,
                 character: 30
-            })
+            }
         );
     }
 
@@ -274,8 +283,8 @@ mod test {
 
         // Test range covering part of first line
         assert_eq!(
-            document.range_at(0..11),
-            Some(lsp_types::Range {
+            document.range_at(0..11).unwrap(),
+            lsp_types::Range {
                 start: Position {
                     line: 0,
                     character: 0
@@ -284,13 +293,13 @@ mod test {
                     line: 0,
                     character: 11
                 },
-            })
+            }
         );
 
         // Test range spanning multiple lines
         assert_eq!(
-            document.range_at(15..28),
-            Some(lsp_types::Range {
+            document.range_at(15..28).unwrap(),
+            lsp_types::Range {
                 start: Position {
                     line: 0,
                     character: 15
@@ -299,13 +308,13 @@ mod test {
                     line: 1,
                     character: 7
                 },
-            })
+            }
         );
 
         // Test range from start of a line to another
         assert_eq!(
-            document.range_at(21..30),
-            Some(lsp_types::Range {
+            document.range_at(21..30).unwrap(),
+            lsp_types::Range {
                 start: Position {
                     line: 1,
                     character: 0
@@ -314,13 +323,13 @@ mod test {
                     line: 2,
                     character: 0
                 },
-            })
+            }
         );
 
         // Test range entirely in one line
         assert_eq!(
-            document.range_at(30..35),
-            Some(lsp_types::Range {
+            document.range_at(30..35).unwrap(),
+            lsp_types::Range {
                 start: Position {
                     line: 2,
                     character: 0
@@ -329,11 +338,14 @@ mod test {
                     line: 2,
                     character: 5
                 },
-            })
+            }
         );
 
         // Test out-of-bounds range
-        assert_eq!(document.range_at(35..50), None);
+        assert_eq!(
+            document.range_at(35..50).unwrap_err().to_string(),
+            "Failed to get position of offset 50"
+        );
     }
 
     #[rstest]
@@ -349,8 +361,8 @@ mod test {
 
         // Check range from start to some offset
         assert_eq!(
-            document.range_at(0..5),
-            Some(lsp_types::Range {
+            document.range_at(0..5).unwrap(),
+            lsp_types::Range {
                 start: Position {
                     line: 0,
                     character: 0
@@ -359,14 +371,14 @@ mod test {
                     line: 0,
                     character: 5
                 }
-            })
+            }
         );
 
         // Check range covering the entire line
         let length = source.len();
         assert_eq!(
-            document.range_at(0..length),
-            Some(lsp_types::Range {
+            document.range_at(0..length).unwrap(),
+            lsp_types::Range {
                 start: Position {
                     line: 0,
                     character: 0
@@ -375,11 +387,14 @@ mod test {
                     line: 0,
                     character: length as u32
                 }
-            })
+            }
         );
 
         // Out-of-bounds check
-        assert_eq!(document.range_at(0..(length + 5)), None);
+        assert_eq!(
+            document.range_at(0..(length + 5)).unwrap_err().to_string(),
+            "Can not find position of offset 42, line length is 37"
+        );
     }
 
     #[rstest]

@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use anyhow::Context;
 use downcast_rs::{impl_downcast, Downcast};
 use lsp_types::{Diagnostic, Url};
 
@@ -108,13 +109,14 @@ pub trait Buildable: Downcast {
 
     fn get_query_index(&self) -> usize;
 
-    fn get_lsp_range(&self, document: &Document) -> lsp_types::Range {
-        document.range_at(self.get_range()).unwrap()
+    fn get_lsp_range(&self, document: &Document) -> anyhow::Result<lsp_types::Range> {
+        document.range_at(self.get_range())
     }
 
-    fn get_text<'a>(&self, source_code: &'a [u8]) -> &'a str {
+    fn get_text<'a>(&self, source_code: &'a [u8]) -> anyhow::Result<&'a str> {
         let range = self.get_range();
-        std::str::from_utf8(&source_code[range.start..range.end]).unwrap()
+        std::str::from_utf8(&source_code[range.start..range.end])
+            .with_context(|| "Failed to get text")
     }
 }
 

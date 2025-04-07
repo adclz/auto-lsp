@@ -16,7 +16,7 @@ impl BuildCodeLenses for Function {
     fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
         let read = self.name.read();
         acc.push(lsp_types::CodeLens {
-            range: read.get_lsp_range(doc),
+            range: read.get_lsp_range(doc).unwrap(),
             command: None,
             data: None,
         })

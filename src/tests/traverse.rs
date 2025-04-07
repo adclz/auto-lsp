@@ -99,14 +99,14 @@ fn traverse_and_collect(nested_divs: impl BaseDatabase) {
     ast.traverse_and_collect(|d| d.read().is::<TagName>(), &mut collected);
 
     assert_eq!(collected.len(), 8);
-    assert_eq!(collected[0].read().get_text(source_code), Some("div"));
-    assert_eq!(collected[1].read().get_text(source_code), Some("div"));
-    assert_eq!(collected[2].read().get_text(source_code), Some("div"));
-    assert_eq!(collected[3].read().get_text(source_code), Some("div"));
+    assert_eq!(collected[0].read().get_text(source_code).unwrap(), "div");
+    assert_eq!(collected[1].read().get_text(source_code).unwrap(), "div");
+    assert_eq!(collected[2].read().get_text(source_code).unwrap(), "div");
+    assert_eq!(collected[3].read().get_text(source_code).unwrap(), "div");
 
     // end tags
-    assert_eq!(collected[4].read().get_text(source_code), Some("div"));
-    assert_eq!(collected[5].read().get_text(source_code), Some("div"));
-    assert_eq!(collected[6].read().get_text(source_code), Some("div"));
-    assert_eq!(collected[7].read().get_text(source_code), Some("div"));
+    assert_eq!(collected[4].read().get_text(source_code).unwrap(), "div");
+    assert_eq!(collected[5].read().get_text(source_code).unwrap(), "div");
+    assert_eq!(collected[6].read().get_text(source_code).unwrap(), "div");
+    assert_eq!(collected[7].read().get_text(source_code).unwrap(), "div");
 }

@@ -78,7 +78,9 @@ where
         let result = result
             .downcast_ref::<T>()
             .ok_or(builder_error!(
-                result.get_lsp_range(self.document),
+                result
+                    .get_lsp_range(self.document)
+                    .expect("Failed to convert LSP range when building root symbol"),
                 format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
             ))?
             .try_into_builder(self.parsers, self.url, self.document)?;
