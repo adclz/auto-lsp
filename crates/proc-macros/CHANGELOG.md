@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.5...auto-lsp-macros-v0.1.6)
+
+### Refactor
+
+- *(core)* LSP capabilities now support error propagation - ([f713cc1](https://github.com/adclz/auto-lsp/commit/f713cc1455a7c1862e9769aaa8369fb58d525902))
+- *(core_build)* Remove url field - ([763aca6](https://github.com/adclz/auto-lsp/commit/763aca6f0283bb6a865d1551948849d39c9a52ba))
+- Text retrieval methods now return Results - ([4de460d](https://github.com/adclz/auto-lsp/commit/4de460d09b03714eba62b5cb172ccf1ef6e2aab6))
+- Remove new_and_check method and add From trait idioms - ([40a1c42](https://github.com/adclz/auto-lsp/commit/40a1c4284aa7abce1071a8a99802566649b57bbf))
+- Move core and proc-macro to crates folder - ([9ca4d9c](https://github.com/adclz/auto-lsp/commit/9ca4d9c260d764dda4256a0bbbd85684a968c864))
+
+
 ## [0.1.5](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.4...auto-lsp-macros-v0.1.5)
 
 ### Bug Fixes
