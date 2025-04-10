@@ -1,4 +1,6 @@
-use auto_lsp_core::parsers::{Queries, TreeSitter};
+use auto_lsp_core::parsers::Parsers;
+use parking_lot::lock_api::RwLock;
+use tree_sitter::{Language, Query};
 
 /// Create the parsers with any given language and queries.
 ///
@@ -19,9 +21,6 @@ use auto_lsp_core::parsers::{Queries, TreeSitter};
 ///    name: (identifier) @function.name) @function
 /// ";
 ///
-/// static COMMENT_QUERY: &'static str = "
-/// (comment) @comment
-/// ";
 /// #[seq(query = "module")]
 /// struct Module {}
 ///
@@ -29,12 +28,8 @@ use auto_lsp_core::parsers::{Queries, TreeSitter};
 ///     PARSER_LIST,
 ///     "python" => {
 ///         language: tree_sitter_python::LANGUAGE,
-///         node_types: tree_sitter_python::NODE_TYPES,
-///         ast_root: Module,
 ///         core: CORE_QUERY,
-///         comment: Some(COMMENT_QUERY),
-///         fold: None,
-///         highlights: None
+///         ast_root: Module
 ///     }
 /// );
 /// ```
@@ -43,19 +38,19 @@ macro_rules! configure_parsers {
     ($parser_list_name: ident,
         $($extension: expr => {
             language: $language: path,
-            node_types: $node_types: path,
-            ast_root: $root: ident,
             core: $core: path,
-            comment: $comment: expr,
-            fold: $fold: expr,
-            highlights: $highlights: expr
+            ast_root: $root: ident
         }),*) => {
         pub static $parser_list_name: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::parsers::Parsers>> =
             std::sync::LazyLock::new(|| {
                 let mut map = std::collections::HashMap::new();
+                $(
+                let data = $crate::configure::parsers::create_parser($language, $core);
                 map.insert(
-                    $($extension, $crate::core::parsers::Parsers {
-                        tree_sitter: $crate::configure::parsers::create_parser($language, $node_types, $core, $comment, $fold, $highlights),
+                    $extension, $crate::core::parsers::Parsers {
+                        parser: data.0,
+                        language: data.1,
+                        core: data.2,
                         ast_parser: |
                             db: &dyn $crate::core::salsa::db::BaseDatabase,
                             parsers: &'static $crate::core::parsers::Parsers,
@@ -67,8 +62,9 @@ macro_rules! configure_parsers {
                                 $crate::core::ast::Symbol::from($root::parse_symbol(db, parsers, url, document)?).into(),
                             )
                         },
-                    }),*
+                    }
                 );
+                ),*
                 map
             });
     };
@@ -77,30 +73,12 @@ macro_rules! configure_parsers {
 #[doc(hidden)]
 pub fn create_parser(
     language: tree_sitter_language::LanguageFn,
-    node_types: &'static str,
     core: &'static str,
-    comments: Option<&'static str>,
-    fold: Option<&'static str>,
-    highlights: Option<&'static str>,
-) -> TreeSitter {
+) -> (parking_lot::RwLock<tree_sitter::Parser>, Language, Query) {
     let mut parser = tree_sitter::Parser::new();
     parser.set_language(&language.into()).unwrap();
-
     let language = tree_sitter::Language::new(language);
-
     let core = tree_sitter::Query::new(&language, core).unwrap();
-    let comments = comments.map(|path| tree_sitter::Query::new(&language, path).unwrap());
-    let fold = fold.map(|path| tree_sitter::Query::new(&language, path).unwrap());
-    let highlights = highlights.map(|path| tree_sitter::Query::new(&language, path).unwrap());
-    TreeSitter {
-        parser: parking_lot::RwLock::new(parser),
-        node_types,
-        language,
-        queries: Queries {
-            comments,
-            fold,
-            highlights,
-            core,
-        },
-    }
+
+    (parking_lot::RwLock::new(parser), language, core)
 }

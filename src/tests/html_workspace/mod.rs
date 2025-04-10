@@ -36,12 +36,8 @@ configure_parsers!(
     HTML_PARSERS,
     "html" => {
         language: tree_sitter_html::LANGUAGE,
-        node_types: tree_sitter_html::NODE_TYPES,
-        ast_root: HtmlDocument,
         core: CORE_QUERY,
-        comment: Some(COMMENT_QUERY),
-        fold: None,
-        highlights: None
+        ast_root: HtmlDocument
     }
 );
 

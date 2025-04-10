@@ -69,7 +69,6 @@ impl BaseDatabase for BaseDb {
         texter: Text,
     ) -> anyhow::Result<()> {
         let tree = parsers
-            .tree_sitter
             .parser
             .write()
             .parse(texter.text.as_bytes(), None)
@@ -104,7 +103,7 @@ impl BaseDatabase for BaseDb {
         let mut doc = data_lock.write();
 
         // Apply updates
-        doc.update(&mut file.parsers(self).tree_sitter.parser.write(), changes)?;
+        doc.update(&mut file.parsers(self).parser.write(), changes)?;
 
         // Update Salsa data
         drop(doc);

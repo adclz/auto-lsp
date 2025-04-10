@@ -11,17 +11,13 @@ pub mod hover;
 pub mod inlay_hints;
 pub mod semantic_tokens;
 
-use ast::{Module, COMMENT_QUERY, CORE_QUERY};
+use ast::{Module, CORE_QUERY};
 
 configure_parsers!(
     PYTHON_PARSERS,
     "python" => {
         language: tree_sitter_python::LANGUAGE,
-        node_types: tree_sitter_python::NODE_TYPES,
-        ast_root: Module,
         core: CORE_QUERY,
-        comment: Some(COMMENT_QUERY),
-        fold: None,
-        highlights: None
+        ast_root: Module
     }
 );

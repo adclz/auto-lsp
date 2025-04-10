@@ -187,13 +187,13 @@ impl AddSymbol for MaybePendingSymbol {
         if self.is_some() {
             return Ok(None);
         }
-        let name = parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
+        let name = parsers.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
             match self.as_ref() {
                 Some(_) => {
                     return Ok(None);
                 }
-                None => match Y::new(url, &parsers.tree_sitter.queries.core, capture) {
+                None => match Y::new(url, &parsers.core, capture) {
                     Some(node) => {
                         self.swap(&mut node.into());
                         return Ok(self.as_ref().clone());
@@ -226,9 +226,9 @@ impl AddSymbol for Vec<PendingSymbol> {
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
-        let name = parsers.tree_sitter.queries.core.capture_names()[capture.index as usize];
+        let name = parsers.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
-            match Y::new(url, &parsers.tree_sitter.queries.core, capture) {
+            match Y::new(url, &parsers.core, capture) {
                 Some(node) => {
                     let node = PendingSymbol::new(node);
                     self.push(node.clone());

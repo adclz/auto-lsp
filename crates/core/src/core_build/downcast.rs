@@ -107,7 +107,7 @@ where
                     "Invalid {:?} for {:?}: received: {:?}",
                     field_name,
                     input_name,
-                    parsers.tree_sitter.queries.core.capture_names()[self.get_query_index()]
+                    parsers.core.capture_names()[self.get_query_index()]
                 )
             ))?
             .try_into_builder(parsers, url, document)

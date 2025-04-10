@@ -91,7 +91,7 @@ where
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
-            &self.parsers.tree_sitter.queries.core,
+            &self.parsers.core,
             self.document.tree.root_node(),
             self.document.texter.text.as_bytes(),
         );
@@ -136,7 +136,7 @@ where
     ///
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
-        let mut node = T::new(self.url, &self.parsers.tree_sitter.queries.core, capture);
+        let mut node = T::new(self.url, &self.parsers.core, capture);
 
         match node.take() {
             Some(builder) => {
@@ -149,7 +149,7 @@ where
                     tree_sitter_range_to_lsp_range(&capture.node.range()),
                     format!(
                         "Syntax error: Unexpected {:?}",
-                        self.parsers.tree_sitter.queries.core.capture_names()[capture_index],
+                        self.parsers.core.capture_names()[capture_index],
                     )
                 )
                 .into(),
@@ -177,10 +177,8 @@ where
                         tree_sitter_range_to_lsp_range(&capture.node.range()),
                         format!(
                             "Syntax error: Unexpected {:?} in {:?}",
-                            self.parsers.tree_sitter.queries.core.capture_names()
-                                [capture.index as usize],
-                            self.parsers.tree_sitter.queries.core.capture_names()
-                                [parent.0.borrow().get_query_index()],
+                            self.parsers.core.capture_names()[capture.index as usize],
+                            self.parsers.core.capture_names()[parent.0.borrow().get_query_index()],
                         )
                     )
                     .into(),

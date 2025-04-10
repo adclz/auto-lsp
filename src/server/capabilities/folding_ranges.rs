@@ -8,6 +8,7 @@ use streaming_iterator::StreamingIterator;
 pub fn get_folding_ranges<Db: BaseDatabase>(
     db: &Db,
     params: FoldingRangeParams,
+    query: &tree_sitter::Query,
 ) -> anyhow::Result<Option<Vec<FoldingRange>>> {
     let uri = params.text_document.uri;
 
@@ -16,11 +17,6 @@ pub fn get_folding_ranges<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-
-    let query = match file.parsers(db).tree_sitter.queries.fold {
-        Some(ref query) => query,
-        None => return Ok(None),
-    };
 
     let root_node = document.tree.root_node();
     let source = document.texter.text.as_str();

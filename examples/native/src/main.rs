@@ -1,4 +1,4 @@
-use auto_lsp::core::salsa::db::{BaseDb, BaseDatabase};
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::notification::{
