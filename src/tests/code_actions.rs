@@ -29,7 +29,8 @@ fn foo_bar_code_actions(foo_bar: impl BaseDatabase) {
     let ast = root.as_ref().unwrap();
 
     let mut code_actions = vec![];
-    ast.build_code_actions(&document, &mut code_actions);
+    ast.build_code_actions(&document, &mut code_actions)
+        .unwrap();
 
     assert_eq!(code_actions.len(), 2);
 

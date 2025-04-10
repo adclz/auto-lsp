@@ -17,7 +17,9 @@ pub fn get_code_lenses<Db: BaseDatabase>(
     let document = file.document(db).read();
     let root = get_ast(db, file).to_symbol();
 
-    if let Some(root) = root { root.build_code_lenses(&document, &mut results) }
+    if let Some(root) = root {
+        root.build_code_lenses(&document, &mut results)?
+    }
 
     Ok(Some(results))
 }

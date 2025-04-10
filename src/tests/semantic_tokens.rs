@@ -34,7 +34,9 @@ fn foo_bar_semantic_tokens(foo_bar: impl BaseDatabase) {
     let module = ast.read();
     let module = module.downcast_ref::<Module>().unwrap();
 
-    module.build_semantic_tokens(&document, &mut builder);
+    module
+        .build_semantic_tokens(&document, &mut builder)
+        .unwrap();
 
     let tokens = builder.build().data;
 

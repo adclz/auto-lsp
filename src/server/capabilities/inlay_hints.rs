@@ -18,7 +18,9 @@ pub fn get_inlay_hints<Db: BaseDatabase>(
     let document = file.document(db).read();
     let root = get_ast(db, file).to_symbol();
 
-    if let Some(root) = root { root.build_inlay_hints(&document, &mut results) }
+    if let Some(root) = root {
+        root.build_inlay_hints(&document, &mut results)?
+    }
 
     Ok(Some(results))
 }

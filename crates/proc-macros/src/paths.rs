@@ -101,10 +101,6 @@ nested_struct!(
             pub path: Path,
             pub build_semantic_tokens: Method
         },
-        pub is_comment: Comment {
-            pub path: Path,
-            pub is_comment: Method
-        },
         pub scope: Scope {
             pub path: Path,
             pub is_scope: Method
@@ -204,78 +200,71 @@ impl Default for Paths {
             lsp_document_symbols: LspDocumentSymbols {
                 path: core_ast(parse_quote!(BuildDocumentSymbols)),
                 build_document_symbols: Method {
-                    sig: quote! { fn build_document_symbols(&self, doc: &auto_lsp::core::document::Document, builder: &mut auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder) },
+                    sig: quote! { fn build_document_symbols(&self, doc: &auto_lsp::core::document::Document, builder: &mut auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder) -> auto_lsp::anyhow::Result<()> },
                     variant: quote! { build_document_symbols(doc, builder) },
                 },
             },
             lsp_code_lens: LspCodeLens {
                 path: core_ast(parse_quote!(BuildCodeLenses)),
                 build_code_lenses: Method {
-                    sig: quote! { fn build_code_lenses(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) },
+                    sig: quote! { fn build_code_lenses(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeLens>) -> auto_lsp::anyhow::Result<()> },
                     variant: quote! { build_code_lenses(doc, acc) },
                 },
             },
             lsp_code_actions: LspCodeActions {
                 path: core_ast(parse_quote!(BuildCodeActions)),
                 build_code_actions: Method {
-                    sig: quote! { fn build_code_actions(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeActionOrCommand>) },
+                    sig: quote! { fn build_code_actions(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CodeActionOrCommand>) -> auto_lsp::anyhow::Result<()>  },
                     variant: quote! { build_code_actions(doc, acc) },
                 },
             },
             lsp_completion_items: LspCompletionItems {
                 path: core_ast(parse_quote!(BuildCompletionItems)),
                 build_completion_items: Method {
-                    sig: quote! { fn build_completion_items(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>)},
+                    sig: quote! { fn build_completion_items(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>) -> auto_lsp::anyhow::Result<()> },
                     variant: quote! { build_completion_items(doc, acc) },
                 },
             },
             lsp_invoked_completion_items: LspInvokedCompletionItems {
                 path: core_ast(parse_quote!(BuildTriggeredCompletionItems)),
                 build_triggered_completion_items: Method {
-                    sig: quote! { fn build_triggered_completion_items(&self, trigger: &str, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>) },
+                    sig: quote! { fn build_triggered_completion_items(&self, trigger: &str, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::CompletionItem>)  -> auto_lsp::anyhow::Result<()>  },
                     variant: quote! { build_triggered_completion_items(trigger, doc, acc) },
                 },
             },
             lsp_go_to_definition: LspGoToDefinition {
                 path: core_ast(parse_quote!(GetGoToDefinition)),
                 go_to_definition: Method {
-                    sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::lsp_types::GotoDefinitionResponse> },
+                    sig: quote! { fn go_to_definition(&self, doc: &auto_lsp::core::document::Document) -> auto_lsp::anyhow::Result<Option<auto_lsp::lsp_types::GotoDefinitionResponse>> },
                     variant: quote! { go_to_definition(doc) },
                 },
             },
             lsp_go_to_declaration: LspGoToDeclaration {
                 path: core_ast(parse_quote!(GetGoToDeclaration)),
                 go_to_declaration: Method {
-                    sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::lsp_types::request::GotoDeclarationResponse> },
+                    sig: quote! { fn go_to_declaration(&self, doc: &auto_lsp::core::document::Document) -> auto_lsp::anyhow::Result<Option<auto_lsp::lsp_types::request::GotoDeclarationResponse>> },
                     variant: quote! { go_to_declaration(doc) },
                 },
             },
             lsp_hover_info: LspHoverInfo {
                 path: core_ast(parse_quote!(GetHover)),
                 get_hover: Method {
-                    sig: quote! { fn get_hover(&self, doc: &auto_lsp::core::document::Document) -> Option<auto_lsp::lsp_types::Hover> },
+                    sig: quote! { fn get_hover(&self, doc: &auto_lsp::core::document::Document) -> anyhow::Result<Option<auto_lsp::lsp_types::Hover>> },
                     variant: quote! { get_hover(doc) },
                 },
             },
             lsp_inlay_hint: LspInlayHint {
                 path: core_ast(parse_quote!(BuildInlayHints)),
                 build_inlay_hints: Method {
-                    sig: quote! { fn build_inlay_hints(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) },
+                    sig: quote! { fn build_inlay_hints(&self, doc: &auto_lsp::core::document::Document, acc: &mut Vec<auto_lsp::lsp_types::InlayHint>) -> auto_lsp::anyhow::Result<()>  },
                     variant: quote! { build_inlay_hints(doc, acc) },
                 },
             },
             lsp_semantic_token: LspSemanticToken {
                 path: core_ast(parse_quote!(BuildSemanticTokens)),
                 build_semantic_tokens: Method {
-                    sig: quote! { fn build_semantic_tokens(&self, doc: &auto_lsp::core::document::Document, builder: &mut auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder) },
+                    sig: quote! { fn build_semantic_tokens(&self, doc: &auto_lsp::core::document::Document, builder: &mut auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder) -> auto_lsp::anyhow::Result<()>  },
                     variant: quote! { build_semantic_tokens(doc, builder) },
-                },
-            },
-            is_comment: Comment {
-                path: core_ast(parse_quote!(Comment)),
-                is_comment: Method {
-                    sig: quote! { fn is_comment(&self) -> bool },
-                    variant: quote! { is_comment() },
                 },
             },
             scope: Scope {

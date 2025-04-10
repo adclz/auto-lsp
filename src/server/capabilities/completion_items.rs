@@ -43,7 +43,7 @@ pub fn get_completion_items<Db: BaseDatabase>(
                     None => return Ok(None),
                 };
 
-                item.build_completion_items(&document, &mut results)
+                item.build_completion_items(&document, &mut results)?;
             }
             CompletionTriggerKind::TRIGGER_CHARACTER => {
                 let trigger_character = context.trigger_character.unwrap();
@@ -59,7 +59,7 @@ pub fn get_completion_items<Db: BaseDatabase>(
                     Some(item) => item,
                     None => return Ok(None),
                 };
-                item.build_triggered_completion_items(&trigger_character, &document, &mut results)
+                item.build_triggered_completion_items(&trigger_character, &document, &mut results)?;
             }
             _ => (),
         },

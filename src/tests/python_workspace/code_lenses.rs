@@ -5,20 +5,30 @@ use auto_lsp_core::ast::AstSymbol;
 use auto_lsp_core::document::Document;
 
 impl BuildCodeLenses for Module {
-    fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+    fn build_code_lenses(
+        &self,
+        doc: &Document,
+        acc: &mut Vec<lsp_types::CodeLens>,
+    ) -> anyhow::Result<()> {
         for statement in &self.statements {
-            statement.read().build_code_lenses(doc, acc);
+            statement.read().build_code_lenses(doc, acc)?;
         }
+        Ok(())
     }
 }
 
 impl BuildCodeLenses for Function {
-    fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+    fn build_code_lenses(
+        &self,
+        doc: &Document,
+        acc: &mut Vec<lsp_types::CodeLens>,
+    ) -> anyhow::Result<()> {
         let read = self.name.read();
         acc.push(lsp_types::CodeLens {
             range: read.get_lsp_range(doc).unwrap(),
             command: None,
             data: None,
-        })
+        });
+        Ok(())
     }
 }

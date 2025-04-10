@@ -23,7 +23,7 @@ pub trait BuildDocumentSymbols {
     ///  use auto_lsp_core::document_symbols_builder::DocumentSymbolsBuilder;
     ///
     /// impl BuildDocumentSymbols for MySymbol {
-    ///    fn build_document_symbols(&self, doc: &Document, acc: &mut DocumentSymbolsBuilder) {
+    ///    fn build_document_symbols(&self, doc: &Document, acc: &mut DocumentSymbolsBuilder) -> anyhow::Result<()> {
     ///       acc.push_symbol(lsp_types::DocumentSymbol {
     ///         name: "Function Name".to_string(),
     ///         kind: lsp_types::SymbolKind::FUNCTION,
@@ -34,9 +34,16 @@ pub trait BuildDocumentSymbols {
     ///         selection_range: lsp_types::Range::default(),
     ///         children: None,
     ///       });
+    ///       Ok(())
     ///    }
     /// }
-    fn build_document_symbols(&self, doc: &Document, acc: &mut DocumentSymbolsBuilder) {}
+    fn build_document_symbols(
+        &self,
+        doc: &Document,
+        acc: &mut DocumentSymbolsBuilder,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 /// [LSP Hover specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover)
@@ -49,8 +56,8 @@ pub trait GetHover {
     /// use auto_lsp_core::ast::GetHover;
     ///
     /// impl GetHover for MySymbol {
-    ///     fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
-    ///        Some(lsp_types::Hover {
+    ///     fn get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
+    ///        Ok(Some(lsp_types::Hover {
     ///             contents: lsp_types::HoverContents::Markup(
     ///                 lsp_types::MarkupContent {
     ///                     kind: lsp_types::MarkupKind::Markdown,
@@ -58,12 +65,12 @@ pub trait GetHover {
     ///                 }
     ///             ),
     ///             range: None
-    ///        })
+    ///        }))
     ///     }
     /// }
     /// ```
-    fn get_hover(&self, doc: &Document) -> Option<lsp_types::Hover> {
-        None
+    fn get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
+        Ok(None)
     }
 }
 
@@ -78,15 +85,15 @@ pub trait GetGoToDefinition {
     /// use auto_lsp_core::ast::GetGoToDefinition;
     ///
     /// impl GetGoToDefinition for MySymbol {
-    ///    fn go_to_definition(&self, doc: &Document) -> Option<lsp_types::GotoDefinitionResponse> {
-    ///       Some(lsp_types::GotoDefinitionResponse::Scalar(lsp_types::Location::new(
+    ///    fn go_to_definition(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::GotoDefinitionResponse>> {
+    ///       Ok(Some(lsp_types::GotoDefinitionResponse::Scalar(lsp_types::Location::new(
     ///          Url::parse("file:///path/to/file").unwrap(),
     ///         lsp_types::Range::default()
-    ///      )))
+    ///      ))))
     ///   }
     /// }
-    fn go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse> {
-        None
+    fn go_to_definition(&self, doc: &Document) -> anyhow::Result<Option<GotoDefinitionResponse>> {
+        Ok(None)
     }
 }
 
@@ -101,15 +108,15 @@ pub trait GetGoToDeclaration {
     /// use auto_lsp_core::ast::GetGoToDeclaration;
     ///
     /// impl GetGoToDeclaration for MySymbol {
-    ///    fn go_to_declaration(&self, doc: &Document) -> Option<lsp_types::request::GotoDeclarationResponse> {
-    ///       Some(lsp_types::request::GotoDeclarationResponse::Scalar(lsp_types::Location::new(
+    ///    fn go_to_declaration(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::request::GotoDeclarationResponse>> {
+    ///       Ok(Some(lsp_types::request::GotoDeclarationResponse::Scalar(lsp_types::Location::new(
     ///          Url::parse("file:///path/to/file").unwrap(),
     ///          lsp_types::Range::default()
-    ///      )))
+    ///      ))))
     ///   }
     /// }
-    fn go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse> {
-        None
+    fn go_to_declaration(&self, doc: &Document) -> anyhow::Result<Option<GotoDeclarationResponse>> {
+        Ok(None)
     }
 }
 
@@ -125,17 +132,24 @@ pub trait BuildSemanticTokens {
     /// use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
     ///
     /// impl BuildSemanticTokens for MySymbol {
-    ///   fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {
+    ///   fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) -> anyhow::Result<()> {
     ///      builder.push(
     ///         lsp_types::Range::default(),
     ///         10,
     ///         0
-    ///     );
+    ///      );
+    ///      Ok(())
     ///   }
     /// }
     ///
     ///
-    fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {}
+    fn build_semantic_tokens(
+        &self,
+        doc: &Document,
+        builder: &mut SemanticTokensBuilder,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 /// [LSP InlayHints specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_inlayHints)
@@ -148,7 +162,7 @@ pub trait BuildInlayHints {
     /// use auto_lsp_core::ast::BuildInlayHints;
     ///
     /// impl BuildInlayHints for MySymbol {
-    ///   fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {
+    ///   fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) -> anyhow::Result<()> {
     ///     acc.push(lsp_types::InlayHint {
     ///         kind: Some(lsp_types::InlayHintKind::PARAMETER),
     ///         label: lsp_types::InlayHintLabel::String("Hint".to_string()),
@@ -159,10 +173,17 @@ pub trait BuildInlayHints {
     ///         padding_right: None,
     ///         data: None,
     ///     });
-    ///     }
+    ///     Ok(())
+    ///   }
     /// }
     /// ```
-    fn build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) {}
+    fn build_inlay_hints(
+        &self,
+        doc: &Document,
+        acc: &mut Vec<lsp_types::InlayHint>,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 /// [LSP CodeLens specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeLens)
@@ -175,16 +196,23 @@ pub trait BuildCodeLenses {
     /// use auto_lsp_core::ast::BuildCodeLenses;
     ///
     /// impl BuildCodeLenses for MySymbol {
-    ///   fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {
+    ///   fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) -> anyhow::Result<()> {
     ///     acc.push(lsp_types::CodeLens {
     ///         range: lsp_types::Range::default(),
     ///         command: None,
     ///         data: None,
     ///     });
+    ///     Ok(())
     ///   }
     /// }
     /// ```
-    fn build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) {}
+    fn build_code_lenses(
+        &self,
+        doc: &Document,
+        acc: &mut Vec<lsp_types::CodeLens>,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 /// [LSP CompletionItem specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
@@ -197,16 +225,23 @@ pub trait BuildCompletionItems {
     /// use auto_lsp_core::ast::BuildCompletionItems;
     ///
     /// impl BuildCompletionItems for MySymbol {
-    ///   fn build_completion_items(&self, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+    ///   fn build_completion_items(&self, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) -> anyhow::Result<()> {
     ///     acc.push(lsp_types::CompletionItem {
     ///         label: "Completion Item".to_string(),
     ///         kind: Some(lsp_types::CompletionItemKind::FIELD),
     ///         ..Default::default()
     ///     });
+    ///     Ok(())
     ///   }
-    ///}
+    /// }
     /// ```
-    fn build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) {}
+    fn build_completion_items(
+        &self,
+        doc: &Document,
+        acc: &mut Vec<CompletionItem>,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 /// [LSP CompletionItem specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem)
@@ -219,28 +254,36 @@ pub trait BuildTriggeredCompletionItems {
     /// use auto_lsp_core::ast::BuildTriggeredCompletionItems;
     ///
     /// impl BuildTriggeredCompletionItems for MySymbol {
-    ///   fn build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+    ///   fn build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) -> anyhow::Result<()> {
     ///     if trigger == "." {
     ///         acc.push(lsp_types::CompletionItem {
     ///             label: "Completion Item".to_string(),
     ///             kind: Some(lsp_types::CompletionItemKind::FIELD),
     ///             ..Default::default()
     ///         });
-    ///      }
-    ///   }
-    ///}
+    ///      };
+    ///      Ok(())
+    ///    }
+    /// }
     fn build_triggered_completion_items(
         &self,
         trigger: &str,
         doc: &Document,
         acc: &mut Vec<CompletionItem>,
-    ) {
+    ) -> anyhow::Result<()> {
+        Ok(())
     }
 }
 
 /// [LSP CodeAction specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction)
 pub trait BuildCodeActions {
-    fn build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>) {}
+    fn build_code_actions(
+        &self,
+        doc: &Document,
+        acc: &mut Vec<lsp_types::CodeActionOrCommand>,
+    ) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 // Special capabilities
@@ -420,9 +463,9 @@ pub trait Comment {
 }
 
 macro_rules! impl_dyn_symbol {
-    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*) $( -> $return_type: ty)?) => {
+    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)-> $return_type: ty) => {
         impl $trait for DynSymbol {
-            fn $fn_name(&self, $($param_name: $param_type),*) $(-> $return_type)? {
+            fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<$return_type> {
                 self.read().$fn_name($($param_name),*)
             }
         }
@@ -432,29 +475,31 @@ macro_rules! impl_dyn_symbol {
 impl_dyn_symbol!(GetHover, get_hover(&self, doc: &Document) -> Option<lsp_types::Hover>);
 impl_dyn_symbol!(GetGoToDefinition, go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse>);
 impl_dyn_symbol!(GetGoToDeclaration, go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse>);
-impl_dyn_symbol!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder));
-impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
-impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
-impl_dyn_symbol!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
-impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>));
-impl_dyn_symbol!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
-impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>));
+impl_dyn_symbol!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) -> ());
+impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) -> ());
+impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) -> ());
+impl_dyn_symbol!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) -> ());
+impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) -> ());
+impl_dyn_symbol!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>)  -> ());
+impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>)  -> ());
 
 macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
         impl<T: AstSymbol> $trait for Option<Symbol<T>> {
-            fn $fn_name(&self, $($param_name: $param_type),*) {
+            fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 if let Some(node) = self.as_ref() {
-                    node.read().$fn_name($($param_name),*)
+                    node.read().$fn_name($($param_name),*)?;
                 }
+                Ok(())
             }
         }
 
         impl<T: AstSymbol> $trait for Vec<Symbol<T>> {
-            fn $fn_name(&self, $($param_name: $param_type),*) {
+            fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 for symbol in self.iter() {
-                    symbol.read().$fn_name($($param_name),*)
+                    symbol.read().$fn_name($($param_name),*)?;
                 }
+                Ok(())
             }
         }
     };

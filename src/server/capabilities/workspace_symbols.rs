@@ -15,7 +15,7 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
 
     let mut symbols = vec![];
 
-    db.get_files().iter().for_each(|file| {
+    db.get_files().iter().try_for_each(|file| {
         let file = *file;
         let url = file.url(db);
         let document = file.document(db).read();
@@ -23,7 +23,10 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
 
         let mut builder = DocumentSymbolsBuilder::default();
 
-        if let Some(root) = ast { root.read().build_document_symbols(&document, &mut builder) }
+        if let Some(root) = ast {
+            root.read()
+                .build_document_symbols(&document, &mut builder)?;
+        }
 
         symbols.extend(
             builder
@@ -42,7 +45,8 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
                 })
                 .collect::<Vec<_>>(),
         );
-    });
+        Ok::<(), anyhow::Error>(())
+    })?;
 
     Ok(Some(WorkspaceSymbolResponse::Nested(symbols)))
 }

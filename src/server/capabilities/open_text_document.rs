@@ -22,8 +22,7 @@ pub fn open_text_document<Db: BaseDatabase>(
             if session
                 .extensions
                 .values()
-                .find(|x| *x == extension)
-                .is_some()
+                .any(|x| x == extension)
             {
                 extension
             } else {

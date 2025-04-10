@@ -24,7 +24,7 @@ pub fn get_hover<Db: BaseDatabase>(db: &Db, params: HoverParams) -> anyhow::Resu
     let item = root.descendant_at(offset);
 
     match item {
-        Some(item) => Ok(item.get_hover(&document)),
+        Some(item) => item.get_hover(&document),
         None => Ok(None),
     }
 }

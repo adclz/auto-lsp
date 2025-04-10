@@ -41,7 +41,7 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
         let foo_hover = foo_name.get_hover(&document).unwrap();
 
         assert_eq!(
-            foo_hover.contents,
+            foo_hover.unwrap().contents,
             lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
                 value: "hover foo".into(),
@@ -59,7 +59,7 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
         let bar_hover = bar_name.get_hover(&document).unwrap();
 
         assert_eq!(
-            bar_hover.contents,
+            bar_hover.unwrap().contents,
             lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
                 value: "hover bar".into(),

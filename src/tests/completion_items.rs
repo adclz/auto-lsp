@@ -33,7 +33,9 @@ fn global_completion_items(foo_bar: impl BaseDatabase) {
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut completion_items = vec![];
-    module.build_completion_items(&document, &mut completion_items);
+    module
+        .build_completion_items(&document, &mut completion_items)
+        .unwrap();
 
     assert_eq!(completion_items.len(), 1);
     assert_eq!(completion_items[0].label, "def ...");
@@ -42,7 +44,9 @@ fn global_completion_items(foo_bar: impl BaseDatabase) {
     let function = module.statements[0].read();
 
     let mut completion_items = vec![];
-    function.build_completion_items(&document, &mut completion_items);
+    function
+        .build_completion_items(&document, &mut completion_items)
+        .unwrap();
 
     assert_eq!(completion_items.len(), 1);
     assert_eq!(completion_items[0].label, "def ...");
@@ -82,7 +86,8 @@ fn triggered_completion_items(mut foo_bar: impl BaseDatabase) {
     let node = root.as_ref().unwrap().descendant_at(75).unwrap();
 
     let mut completion_items = vec![];
-    node.build_triggered_completion_items(".", &document, &mut completion_items);
+    node.build_triggered_completion_items(".", &document, &mut completion_items)
+        .unwrap();
 
     assert_eq!(completion_items.len(), 1);
     assert_eq!(completion_items[0].label, "triggered! ...");

@@ -29,7 +29,7 @@ fn foo_bar_document_symbols(foo_bar: impl BaseDatabase) {
     let ast = root.as_ref().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder);
+    ast.build_document_symbols(&document, &mut builder).unwrap();
     let symbols = builder.finalize();
 
     assert_eq!(symbols.len(), 2);
@@ -64,7 +64,7 @@ fn foo_bar_nested_bazdocument_symbols(foo_bar_nested_baz: impl BaseDatabase) {
     let ast = root.as_ref().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder);
+    ast.build_document_symbols(&document, &mut builder).unwrap();
     let symbols = builder.finalize();
 
     assert_eq!(symbols.len(), 2);

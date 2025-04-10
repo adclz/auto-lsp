@@ -30,7 +30,7 @@ pub fn go_to_declaration<Db: BaseDatabase>(
     let item = root.descendant_at(offset);
 
     match item {
-        Some(item) => Ok(item.go_to_declaration(&document)),
+        Some(item) => item.go_to_declaration(&document),
         None => Ok(None),
     }
 }

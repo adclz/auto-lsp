@@ -19,14 +19,24 @@ static GLOBAL_COMPLETION_ITEMS: LazyLock<Vec<lsp_types::CompletionItem>> = LazyL
 });
 
 impl BuildCompletionItems for Module {
-    fn build_completion_items(&self, _doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+    fn build_completion_items(
+        &self,
+        _doc: &Document,
+        acc: &mut Vec<lsp_types::CompletionItem>,
+    ) -> anyhow::Result<()> {
         acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
+        Ok(())
     }
 }
 
 impl BuildCompletionItems for Function {
-    fn build_completion_items(&self, _doc: &Document, acc: &mut Vec<lsp_types::CompletionItem>) {
+    fn build_completion_items(
+        &self,
+        _doc: &Document,
+        acc: &mut Vec<lsp_types::CompletionItem>,
+    ) -> anyhow::Result<()> {
         acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
+        Ok(())
     }
 }
 
@@ -36,7 +46,7 @@ impl BuildTriggeredCompletionItems for Identifier {
         trigger: &str,
         _doc: &Document,
         acc: &mut Vec<CompletionItem>,
-    ) {
+    ) -> anyhow::Result<()> {
         if trigger == "." {
             acc.push(CompletionItem {
                 label: "triggered! ...".to_string(),
@@ -45,6 +55,7 @@ impl BuildTriggeredCompletionItems for Identifier {
                 insert_text: Some("def ${1:func_name}(${2:arg1}):$0".to_string()),
                 ..Default::default()
             });
-        }
+        };
+        Ok(())
     }
 }

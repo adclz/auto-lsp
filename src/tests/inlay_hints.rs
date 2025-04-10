@@ -32,7 +32,7 @@ fn foo_bar_inlay_hints(foo_bar: impl BaseDatabase) {
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut hints = vec![];
-    module.build_inlay_hints(&document, &mut hints);
+    module.build_inlay_hints(&document, &mut hints).unwrap();
 
     assert_eq!(hints.len(), 2);
 

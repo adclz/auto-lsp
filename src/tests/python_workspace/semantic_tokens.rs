@@ -26,15 +26,17 @@ impl BuildSemanticTokens for Module {
         &self,
         doc: &Document,
         builder: &mut auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder,
-    ) {
-        for statement in &self.statements {
-            statement.read().build_semantic_tokens(doc, builder);
-        }
+    ) -> anyhow::Result<()> {
+        self.statements.build_semantic_tokens(doc, builder)
     }
 }
 
 impl BuildSemanticTokens for Function {
-    fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {
+    fn build_semantic_tokens(
+        &self,
+        doc: &Document,
+        builder: &mut SemanticTokensBuilder,
+    ) -> anyhow::Result<()> {
         builder.push(
             self.name.read().get_lsp_range(doc).unwrap(),
             SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
@@ -43,5 +45,6 @@ impl BuildSemanticTokens for Function {
                 .position(|x| *x == DECLARATION)
                 .unwrap() as u32,
         );
+        Ok(())
     }
 }

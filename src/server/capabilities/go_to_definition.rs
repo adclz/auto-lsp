@@ -31,7 +31,7 @@ pub fn go_to_definition<Db: BaseDatabase>(
     let item = root.descendant_at(offset);
 
     match item {
-        Some(item) => Ok(item.go_to_definition(&document)),
+        Some(item) => item.go_to_definition(&document),
         None => Ok(None),
     }
 }
