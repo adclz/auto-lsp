@@ -35,7 +35,6 @@ pub trait InvokeParser<
         parsers: &'static Parsers,
         url: &Arc<Url>,
         document: &Document,
-        range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic>;
 }
 
@@ -49,9 +48,8 @@ where
         parsers: &'static Parsers,
         url: &Arc<Url>,
         document: &Document,
-        range: Option<std::ops::Range<usize>>,
     ) -> Result<Y, lsp_types::Diagnostic> {
-        StackBuilder::<T>::new(db, parsers, url, document).create_symbol(&range)
+        StackBuilder::<T>::new(db, parsers, url, document).create_symbol()
     }
 }
 
@@ -64,7 +62,6 @@ pub type InvokeParserFn = fn(
     &'static Parsers,
     &Arc<Url>,
     &Document,
-    Option<std::ops::Range<usize>>,
 ) -> Result<DynSymbol, lsp_types::Diagnostic>;
 
 pub type TestParseResult<E = AriadneReport> = anyhow::Result<(), Box<E>>;

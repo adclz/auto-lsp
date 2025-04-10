@@ -22,7 +22,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 
     get_tree_sitter_errors(db, &node, source_code);
 
-    match (parsers.ast_parser)(db, parsers, &url_shared, &doc, None) {
+    match (parsers.ast_parser)(db, parsers, &url_shared, &doc) {
         Ok(ast) => ParsedAst::new(ast),
         Err(e) => {
             DiagnosticAccumulator::accumulate(e.clone().into(), db);
