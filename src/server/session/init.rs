@@ -83,16 +83,6 @@ impl<Db: BaseDatabase + Default> Session<Db> {
         #[cfg(target_arch = "wasm32")]
         fs::metadata("/workspace").unwrap();
 
-        // Note that  we must have our logging only write out to stderr since the communication with the client
-        // is done via stdin/stdout. If we write to stdout, we will corrupt the communication.
-        #[cfg(feature = "log")]
-        stderrlog::new()
-            .modules(vec![module_path!(), "auto_lsp_core"])
-            .timestamp(stderrlog::Timestamp::Second)
-            .verbosity(3)
-            .init()
-            .unwrap();
-
         log::info!("Starting LSP server");
         log::info!("");
 

@@ -87,7 +87,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! # Features
 //!
 //! - `deadlock_detection`: Enable [`parking_lot`]'s deadlock detection (not compatible with `wasm`).
-//! - `log`: Enable logging. (uses [`stderrlog`])
+//! - `log`: Enable logging.
 //! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
 //! - `rayon`: Enable [`rayon`] support (only compatible with `wasi-p1-threads`).
 //! - `wasm`: Enable wasm support.
