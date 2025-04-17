@@ -37,7 +37,18 @@ pub struct Document {
     pub tree: Tree,
 }
 
-pub static LAST_LINE: AtomicUsize = AtomicUsize::new(0);
+thread_local! {
+    /// Thread-local storage for the last line index accessed.
+    ///
+    /// It is initialized to 0, indicating that no lines have been accessed yet.
+    /// This is a performance optimization to avoid searching from the beginning of the document
+    /// every time we need to find a position.
+    /// The value is updated whenever a position is found, so that subsequent calls can start from
+    /// the last accessed line.
+    /// If the offset is greater than value, we reset the counter to 0.
+
+    pub static LAST_LINE: AtomicUsize = AtomicUsize::new(0);
+}
 
 impl Document {
     pub fn new(texter: Text, tree: Tree) -> Self {
@@ -106,7 +117,7 @@ impl Document {
     /// Converts a byte offset in the document to its corresponding position (line and character).
     pub fn position_at(&self, offset: usize) -> anyhow::Result<lsp_types::Position> {
         let mut last_br_index = 0;
-        let last_line = LAST_LINE.load(Ordering::SeqCst);
+        let last_line = LAST_LINE.with(|a| a.load(Ordering::SeqCst));
 
         // If the document is a single line, we can avoid the loop
         if self.texter.br_indexes.0.len() == 1 {
@@ -133,7 +144,7 @@ impl Document {
         for (i, &br_index) in self.texter.br_indexes.0.iter().skip(start).enumerate() {
             if offset <= br_index {
                 // Cache this line for future calls
-                LAST_LINE.store(i + (start - 1), Ordering::Release);
+                LAST_LINE.with(|a| a.store(i + (start - 1), Ordering::Release));
 
                 // Compute column by subtracting the last break index
                 let col = offset.saturating_sub(last_br_index);
@@ -194,6 +205,13 @@ mod test {
         let mut p = Parser::new();
         p.set_language(&tree_sitter_html::LANGUAGE.into()).unwrap();
         p
+    }
+
+    fn get_last_line() -> usize {
+        use crate::document::LAST_LINE; // adjust path if needed
+        use std::sync::atomic::Ordering;
+
+        LAST_LINE.with(|val| val.load(Ordering::Acquire))
     }
 
     #[rstest]
@@ -476,5 +494,33 @@ mod test {
             }),
             None
         );
+    }
+
+    #[rstest]
+    fn line_tracking(mut parser: Parser) {
+        let source = "one\nline two\nline three\n";
+        let text = Text::new(source.into());
+        let document = Document::new(text, parser.parse(source, None).unwrap());
+
+        // Offset in line 0
+        let pos1 = document.position_at(2).unwrap();
+        assert_eq!(pos1.line, 0);
+        assert_eq!(get_last_line(), 0);
+
+        // Offset in line 1
+        let pos2 = document.position_at(6).unwrap();
+        assert_eq!(pos2.line, 1);
+        assert_eq!(get_last_line(), 1);
+
+        // Offset in line 2
+        let pos3 = document.position_at(18).unwrap();
+        assert_eq!(pos3.line, 2);
+        assert_eq!(get_last_line(), 2);
+
+        // Offset is ine line 0
+        // This should reset the last line index
+        let pos3 = document.position_at(0).unwrap();
+        assert_eq!(pos3.line, 0);
+        assert_eq!(get_last_line(), 0);
     }
 }
