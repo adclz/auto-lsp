@@ -16,11 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::sync::Arc;
-
 use anyhow::Context;
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_types::{Diagnostic, Url};
+use lsp_types::Diagnostic;
 
 use crate::{
     ast::WeakSymbol,

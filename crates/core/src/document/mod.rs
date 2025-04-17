@@ -47,7 +47,7 @@ thread_local! {
     /// the last accessed line.
     /// If the offset is greater than value, we reset the counter to 0.
 
-    pub static LAST_LINE: AtomicUsize = AtomicUsize::new(0);
+    pub static LAST_LINE: AtomicUsize = const { AtomicUsize::new(0) };
 }
 
 impl Document {

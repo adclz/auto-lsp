@@ -18,19 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #![allow(unused_variables)]
 
-use cfg_if::cfg_if;
-use lsp_types::{
-    request::GotoDeclarationResponse, CompletionItem, Diagnostic, DocumentSymbol,
-    GotoDefinitionResponse,
-};
-use std::ops::Deref;
-
 use super::core::AstSymbol;
-use super::data::*;
 use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
-use aho_corasick::AhoCorasick;
+use lsp_types::{
+    request::GotoDeclarationResponse, CompletionItem,
+    GotoDefinitionResponse,
+};
 
 /// [LSP DocumentSymbol specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
 pub trait BuildDocumentSymbols {

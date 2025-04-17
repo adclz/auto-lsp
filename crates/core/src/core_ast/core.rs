@@ -76,6 +76,7 @@ pub trait AstSymbol:
     fn get_parent_scope(&self) -> Option<DynSymbol> {
         let mut parent = self.get_data().get_parent();
         while let Some(weak) = parent {
+            #[allow(clippy::all)]
             let symbol: DynSymbol = match weak.into() {
                 Some(symbol) => symbol,
                 None => return None
