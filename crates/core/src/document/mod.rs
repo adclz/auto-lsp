@@ -162,7 +162,7 @@ impl Document {
             let last_known_col = self.texter.br_indexes.0.iter().len();
             let last_br = *self.texter.br_indexes.0.last().unwrap();
             Ok(lsp_types::Position {
-                line: last_known_col as u32,
+                line: last_known_col.saturating_sub(1) as u32,
                 character: offset.saturating_sub(last_br) as u32,
             })
         } else {
@@ -270,7 +270,7 @@ mod test {
         assert_eq!(
             document.position_at(40).unwrap(),
             Position {
-                line: 4,
+                line: 3,
                 character: 2
             }
         );
