@@ -16,10 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::sync::Arc;
+use crate::ast::AstSymbol;
 
 use super::symbol::*;
-use lsp_types::Url;
 
 /// Core data of any ast symbol
 #[derive(Clone)]
@@ -47,20 +46,43 @@ pub trait GetSymbolData {
     fn get_range(&self) -> std::ops::Range<usize>;
     /// Get the parent of the symbol (if any)
     fn get_parent(&self) -> Option<WeakSymbol>;
-    /// Set the parent of the symbol
+
+    #[doc(hidden)]
     fn set_parent(&mut self, parent: WeakSymbol);
 }
 
 impl GetSymbolData for SymbolData {
+    #[inline]
     fn get_range(&self) -> std::ops::Range<usize> {
         self.range.clone()
     }
 
+    #[inline]
     fn get_parent(&self) -> Option<WeakSymbol> {
         self.parent.clone()
     }
 
+    #[doc(hidden)]
+    #[inline]
     fn set_parent(&mut self, parent: WeakSymbol) {
         self.parent = Some(parent);
+    }
+}
+
+impl<T: AstSymbol + ?Sized> GetSymbolData for T {
+    #[inline]
+    fn get_range(&self) -> std::ops::Range<usize> {
+        self.get_data().get_range()
+    }
+
+    #[inline]
+    fn get_parent(&self) -> Option<WeakSymbol> {
+        self.get_data().get_parent()
+    }
+
+    #[doc(hidden)]
+    #[inline]
+    fn set_parent(&mut self, parent: WeakSymbol) {
+        self.get_mut_data().set_parent(parent)
     }
 }

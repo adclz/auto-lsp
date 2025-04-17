@@ -167,11 +167,11 @@ impl Default for Paths {
             symbol_trait: SymbolTrait {
                 path: core_ast(parse_quote!(AstSymbol)),
                 get_data: Method {
-                    sig: quote! { fn get_data(&self) -> &auto_lsp::core::ast::SymbolData },
+                    sig: quote! { #[inline] fn get_data(&self) -> &auto_lsp::core::ast::SymbolData },
                     variant: quote! { get_data() },
                 },
                 get_mut_data: Method {
-                    sig: quote! { fn get_mut_data(&mut self) -> &mut auto_lsp::core::ast::SymbolData },
+                    sig: quote! { #[doc(hidden)] #[inline] fn get_mut_data(&mut self) -> &mut auto_lsp::core::ast::SymbolData },
                     variant: quote! { get_mut_data() },
                 },
             },

@@ -62,6 +62,7 @@ pub trait AstSymbol:
     /// Retrieves the mutable data of the symbol.
     fn get_mut_data(&mut self) -> &mut SymbolData;
 
+    #[inline]
     /// Retrieves the text of the symbol based on its range within the provided source code.
     fn get_text<'a>(&self, source_code: &'a [u8]) -> anyhow::Result<&'a str> {
         let range = self.get_data().get_range();
@@ -89,6 +90,7 @@ pub trait AstSymbol:
         None
     }
 
+    #[inline]
     /// Checks if the symbol is within the given offset.
     fn is_inside_offset(&self, offset: usize) -> bool {
         let range = self.get_data().get_range();
@@ -111,17 +113,3 @@ pub trait AstSymbol:
 }
 
 impl_downcast!(AstSymbol);
-
-impl<T: AstSymbol + ?Sized> GetSymbolData for T {
-    fn get_range(&self) -> std::ops::Range<usize> {
-        self.get_data().get_range()
-    }
-
-    fn get_parent(&self) -> Option<WeakSymbol> {
-        self.get_data().get_parent()
-    }
-
-    fn set_parent(&mut self, parent: WeakSymbol) {
-        self.get_mut_data().set_parent(parent)
-    }
-}
