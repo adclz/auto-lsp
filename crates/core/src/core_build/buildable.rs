@@ -18,12 +18,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use anyhow::Context;
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_types::Diagnostic;
+use lsp_types::{Diagnostic, Range};
 
 use crate::{
     ast::WeakSymbol,
     core_ast::{core::AstSymbol, symbol::Symbol},
     document::Document,
+    errors::DocumentError,
     parsers::Parsers,
 };
 
@@ -120,9 +121,8 @@ pub trait Buildable: Downcast {
 
     fn get_query_index(&self) -> usize;
 
-    fn get_lsp_range(&self, document: &Document) -> anyhow::Result<lsp_types::Range> {
-        // Temporary
-        Ok(document.range_at(self.get_range()).unwrap())
+    fn get_lsp_range(&self, document: &Document) -> Result<Range, DocumentError> {
+        document.range_at(self.get_range())
     }
 
     fn get_text<'a>(&self, source_code: &'a [u8]) -> anyhow::Result<&'a str> {

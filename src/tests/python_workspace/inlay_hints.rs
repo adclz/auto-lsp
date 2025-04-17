@@ -48,7 +48,7 @@ impl BuildInlayHints for Function {
         acc.push(auto_lsp::lsp_types::InlayHint {
             kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
             label: auto_lsp::lsp_types::InlayHintLabel::String(name),
-            position: read.get_start_position(doc).unwrap(),
+            position: read.get_start_position(doc)?,
             tooltip: None,
             text_edits: None,
             padding_left: None,

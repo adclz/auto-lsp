@@ -22,6 +22,7 @@ use super::display::*;
 use super::symbol::*;
 use crate::build::Parent;
 use crate::document::Document;
+use crate::errors::DocumentError;
 use anyhow::Context;
 use downcast_rs::{impl_downcast, DowncastSync};
 use lsp_types::Position;
@@ -99,20 +100,17 @@ pub trait AstSymbol:
     }
 
     /// Returns the LSP start position of the symbol.
-    fn get_start_position(&self, document: &Document) -> anyhow::Result<Position> {
-        // Temporary
-        Ok(document.position_at(self.get_range().start).unwrap())
+    fn get_start_position(&self, document: &Document) -> Result<Position, DocumentError> {
+        document.position_at(self.get_range().start)
     }
 
-    fn get_end_position(&self, document: &Document) -> anyhow::Result<Position> {
-        // Temporary
-        Ok(document.position_at(self.get_range().end).unwrap())
+    fn get_end_position(&self, document: &Document) -> Result<Position, DocumentError> {
+        document.position_at(self.get_range().end)
     }
 
     /// Returns the LSP range (start and end position) of the symbol.
-    fn get_lsp_range(&self, document: &Document) -> anyhow::Result<Range> {
-        // Temporary
-        Ok(document.range_at(self.get_range()).unwrap())
+    fn get_lsp_range(&self, document: &Document) -> Result<Range, DocumentError> {
+        document.range_at(self.get_range())
     }
 }
 
