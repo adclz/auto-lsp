@@ -23,7 +23,6 @@ use super::symbol::*;
 use crate::build::Parent;
 use crate::document::Document;
 use crate::errors::DocumentError;
-use anyhow::Context;
 use downcast_rs::{impl_downcast, DowncastSync};
 use lsp_types::Position;
 use lsp_types::Range;
@@ -65,10 +64,18 @@ pub trait AstSymbol:
 
     #[inline]
     /// Retrieves the text of the symbol based on its range within the provided source code.
-    fn get_text<'a>(&self, source_code: &'a [u8]) -> anyhow::Result<&'a str> {
+    fn get_text<'a>(&self, source_code: &'a [u8]) -> Result<&'a str, DocumentError> {
         let range = self.get_data().get_range();
-        std::str::from_utf8(&source_code[range.start..range.end])
-            .with_context(|| "Failed to get text")
+        match source_code.get(range.start..range.end) {
+            Some(text) => match std::str::from_utf8(text) {
+                Ok(text) => Ok(text),
+                Err(utf8_error) => Err(DocumentError::DocumentTextUTF8  {
+                    range,
+                    utf8_error
+                }),
+            }
+            None => Err(DocumentError::DocumentTextRange { range })
+        }
     }
 
     /// Get the symbol's nearest scope.

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{str::Utf8Error, sync::Arc};
 
 use lsp_types::Url;
 use thiserror::Error;
@@ -95,6 +95,13 @@ pub enum DocumentError {
         range: std::ops::Range<usize>,
         #[source]
         position_error: Box<DocumentError>,
+    },
+    #[error("Failed to get text in {range:?}")]
+    DocumentTextRange { range: std::ops::Range<usize> },
+    #[error("Failed to get text in {range:?}: Encountered UTF-8 error {utf8_error:?}")]
+    DocumentTextUTF8 {
+        range: std::ops::Range<usize>,
+        utf8_error: Utf8Error,
     },
 }
 
