@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::parsers::Parsers;
-use parking_lot::lock_api::RwLock;
 use tree_sitter::{Language, Query};
 
 /// Create the parsers with any given language and queries.

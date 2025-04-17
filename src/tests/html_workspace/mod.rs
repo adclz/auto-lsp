@@ -46,10 +46,6 @@ static CORE_QUERY: &str = "
 (quoted_attribute_value) @quoted_attribute_value
 ";
 
-static COMMENT_QUERY: &str = "
-(comment) @comment
-";
-
 configure_parsers!(
     HTML_PARSERS,
     "html" => {
