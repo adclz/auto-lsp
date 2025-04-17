@@ -26,9 +26,7 @@ use anyhow::Context;
 use downcast_rs::{impl_downcast, DowncastSync};
 use lsp_types::Position;
 use lsp_types::Range;
-use lsp_types::Url;
 use std::fmt::Display;
-use std::sync::Arc;
 
 /// Core functionality of an AST symbol
 ///
@@ -115,10 +113,6 @@ pub trait AstSymbol:
 impl_downcast!(AstSymbol);
 
 impl<T: AstSymbol + ?Sized> GetSymbolData for T {
-    fn get_url(&self) -> Arc<Url> {
-        self.get_data().get_url()
-    }
-
     fn get_range(&self) -> std::ops::Range<usize> {
         self.get_data().get_range()
     }

@@ -180,21 +180,19 @@ impl Default for Paths {
                 path: core_build(parse_quote!(Buildable)),
                 new: Method {
                     sig: quote! { fn new(
-                        url: &std::sync::Arc<auto_lsp::lsp_types::Url>,
                         query: &auto_lsp::tree_sitter::Query,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
                     ) -> Option<Self> },
-                    variant: quote! { new(url, query, capture) },
+                    variant: quote! { new(query, capture) },
                 },
                 add: Method {
                     sig: quote! { fn add(
                         &mut self,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
                         parsers: &'static auto_lsp::core::parsers::Parsers,
-                        url: &std::sync::Arc<auto_lsp::lsp_types::Url>,
                         document: &auto_lsp::core::document::Document,
                     ) -> Result<Option<auto_lsp::core::build::PendingSymbol>, auto_lsp::lsp_types::Diagnostic> },
-                    variant: quote! { add(capture, parsers, url, document) },
+                    variant: quote! { add(capture, parsers, document) },
                 },
                 get_url: Method {
                     sig: quote! { fn get_url(&self) -> std::sync::Arc<auto_lsp::lsp_types::Url> },

@@ -101,11 +101,7 @@ pub trait Buildable: Downcast {
     /// # Returns
     /// - `Some(Self)` if a valid builder can be created for the given capture.
     /// - `None` for enums if the corresponding variant is not found.
-    fn new(
-        url: &Arc<Url>,
-        query: &tree_sitter::Query,
-        capture: &tree_sitter::QueryCapture,
-    ) -> Option<Self>
+    fn new(query: &tree_sitter::Query, capture: &tree_sitter::QueryCapture) -> Option<Self>
     where
         Self: Sized;
 
@@ -119,7 +115,6 @@ pub trait Buildable: Downcast {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        url: &Arc<Url>,
         document: &Document,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
 
@@ -187,7 +182,6 @@ pub trait AddSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        url: &Arc<Url>,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic>;
@@ -198,7 +192,6 @@ impl AddSymbol for MaybePendingSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        url: &Arc<Url>,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
@@ -211,7 +204,7 @@ impl AddSymbol for MaybePendingSymbol {
                 Some(_) => {
                     return Ok(None);
                 }
-                None => match Y::new(url, &parsers.core, capture) {
+                None => match Y::new(&parsers.core, capture) {
                     Some(node) => {
                         self.swap(&mut node.into());
                         return Ok(self.as_ref().clone());
@@ -240,13 +233,12 @@ impl AddSymbol for Vec<PendingSymbol> {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        url: &Arc<Url>,
         parent_name: &str,
         field_name: &str,
     ) -> Result<Option<PendingSymbol>, Diagnostic> {
         let name = parsers.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
-            match Y::new(url, &parsers.core, capture) {
+            match Y::new(&parsers.core, capture) {
                 Some(node) => {
                     let node = PendingSymbol::new(node);
                     self.push(node.clone());

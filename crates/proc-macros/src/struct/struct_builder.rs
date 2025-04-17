@@ -314,7 +314,7 @@ impl StructBuilder<'_> {
             |_, _, name, field_type, builder| {
                 quote! {
 
-                    if let Some(node) =  self.#name.add::<#builder>(capture, parsers, url, stringify!(#input_name), stringify!(#field_type))? {
+                    if let Some(node) =  self.#name.add::<#builder>(capture, parsers, stringify!(#input_name), stringify!(#field_type))? {
                        return Ok(Some(node))
                     };
                 }
@@ -383,7 +383,7 @@ impl StructBuilder<'_> {
                     #_builder
 
                     Ok(#input_name {
-                        _data: #symbol_data::new(url.clone(), builder.range.clone()),
+                        _data: #symbol_data::new(builder.range.clone()),
                         #(#fields),*
                     })
                 }
