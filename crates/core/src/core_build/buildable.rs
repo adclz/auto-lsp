@@ -121,7 +121,8 @@ pub trait Buildable: Downcast {
     fn get_query_index(&self) -> usize;
 
     fn get_lsp_range(&self, document: &Document) -> anyhow::Result<lsp_types::Range> {
-        document.range_at(self.get_range())
+        // Temporary
+        Ok(document.range_at(self.get_range()).unwrap())
     }
 
     fn get_text<'a>(&self, source_code: &'a [u8]) -> anyhow::Result<&'a str> {

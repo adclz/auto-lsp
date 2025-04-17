@@ -100,16 +100,19 @@ pub trait AstSymbol:
 
     /// Returns the LSP start position of the symbol.
     fn get_start_position(&self, document: &Document) -> anyhow::Result<Position> {
-        document.position_at(self.get_range().start)
+        // Temporary
+        Ok(document.position_at(self.get_range().start).unwrap())
     }
 
     fn get_end_position(&self, document: &Document) -> anyhow::Result<Position> {
-        document.position_at(self.get_range().end)
+        // Temporary
+        Ok(document.position_at(self.get_range().end).unwrap())
     }
 
     /// Returns the LSP range (start and end position) of the symbol.
     fn get_lsp_range(&self, document: &Document) -> anyhow::Result<Range> {
-        document.range_at(self.get_range())
+        // Temporary
+        Ok(document.range_at(self.get_range()).unwrap())
     }
 }
 
