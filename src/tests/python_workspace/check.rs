@@ -93,7 +93,7 @@ impl TypedDefaultParameter {
                 }
             },
             _ => {
-                CheckErrorAccumulator::accumulate(self.type_error_message(doc).into(), db);
+                CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
             }
         }
     }

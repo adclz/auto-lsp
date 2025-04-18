@@ -167,7 +167,7 @@ pub fn choice(_args: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     let mut variants_error = None;
-    let fields = match extract_variants(&data_enum) {
+    let fields = match extract_variants(data_enum) {
         (fields, Some(err)) => {
             variants_error = Some(err);
             fields

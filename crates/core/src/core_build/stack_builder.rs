@@ -131,9 +131,7 @@ where
                     None => {
                         // There can only be one root node.
                         if self.roots.is_empty() {
-                            if let Err(e) = self.create_root_node(&capture) {
-                                return Err(e);
-                            };
+                            self.create_root_node(&capture)?;
                             break;
                         } else {
                             return Ok(self.roots.pop());
@@ -167,7 +165,7 @@ where
                 self.stack.push(node);
                 Ok(())
             }
-            None => Err(((
+            None => Err((
                 self.document,
                 AstError::InvalidRootNode {
                     range: std::ops::Range {
@@ -176,7 +174,7 @@ where
                     },
                     query: self.parsers.core.capture_names()[capture.index as usize],
                 },
-            ))
+            )
                 .into()),
         }
     }

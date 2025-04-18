@@ -41,8 +41,8 @@ impl From<&AutoLspError> for lsp_types::Diagnostic {
     fn from(error: &AutoLspError) -> Self {
         let message = error.to_string();
         let range = match error {
-            AutoLspError::TreeSitterError { range, .. } => range.clone(),
-            AutoLspError::AstError { range, .. } => range.clone(),
+            AutoLspError::TreeSitterError { range, .. } => *range,
+            AutoLspError::AstError { range, .. } => *range,
         };
         lsp_types::Diagnostic {
             range,
@@ -121,10 +121,7 @@ impl From<(&Document, AstError)> for AutoLspError {
             AstError::InvalidSymbol { range, .. } => range,
             AstError::MissingSymbol { range, .. } => range,
         };
-        let range = match document.range_at(range.clone()) {
-            Ok(range) => range,
-            Err(_) => lsp_types::Range::default(),
-        };
+        let range = document.range_at(range.clone()).unwrap_or_default();
         Self::AstError { range, error }
     }
 }
@@ -144,7 +141,7 @@ impl From<TreeSitterError> for AutoLspError {
     fn from(error: TreeSitterError) -> Self {
         let range = match &error {
             TreeSitterError::TreeSitterParser => lsp_types::Range::default(),
-            TreeSitterError::Lexer { range, .. } => range.clone(),
+            TreeSitterError::Lexer { range, .. } => *range,
         };
         Self::TreeSitterError { range, error }
     }

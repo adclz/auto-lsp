@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::filter::{get_type_name, is_option, is_vec};
+use crate::filter::get_type_name;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{Ident, Path};
@@ -87,14 +87,14 @@ pub fn extract_variants(data: &syn::DataEnum) -> (Variants, Option<syn::Error>) 
                     }
                 } else {
                     errors.push(syn::Error::new_spanned(
-                        &variant,
+                        variant,
                         "Unnamed variant must contain exactly one field",
                     ));
                 }
             }
             _ => {
                 errors.push(syn::Error::new_spanned(
-                    &variant,
+                    variant,
                     "This proc macro only supports tuple (unnamed) variants",
                 ));
             }
@@ -335,7 +335,7 @@ mod tests {
             _ => unreachable!(),
         };
 
-        let variants = extract_variants(&data_enum);
+        let variants = extract_variants(data_enum);
 
         assert_eq!(variants.0.variant_names.len(), 2);
         assert_eq!("Variant1", variants.0.variant_names[0].to_string());
@@ -371,7 +371,7 @@ mod tests {
             _ => unreachable!(),
         };
 
-        let variants = extract_variants(&data_enum);
+        let variants = extract_variants(data_enum);
 
         builder.add_iter(&variants.0, |name, _type, _| {
             quote! {
