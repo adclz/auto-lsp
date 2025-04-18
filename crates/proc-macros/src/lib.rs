@@ -13,6 +13,7 @@ use quote::{format_ident, ToTokens};
 use r#enum::*;
 use r#struct::*;
 use struct_builder::StructBuilder;
+use syn::spanned::Spanned;
 use syn::{parse_macro_input, DeriveInput};
 use variant_builder::extract_variants;
 
@@ -93,7 +94,7 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     if !derive_input.data.is_struct() {
-        return syn::Error::new_spanned(input, "Expected a struct")
+        return syn::Error::new(input.span(), "Expected a struct")
             .to_compile_error()
             .into();
     }
@@ -101,21 +102,32 @@ pub fn seq(args: TokenStream, input: TokenStream) -> TokenStream {
     let input_name = &input.ident;
     let input_builder_name = format_ident!("{}Builder", input_name);
 
-    let fields = extract_fields(&derive_input.data);
+    let mut fields_error = None;
+    let fields = match extract_fields(&derive_input.data) {
+        (fields, Some(err)) => {
+            fields_error = Some(err);
+            fields
+        }
+        (fields, _) => fields,
+    };
+
     let query_name = &attributes.query;
 
     let input_attr = input.attrs;
-    TokenStream::from(
-        StructBuilder::new(
-            &Paths::default(),
-            &attributes,
-            &input_attr,
-            input_name,
-            &input_builder_name,
-            query_name,
-            &fields,
-        )
-        .to_token_stream(),
+    token_stream_with_error(
+        TokenStream::from(
+            StructBuilder::new(
+                &Paths::default(),
+                &attributes,
+                &input_attr,
+                input_name,
+                &input_builder_name,
+                query_name,
+                &fields,
+            )
+            .to_token_stream(),
+        ),
+        fields_error,
     )
 }
 
@@ -149,4 +161,11 @@ pub fn choice(_args: TokenStream, input: TokenStream) -> TokenStream {
     EnumBuilder::new(&Paths::default(), input_name, &input_builder_name, &fields)
         .to_tokens(&mut tokens);
     tokens.into()
+}
+
+fn token_stream_with_error(mut tokens: TokenStream, error: Option<syn::Error>) -> TokenStream {
+    if let Some(err) = error {
+        tokens.extend(TokenStream::from(err.into_compile_error()));
+    }
+    tokens
 }

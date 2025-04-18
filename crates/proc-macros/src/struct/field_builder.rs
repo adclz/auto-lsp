@@ -16,10 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::{
-    utilities::{get_raw_type_name, is_option, is_vec},
-    StructHelpers,
-};
+use crate::StructHelpers;
 use darling::{ast, util};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
@@ -30,6 +27,8 @@ pub struct FieldInfo {
     pub ident: Ident,
     pub attr: Vec<Attribute>,
 }
+
+use crate::utilities::filter2::*;
 
 pub trait FieldInfoExtract {
     fn get_field_names(&self) -> Vec<&Ident>;
@@ -131,7 +130,9 @@ impl Fields {
 /// Extracts field information from a syn::Data struct definition.
 ///
 /// See the `Fields` struct for more information.
-pub fn extract_fields(data: &ast::Data<util::Ignored, StructHelpers>) -> Fields {
+pub fn extract_fields(
+    data: &ast::Data<util::Ignored, StructHelpers>,
+) -> (Fields, Option<syn::Error>) {
     let mut ret_fields = Fields {
         field_names: vec![],
         field_vec_names: vec![],
@@ -146,48 +147,70 @@ pub fn extract_fields(data: &ast::Data<util::Ignored, StructHelpers>) -> Fields 
         field_option_builder_names: vec![],
     };
 
+    let mut errors: Vec<syn::Error> = vec![];
+
     data.as_ref()
         .take_struct()
         .unwrap()
         .fields
         .iter()
         .for_each(|field| {
-            if is_vec(&field.ty) {
-                ret_fields.field_vec_names.push(FieldInfo {
-                    ident: field.ident.as_ref().unwrap().clone(),
-                    attr: vec![],
-                });
-                ret_fields
-                    .field_vec_types_names
-                    .push(format_ident!("{}", get_raw_type_name(&field.ty)));
-                ret_fields
-                    .field_vec_builder_names
-                    .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
+            let result = if is_vec(&field.ty) {
+                get_vec_type_name(&field.ty).map(|name| {
+                    ret_fields.field_vec_names.push(FieldInfo {
+                        ident: field.ident.as_ref().unwrap().clone(),
+                        attr: vec![],
+                    });
+                    ret_fields
+                        .field_vec_types_names
+                        .push(format_ident!("{}", name));
+                    ret_fields
+                        .field_vec_builder_names
+                        .push(format_ident!("{}Builder", name));
+                })
             } else if is_option(&field.ty) {
-                ret_fields.field_option_names.push(FieldInfo {
-                    ident: field.ident.as_ref().unwrap().clone(),
-                    attr: vec![],
-                });
-                ret_fields
-                    .field_option_types_names
-                    .push(format_ident!("{}", get_raw_type_name(&field.ty)));
-                ret_fields
-                    .field_option_builder_names
-                    .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
+                get_option_type_name(&field.ty).map(|name| {
+                    ret_fields.field_option_names.push(FieldInfo {
+                        ident: field.ident.as_ref().unwrap().clone(),
+                        attr: vec![],
+                    });
+                    ret_fields
+                        .field_option_types_names
+                        .push(format_ident!("{}", name));
+                    ret_fields
+                        .field_option_builder_names
+                        .push(format_ident!("{}Builder", name));
+                })
             } else {
-                ret_fields.field_names.push(FieldInfo {
-                    ident: field.ident.as_ref().unwrap().clone(),
-                    attr: vec![],
-                });
-                ret_fields
-                    .field_types_names
-                    .push(format_ident!("{}", get_raw_type_name(&field.ty)));
-                ret_fields
-                    .field_builder_names
-                    .push(format_ident!("{}Builder", get_raw_type_name(&field.ty)));
+                get_type_name(&field.ty).map(|name| {
+                    ret_fields.field_names.push(FieldInfo {
+                        ident: field.ident.as_ref().unwrap().clone(),
+                        attr: vec![],
+                    });
+                    ret_fields.field_types_names.push(format_ident!("{}", name));
+                    ret_fields
+                        .field_builder_names
+                        .push(format_ident!("{}Builder", name));
+                })
+            };
+
+            if let Err(err) = result {
+                errors.push(err);
             }
         });
-    ret_fields
+
+    let combined_error = if errors.is_empty() {
+        None
+    } else {
+        let mut iter = errors.into_iter();
+        let mut combined = iter.next().unwrap();
+        for err in iter {
+            combined.combine(err);
+        }
+        Some(combined)
+    };
+
+    (ret_fields, combined_error)
 }
 
 /// Builder for struct fields.
@@ -447,7 +470,7 @@ mod tests {
         let input: DeriveInput = syn::parse2(data).unwrap();
         let derive_input = StructInput::from_derive_input(&input).unwrap();
 
-        let fields = extract_fields(&derive_input.data);
+        let fields = extract_fields(&derive_input.data).0;
         assert_eq!(fields.field_names.len(), 1);
         assert_eq!(fields.field_vec_names.len(), 1);
         assert_eq!(fields.field_option_names.len(), 1);
@@ -478,7 +501,7 @@ mod tests {
 
         // Transform fields into a Rc<RefCell<**field**>> for testing
         let mut builder = FieldBuilder::default();
-        builder.add_iter(&fields, |_, _, name, _type, _| {
+        builder.add_iter(&fields.0, |_, _, name, _type, _| {
             quote! {
                 #name: Rc<RefCell<#_type>>
             }
@@ -515,7 +538,7 @@ mod tests {
         let fields = extract_fields(&derive_input.data);
 
         let mut builder = FieldBuilder::default();
-        builder.add_iter(&fields, |_, _, name, _type, _| {
+        builder.add_iter(&fields.0, |_, _, name, _type, _| {
             quote! {
                 #name.do_stuff();
             }
@@ -558,7 +581,7 @@ mod tests {
         let fields = extract_fields(&derive_input.data);
 
         let mut builder = FieldBuilder::default();
-        builder.add_iter(&fields, |_, _, name, _type, _| {
+        builder.add_iter(&fields.0, |_, _, name, _type, _| {
             quote! {
                 #name: Rc<RefCell<#_type>>
             }
