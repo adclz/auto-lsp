@@ -16,12 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use lsp_types::{Diagnostic, Position, Range};
+use lsp_types::{Position, Range};
 use salsa::Accumulator;
 use tree_sitter::Node;
 
-use crate::salsa::{db::BaseDatabase, tracked::DiagnosticAccumulator};
-
+use crate::{
+    errors::{AutoLspErrorAccumulator, TreeSitterError},
+    salsa::db::BaseDatabase,
+};
 
 /// Traverse a tree-sitter syntax tree to collect error nodes.
 ///
@@ -37,12 +39,12 @@ pub fn get_tree_sitter_errors(db: &dyn BaseDatabase, node: &Node, source_code: &
                 get_tree_sitter_errors(db, &child, source_code);
             }
         } else {
-            DiagnosticAccumulator::accumulate(format_error(node, source_code).into(), db);
+            AutoLspErrorAccumulator::accumulate(format_error(node, source_code).into(), db);
         }
     }
 }
 
-fn format_error(node: &Node, source_code: &[u8]) -> Diagnostic {
+fn format_error(node: &Node, source_code: &[u8]) -> TreeSitterError {
     let start_position = node.start_position();
     let end_position = node.end_position();
     let range = Range {
@@ -71,9 +73,8 @@ fn format_error(node: &Node, source_code: &[u8]) -> Diagnostic {
         format!("Unexpected token(s): '{}'", children_text.join(" "))
     };
 
-    Diagnostic {
+    TreeSitterError::Lexer {
         range,
-        message,
-        ..Default::default()
+        error: message,
     }
 }
