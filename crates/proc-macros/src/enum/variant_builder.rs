@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::utilities::get_raw_type_name;
+use crate::utilities::filter2::get_type_name;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{Ident, Path};
@@ -58,33 +58,61 @@ pub struct Variants {
 /// Extracts variant information from a syn::Data enum definition.
 ///
 /// See the `Variants` struct for more information.
-pub fn extract_variants(data: &syn::DataEnum) -> Variants {
+pub fn extract_variants(data: &syn::DataEnum) -> (Variants, Option<syn::Error>) {
     let mut ret_fields = Variants {
         variant_names: vec![],
-
         variant_types_names: vec![],
-
         variant_builder_names: vec![],
     };
+
+    let mut errors: Vec<syn::Error> = vec![];
+
     for variant in &data.variants {
         let variant_name = &variant.ident;
+
         match &variant.fields {
             syn::Fields::Unnamed(fields) => {
-                let first_field = fields.unnamed.first().unwrap();
-                ret_fields.variant_names.push(variant_name.clone());
-                ret_fields
-                    .variant_types_names
-                    .push(format_ident!("{}", get_raw_type_name(&first_field.ty)));
-                ret_fields.variant_builder_names.push(format_ident!(
-                    "{}Builder",
-                    get_raw_type_name(&first_field.ty)
+                if let Some(first_field) = fields.unnamed.first() {
+                    match get_type_name(&first_field.ty) {
+                        Ok(type_name) => {
+                            ret_fields.variant_names.push(variant_name.clone());
+                            ret_fields
+                                .variant_types_names
+                                .push(format_ident!("{}", type_name));
+                            ret_fields
+                                .variant_builder_names
+                                .push(format_ident!("{}Builder", type_name));
+                        }
+                        Err(err) => errors.push(err),
+                    }
+                } else {
+                    errors.push(syn::Error::new_spanned(
+                        &variant,
+                        "Unnamed variant must contain exactly one field",
+                    ));
+                }
+            }
+            _ => {
+                errors.push(syn::Error::new_spanned(
+                    &variant,
+                    "This proc macro only supports tuple (unnamed) variants",
                 ));
             }
-            _ => panic!("This proc macro only works with enums"),
         }
     }
 
-    ret_fields
+    let combined_error = if errors.is_empty() {
+        None
+    } else {
+        let mut iter = errors.into_iter();
+        let mut combined = iter.next().unwrap();
+        for err in iter {
+            combined.combine(err);
+        }
+        Some(combined)
+    };
+
+    (ret_fields, combined_error)
 }
 
 /// Builder for enum variants
@@ -304,19 +332,19 @@ mod tests {
         let data = &input.data;
         let variants = extract_variants(data);
 
-        assert_eq!(variants.variant_names.len(), 2);
-        assert_eq!("Variant1", variants.variant_names[0].to_string());
-        assert_eq!("Variant2", variants.variant_names[1].to_string());
+        assert_eq!(variants.0.variant_names.len(), 2);
+        assert_eq!("Variant1", variants.0.variant_names[0].to_string());
+        assert_eq!("Variant2", variants.0.variant_names[1].to_string());
 
-        assert_eq!(variants.variant_types_names.len(), 2);
-        assert_eq!("u8", variants.variant_types_names[0].to_string());
-        assert_eq!("String", variants.variant_types_names[1].to_string());
+        assert_eq!(variants.0.variant_types_names.len(), 2);
+        assert_eq!("u8", variants.0.variant_types_names[0].to_string());
+        assert_eq!("String", variants.0.variant_types_names[1].to_string());
 
-        assert_eq!(variants.variant_builder_names.len(), 2);
-        assert_eq!("u8Builder", variants.variant_builder_names[0].to_string());
+        assert_eq!(variants.0.variant_builder_names.len(), 2);
+        assert_eq!("u8Builder", variants.0.variant_builder_names[0].to_string());
         assert_eq!(
             "StringBuilder",
-            variants.variant_builder_names[1].to_string()
+            variants.0.variant_builder_names[1].to_string()
         );
     }
 
@@ -335,7 +363,7 @@ mod tests {
         let data = &input.data;
         let variants = extract_variants(data);
 
-        builder.add_iter(&variants, |name, _type, _| {
+        builder.add_iter(&variants.0, |name, _type, _| {
             quote! {
                 if let Self::#name = #name(#_type) {
                     true

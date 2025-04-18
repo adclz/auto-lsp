@@ -166,12 +166,22 @@ pub fn choice(_args: TokenStream, input: TokenStream) -> TokenStream {
         }
     };
 
-    let fields = extract_variants(&data_enum);
-    let mut tokens = proc_macro2::TokenStream::new();
+    let mut variants_error = None;
+    let fields = match extract_variants(&data_enum) {
+        (fields, Some(err)) => {
+            variants_error = Some(err);
+            fields
+        }
+        (fields, _) => fields,
+    };
 
-    EnumBuilder::new(&Paths::default(), input_name, &input_builder_name, &fields)
-        .to_tokens(&mut tokens);
-    tokens.into()
+    token_stream_with_error(
+        TokenStream::from(
+            EnumBuilder::new(&Paths::default(), input_name, &input_builder_name, &fields)
+                .to_token_stream(),
+        ),
+        variants_error,
+    )
 }
 
 fn token_stream_with_error(mut tokens: TokenStream, error: Option<syn::Error>) -> TokenStream {
