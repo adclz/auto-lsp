@@ -1,49 +1,156 @@
-use std::{str::Utf8Error, sync::Arc};
+use std::str::Utf8Error;
 
-use lsp_types::Url;
+use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
 use thiserror::Error;
+
+use crate::document::Document;
 
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum AutoLspError {
     #[error("{error:?}")]
     TreeSitterError {
-        url: Arc<Url>,
         range: lsp_types::Range,
         error: TreeSitterError,
     },
     #[error("{error:?}")]
-    DocumentError {
-        url: Arc<Url>,
-        range: lsp_types::Range,
-        error: DocumentError,
-    },
-    #[error("{error:?}")]
     AstError {
-        url: Arc<Url>,
         range: lsp_types::Range,
-        error: String,
+        error: AstError,
     },
 }
 
-impl From<AutoLspError> for lsp_types::Diagnostic {
-    fn from(error: AutoLspError) -> Self {
+impl From<&AutoLspError> for lsp_types::Diagnostic {
+    fn from(error: &AutoLspError) -> Self {
+        let message = error.to_string();
         let range = match error {
             AutoLspError::TreeSitterError { range, .. } => range.clone(),
-            AutoLspError::DocumentError { range, .. } => range.clone(),
             AutoLspError::AstError { range, .. } => range.clone(),
         };
         lsp_types::Diagnostic {
             range,
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),
-            message: error.to_string(),
+            message,
             code: Some(lsp_types::NumberOrString::String("AUTO_LSP".into())),
             ..Default::default()
         }
     }
 }
 
+impl AutoLspError {
+    pub fn to_label(
+        &self,
+        source: &Source<&str>,
+        colors: &mut ColorGenerator,
+        report: &mut ReportBuilder<'_, std::ops::Range<usize>>,
+    ) {
+        let range = match self {
+            AutoLspError::TreeSitterError { range, .. } => range,
+            AutoLspError::AstError { range, .. } => range,
+        };
+        let start_line = source.line(range.start.line as usize).unwrap().offset();
+        let end_line = source.line(range.end.line as usize).unwrap().offset();
+        let start = start_line + range.start.character as usize;
+        let end = end_line + range.end.character as usize;
+        let curr_color = colors.next();
+
+        report.add_label(
+            Label::new(start..end)
+                .with_message(format!("{}", self.to_string().fg(curr_color)))
+                .with_color(curr_color),
+        );
+    }
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum AstError {
+    #[error("No root node found with {query:?}")]
+    NoRootNode {
+        range: std::ops::Range<usize>,
+        query: &'static [&'static str],
+    },
+    #[error("Failed to create root node with {query:?}")]
+    InvalidRootNode {
+        range: std::ops::Range<usize>,
+        query: &'static str,
+    },
+    #[error("Invalid {field_name:?} for {parent_name:?}, received query: {query:?}")]
+    InvalidSymbol {
+        range: std::ops::Range<usize>,
+        field_name: String,
+        parent_name: String,
+        query: &'static str,
+    },
+    #[error("Unknown symbol {symbol:?} in {parent_name:?}")]
+    UnknownSymbol {
+        range: std::ops::Range<usize>,
+        symbol: &'static str,
+        parent_name: &'static str,
+    },
+    #[error("Missing symbol {symbol:?} in {parent_name:?}")]
+    MissingSymbol {
+        range: std::ops::Range<usize>,
+        symbol: &'static str,
+        parent_name: &'static str,
+    },
+}
+
+impl From<(&Document, AstError)> for AutoLspError {
+    fn from((document, error): (&Document, AstError)) -> Self {
+        let range = match &error {
+            AstError::NoRootNode { range, .. } => range,
+            AstError::InvalidRootNode { range, .. } => range,
+            AstError::UnknownSymbol { range, .. } => range,
+            AstError::InvalidSymbol { range, .. } => range,
+            AstError::MissingSymbol { range, .. } => range,
+        };
+        let range = match document.range_at(range.clone()) {
+            Ok(range) => range,
+            Err(_) => lsp_types::Range::default(),
+        };
+        Self::AstError { range, error }
+    }
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum TreeSitterError {
+    #[error("Tree sitter failed to parse tree")]
+    TreeSitterParser,
+    #[error("{error:?}")]
+    Lexer {
+        range: lsp_types::Range,
+        error: String,
+    },
+}
+
+impl From<TreeSitterError> for AutoLspError {
+    fn from(error: TreeSitterError) -> Self {
+        let range = match &error {
+            TreeSitterError::TreeSitterParser => lsp_types::Range::default(),
+            TreeSitterError::Lexer { range, .. } => range.clone(),
+        };
+        Self::TreeSitterError { range, error }
+    }
+}
+
 #[salsa::accumulator]
 pub struct AutoLspErrorAccumulator(pub AutoLspError);
+
+impl AutoLspErrorAccumulator {
+    pub fn to_label(
+        &self,
+        source: &Source<&str>,
+        colors: &mut ColorGenerator,
+        report: &mut ReportBuilder<'_, std::ops::Range<usize>>,
+    ) {
+        self.0.to_label(source, colors, report);
+    }
+}
+
+impl From<&AutoLspErrorAccumulator> for lsp_types::Diagnostic {
+    fn from(error: &AutoLspErrorAccumulator) -> Self {
+        Self::from(&error.0)
+    }
+}
 
 impl From<&AutoLspError> for AutoLspErrorAccumulator {
     fn from(diagnostic: &AutoLspError) -> Self {
@@ -63,24 +170,15 @@ impl From<&AutoLspErrorAccumulator> for AutoLspError {
     }
 }
 
-#[derive(Error, Clone, Debug, PartialEq, Eq)]
-pub enum TreeSitterError {
-    #[error("Tree sitter failed to parse tree")]
-    TreeSitterParser,
-    #[error("{error:?}")]
-    Lexer {
-        range: lsp_types::Range,
-        error: String,
-    },
+impl From<TreeSitterError> for AutoLspErrorAccumulator {
+    fn from(error: TreeSitterError) -> Self {
+        Self(error.into())
+    }
 }
 
-impl From<(Arc<Url>, TreeSitterError)> for AutoLspError {
-    fn from((url, error): (Arc<Url>, TreeSitterError)) -> Self {
-        let range = match &error {
-            TreeSitterError::TreeSitterParser => lsp_types::Range::default(),
-            TreeSitterError::Lexer { range, .. } => range.clone(),
-        };
-        Self::TreeSitterError { url, range, error }
+impl From<(&Document, AstError)> for AutoLspErrorAccumulator {
+    fn from((document, error): (&Document, AstError)) -> Self {
+        Self(AutoLspError::from((document, error)))
     }
 }
 
@@ -103,10 +201,4 @@ pub enum DocumentError {
         range: std::ops::Range<usize>,
         utf8_error: Utf8Error,
     },
-}
-
-impl From<(Arc<Url>, lsp_types::Range, DocumentError)> for AutoLspError {
-    fn from((url, range, error): (Arc<Url>, lsp_types::Range, DocumentError)) -> Self {
-        Self::DocumentError { url, range, error }
-    }
 }
