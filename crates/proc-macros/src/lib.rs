@@ -155,7 +155,18 @@ pub fn choice(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     let input_name = &input.ident;
     let input_builder_name = format_ident!("{}Builder", input_name);
-    let fields = extract_variants(&input.data);
+
+    // Check if the input is an enum
+    let data_enum = match &input.data {
+        syn::Data::Enum(data_enum) => data_enum,
+        _ => {
+            return syn::Error::new(input.span(), "Expected an enum")
+                .to_compile_error()
+                .into();
+        }
+    };
+
+    let fields = extract_variants(&data_enum);
     let mut tokens = proc_macro2::TokenStream::new();
 
     EnumBuilder::new(&Paths::default(), input_name, &input_builder_name, &fields)

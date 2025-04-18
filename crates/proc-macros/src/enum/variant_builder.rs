@@ -58,7 +58,7 @@ pub struct Variants {
 /// Extracts variant information from a syn::Data enum definition.
 ///
 /// See the `Variants` struct for more information.
-pub fn extract_variants(data: &syn::Data) -> Variants {
+pub fn extract_variants(data: &syn::DataEnum) -> Variants {
     let mut ret_fields = Variants {
         variant_names: vec![],
 
@@ -66,27 +66,22 @@ pub fn extract_variants(data: &syn::Data) -> Variants {
 
         variant_builder_names: vec![],
     };
-    match data {
-        syn::Data::Enum(ref enum_data) => {
-            for variant in &enum_data.variants {
-                let variant_name = &variant.ident;
-                match &variant.fields {
-                    syn::Fields::Unnamed(fields) => {
-                        let first_field = fields.unnamed.first().unwrap();
-                        ret_fields.variant_names.push(variant_name.clone());
-                        ret_fields
-                            .variant_types_names
-                            .push(format_ident!("{}", get_raw_type_name(&first_field.ty)));
-                        ret_fields.variant_builder_names.push(format_ident!(
-                            "{}Builder",
-                            get_raw_type_name(&first_field.ty)
-                        ));
-                    }
-                    _ => panic!("This proc macro only works with enums"),
-                }
+    for variant in &data.variants {
+        let variant_name = &variant.ident;
+        match &variant.fields {
+            syn::Fields::Unnamed(fields) => {
+                let first_field = fields.unnamed.first().unwrap();
+                ret_fields.variant_names.push(variant_name.clone());
+                ret_fields
+                    .variant_types_names
+                    .push(format_ident!("{}", get_raw_type_name(&first_field.ty)));
+                ret_fields.variant_builder_names.push(format_ident!(
+                    "{}Builder",
+                    get_raw_type_name(&first_field.ty)
+                ));
             }
+            _ => panic!("This proc macro only works with enums"),
         }
-        _ => panic!("This proc macro only works with enums"),
     }
 
     ret_fields
