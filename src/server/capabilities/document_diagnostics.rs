@@ -16,9 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::salsa::{
-    db::BaseDatabase,
-    tracked::{get_ast, DiagnosticAccumulator},
+use auto_lsp_core::{
+    errors::AutoLspErrorAccumulator,
+    salsa::{db::BaseDatabase, tracked::get_ast},
 };
 use lsp_types::{
     DocumentDiagnosticParams, DocumentDiagnosticReport, DocumentDiagnosticReportResult,
@@ -40,7 +40,7 @@ pub fn get_diagnostics<Db: BaseDatabase>(
             related_documents: None,
             full_document_diagnostic_report: FullDocumentDiagnosticReport {
                 result_id: None,
-                items: get_ast::accumulated::<DiagnosticAccumulator>(db, file)
+                items: get_ast::accumulated::<AutoLspErrorAccumulator>(db, file)
                     .into_iter()
                     .map(|d| d.into())
                     .collect(),

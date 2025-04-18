@@ -17,10 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use std::marker::PhantomData;
-use std::sync::Arc;
 
-use lsp_types::Diagnostic;
-use lsp_types::Url;
 use salsa::Accumulator;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::QueryCapture;
@@ -28,12 +25,14 @@ use tree_sitter::QueryCapture;
 use super::buildable::*;
 use super::downcast::*;
 use super::symbol::*;
-use super::utils::{intersecting_ranges, tree_sitter_range_to_lsp_range};
+use super::utils::intersecting_ranges;
+use crate::core_ast::core::AstSymbol;
 use crate::document::Document;
+use crate::errors::AstError;
+use crate::errors::AutoLspError;
+use crate::errors::AutoLspErrorAccumulator;
 use crate::parsers::Parsers;
 use crate::salsa::db::BaseDatabase;
-use crate::salsa::tracked::DiagnosticAccumulator;
-use crate::{builder_error, builder_warning, core_ast::core::AstSymbol};
 
 /// Stack builder for constructing Abstract Syntax Trees (ASTs).
 ///
@@ -47,7 +46,6 @@ where
     db: &'a dyn BaseDatabase,
     /// Parsers used for building the AST
     parsers: &'static Parsers,
-    url: &'a Arc<Url>,
     document: &'a Document,
     /// Symbols created while building the AST
     roots: Vec<PendingSymbol>,
@@ -61,15 +59,13 @@ where
     /// Creates a new `StackBuilder` instance.
     pub fn new(
         db: &'a dyn BaseDatabase,
-        parsers: &'static Parsers,
-        url: &'a Arc<Url>,
         document: &'a Document,
+        parsers: &'static Parsers,
     ) -> Self {
         Self {
             _meta: PhantomData,
             db,
             parsers,
-            url,
             document,
             roots: vec![],
             stack: vec![],
@@ -80,22 +76,29 @@ where
     ///
     /// This method builds the AST for the provided range (if any) and attempts to derive
     /// a symbol from the root node.
-    pub fn create_symbol<Y>(&mut self) -> Result<Y, Diagnostic>
+    pub fn create_symbol<Y>(&mut self) -> Result<Y, AutoLspError>
     where
-        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = lsp_types::Diagnostic>,
+        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = AstError>,
     {
-        self.build();
-        let result = self.get_root_node()?;
+        let result = self.build()?.ok_or::<AutoLspError>(
+            (
+                self.document,
+                AstError::NoRootNode {
+                    range: std::ops::Range {
+                        start: 0,
+                        end: self.document.texter.text.len(),
+                    },
+                    query: T::QUERY_NAMES,
+                },
+            )
+                .into(),
+        )?;
         let result = result.0.borrow();
         let result = result
             .downcast_ref::<T>()
-            .ok_or(builder_error!(
-                result
-                    .get_lsp_range(self.document)
-                    .expect("Failed to convert LSP range when building root symbol"),
-                format!("Internal error: Could not cast {:?}", T::QUERY_NAMES)
-            ))?
-            .try_into_builder(self.parsers, self.url, self.document)?;
+            .unwrap() //Normally, this should never fail since the root node is created with the same type.
+            .try_into_builder(self.parsers, self.document)
+            .map_err(|err| AutoLspError::from((self.document, err)))?;
         #[cfg(feature = "log")]
         log::debug!("\n{}", result);
         Ok(result)
@@ -105,7 +108,7 @@ where
     ///
     /// If a range is specified, only the portion of the document within that range
     /// is processed. Captures are iterated in the order they appear in the tree.
-    fn build(&mut self) -> &mut Self {
+    fn build(&mut self) -> Result<Option<PendingSymbol>, AutoLspError> {
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
@@ -118,7 +121,6 @@ where
         // Captures are sorted by their location in the tree, not their pattern.
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
-            let capture_index = capture.index as usize;
 
             // Current parent
             let mut parent = self.stack.pop();
@@ -129,10 +131,12 @@ where
                     None => {
                         // There can only be one root node.
                         if self.roots.is_empty() {
-                            self.create_root_node(&capture, capture_index);
+                            if let Err(e) = self.create_root_node(&capture) {
+                                return Err(e);
+                            };
                             break;
                         } else {
-                            return self;
+                            return Ok(self.roots.pop());
                         }
                     }
                     // If there's a parent, checks if the parent's range intersects with the current capture.
@@ -147,13 +151,13 @@ where
                 parent = self.stack.pop();
             }
         }
-        self
+        Ok(self.roots.pop())
     }
 
     /// Creates the root node of the AST.
     ///
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
-    fn create_root_node(&mut self, capture: &QueryCapture, capture_index: usize) {
+    fn create_root_node(&mut self, capture: &QueryCapture) -> Result<(), AutoLspError> {
         let mut node = T::new(&self.parsers.core, capture);
 
         match node.take() {
@@ -161,18 +165,19 @@ where
                 let node = PendingSymbol::new(builder);
                 self.roots.push(node.clone());
                 self.stack.push(node);
+                Ok(())
             }
-            None => DiagnosticAccumulator::accumulate(
-                builder_warning!(
-                    tree_sitter_range_to_lsp_range(&capture.node.range()),
-                    format!(
-                        "Syntax error: Unexpected {:?}",
-                        self.parsers.core.capture_names()[capture_index],
-                    )
-                )
-                .into(),
-                self.db,
-            ),
+            None => Err(((
+                self.document,
+                AstError::InvalidRootNode {
+                    range: std::ops::Range {
+                        start: capture.node.start_byte(),
+                        end: capture.node.end_byte(),
+                    },
+                    query: self.parsers.core.capture_names()[capture.index as usize],
+                },
+            ))
+                .into()),
         }
     }
 
@@ -186,20 +191,24 @@ where
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.
-                DiagnosticAccumulator::accumulate(e.into(), self.db);
+                AutoLspErrorAccumulator::accumulate((self.document, e).into(), self.db);
             }
             Ok(None) => {
                 // Parent did not accept the child node.
-                DiagnosticAccumulator::accumulate(
-                    builder_warning!(
-                        tree_sitter_range_to_lsp_range(&capture.node.range()),
-                        format!(
-                            "Syntax error: Unexpected {:?} in {:?}",
-                            self.parsers.core.capture_names()[capture.index as usize],
-                            self.parsers.core.capture_names()[parent.0.borrow().get_query_index()],
-                        )
+                AutoLspErrorAccumulator::accumulate(
+                    (
+                        self.document,
+                        AstError::UnknownSymbol {
+                            range: std::ops::Range {
+                                start: capture.node.start_byte(),
+                                end: capture.node.end_byte(),
+                            },
+                            symbol: self.parsers.core.capture_names()[capture.index as usize],
+                            parent_name: self.parsers.core.capture_names()
+                                [parent.0.borrow().get_query_index()],
+                        },
                     )
-                    .into(),
+                        .into(),
                     self.db,
                 );
             }
@@ -208,26 +217,5 @@ where
                 self.stack.push(node.clone());
             }
         };
-    }
-
-    /// Attempt to retrieve root node, initially created with [`Self::create_root_node`].
-    ///
-    /// If no root node exists, an error is returned indicating the expected query names.
-    fn get_root_node(&mut self) -> Result<PendingSymbol, Diagnostic> {
-        // Root node is the last node in the stack.
-        match self.roots.pop() {
-            Some(node) => Ok(node),
-            None => {
-                let expected = T::QUERY_NAMES
-                    .iter()
-                    .map(|name| name.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                Err(builder_error!(
-                    lsp_types::Range::default(),
-                    format!("Expected one of: {}", expected)
-                ))
-            }
-        }
     }
 }
