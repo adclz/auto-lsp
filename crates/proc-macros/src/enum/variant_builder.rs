@@ -320,7 +320,7 @@ mod tests {
     use syn::{parse_quote, DeriveInput};
 
     #[test]
-    fn test_extract_variants() {
+    fn variants() {
         let data = quote! {
             enum MyEnum {
                 Variant1(u8),
@@ -354,7 +354,7 @@ mod tests {
     }
 
     #[test]
-    fn test_stage_trait() {
+    fn stage_trait() {
         let data = quote! {
             enum MyEnum {
                 Variant1(u8),

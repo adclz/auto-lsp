@@ -485,7 +485,7 @@ mod tests {
     }
 
     #[test]
-    fn test_stage_fields() {
+    fn stage_fields() {
         let data = quote! {
             struct MyStruct {
                 field1: u8,
@@ -523,7 +523,7 @@ mod tests {
     }
 
     #[test]
-    fn test_stage_trait() {
+    fn stage_trait() {
         let data = quote! {
             struct MyStruct {
                 field1: u8,
@@ -561,7 +561,7 @@ mod tests {
     }
 
     #[test]
-    fn test_stage_struct() {
+    fn stage_struct() {
         use super::*;
         use crate::StructInput;
         use darling::FromDeriveInput;

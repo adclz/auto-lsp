@@ -126,14 +126,14 @@ mod tests {
     use syn::{parse_quote, spanned::Spanned};
 
     #[test]
-    fn test_get_vec_type_name_ok() {
+    fn get_vec_type_name_ok() {
         let ty = parse_quote! { Vec<String> };
         let result = get_vec_type_name(&ty);
         assert_eq!(result.unwrap(), "String");
     }
 
     #[test]
-    fn test_get_vec_type_name_nested_generic_error() {
+    fn get_vec_type_name_nested_generic_error() {
         let ty = parse_quote! { Vec<Vec<String>> };
         let result = get_vec_type_name(&ty);
 
@@ -146,14 +146,14 @@ mod tests {
     }
 
     #[test]
-    fn test_get_option_type_name_ok() {
+    fn get_option_type_name_ok() {
         let ty = parse_quote! { Option<u32> };
         let result = get_option_type_name(&ty);
         assert_eq!(result.unwrap(), "u32");
     }
 
     #[test]
-    fn test_get_option_type_name_nested_generic_error() {
+    fn get_option_type_name_nested_generic_error() {
         let ty = parse_quote! { Option<Option<u32>> };
         let result = get_option_type_name(&ty);
 
@@ -166,14 +166,14 @@ mod tests {
     }
 
     #[test]
-    fn test_get_type_name_ok() {
+    fn get_type_name_ok() {
         let ty = parse_quote! { String };
         let result = get_type_name(&ty);
         assert_eq!(result.unwrap(), "String");
     }
 
     #[test]
-    fn test_get_type_name_generic_error() {
+    fn get_type_name_generic_error() {
         let ty = parse_quote! { Result<String, u32> };
         let result = get_type_name(&ty);
 
@@ -183,7 +183,7 @@ mod tests {
     }
 
     #[test]
-    fn test_is_vec_and_option() {
+    fn is_vec_and_option() {
         let vec_ty = parse_quote! { Vec<String> };
         let opt_ty = parse_quote! { Option<u32> };
         let other_ty = parse_quote! { Result<String, u32> };
