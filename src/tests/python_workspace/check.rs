@@ -30,10 +30,13 @@ use auto_lsp_core::{
     document::Document,
     salsa::{
         db::{BaseDatabase, File},
-        tracked::{get_ast, DiagnosticAccumulator},
+        tracked::get_ast,
     },
 };
 use salsa::Accumulator;
+
+#[salsa::accumulator]
+pub struct CheckErrorAccumulator(pub lsp_types::Diagnostic);
 
 #[salsa::tracked]
 pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file: File) {
@@ -68,38 +71,38 @@ impl TypedDefaultParameter {
             "int" => match self.value.read().is_integer() {
                 true => (),
                 false => {
-                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
                 }
             },
             "float" => match self.value.read().is_float() {
                 true => (),
                 false => {
-                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
                 }
             },
             "str" => match self.value.read().is_string() {
                 true => (),
                 false => {
-                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
                 }
             },
             "bool" => match self.value.read().is_true() || self.value.read().is_false() {
                 true => (),
                 false => {
-                    DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
                 }
             },
             _ => {
-                DiagnosticAccumulator::accumulate(self.type_error_message(doc).into(), db);
+                CheckErrorAccumulator::accumulate(self.type_error_message(doc).into(), db);
             }
         }
     }
 }
 
 impl TypedDefaultParameter {
-    fn type_error_message(&self, document: &Document) -> lsp_types::Diagnostic {
+    fn type_error_message(&self, document: &Document) -> CheckErrorAccumulator {
         let source_code = document.texter.text.as_bytes();
-        lsp_types::Diagnostic {
+        CheckErrorAccumulator(lsp_types::Diagnostic {
             range: self.get_lsp_range(document).unwrap(),
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),
             code: None,
@@ -113,7 +116,7 @@ impl TypedDefaultParameter {
             related_information: None,
             tags: None,
             data: None,
-        }
+        })
     }
 }
 

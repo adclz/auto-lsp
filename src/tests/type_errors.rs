@@ -16,11 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::python::check::type_check_default_parameters;
-use auto_lsp_core::salsa::{
-    db::BaseDatabase,
-    tracked::DiagnosticAccumulator,
-};
+use crate::python::check::{type_check_default_parameters, CheckErrorAccumulator};
+use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
@@ -54,14 +51,14 @@ fn foo_has_type_error(foo_bar: impl BaseDatabase, foo_bar_with_type_error: impl 
     let file = foo_bar.get_file(&file0_url).unwrap();
 
     let foo_bar_diagnostics =
-        type_check_default_parameters::accumulated::<DiagnosticAccumulator>(&foo_bar, file);
+        type_check_default_parameters::accumulated::<CheckErrorAccumulator>(&foo_bar, file);
 
     // foo_bar has no type errors
     assert!(foo_bar_diagnostics.is_empty());
 
     let file = foo_bar_with_type_error.get_file(&file0_url).unwrap();
 
-    let foo_bar_diagnostics = type_check_default_parameters::accumulated::<DiagnosticAccumulator>(
+    let foo_bar_diagnostics = type_check_default_parameters::accumulated::<CheckErrorAccumulator>(
         &foo_bar_with_type_error,
         file,
     );
@@ -86,7 +83,7 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: impl BaseDatabase) {
     let file = foo_with_type_error.get_file(&file0_url).unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
-        DiagnosticAccumulator,
+        CheckErrorAccumulator,
     >(&foo_with_type_error, file);
 
     // test to check if a same error is not reported twice between edits of the same error
@@ -115,12 +112,10 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: impl BaseDatabase) {
         text: "xxxx".into(),
     };
 
-    foo_with_type_error
-        .update(&file0_url, &[change])
-        .unwrap();
+    foo_with_type_error.update(&file0_url, &[change]).unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
-        DiagnosticAccumulator,
+        CheckErrorAccumulator,
     >(&foo_with_type_error, file);
 
     // foo_with_type_error should have 1 error
@@ -137,7 +132,7 @@ fn fix_type_error(mut foo_with_type_error: impl BaseDatabase) {
     let file = foo_with_type_error.get_file(&file0_url).unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
-        DiagnosticAccumulator,
+        CheckErrorAccumulator,
     >(&foo_with_type_error, file);
     // Replaces "x" with 1 and therefore fixes the type error
 
@@ -165,12 +160,10 @@ fn fix_type_error(mut foo_with_type_error: impl BaseDatabase) {
         text: "1".into(),
     };
 
-    foo_with_type_error
-        .update(&file0_url, &[change])
-        .unwrap();
+    foo_with_type_error.update(&file0_url, &[change]).unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
-        DiagnosticAccumulator,
+        CheckErrorAccumulator,
     >(&foo_with_type_error, file);
 
     // foo_with_type_error should have no type errors
