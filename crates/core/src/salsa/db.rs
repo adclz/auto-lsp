@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::document::Document;
+use crate::errors::TreeSitterError;
 use crate::parsers::Parsers;
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
@@ -90,7 +91,7 @@ impl BaseDatabase for BaseDb {
             .parser
             .write()
             .parse(texter.text.as_bytes(), None)
-            .ok_or_else(|| anyhow::format_err!("Tree-sitter failed to parse source code"))?;
+            .ok_or_else(|| TreeSitterError::TreeSitterParser)?;
 
         // Initialize the document with the source code and syntax tree.
         let document = Document { texter, tree };

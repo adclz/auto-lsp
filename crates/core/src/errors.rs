@@ -31,6 +31,11 @@ pub enum AutoLspError {
         error: TreeSitterError,
     },
     #[error("{error:?}")]
+    TexterError {
+        range: lsp_types::Range,
+        error: TexterError,
+    },
+    #[error("{error:?}")]
     AstError {
         range: lsp_types::Range,
         error: AstError,
@@ -43,6 +48,7 @@ impl From<&AutoLspError> for lsp_types::Diagnostic {
         let range = match error {
             AutoLspError::TreeSitterError { range, .. } => *range,
             AutoLspError::AstError { range, .. } => *range,
+            AutoLspError::TexterError { range, .. } => *range,
         };
         lsp_types::Diagnostic {
             range,
@@ -64,6 +70,7 @@ impl AutoLspError {
         let range = match self {
             AutoLspError::TreeSitterError { range, .. } => range,
             AutoLspError::AstError { range, .. } => range,
+            AutoLspError::TexterError { range, .. } => range,
         };
         let start_line = source.line(range.start.line as usize).unwrap().offset();
         let end_line = source.line(range.end.line as usize).unwrap().offset();
@@ -147,6 +154,21 @@ impl From<TreeSitterError> for AutoLspError {
     }
 }
 
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum TexterError {
+    #[error("texter failed to handle document")]
+    TexterError(#[from] texter::error::Error),
+}
+
+impl From<TexterError> for AutoLspError {
+    fn from(error: TexterError) -> Self {
+        let range = match &error {
+            TexterError::TexterError(_) => lsp_types::Range::default(),
+        };
+        Self::TexterError { range, error }
+    }
+}
+
 #[salsa::accumulator]
 pub struct AutoLspErrorAccumulator(pub AutoLspError);
 
@@ -187,6 +209,12 @@ impl From<&AutoLspErrorAccumulator> for AutoLspError {
 
 impl From<TreeSitterError> for AutoLspErrorAccumulator {
     fn from(error: TreeSitterError) -> Self {
+        Self(error.into())
+    }
+}
+
+impl From<TexterError> for AutoLspErrorAccumulator {
+    fn from(error: TexterError) -> Self {
         Self(error.into())
     }
 }

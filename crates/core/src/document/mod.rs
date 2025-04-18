@@ -24,7 +24,7 @@ use texter::core::text::Text;
 use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
 
-use crate::errors::DocumentError;
+use crate::errors::{AutoLspError, DocumentError, TexterError, TreeSitterError};
 
 pub(crate) mod texter_impl;
 
@@ -72,17 +72,18 @@ impl Document {
         &mut self,
         parser: &mut tree_sitter::Parser,
         changes: &[lsp_types::TextDocumentContentChangeEvent],
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), AutoLspError> {
         let mut new_tree = WrapTree::from(&mut self.tree);
 
         for change in changes {
             self.texter
-                .update(WrapChange::from(change).change, &mut new_tree)?;
+                .update(WrapChange::from(change).change, &mut new_tree)
+                .map_err(|e| AutoLspError::from(TexterError::from(e)))?;
         }
 
         self.tree = parser
             .parse(self.texter.text.as_bytes(), Some(&self.tree))
-            .ok_or(anyhow::format_err!("Tree sitter failed to edit tree",))?;
+            .ok_or(TreeSitterError::TreeSitterParser)?;
 
         Ok(())
     }
