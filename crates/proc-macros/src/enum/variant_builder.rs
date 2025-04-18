@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::utilities::filter2::get_type_name;
+use crate::filter::{get_type_name, is_option, is_vec};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{Ident, Path};
@@ -329,8 +329,13 @@ mod tests {
         };
 
         let input: DeriveInput = syn::parse2(data).unwrap();
-        let data = &input.data;
-        let variants = extract_variants(data);
+
+        let data_enum = match &input.data {
+            syn::Data::Enum(data_enum) => data_enum,
+            _ => unreachable!(),
+        };
+
+        let variants = extract_variants(&data_enum);
 
         assert_eq!(variants.0.variant_names.len(), 2);
         assert_eq!("Variant1", variants.0.variant_names[0].to_string());
@@ -360,8 +365,13 @@ mod tests {
         let mut builder = VariantBuilder::default();
 
         let input: DeriveInput = syn::parse2(data).unwrap();
-        let data = &input.data;
-        let variants = extract_variants(data);
+
+        let data_enum = match &input.data {
+            syn::Data::Enum(data_enum) => data_enum,
+            _ => unreachable!(),
+        };
+
+        let variants = extract_variants(&data_enum);
 
         builder.add_iter(&variants.0, |name, _type, _| {
             quote! {

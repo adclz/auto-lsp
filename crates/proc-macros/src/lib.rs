@@ -18,10 +18,10 @@ use syn::{parse_macro_input, DeriveInput};
 use variant_builder::extract_variants;
 
 mod r#enum;
+mod filter;
 mod meta;
 mod paths;
 mod r#struct;
-mod utilities;
 
 /// A procedural macro for generating an AST symbol from a struct.
 ///

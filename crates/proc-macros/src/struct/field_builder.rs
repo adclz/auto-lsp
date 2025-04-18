@@ -28,7 +28,7 @@ pub struct FieldInfo {
     pub attr: Vec<Attribute>,
 }
 
-use crate::utilities::filter2::*;
+use crate::filter::*;
 
 pub trait FieldInfoExtract {
     fn get_field_names(&self) -> Vec<&Ident>;
