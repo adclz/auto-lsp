@@ -268,7 +268,7 @@ impl From<(&Url, TexterError)> for RuntimeError {
 pub enum FileSystemError {
     #[cfg(windows)]
     #[error("Invalid host '{host:?}' for file path: {path:?}")]
-    FileUrlHost { host: String, path: PathBuf },
+    FileUrlHost { host: String, path: Url },
     #[error("Failed to convert url {path:?} to file path")]
     FileUrlToFilePath { path: Url },
     #[error("Failed to convert file path {path:?} to url")]
