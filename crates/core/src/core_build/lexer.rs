@@ -21,7 +21,7 @@ use salsa::Accumulator;
 use tree_sitter::Node;
 
 use crate::{
-    errors::{AutoLspErrorAccumulator, LexerError},
+    errors::{LexerError, ParseErrorAccumulator},
     salsa::db::BaseDatabase,
 };
 
@@ -39,7 +39,7 @@ pub fn get_tree_sitter_errors(db: &dyn BaseDatabase, node: &Node, source_code: &
                 get_tree_sitter_errors(db, &child, source_code);
             }
         } else {
-            AutoLspErrorAccumulator::accumulate(format_error(node, source_code).into(), db);
+            ParseErrorAccumulator::accumulate(format_error(node, source_code).into(), db);
         }
     }
 }

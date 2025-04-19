@@ -21,7 +21,7 @@ use salsa::Accumulator;
 use super::db::{BaseDatabase, File};
 use crate::ast::DynSymbol;
 use crate::core_build::lexer::get_tree_sitter_errors;
-use crate::errors::AutoLspErrorAccumulator;
+use crate::errors::ParseErrorAccumulator;
 use std::fmt::Formatter;
 use std::sync::Arc;
 
@@ -42,7 +42,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     match (parsers.ast_parser)(db, parsers, &doc) {
         Ok(ast) => ParsedAst::new(ast),
         Err(e) => {
-            AutoLspErrorAccumulator::accumulate(e.clone().into(), db);
+            ParseErrorAccumulator::accumulate(e.clone().into(), db);
             ParsedAst::default()
         }
     }

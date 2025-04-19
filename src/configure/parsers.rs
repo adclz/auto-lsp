@@ -71,7 +71,7 @@ macro_rules! configure_parsers {
                             document: &$crate::core::document::Document | {
                             use $crate::core::build::InvokeParser;
 
-                            Ok::<$crate::core::ast::DynSymbol, $crate::core::errors::AutoLspError>(
+                            Ok::<$crate::core::ast::DynSymbol, $crate::core::errors::ParseError>(
                                 $crate::core::ast::Symbol::from($root::parse_symbol(db, parsers, document)?).into(),
                             )
                         },

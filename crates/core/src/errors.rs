@@ -25,25 +25,27 @@ use thiserror::Error;
 use crate::document::Document;
 
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
-pub enum AutoLspError {
+pub enum ParseError {
     #[error("{error:?}")]
     LexerError {
         range: lsp_types::Range,
+        #[source]
         error: LexerError,
     },
     #[error("{error:?}")]
     AstError {
         range: lsp_types::Range,
+        #[source]
         error: AstError,
     },
 }
 
-impl From<&AutoLspError> for lsp_types::Diagnostic {
-    fn from(error: &AutoLspError) -> Self {
+impl From<&ParseError> for lsp_types::Diagnostic {
+    fn from(error: &ParseError) -> Self {
         let message = error.to_string();
         let range = match error {
-            AutoLspError::LexerError { range, .. } => *range,
-            AutoLspError::AstError { range, .. } => *range,
+            ParseError::LexerError { range, .. } => *range,
+            ParseError::AstError { range, .. } => *range,
         };
         lsp_types::Diagnostic {
             range,
@@ -55,7 +57,7 @@ impl From<&AutoLspError> for lsp_types::Diagnostic {
     }
 }
 
-impl AutoLspError {
+impl ParseError {
     pub fn to_label(
         &self,
         source: &Source<&str>,
@@ -63,8 +65,8 @@ impl AutoLspError {
         report: &mut ReportBuilder<'_, std::ops::Range<usize>>,
     ) {
         let range = match self {
-            AutoLspError::LexerError { range, .. } => range,
-            AutoLspError::AstError { range, .. } => range,
+            ParseError::LexerError { range, .. } => range,
+            ParseError::AstError { range, .. } => range,
         };
         let start_line = source.line(range.start.line as usize).unwrap().offset();
         let end_line = source.line(range.end.line as usize).unwrap().offset();
@@ -109,7 +111,7 @@ pub enum AstError {
     },
 }
 
-impl From<(&Document, AstError)> for AutoLspError {
+impl From<(&Document, AstError)> for ParseError {
     fn from((document, error): (&Document, AstError)) -> Self {
         let range = match &error {
             AstError::NoRootNode { range, .. } => range,
@@ -136,7 +138,7 @@ pub enum LexerError {
     },
 }
 
-impl From<LexerError> for AutoLspError {
+impl From<LexerError> for ParseError {
     fn from(error: LexerError) -> Self {
         let range = match &error {
             LexerError::Missing { range, .. } => *range,
@@ -147,9 +149,9 @@ impl From<LexerError> for AutoLspError {
 }
 
 #[salsa::accumulator]
-pub struct AutoLspErrorAccumulator(pub AutoLspError);
+pub struct ParseErrorAccumulator(pub ParseError);
 
-impl AutoLspErrorAccumulator {
+impl ParseErrorAccumulator {
     pub fn to_label(
         &self,
         source: &Source<&str>,
@@ -160,39 +162,39 @@ impl AutoLspErrorAccumulator {
     }
 }
 
-impl From<&AutoLspErrorAccumulator> for lsp_types::Diagnostic {
-    fn from(error: &AutoLspErrorAccumulator) -> Self {
+impl From<&ParseErrorAccumulator> for lsp_types::Diagnostic {
+    fn from(error: &ParseErrorAccumulator) -> Self {
         Self::from(&error.0)
     }
 }
 
-impl From<&AutoLspError> for AutoLspErrorAccumulator {
-    fn from(diagnostic: &AutoLspError) -> Self {
+impl From<&ParseError> for ParseErrorAccumulator {
+    fn from(diagnostic: &ParseError) -> Self {
         Self(diagnostic.clone())
     }
 }
 
-impl From<AutoLspError> for AutoLspErrorAccumulator {
-    fn from(diagnostic: AutoLspError) -> Self {
+impl From<ParseError> for ParseErrorAccumulator {
+    fn from(diagnostic: ParseError) -> Self {
         Self(diagnostic)
     }
 }
 
-impl From<&AutoLspErrorAccumulator> for AutoLspError {
-    fn from(diagnostic: &AutoLspErrorAccumulator) -> Self {
+impl From<&ParseErrorAccumulator> for ParseError {
+    fn from(diagnostic: &ParseErrorAccumulator) -> Self {
         diagnostic.0.clone()
     }
 }
 
-impl From<LexerError> for AutoLspErrorAccumulator {
+impl From<LexerError> for ParseErrorAccumulator {
     fn from(error: LexerError) -> Self {
         Self(error.into())
     }
 }
 
-impl From<(&Document, AstError)> for AutoLspErrorAccumulator {
+impl From<(&Document, AstError)> for ParseErrorAccumulator {
     fn from((document, error): (&Document, AstError)) -> Self {
-        Self(AutoLspError::from((document, error)))
+        Self(ParseError::from((document, error)))
     }
 }
 

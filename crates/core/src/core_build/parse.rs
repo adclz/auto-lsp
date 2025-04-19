@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::ast::DynSymbol;
 use crate::document::Document;
 use crate::errors::AstError;
-use crate::errors::AutoLspError;
-use crate::errors::AutoLspErrorAccumulator;
+use crate::errors::ParseError;
+use crate::errors::ParseErrorAccumulator;
 use crate::parsers::Parsers;
 use crate::salsa::db::BaseDatabase;
 use crate::salsa::db::BaseDb;
@@ -51,7 +51,7 @@ pub trait InvokeParser<
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<Y, AutoLspError>;
+    ) -> Result<Y, ParseError>;
 }
 
 impl<T, Y> InvokeParser<T, Y> for Y
@@ -63,7 +63,7 @@ where
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<Y, AutoLspError> {
+    ) -> Result<Y, ParseError> {
         StackBuilder::<T>::new(db, document, parsers).create_symbol()
     }
 }
@@ -73,7 +73,7 @@ where
 /// This type alias is useful for mapping language IDs to specific parsers,
 /// avoiding ambiguity.
 pub type InvokeParserFn =
-    fn(&dyn BaseDatabase, &'static Parsers, &Document) -> Result<DynSymbol, AutoLspError>;
+    fn(&dyn BaseDatabase, &'static Parsers, &Document) -> Result<DynSymbol, ParseError>;
 
 pub type TestParseResult<E = AriadneReport> = Result<(), Box<E>>;
 
@@ -136,8 +136,8 @@ where
 
         let file = db.get_file(&url).unwrap();
         let ast = get_ast(&db, file);
-        let diagnostics: Vec<&AutoLspErrorAccumulator> =
-            get_ast::accumulated::<AutoLspErrorAccumulator>(&db, file);
+        let diagnostics: Vec<&ParseErrorAccumulator> =
+            get_ast::accumulated::<ParseErrorAccumulator>(&db, file);
 
         match diagnostics.is_empty() {
             false => {

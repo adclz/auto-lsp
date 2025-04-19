@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use auto_lsp_core::{
-    errors::AutoLspErrorAccumulator,
+    errors::ParseErrorAccumulator,
     salsa::{db::BaseDatabase, tracked::get_ast},
 };
 use lsp_types::{
@@ -36,7 +36,7 @@ pub fn get_workspace_diagnostics<Db: BaseDatabase>(
         .iter()
         .map(|file| {
             let file = *file;
-            let errors = get_ast::accumulated::<AutoLspErrorAccumulator>(db, file)
+            let errors = get_ast::accumulated::<ParseErrorAccumulator>(db, file)
                 .into_iter()
                 .map(|d| d.into())
                 .collect();

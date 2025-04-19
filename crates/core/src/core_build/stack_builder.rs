@@ -29,8 +29,8 @@ use super::utils::intersecting_ranges;
 use crate::core_ast::core::AstSymbol;
 use crate::document::Document;
 use crate::errors::AstError;
-use crate::errors::AutoLspError;
-use crate::errors::AutoLspErrorAccumulator;
+use crate::errors::ParseError;
+use crate::errors::ParseErrorAccumulator;
 use crate::parsers::Parsers;
 use crate::salsa::db::BaseDatabase;
 
@@ -76,11 +76,11 @@ where
     ///
     /// This method builds the AST for the provided range (if any) and attempts to derive
     /// a symbol from the root node.
-    pub fn create_symbol<Y>(&mut self) -> Result<Y, AutoLspError>
+    pub fn create_symbol<Y>(&mut self) -> Result<Y, ParseError>
     where
         Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = AstError>,
     {
-        let result = self.build()?.ok_or::<AutoLspError>(
+        let result = self.build()?.ok_or::<ParseError>(
             (
                 self.document,
                 AstError::NoRootNode {
@@ -98,7 +98,7 @@ where
             .downcast_ref::<T>()
             .unwrap() //Normally, this should never fail since the root node is created with the same type.
             .try_into_builder(self.parsers, self.document)
-            .map_err(|err| AutoLspError::from((self.document, err)))?;
+            .map_err(|err| ParseError::from((self.document, err)))?;
         #[cfg(feature = "log")]
         log::debug!("\n{}", result);
         Ok(result)
@@ -108,7 +108,7 @@ where
     ///
     /// If a range is specified, only the portion of the document within that range
     /// is processed. Captures are iterated in the order they appear in the tree.
-    fn build(&mut self) -> Result<Option<PendingSymbol>, AutoLspError> {
+    fn build(&mut self) -> Result<Option<PendingSymbol>, ParseError> {
         let mut cursor = tree_sitter::QueryCursor::new();
 
         let mut captures = cursor.captures(
@@ -155,7 +155,7 @@ where
     /// Creates the root node of the AST.
     ///
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
-    fn create_root_node(&mut self, capture: &QueryCapture) -> Result<(), AutoLspError> {
+    fn create_root_node(&mut self, capture: &QueryCapture) -> Result<(), ParseError> {
         let mut node = T::new(&self.parsers.core, capture);
 
         match node.take() {
@@ -189,11 +189,11 @@ where
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.
-                AutoLspErrorAccumulator::accumulate((self.document, e).into(), self.db);
+                ParseErrorAccumulator::accumulate((self.document, e).into(), self.db);
             }
             Ok(None) => {
                 // Parent did not accept the child node.
-                AutoLspErrorAccumulator::accumulate(
+                ParseErrorAccumulator::accumulate(
                     (
                         self.document,
                         AstError::UnknownSymbol {
