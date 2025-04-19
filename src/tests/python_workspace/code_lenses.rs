@@ -43,7 +43,7 @@ impl BuildCodeLenses for Function {
     ) -> anyhow::Result<()> {
         let read = self.name.read();
         acc.push(lsp_types::CodeLens {
-            range: read.get_lsp_range(doc).unwrap(),
+            range: read.get_lsp_range(doc)?,
             command: None,
             data: None,
         });

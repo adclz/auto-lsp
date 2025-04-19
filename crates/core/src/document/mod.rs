@@ -24,6 +24,8 @@ use texter::core::text::Text;
 use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
 
+use crate::errors::{DocumentError, PositionError, TexterError, TreeSitterError};
+
 pub(crate) mod texter_impl;
 
 /// Represents a text document that combines plain text [`texter`] with its parsed syntax tree [`tree_sitter::Tree`].
@@ -70,17 +72,18 @@ impl Document {
         &mut self,
         parser: &mut tree_sitter::Parser,
         changes: &[lsp_types::TextDocumentContentChangeEvent],
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), DocumentError> {
         let mut new_tree = WrapTree::from(&mut self.tree);
 
         for change in changes {
             self.texter
-                .update(WrapChange::from(change).change, &mut new_tree)?;
+                .update(WrapChange::from(change).change, &mut new_tree)
+                .map_err(|e| DocumentError::from(TexterError::from(e)))?;
         }
 
         self.tree = parser
             .parse(self.texter.text.as_bytes(), Some(&self.tree))
-            .ok_or(anyhow::format_err!("Tree sitter failed to edit tree",))?;
+            .ok_or_else(|| DocumentError::from(TreeSitterError::TreeSitterParser))?;
 
         Ok(())
     }
@@ -115,18 +118,17 @@ impl Document {
     }
 
     /// Converts a byte offset in the document to its corresponding position (line and character).
-    pub fn position_at(&self, offset: usize) -> anyhow::Result<lsp_types::Position> {
+    pub fn position_at(&self, offset: usize) -> Result<lsp_types::Position, PositionError> {
         let mut last_br_index = 0;
         let last_line = LAST_LINE.with(|a| a.load(Ordering::SeqCst));
 
         // If the document is a single line, we can avoid the loop
         if self.texter.br_indexes.0.len() == 1 {
             return if offset > self.texter.text.len() {
-                Err(anyhow::format_err!(
-                    "Can not find position of offset {}, line length is {}",
+                Err(PositionError::LineOutOfBound {
                     offset,
-                    self.texter.text.len()
-                ))
+                    length: self.texter.text.len(),
+                })
             } else {
                 Ok(lsp_types::Position {
                     line: 0,
@@ -166,17 +168,24 @@ impl Document {
                 character: offset.saturating_sub(last_br) as u32,
             })
         } else {
-            Err(anyhow::format_err!(
-                "Failed to get position of offset {}",
-                offset
-            ))
+            Err(PositionError::WrongPosition { offset })
         }
     }
 
     /// Converts a byte offset in the document to its corresponding range (start and end positions).
-    pub fn range_at(&self, range: Range<usize>) -> anyhow::Result<lsp_types::Range> {
-        let start = self.position_at(range.start)?;
-        let end = self.position_at(range.end)?;
+    pub fn range_at(&self, range: Range<usize>) -> Result<lsp_types::Range, PositionError> {
+        let start = self
+            .position_at(range.start)
+            .map_err(|err| PositionError::WrongRange {
+                range: range.clone(),
+                position_error: Box::new(err),
+            })?;
+        let end = self
+            .position_at(range.end)
+            .map_err(|err| PositionError::WrongRange {
+                range: range.clone(),
+                position_error: Box::new(err),
+            })?;
         Ok(lsp_types::Range { start, end })
     }
 
@@ -379,8 +388,11 @@ mod test {
 
         // Test out-of-bounds range
         assert_eq!(
-            document.range_at(35..50).unwrap_err().to_string(),
-            "Failed to get position of offset 50"
+            document.range_at(35..50),
+            Err(PositionError::WrongRange {
+                range: 35..50,
+                position_error: Box::new(PositionError::WrongPosition { offset: 50 })
+            })
         );
     }
 
@@ -428,8 +440,14 @@ mod test {
 
         // Out-of-bounds check
         assert_eq!(
-            document.range_at(0..(length + 5)).unwrap_err().to_string(),
-            "Can not find position of offset 42, line length is 37"
+            document.range_at(0..(length + 5)),
+            Err(PositionError::WrongRange {
+                range: 0..(length + 5),
+                position_error: Box::new(PositionError::LineOutOfBound {
+                    offset: 42,
+                    length: 37
+                })
+            })
         );
     }
 

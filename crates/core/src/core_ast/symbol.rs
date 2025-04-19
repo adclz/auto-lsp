@@ -70,6 +70,12 @@ impl Debug for DynSymbol {
     }
 }
 
+impl std::fmt::Display for DynSymbol {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.read().fmt(f)
+    }
+}
+
 /// Generic Thread-safe wrapper around a [Weak] reference to an [AstSymbol] using [Weak] and [parking_lot::RwLock]
 ///
 /// Must be upgraded to a [DynSymbol] before use

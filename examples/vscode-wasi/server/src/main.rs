@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::error::Error;
 
-use auto_lsp::core::salsa::db::{BaseDb, BaseDatabase};
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
@@ -99,11 +99,11 @@ fn register_notifications<Db: BaseDatabase>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .register::<DidOpenTextDocument, _>(|s, p| open_text_document(s, p))
+        .register::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
         .register::<DidChangeTextDocument, _>(|s, p| {
-            s.db.update(&p.text_document.uri, &p.content_changes)
+            Ok(s.db.update(&p.text_document.uri, &p.content_changes)?)
         })
-        .register::<DidChangeWatchedFiles, _>(|s, p| changed_watched_files(s, p))
+        .register::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
         .register::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 lsp_types::NumberOrString::Number(id) => id.into(),

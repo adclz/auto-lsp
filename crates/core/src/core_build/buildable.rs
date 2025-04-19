@@ -16,81 +16,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use anyhow::Context;
 use downcast_rs::{impl_downcast, Downcast};
-use lsp_types::Diagnostic;
 
 use crate::{
     ast::WeakSymbol,
     core_ast::{core::AstSymbol, symbol::Symbol},
     document::Document,
+    errors::AstError,
     parsers::Parsers,
 };
 
-use super::{
-    symbol::{MaybePendingSymbol, PendingSymbol},
-    utils::tree_sitter_range_to_lsp_range,
-};
-
-#[doc(hidden)]
-/// Macro to create a builder error diagnostic
-///
-/// This is used internally by the library to avoid redundancy when creating diagnostics during the build process
-#[macro_export]
-macro_rules! builder_error {
-    ($range: expr, $text: expr) => {
-        lsp_types::Diagnostic::new(
-            $range,
-            Some(lsp_types::DiagnosticSeverity::ERROR),
-            None,
-            None,
-            $text.into(),
-            None,
-            None,
-        )
-    };
-    ($path: ident, $range: expr, $text: expr) => {
-        $path::lsp_types::Diagnostic::new(
-            $range,
-            Some($path::lsp_types::DiagnosticSeverity::ERROR),
-            None,
-            None,
-            $text.into(),
-            None,
-            None,
-        )
-    };
-}
-
-#[doc(hidden)]
-/// Macro to create a builder warning diagnostic
-///
-/// This is used internally by the library to avoid redundancy when creating diagnostics during the build process
-#[macro_export]
-macro_rules! builder_warning {
-    ($range: expr, $text: expr) => {
-        lsp_types::Diagnostic::new(
-            $range,
-            Some(lsp_types::DiagnosticSeverity::WARNING),
-            None,
-            None,
-            $text.into(),
-            None,
-            None,
-        )
-    };
-    ($path: ident, $range: expr, $text: expr) => {
-        $path::lsp_types::Diagnostic::new(
-            $range,
-            Some($path::lsp_types::DiagnosticSeverity::WARNING),
-            None,
-            None,
-            $text.into(),
-            None,
-            None,
-        )
-    };
-}
+use super::symbol::{MaybePendingSymbol, PendingSymbol};
 
 /// Trait implemented by all builders created with the seq macro.
 pub trait Buildable: Downcast {
@@ -108,27 +44,17 @@ pub trait Buildable: Downcast {
     /// # Returns
     /// - `Ok(Some([PendingSymbol]))` if a symbol is successfully added.
     /// - `Ok(None)` if the capture does not match the expected query name.
-    /// - `Err(Diagnostic)` if an error occurs.
+    /// - `Err(AstError)` if an error occurs.
     fn add(
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<Option<PendingSymbol>, Diagnostic>;
+    ) -> Result<Option<PendingSymbol>, AstError>;
 
     fn get_range(&self) -> std::ops::Range<usize>;
 
     fn get_query_index(&self) -> usize;
-
-    fn get_lsp_range(&self, document: &Document) -> anyhow::Result<lsp_types::Range> {
-        document.range_at(self.get_range())
-    }
-
-    fn get_text<'a>(&self, source_code: &'a [u8]) -> anyhow::Result<&'a str> {
-        let range = self.get_range();
-        std::str::from_utf8(&source_code[range.start..range.end])
-            .with_context(|| "Failed to get text")
-    }
 }
 
 impl_downcast!(Buildable);
@@ -182,7 +108,7 @@ pub trait AddSymbol {
         parsers: &'static Parsers,
         parent_name: &str,
         field_name: &str,
-    ) -> Result<Option<PendingSymbol>, Diagnostic>;
+    ) -> Result<Option<PendingSymbol>, AstError>;
 }
 
 impl AddSymbol for MaybePendingSymbol {
@@ -192,7 +118,7 @@ impl AddSymbol for MaybePendingSymbol {
         parsers: &'static Parsers,
         parent_name: &str,
         field_name: &str,
-    ) -> Result<Option<PendingSymbol>, Diagnostic> {
+    ) -> Result<Option<PendingSymbol>, AstError> {
         if self.is_some() {
             return Ok(None);
         }
@@ -208,16 +134,15 @@ impl AddSymbol for MaybePendingSymbol {
                         return Ok(self.as_ref().clone());
                     }
                     None => {
-                        return Err(builder_error!(
-                            tree_sitter_range_to_lsp_range(&capture.node.range()),
-                            format!(
-                                "Invalid {:?} for {:?}, expected: {:?}, received: {:?}",
-                                field_name,
-                                parent_name,
-                                name,
-                                Y::QUERY_NAMES
-                            )
-                        ))
+                        return Err(AstError::InvalidSymbol {
+                            range: std::ops::Range {
+                                start: capture.node.start_byte(),
+                                end: capture.node.end_byte(),
+                            },
+                            field_name: field_name.to_string(),
+                            parent_name: parent_name.to_string(),
+                            query: parsers.core.capture_names()[capture.index as usize],
+                        })
                     }
                 },
             }
@@ -233,7 +158,7 @@ impl AddSymbol for Vec<PendingSymbol> {
         parsers: &'static Parsers,
         parent_name: &str,
         field_name: &str,
-    ) -> Result<Option<PendingSymbol>, Diagnostic> {
+    ) -> Result<Option<PendingSymbol>, AstError> {
         let name = parsers.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
             match Y::new(&parsers.core, capture) {
@@ -243,16 +168,15 @@ impl AddSymbol for Vec<PendingSymbol> {
                     return Ok(Some(node));
                 }
                 None => {
-                    return Err(builder_error!(
-                        tree_sitter_range_to_lsp_range(&capture.node.range()),
-                        format!(
-                            "Invalid {:?} for {:?}, expected: {:?}, received: {:?}",
-                            field_name,
-                            parent_name,
-                            name,
-                            Y::QUERY_NAMES
-                        )
-                    ))
+                    return Err(AstError::InvalidSymbol {
+                        range: std::ops::Range {
+                            start: capture.node.start_byte(),
+                            end: capture.node.end_byte(),
+                        },
+                        field_name: field_name.to_string(),
+                        parent_name: parent_name.to_string(),
+                        query: parsers.core.capture_names()[capture.index as usize],
+                    })
                 }
             }
         }

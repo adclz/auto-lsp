@@ -21,6 +21,7 @@ use salsa::Accumulator;
 use super::db::{BaseDatabase, File};
 use crate::ast::DynSymbol;
 use crate::core_build::lexer::get_tree_sitter_errors;
+use crate::errors::ParseErrorAccumulator;
 use std::fmt::Formatter;
 use std::sync::Arc;
 
@@ -28,8 +29,6 @@ use std::sync::Arc;
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
     let doc = file.document(db).read();
-    let url = file.url(db);
-    let url_shared = Arc::new(url.clone());
 
     if doc.texter.text.is_empty() {
         return ParsedAst::default();
@@ -40,10 +39,10 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 
     get_tree_sitter_errors(db, &node, source_code);
 
-    match (parsers.ast_parser)(db, parsers, &url_shared, &doc) {
+    match (parsers.ast_parser)(db, parsers, &doc) {
         Ok(ast) => ParsedAst::new(ast),
         Err(e) => {
-            DiagnosticAccumulator::accumulate(e.clone().into(), db);
+            ParseErrorAccumulator::accumulate(e.clone().into(), db);
             ParsedAst::default()
         }
     }
@@ -84,26 +83,5 @@ impl ParsedAst {
 impl<'a> From<&'a ParsedAst> for Option<&'a DynSymbol> {
     fn from(parsed_ast: &'a ParsedAst) -> Option<&'a DynSymbol> {
         parsed_ast.inner.as_ref().as_ref()
-    }
-}
-
-#[salsa::accumulator]
-pub struct DiagnosticAccumulator(pub lsp_types::Diagnostic);
-
-impl From<&lsp_types::Diagnostic> for DiagnosticAccumulator {
-    fn from(diagnostic: &lsp_types::Diagnostic) -> Self {
-        Self(diagnostic.clone())
-    }
-}
-
-impl From<lsp_types::Diagnostic> for DiagnosticAccumulator {
-    fn from(diagnostic: lsp_types::Diagnostic) -> Self {
-        Self(diagnostic)
-    }
-}
-
-impl From<&DiagnosticAccumulator> for lsp_types::Diagnostic {
-    fn from(diagnostic: &DiagnosticAccumulator) -> Self {
-        diagnostic.0.clone()
     }
 }

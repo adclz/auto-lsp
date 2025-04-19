@@ -49,8 +49,8 @@ impl BuildDocumentSymbols for Function {
                 .get_text(doc.texter.text.as_bytes())?
                 .to_string(),
             kind: lsp_types::SymbolKind::FUNCTION,
-            range: self.name.read().get_lsp_range(doc).unwrap(),
-            selection_range: self.name.read().get_lsp_range(doc).unwrap(),
+            range: self.name.read().get_lsp_range(doc)?,
+            selection_range: self.name.read().get_lsp_range(doc)?,
             tags: None,
             detail: None,
             deprecated: None,

@@ -16,9 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::salsa::{
-    db::BaseDatabase,
-    tracked::{get_ast, DiagnosticAccumulator},
+use auto_lsp_core::{
+    errors::ParseErrorAccumulator,
+    salsa::{db::BaseDatabase, tracked::get_ast},
 };
 use lsp_types::{
     FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport,
@@ -36,7 +36,7 @@ pub fn get_workspace_diagnostics<Db: BaseDatabase>(
         .iter()
         .map(|file| {
             let file = *file;
-            let errors = get_ast::accumulated::<DiagnosticAccumulator>(db, file)
+            let errors = get_ast::accumulated::<ParseErrorAccumulator>(db, file)
                 .into_iter()
                 .map(|d| d.into())
                 .collect();

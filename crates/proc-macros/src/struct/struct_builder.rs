@@ -349,22 +349,18 @@ impl StructBuilder<'_> {
                 FieldType::Normal  => quote! {
                     let #name = builder
                         .#name
-                        .try_downcast(parsers, url, document, stringify!(#field_type), builder_range, stringify!(#input_name))?
+                        .try_downcast(parsers, document, stringify!(#field_type), &builder_range, stringify!(#input_name))?
                         .finalize()
-                        .ok_or(auto_lsp::core::builder_error!(
-                            auto_lsp,
-                            builder_range,
-                            format!(
-                                "Syntax error: Missing {:?} for {:?}",
-                                stringify!(#name),
-                                stringify!(#input_name),
-                            )
-                        ))?;
+                        .ok_or(auto_lsp::core::errors::AstError::MissingSymbol {
+                            range: builder_range.clone(),
+                            symbol: stringify!(#name),
+                            parent_name: stringify!(#input_name),
+                        })?;
                 },
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(parsers, url, document, stringify!(#field_type), builder_range, stringify!(#input_name))?.finalize();
+                            .try_downcast(parsers, document, stringify!(#field_type), &builder_range, stringify!(#input_name))?.finalize();
                     }
             })
             .stage()
@@ -374,16 +370,15 @@ impl StructBuilder<'_> {
 
         builder.add(quote! {
             impl #try_from_builder<&#input_builder_name> for #input_name {
-                type Error = auto_lsp::lsp_types::Diagnostic;
+                type Error = auto_lsp::core::errors::AstError;
 
-                fn try_from_builder(builder: &#input_builder_name, parsers: &'static #parsers, url: &std::sync::Arc<auto_lsp::lsp_types::Url>, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
-                    let builder_range = builder.get_lsp_range(document)
-                        .expect("Failed to convert LSP range when building Struct symbol");
+                fn try_from_builder(builder: &#input_builder_name, parsers: &'static #parsers, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
+                    let builder_range = builder.get_range();
 
                     #_builder
 
                     Ok(#input_name {
-                        _data: #symbol_data::new(builder.range.clone()),
+                        _data: #symbol_data::new(builder_range),
                         #(#fields),*
                     })
                 }

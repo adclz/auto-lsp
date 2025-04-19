@@ -68,12 +68,11 @@ macro_rules! configure_parsers {
                         ast_parser: |
                             db: &dyn $crate::core::salsa::db::BaseDatabase,
                             parsers: &'static $crate::core::parsers::Parsers,
-                            url: &std::sync::Arc<lsp_types::Url>,
                             document: &$crate::core::document::Document | {
                             use $crate::core::build::InvokeParser;
 
-                            Ok::<$crate::core::ast::DynSymbol, $crate::lsp_types::Diagnostic>(
-                                $crate::core::ast::Symbol::from($root::parse_symbol(db, parsers, url, document)?).into(),
+                            Ok::<$crate::core::ast::DynSymbol, $crate::core::errors::ParseError>(
+                                $crate::core::ast::Symbol::from($root::parse_symbol(db, parsers, document)?).into(),
                             )
                         },
                     }

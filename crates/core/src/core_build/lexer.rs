@@ -16,12 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use lsp_types::{Diagnostic, Position, Range};
+use lsp_types::{Position, Range};
 use salsa::Accumulator;
 use tree_sitter::Node;
 
-use crate::salsa::{db::BaseDatabase, tracked::DiagnosticAccumulator};
-
+use crate::{
+    errors::{LexerError, ParseErrorAccumulator},
+    salsa::db::BaseDatabase,
+};
 
 /// Traverse a tree-sitter syntax tree to collect error nodes.
 ///
@@ -37,12 +39,12 @@ pub fn get_tree_sitter_errors(db: &dyn BaseDatabase, node: &Node, source_code: &
                 get_tree_sitter_errors(db, &child, source_code);
             }
         } else {
-            DiagnosticAccumulator::accumulate(format_error(node, source_code).into(), db);
+            ParseErrorAccumulator::accumulate(format_error(node, source_code).into(), db);
         }
     }
 }
 
-fn format_error(node: &Node, source_code: &[u8]) -> Diagnostic {
+fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
     let start_position = node.start_position();
     let end_position = node.end_position();
     let range = Range {
@@ -56,8 +58,11 @@ fn format_error(node: &Node, source_code: &[u8]) -> Diagnostic {
         },
     };
 
-    let message = if node.is_missing() {
-        format!("Syntax error: Missing {:?}", node.grammar_name())
+    if node.is_missing() {
+        LexerError::Missing {
+            range,
+            error: format!("Syntax error: Missing {:?}", node.grammar_name()),
+        }
     } else {
         let children_text: Vec<String> = (0..node.child_count())
             .map(|i| {
@@ -68,12 +73,9 @@ fn format_error(node: &Node, source_code: &[u8]) -> Diagnostic {
                     .to_string()
             })
             .collect();
-        format!("Unexpected token(s): '{}'", children_text.join(" "))
-    };
-
-    Diagnostic {
-        range,
-        message,
-        ..Default::default()
+        LexerError::Syntax {
+            range,
+            error: format!("Unexpected token(s): '{}'", children_text.join(" ")),
+        }
     }
 }

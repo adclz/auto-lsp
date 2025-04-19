@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::document::Document;
+use crate::errors::{DataBaseError, TreeSitterError};
 use crate::parsers::Parsers;
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
@@ -51,14 +52,14 @@ pub trait BaseDatabase: Database {
         parsers: &'static Parsers,
         url: &Url,
         text: Text,
-    ) -> anyhow::Result<()>;
+    ) -> Result<(), DataBaseError>;
     fn update(
         &mut self,
         url: &Url,
         edits: &[lsp_types::TextDocumentContentChangeEvent],
-    ) -> anyhow::Result<()>;
+    ) -> Result<(), DataBaseError>;
 
-    fn remove_file(&mut self, url: &Url) -> anyhow::Result<()>;
+    fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError>;
     fn get_file(&self, file: &Url) -> Option<File>;
     fn get_files(&self) -> &DashMap<Url, File>;
     #[cfg(feature = "log")]
@@ -85,19 +86,19 @@ impl BaseDatabase for BaseDb {
         parsers: &'static Parsers,
         url: &Url,
         texter: Text,
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), DataBaseError> {
         let tree = parsers
             .parser
             .write()
             .parse(texter.text.as_bytes(), None)
-            .ok_or_else(|| anyhow::format_err!("Tree-sitter failed to parse source code"))?;
+            .ok_or_else(|| DataBaseError::from((url, TreeSitterError::TreeSitterParser)))?;
 
         // Initialize the document with the source code and syntax tree.
         let document = Document { texter, tree };
 
         let file = File::new(self, url.clone(), parsers, Arc::new(RwLock::new(document)));
         match self.files.entry(url.clone()) {
-            Entry::Occupied(_) => Err(anyhow::anyhow!("File {:?} already exists", url)),
+            Entry::Occupied(_) => Err(DataBaseError::FileAlreadyExists { uri: url.clone() }),
             Entry::Vacant(entry) => {
                 entry.insert(file);
                 Ok(())
@@ -109,11 +110,11 @@ impl BaseDatabase for BaseDb {
         &mut self,
         url: &Url,
         changes: &[lsp_types::TextDocumentContentChangeEvent],
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), DataBaseError> {
         let file = *self
             .files
             .get_mut(url)
-            .ok_or(anyhow::anyhow!("File {:?} not found", url))?;
+            .ok_or_else(|| DataBaseError::FileNotFound { uri: url.clone() })?;
 
         let data_lock = file.document(self);
         let ptr = data_lock.clone();
@@ -121,7 +122,8 @@ impl BaseDatabase for BaseDb {
         let mut doc = data_lock.write();
 
         // Apply updates
-        doc.update(&mut file.parsers(self).parser.write(), changes)?;
+        doc.update(&mut file.parsers(self).parser.write(), changes)
+            .map_err(|e| DataBaseError::from((url, e)))?;
 
         // Update Salsa data
         drop(doc);
@@ -129,9 +131,9 @@ impl BaseDatabase for BaseDb {
         Ok(())
     }
 
-    fn remove_file(&mut self, url: &Url) -> anyhow::Result<()> {
+    fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError> {
         match self.files.remove(url) {
-            None => Err(anyhow::format_err!("File {:?} not found", url)),
+            None => Err(DataBaseError::FileNotFound { uri: url.clone() }),
             Some(_) => Ok(()),
         }
     }

@@ -22,7 +22,7 @@ use super::display::*;
 use super::symbol::*;
 use crate::build::Parent;
 use crate::document::Document;
-use anyhow::Context;
+use crate::errors::PositionError;
 use downcast_rs::{impl_downcast, DowncastSync};
 use lsp_types::Position;
 use lsp_types::Range;
@@ -64,10 +64,18 @@ pub trait AstSymbol:
 
     #[inline]
     /// Retrieves the text of the symbol based on its range within the provided source code.
-    fn get_text<'a>(&self, source_code: &'a [u8]) -> anyhow::Result<&'a str> {
+    fn get_text<'a>(&self, source_code: &'a [u8]) -> Result<&'a str, PositionError> {
         let range = self.get_data().get_range();
-        std::str::from_utf8(&source_code[range.start..range.end])
-            .with_context(|| "Failed to get text")
+        match source_code.get(range.start..range.end) {
+            Some(text) => match std::str::from_utf8(text) {
+                Ok(text) => Ok(text),
+                Err(utf8_error) => Err(PositionError::UTF8Error  {
+                    range,
+                    utf8_error
+                }),
+            }
+            None => Err(PositionError::WrongTextRange { range })
+        }
     }
 
     /// Get the symbol's nearest scope.
@@ -99,16 +107,16 @@ pub trait AstSymbol:
     }
 
     /// Returns the LSP start position of the symbol.
-    fn get_start_position(&self, document: &Document) -> anyhow::Result<Position> {
+    fn get_start_position(&self, document: &Document) -> Result<Position, PositionError> {
         document.position_at(self.get_range().start)
     }
 
-    fn get_end_position(&self, document: &Document) -> anyhow::Result<Position> {
+    fn get_end_position(&self, document: &Document) -> Result<Position, PositionError> {
         document.position_at(self.get_range().end)
     }
 
     /// Returns the LSP range (start and end position) of the symbol.
-    fn get_lsp_range(&self, document: &Document) -> anyhow::Result<Range> {
+    fn get_lsp_range(&self, document: &Document) -> Result<Range, PositionError> {
         document.range_at(self.get_range())
     }
 }
