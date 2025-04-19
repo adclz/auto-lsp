@@ -16,9 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::str::Utf8Error;
+use std::{collections::HashMap, path::PathBuf, str::Utf8Error};
 
 use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
+use lsp_types::Url;
 use thiserror::Error;
 
 use crate::document::Document;
@@ -26,14 +27,9 @@ use crate::document::Document;
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum AutoLspError {
     #[error("{error:?}")]
-    TreeSitterError {
+    LexerError {
         range: lsp_types::Range,
-        error: TreeSitterError,
-    },
-    #[error("{error:?}")]
-    TexterError {
-        range: lsp_types::Range,
-        error: TexterError,
+        error: LexerError,
     },
     #[error("{error:?}")]
     AstError {
@@ -46,9 +42,8 @@ impl From<&AutoLspError> for lsp_types::Diagnostic {
     fn from(error: &AutoLspError) -> Self {
         let message = error.to_string();
         let range = match error {
-            AutoLspError::TreeSitterError { range, .. } => *range,
+            AutoLspError::LexerError { range, .. } => *range,
             AutoLspError::AstError { range, .. } => *range,
-            AutoLspError::TexterError { range, .. } => *range,
         };
         lsp_types::Diagnostic {
             range,
@@ -68,9 +63,8 @@ impl AutoLspError {
         report: &mut ReportBuilder<'_, std::ops::Range<usize>>,
     ) {
         let range = match self {
-            AutoLspError::TreeSitterError { range, .. } => range,
+            AutoLspError::LexerError { range, .. } => range,
             AutoLspError::AstError { range, .. } => range,
-            AutoLspError::TexterError { range, .. } => range,
         };
         let start_line = source.line(range.start.line as usize).unwrap().offset();
         let end_line = source.line(range.end.line as usize).unwrap().offset();
@@ -93,11 +87,6 @@ pub enum AstError {
         range: std::ops::Range<usize>,
         query: &'static [&'static str],
     },
-    #[error("Failed to create root node with {query:?}")]
-    InvalidRootNode {
-        range: std::ops::Range<usize>,
-        query: &'static str,
-    },
     #[error("Invalid {field_name:?} for {parent_name:?}, received query: {query:?}")]
     InvalidSymbol {
         range: std::ops::Range<usize>,
@@ -111,6 +100,7 @@ pub enum AstError {
         symbol: &'static str,
         parent_name: &'static str,
     },
+    // Happens when a #[seq] field tis empty
     #[error("Missing symbol {symbol:?} in {parent_name:?}")]
     MissingSymbol {
         range: std::ops::Range<usize>,
@@ -123,7 +113,6 @@ impl From<(&Document, AstError)> for AutoLspError {
     fn from((document, error): (&Document, AstError)) -> Self {
         let range = match &error {
             AstError::NoRootNode { range, .. } => range,
-            AstError::InvalidRootNode { range, .. } => range,
             AstError::UnknownSymbol { range, .. } => range,
             AstError::InvalidSymbol { range, .. } => range,
             AstError::MissingSymbol { range, .. } => range,
@@ -134,38 +123,26 @@ impl From<(&Document, AstError)> for AutoLspError {
 }
 
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
-pub enum TreeSitterError {
-    #[error("Tree sitter failed to parse tree")]
-    TreeSitterParser,
+pub enum LexerError {
     #[error("{error:?}")]
-    Lexer {
+    Missing {
+        range: lsp_types::Range,
+        error: String,
+    },
+    #[error("{error:?}")]
+    Syntax {
         range: lsp_types::Range,
         error: String,
     },
 }
 
-impl From<TreeSitterError> for AutoLspError {
-    fn from(error: TreeSitterError) -> Self {
+impl From<LexerError> for AutoLspError {
+    fn from(error: LexerError) -> Self {
         let range = match &error {
-            TreeSitterError::TreeSitterParser => lsp_types::Range::default(),
-            TreeSitterError::Lexer { range, .. } => *range,
+            LexerError::Missing { range, .. } => *range,
+            LexerError::Syntax { range, .. } => *range,
         };
-        Self::TreeSitterError { range, error }
-    }
-}
-
-#[derive(Error, Clone, Debug, PartialEq, Eq)]
-pub enum TexterError {
-    #[error("texter failed to handle document")]
-    TexterError(#[from] texter::error::Error),
-}
-
-impl From<TexterError> for AutoLspError {
-    fn from(error: TexterError) -> Self {
-        let range = match &error {
-            TexterError::TexterError(_) => lsp_types::Range::default(),
-        };
-        Self::TexterError { range, error }
+        Self::LexerError { range, error }
     }
 }
 
@@ -207,14 +184,8 @@ impl From<&AutoLspErrorAccumulator> for AutoLspError {
     }
 }
 
-impl From<TreeSitterError> for AutoLspErrorAccumulator {
-    fn from(error: TreeSitterError) -> Self {
-        Self(error.into())
-    }
-}
-
-impl From<TexterError> for AutoLspErrorAccumulator {
-    fn from(error: TexterError) -> Self {
+impl From<LexerError> for AutoLspErrorAccumulator {
+    fn from(error: LexerError) -> Self {
         Self(error.into())
     }
 }
@@ -226,22 +197,152 @@ impl From<(&Document, AstError)> for AutoLspErrorAccumulator {
 }
 
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
-pub enum DocumentError {
-    #[error("Can not find position of offset {offset:?}, max line length is {length:?}")]
-    DocumentLineOutOfBound { offset: usize, length: usize },
+pub enum PositionError {
+    #[error("Failed to find position of offset {offset:?}, max line length is {length:?}")]
+    LineOutOfBound { offset: usize, length: usize },
     #[error("Failed to get position of offset {offset:?}")]
-    DocumentPosition { offset: usize },
+    WrongPosition { offset: usize },
     #[error("Failed to get range of {range:?}: {position_error:?}")]
-    DocumentRange {
+    WrongRange {
         range: std::ops::Range<usize>,
         #[source]
-        position_error: Box<DocumentError>,
+        position_error: Box<PositionError>,
     },
     #[error("Failed to get text in {range:?}")]
-    DocumentTextRange { range: std::ops::Range<usize> },
+    WrongTextRange { range: std::ops::Range<usize> },
     #[error("Failed to get text in {range:?}: Encountered UTF-8 error {utf8_error:?}")]
-    DocumentTextUTF8 {
+    UTF8Error {
         range: std::ops::Range<usize>,
         utf8_error: Utf8Error,
     },
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum RuntimeError {
+    #[error("Document error in {uri:?}: {error:?}")]
+    DocumentError {
+        uri: Url,
+        #[source]
+        error: DocumentError,
+    },
+    #[error("Missing initialization options from client")]
+    MissingOptions,
+    #[error(transparent)]
+    DataBaseError(#[from] DataBaseError),
+    #[error(transparent)]
+    FileSystemError(#[from] FileSystemError),
+    #[error(transparent)]
+    ExtensionError(#[from] ExtensionError),
+}
+
+impl From<(&Url, DocumentError)> for RuntimeError {
+    fn from((uri, error): (&Url, DocumentError)) -> Self {
+        RuntimeError::DocumentError {
+            uri: uri.clone(),
+            error,
+        }
+    }
+}
+
+impl From<(&Url, TreeSitterError)> for RuntimeError {
+    fn from((uri, error): (&Url, TreeSitterError)) -> Self {
+        RuntimeError::DocumentError {
+            uri: uri.clone(),
+            error: DocumentError::TreeSitter(error),
+        }
+    }
+}
+
+impl From<(&Url, TexterError)> for RuntimeError {
+    fn from((uri, error): (&Url, TexterError)) -> Self {
+        RuntimeError::DocumentError {
+            uri: uri.clone(),
+            error: DocumentError::Texter(error),
+        }
+    }
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum FileSystemError {
+    #[cfg(windows)]
+    #[error("Invalid host '{host:?}' for file path: {path:?}")]
+    FileUrlHost { host: String, path: PathBuf },
+    #[error("Failed to convert url {path:?} to file path")]
+    FileUrlToFilePath { path: Url },
+    #[error("Failed to convert file path {path:?} to url")]
+    FilePathToUrl { path: PathBuf },
+    #[error("Failed to get extension of file {path:?}")]
+    FileExtension { path: Url },
+    #[error("Failed to open file {path:?}: {error:?}")]
+    FileOpen { path: Url, error: String },
+    #[error("Failed to read file {path:?}: {error:?}")]
+    FileRead { path: Url, error: String },
+    #[error(transparent)]
+    ExtensionError(#[from] ExtensionError),
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum ExtensionError {
+    #[error("Unknown file extension {extension:?}, available extensions are: {available:?}")]
+    UnknownExtension {
+        extension: String,
+        available: HashMap<String, String>,
+    },
+    #[error("No parser found for extension {extension:?}, available parsers are: {available:?}")]
+    UnknownParser {
+        extension: String,
+        available: Vec<&'static str>,
+    },
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum DataBaseError {
+    #[error("Failed to get file {uri:?}")]
+    FileNotFound { uri: Url },
+    #[error("File {uri:?} already exists")]
+    FileAlreadyExists { uri: Url },
+    #[error("Document error in {uri:?}: {error:?}")]
+    DocumentError {
+        uri: Url,
+        #[source]
+        error: DocumentError,
+    },
+}
+
+impl From<(&Url, DocumentError)> for DataBaseError {
+    fn from((uri, error): (&Url, DocumentError)) -> Self {
+        DataBaseError::DocumentError {
+            uri: uri.clone(),
+            error,
+        }
+    }
+}
+
+impl From<(&Url, TreeSitterError)> for DataBaseError {
+    fn from((uri, error): (&Url, TreeSitterError)) -> Self {
+        DataBaseError::DocumentError {
+            uri: uri.clone(),
+            error: DocumentError::TreeSitter(error),
+        }
+    }
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum DocumentError {
+    #[error(transparent)]
+    TreeSitter(#[from] TreeSitterError),
+    #[error(transparent)]
+    Texter(#[from] TexterError),
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum TreeSitterError {
+    #[error("Tree sitter failed to parse tree")]
+    TreeSitterParser,
+}
+
+#[derive(Error, Clone, Debug, PartialEq, Eq)]
+pub enum TexterError {
+    #[error("Texter failed to handle document")]
+    TexterError(#[from] texter::error::Error),
 }
