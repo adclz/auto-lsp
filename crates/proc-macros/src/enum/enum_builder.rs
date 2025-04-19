@@ -367,31 +367,7 @@ impl EnumBuilder<'_> {
         let variant_types = &self.fields.variant_types_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
-        let try_from_builder = &self.paths.try_from_builder;
-        let try_into_builder = &self.paths.try_into_builder;
-
         let parsers = &self.paths.parsers;
-
-        builder.add(quote! {
-            impl #try_from_builder<&#input_builder_name> for #name {
-                type Error = auto_lsp::core::errors::AstError;
-
-                fn try_from_builder(builder: &#input_builder_name, parsers: &'static #parsers, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
-                    use #try_into_builder;
-
-                    #(
-                        if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(variant.try_into_builder(parsers, document)?));
-                        };
-                    )*
-                    Err(auto_lsp::core::errors::AstError::UnknownSymbol {
-                        range: builder.unique_field.get_rc().borrow().get_range(),
-                        symbol: parsers.core.capture_names()[builder.unique_field.get_query_index() as usize],
-                        parent_name: stringify!(#name)
-                    })
-                }
-            }
-        });
 
         builder.add(quote! {
             impl TryFrom<(

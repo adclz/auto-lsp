@@ -329,8 +329,6 @@ impl StructBuilder<'_> {
         let input_name = self.input_name;
         let input_builder_name = &self.input_builder_name;
 
-        let try_from_builder = &self.paths.try_from_builder;
-
         let symbol_data = &self.paths.symbol_data;
         let try_downcast = &self.paths.try_downcast_trait;
         let builder_trait = &self.paths.symbol_builder_trait.path;
@@ -365,25 +363,6 @@ impl StructBuilder<'_> {
             })
             .stage()
             .to_token_stream();
-
-        let parsers = &self.paths.parsers;
-
-        builder.add(quote! {
-            impl #try_from_builder<&#input_builder_name> for #input_name {
-                type Error = auto_lsp::core::errors::AstError;
-
-                fn try_from_builder(builder: &#input_builder_name, parsers: &'static #parsers, document: &auto_lsp::core::document::Document) -> Result<Self, Self::Error> {
-                    let builder_range = builder.get_range();
-
-                    #_builder
-
-                    Ok(#input_name {
-                        _data: #symbol_data::new(builder_range),
-                        #(#fields),*
-                    })
-                }
-            }
-        });
 
         builder.add(quote! {
             impl TryFrom<(

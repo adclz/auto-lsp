@@ -23,53 +23,6 @@ use super::{
     symbol::{MaybePendingSymbol, PendingSymbol},
 };
 
-/// Trait for converting a builder [`Buildable`] into an [`AstSymbol`],
-///
-/// # Methods
-/// - `try_from_builder`: Attempts to create an instance of `Self` from the given builder.
-///
-/// # Parameters
-/// - `value`: The builder instance used to construct the target type.
-/// - `document`: The document context.
-pub trait TryFromBuilder<T>: Sized
-where
-    T: Sized,
-{
-    type Error;
-
-    fn try_from_builder(
-        value: T,
-        parsers: &'static Parsers,
-        document: &Document,
-    ) -> Result<Self, Self::Error>;
-}
-
-pub trait TryIntoBuilder<T>: Sized {
-    type Error;
-
-    fn try_into_builder(
-        self,
-        parsers: &'static Parsers,
-        document: &Document,
-    ) -> Result<T, Self::Error>;
-}
-
-/// Implementation of `TryIntoBuilder` for any type `T` that satisfies the `TryFromBuilder` trait.
-impl<T, U> TryIntoBuilder<U> for T
-where
-    U: TryFromBuilder<T>,
-{
-    type Error = U::Error;
-
-    fn try_into_builder(
-        self,
-        parsers: &'static Parsers,
-        document: &Document,
-    ) -> Result<U, Self::Error> {
-        U::try_from_builder(self, parsers, document)
-    }
-}
-
 /// Trait for downcasting a [`Buildable`] into an [`AstSymbol`].
 pub trait TryDownCast<
     T: Buildable,
