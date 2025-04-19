@@ -19,7 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use std::{fs::File, io::Read};
 
 use crate::server::session::Session;
-use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::{
+    errors::{FileSystemError, RuntimeError},
+    salsa::db::BaseDatabase,
+};
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 
 /// Handle the watched files change notification.
@@ -30,7 +33,7 @@ use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
 pub fn changed_watched_files<Db: BaseDatabase>(
     session: &mut Session<Db>,
     params: DidChangeWatchedFilesParams,
-) -> anyhow::Result<()> {
+) -> Result<(), RuntimeError> {
     params.changes.iter().try_for_each(|file| match file.typ {
         FileChangeType::CREATED => {
             let uri = &file.uri;
@@ -40,34 +43,57 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                 // We can ignore this change
                 return Ok(());
             };
-            let file_path = uri
-                .to_file_path()
-                .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
+            let file_path = uri.to_file_path().map_err(|_| {
+                RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
+            })?;
 
-            let (parsers, url, text) = session.read_file(&file_path)?;
+            let (parsers, url, text) = session
+                .read_file(&file_path)
+                .map_err(|e| RuntimeError::from(e))?;
             log::info!("Watched Files: Created - {}", uri.to_string());
-            session.db.add_file_from_texter(parsers, &url, text)
+            session
+                .db
+                .add_file_from_texter(parsers, &url, text)
+                .map_err(|err| RuntimeError::from(err))
         }
         FileChangeType::CHANGED => {
             let uri = &file.uri;
-            let file_path = uri
-                .to_file_path()
-                .map_err(|_| anyhow::anyhow!("Failed to read file {}", uri.to_string()))?;
-            let open_file = File::open(file_path)?;
+            let file_path = uri.to_file_path().map_err(|_| {
+                RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
+            })?;
+
+            let open_file = File::open(file_path).map_err(|err| {
+                RuntimeError::from(FileSystemError::FileOpen {
+                    path: uri.clone(),
+                    error: err.to_string(),
+                })
+            })?;
 
             match session.db.get_file(uri) {
                 Some(file) => {
                     if is_file_content_different(
                         &open_file,
                         &file.document(&session.db).read().texter.text,
-                    )? {
-                        session.db.remove_file(uri)?;
+                    )
+                    .unwrap()
+                    {
+                        session
+                            .db
+                            .remove_file(uri)
+                            .map_err(|err| RuntimeError::from(err))?;
                         let file_path = uri.to_file_path().map_err(|_| {
-                            anyhow::anyhow!("Failed to read file {}", uri.to_string())
+                            RuntimeError::from(FileSystemError::FileUrlToFilePath {
+                                path: uri.clone(),
+                            })
                         })?;
                         log::info!("Watched Files: Changed - {}", uri.to_string());
-                        let (parsers, url, text) = session.read_file(&file_path)?;
-                        session.db.add_file_from_texter(parsers, &url, text)
+                        let (parsers, url, text) = session
+                            .read_file(&file_path)
+                            .map_err(|err| RuntimeError::from(err))?;
+                        session
+                            .db
+                            .add_file_from_texter(parsers, &url, text)
+                            .map_err(|err| RuntimeError::from(err))
                     } else {
                         // The file is already in db and the content is the same
                         // We can ignore this change
@@ -79,7 +105,10 @@ pub fn changed_watched_files<Db: BaseDatabase>(
         }
         FileChangeType::DELETED => {
             log::info!("Watched Files: Deleted - {}", file.uri.to_string());
-            session.db.remove_file(&file.uri)
+            session
+                .db
+                .remove_file(&file.uri)
+                .map_err(|err| RuntimeError::from(err))
         }
         // Should never happen
         _ => Ok(()),

@@ -167,12 +167,12 @@ where
             }
             None => Err((
                 self.document,
-                AstError::InvalidRootNode {
+                AstError::NoRootNode {
                     range: std::ops::Range {
                         start: capture.node.start_byte(),
                         end: capture.node.end_byte(),
                     },
-                    query: self.parsers.core.capture_names()[capture.index as usize],
+                    query: T::QUERY_NAMES,
                 },
             )
                 .into()),

@@ -17,13 +17,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::server::session::Session;
-use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::{
+    errors::{ExtensionError, RuntimeError},
+    salsa::db::BaseDatabase,
+};
 use lsp_types::DidOpenTextDocumentParams;
 
 pub fn open_text_document<Db: BaseDatabase>(
     session: &mut Session<Db>,
     params: DidOpenTextDocumentParams,
-) -> anyhow::Result<()> {
+) -> Result<(), RuntimeError> {
     let url = &params.text_document.uri;
 
     if session.db.get_file(url).is_some() {
@@ -37,18 +40,14 @@ pub fn open_text_document<Db: BaseDatabase>(
     let extension = match session.extensions.get(extension) {
         Some(extension) => extension,
         None => {
-            if session
-                .extensions
-                .values()
-                .any(|x| x == extension)
-            {
+            if session.extensions.values().any(|x| x == extension) {
                 extension
             } else {
-                return Err(anyhow::format_err!(
-                    "Extension {} is not registered, available extensions are: {:?}",
-                    extension,
-                    session.extensions
-                ));
+                return Err(ExtensionError::UnknownExtension {
+                    extension: extension.clone(),
+                    available: session.extensions.clone(),
+                }
+                .into());
             }
         }
     };
@@ -59,8 +58,16 @@ pub fn open_text_document<Db: BaseDatabase>(
         .init_options
         .parsers
         .get(extension.as_str())
-        .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
+        .ok_or_else(|| {
+            RuntimeError::from(ExtensionError::UnknownParser {
+                extension: extension.clone(),
+                available: session.init_options.parsers.keys().cloned().collect(),
+            })
+        })?;
 
     log::info!("Did Open Text Document: Created - {}", url.to_string());
-    session.db.add_file_from_texter(parsers, url, text)
+    session
+        .db
+        .add_file_from_texter(parsers, url, text)
+        .map_err(|e| e.into())
 }

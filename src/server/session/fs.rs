@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use super::Session;
+use auto_lsp_core::errors::{ExtensionError, FileSystemError, RuntimeError};
 use auto_lsp_core::parsers::Parsers;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{InitializeParams, Url};
@@ -38,27 +39,30 @@ struct InitializationOptions {
 
 impl<Db: BaseDatabase> Session<Db> {
     /// Initializes the workspace by loading files and associating them with parsers.
-    pub(crate) fn init_workspace(&mut self, params: InitializeParams) -> anyhow::Result<()> {
+    pub(crate) fn init_workspace(
+        &mut self,
+        params: InitializeParams,
+    ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError> {
         let options = InitializationOptions::deserialize(
             params
                 .initialization_options
-                .expect("Missing initialization options from client"),
-        )?;
+                .ok_or_else(|| RuntimeError::MissingOptions)?,
+        )
+        .unwrap();
 
         // Validate that the parsers provided by the client exist
         for (file_extension, parser) in &options.perFileParser {
             if !self.init_options.parsers.contains_key(parser.as_str()) {
-                return Err(anyhow::format_err!(
-                    "Error: Parser {} not found for file extension {}",
-                    parser,
-                    file_extension
-                ));
+                return Err(RuntimeError::from(ExtensionError::UnknownParser {
+                    extension: file_extension.clone(),
+                    available: self.init_options.parsers.keys().cloned().collect(),
+                }));
             }
         }
 
         self.extensions = options.perFileParser;
 
-        let mut errors: Vec<Result<(), anyhow::Error>> = vec![];
+        let mut errors: Vec<Result<(), RuntimeError>> = vec![];
 
         if let Some(folders) = params.workspace_folders {
             let files = folders
@@ -81,12 +85,13 @@ impl<Db: BaseDatabase> Session<Db> {
                 files
                     .into_iter()
                     .map(|file| match self.read_file(&file.into_path()) {
-                        Ok((parsers, url, text)) => {
-                            self.db.add_file_from_texter(parsers, &url, text)
-                        }
-                        Err(err) => Err(err),
+                        Ok((parsers, url, text)) => self
+                            .db
+                            .add_file_from_texter(parsers, &url, text)
+                            .map_err(|err| RuntimeError::from(err)),
+                        Err(err) => Err(RuntimeError::from(err)),
                     })
-                    .collect::<Vec<Result<(), anyhow::Error>>>(),
+                    .collect::<Vec<_>>(),
             );
 
             #[cfg(feature = "rayon")]
@@ -98,30 +103,39 @@ impl<Db: BaseDatabase> Session<Db> {
                     |file_iter| {
                         file_iter
                             .map(|file| match self.read_file(&file.into_path()) {
-                                Ok((parsers, url, text)) => {
-                                    self.db.add_file_from_texter(parsers, &url, text)
-                                }
-                                Err(err) => Err(err),
+                                Ok((parsers, url, text)) => self
+                                    .db
+                                    .add_file_from_texter(parsers, &url, text)
+                                    .map_err(|err| RuntimeError::from(err)),
+                                Err(err) => Err(RuntimeError::from(err)),
                             })
-                            .collect::<Vec<Result<(), anyhow::Error>>>()
+                            .collect::<Vec<_>>()
                     },
                 ));
             }
         }
 
-        Ok(())
+        Ok(errors)
     }
 
     pub(crate) fn read_file(
         &self,
         file: &PathBuf,
-    ) -> anyhow::Result<(&'static Parsers, Url, Text)> {
+    ) -> Result<(&'static Parsers, Url, Text), FileSystemError> {
         let url = Url::from_file_path(file)
-            .map_err(|_| anyhow::anyhow!("Failed to read file {}", file.display()))?;
+            .map_err(|_| FileSystemError::FilePathToUrl { path: file.clone() })?;
 
-        let mut open_file = File::open(url.to_file_path().unwrap())?;
+        let mut open_file = File::open(file).map_err(|e| FileSystemError::FileOpen {
+            path: url.clone(),
+            error: e.to_string(),
+        })?;
         let mut buffer = String::new();
-        open_file.read_to_string(&mut buffer)?;
+        open_file
+            .read_to_string(&mut buffer)
+            .map_err(|e| FileSystemError::FileRead {
+                path: url.clone(),
+                error: e.to_string(),
+            })?;
 
         let extension = get_extension(&url)?;
 
@@ -129,10 +143,10 @@ impl<Db: BaseDatabase> Session<Db> {
         let extension = match self.extensions.get(&extension) {
             Some(extension) => extension,
             None => {
-                return Err(anyhow::format_err!(
-                    "Extension {} is not registered",
-                    extension
-                ))
+                return Err(FileSystemError::from(ExtensionError::UnknownExtension {
+                    extension: extension.clone(),
+                    available: self.extensions.clone(),
+                }))
             }
         };
 
@@ -140,51 +154,45 @@ impl<Db: BaseDatabase> Session<Db> {
             .init_options
             .parsers
             .get(extension.as_str())
-            .ok_or(anyhow::format_err!("No parser available for {}", extension))?;
+            .ok_or_else(|| {
+                FileSystemError::from(ExtensionError::UnknownParser {
+                    extension: extension.clone(),
+                    available: self.init_options.parsers.keys().cloned().collect(),
+                })
+            })?;
         Ok((parsers, url, text))
     }
 }
 
 /// Get the extension of a file from a [`Url`] path
 #[cfg(windows)]
-pub(crate) fn get_extension(path: &Url) -> anyhow::Result<String> {
+pub(crate) fn get_extension(path: &Url) -> Result<String, FileSystemError> {
     // Ensure the host is either empty or "localhost" on Windows
     if let Some(host) = path.host_str() {
         if !host.is_empty() && host != "localhost" {
-            return Err(anyhow::anyhow!(
-                "Invalid host '{}' for file URL {}",
-                host,
-                path
-            ));
+            return Err(FileSystemError::FileUrlHost {
+                host: host.to_string(),
+                path: path.clone(),
+            });
         }
     }
 
     path.to_file_path()
-        .map_err(|_| anyhow::anyhow!("Failed to read file URL {}", path))?
+        .map_err(|_| FileSystemError::FileUrl { path: path.clone() })?
         .extension()
         .map_or_else(
-            || {
-                Err(anyhow::anyhow!(format!(
-                    "Invalid extension for file {}",
-                    path
-                )))
-            },
+            || Err(FileSystemError::FileExtension { path: path.clone() }),
             |ext| Ok(ext.to_string_lossy().to_string()),
         )
 }
 
 #[cfg(not(windows))]
-pub(crate) fn get_extension(path: &Url) -> anyhow::Result<String> {
+pub(crate) fn get_extension(path: &Url) -> Result<String, FileSystemError> {
     path.to_file_path()
-        .map_err(|_| anyhow::anyhow!("Failed to read file URL {}", path))?
+        .map_err(|_| FileSystemError::FileUrlToFilePath { path: path.clone() })?
         .extension()
         .map_or_else(
-            || {
-                Err(anyhow::anyhow!(format!(
-                    "Invalid extension for file {}",
-                    path
-                )))
-            },
+            || Err(FileSystemError::FileExtension { path: path.clone() }),
             |ext| Ok(ext.to_string_lossy().to_string()),
         )
 }
@@ -214,11 +222,10 @@ mod tests {
 
         // Empty extension
         assert_eq!(
-            get_extension(&Url::parse("file:///C:/path/to/file").unwrap())
-                .unwrap_err()
-                .to_string()
-                .as_str(),
-            "Invalid extension for file file:///C:/path/to/file"
+            get_extension(&Url::parse("file:///C:/path/to/file").unwrap()),
+            Err(FileSystemError::FileExtension {
+                path: Url::parse("file:///C:/path/to/file").unwrap()
+            })
         );
     }
 
@@ -226,6 +233,8 @@ mod tests {
     #[test]
     fn test_get_extension_non_windows() {
         // Valid Linux/Unix paths
+
+        use auto_lsp_core::errors::FileSystemError;
         assert_eq!(
             get_extension(&Url::parse("file:///path/to/file.rs").unwrap())
                 .unwrap()
@@ -242,11 +251,10 @@ mod tests {
 
         // Empty extension
         assert_eq!(
-            get_extension(&Url::parse("file:///path/to/file").unwrap())
-                .unwrap_err()
-                .to_string()
-                .as_str(),
-            "Invalid extension for file file:///path/to/file"
+            get_extension(&Url::parse("file:///path/to/file").unwrap()),
+            Err(FileSystemError::FileExtension {
+                path: Url::parse("file:///path/to/file").unwrap()
+            })
         );
 
         // Note: On non-Windows systems, the host is typically ignored, so this should work

@@ -21,7 +21,7 @@ use salsa::Accumulator;
 use tree_sitter::Node;
 
 use crate::{
-    errors::{AutoLspErrorAccumulator, TreeSitterError},
+    errors::{AutoLspErrorAccumulator, LexerError},
     salsa::db::BaseDatabase,
 };
 
@@ -44,7 +44,7 @@ pub fn get_tree_sitter_errors(db: &dyn BaseDatabase, node: &Node, source_code: &
     }
 }
 
-fn format_error(node: &Node, source_code: &[u8]) -> TreeSitterError {
+fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
     let start_position = node.start_position();
     let end_position = node.end_position();
     let range = Range {
@@ -58,8 +58,11 @@ fn format_error(node: &Node, source_code: &[u8]) -> TreeSitterError {
         },
     };
 
-    let message = if node.is_missing() {
-        format!("Syntax error: Missing {:?}", node.grammar_name())
+    if node.is_missing() {
+        LexerError::Missing {
+            range,
+            error: format!("Syntax error: Missing {:?}", node.grammar_name()),
+        }
     } else {
         let children_text: Vec<String> = (0..node.child_count())
             .map(|i| {
@@ -70,11 +73,9 @@ fn format_error(node: &Node, source_code: &[u8]) -> TreeSitterError {
                     .to_string()
             })
             .collect();
-        format!("Unexpected token(s): '{}'", children_text.join(" "))
-    };
-
-    TreeSitterError::Lexer {
-        range,
-        error: message,
+        LexerError::Syntax {
+            range,
+            error: format!("Unexpected token(s): '{}'", children_text.join(" ")),
+        }
     }
 }
