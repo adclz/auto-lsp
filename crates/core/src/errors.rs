@@ -24,6 +24,13 @@ use thiserror::Error;
 
 use crate::document::Document;
 
+/// Error type coming from either tree-sitter or ast parsing.
+///
+/// This error is only produced by auto-lsp.
+///
+/// [`ParseError`] can be converted to [`lsp_types::Diagnostic`] to be sent to the client.
+///
+/// An ariadne report can be generated from [`ParseError`] using the `to_label` method.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum ParseError {
     #[error("{error:?}")]
@@ -38,6 +45,12 @@ pub enum ParseError {
         #[source]
         error: AstError,
     },
+}
+
+impl From<ParseError> for lsp_types::Diagnostic {
+    fn from(error: ParseError) -> Self {
+        (&error).into()
+    }
 }
 
 impl From<&ParseError> for lsp_types::Diagnostic {
@@ -58,6 +71,7 @@ impl From<&ParseError> for lsp_types::Diagnostic {
 }
 
 impl ParseError {
+    /// Creates a label for the error using ariadne.
     pub fn to_label(
         &self,
         source: &Source<&str>,
@@ -82,6 +96,7 @@ impl ParseError {
     }
 }
 
+/// Error type for AST parsing.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum AstError {
     #[error("No root node found with {query:?}")]
@@ -124,6 +139,9 @@ impl From<(&Document, AstError)> for ParseError {
     }
 }
 
+/// Error type for tree-sitter.
+///
+/// Can either be a syntax error or a missing symbol error.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum LexerError {
     #[error("{error:?}")]
@@ -148,6 +166,9 @@ impl From<LexerError> for ParseError {
     }
 }
 
+//// Main accumulator for parse errors
+///
+/// This is meant to be used in salsa queries to accumulate parse errors.
 #[salsa::accumulator]
 pub struct ParseErrorAccumulator(pub ParseError);
 
@@ -198,6 +219,9 @@ impl From<(&Document, AstError)> for ParseErrorAccumulator {
     }
 }
 
+/// Error type for position errors.
+///
+/// Only emitted by methods of the [`Document`] struct.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum PositionError {
     #[error("Failed to find position of offset {offset:?}, max line length is {length:?}")]
@@ -219,6 +243,7 @@ pub enum PositionError {
     },
 }
 
+/// Error type produced by the runtime - aka the server -.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum RuntimeError {
     #[error("Document error in {uri:?}: {error:?}")]
@@ -264,6 +289,7 @@ impl From<(&Url, TexterError)> for RuntimeError {
     }
 }
 
+/// Error types produced by the server when performing file system operations.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum FileSystemError {
     #[cfg(windows)]
@@ -283,6 +309,7 @@ pub enum FileSystemError {
     ExtensionError(#[from] ExtensionError),
 }
 
+/// Error type for file extensions and parsers associated with them.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum ExtensionError {
     #[error("Unknown file extension {extension:?}, available extensions are: {available:?}")]
@@ -297,6 +324,7 @@ pub enum ExtensionError {
     },
 }
 
+/// Error type triggered by the database.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum DataBaseError {
     #[error("Failed to get file {uri:?}")]
@@ -329,6 +357,9 @@ impl From<(&Url, TreeSitterError)> for DataBaseError {
     }
 }
 
+/// Error type for document handling
+///
+/// Produced by an error coming from either tree-sitter or texter.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum DocumentError {
     #[error(transparent)]
