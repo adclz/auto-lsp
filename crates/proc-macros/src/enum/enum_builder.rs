@@ -364,6 +364,7 @@ impl EnumBuilder<'_> {
         let input_builder_name = &self.input_builder_name;
 
         let variant_names = &self.fields.variant_names;
+        let variant_types = &self.fields.variant_types_names;
         let variant_builder_names = &self.fields.variant_builder_names;
 
         let try_from_builder = &self.paths.try_from_builder;
@@ -381,6 +382,35 @@ impl EnumBuilder<'_> {
                     #(
                         if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
                             return Ok(Self::#variant_names(variant.try_into_builder(parsers, document)?));
+                        };
+                    )*
+                    Err(auto_lsp::core::errors::AstError::UnknownSymbol {
+                        range: builder.unique_field.get_rc().borrow().get_range(),
+                        symbol: parsers.core.capture_names()[builder.unique_field.get_query_index() as usize],
+                        parent_name: stringify!(#name)
+                    })
+                }
+            }
+        });
+
+        builder.add(quote! {
+            impl TryFrom<(
+                &#input_builder_name,
+                &auto_lsp::core::document::Document,
+                &'static #parsers
+            )> for #name {
+                type Error = auto_lsp::core::errors::AstError;
+
+                fn try_from(
+                    (builder, document, parsers): (
+                        &#input_builder_name,
+                        &auto_lsp::core::document::Document,
+                        &'static #parsers
+                    )
+                ) -> Result<Self, Self::Error> {
+                    #(
+                        if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
+                            return Ok(Self::#variant_names(#variant_types::try_from((variant, document, parsers))?));
                         };
                     )*
                     Err(auto_lsp::core::errors::AstError::UnknownSymbol {

@@ -384,6 +384,33 @@ impl StructBuilder<'_> {
                 }
             }
         });
+
+        builder.add(quote! {
+            impl TryFrom<(
+                &#input_builder_name,
+                &auto_lsp::core::document::Document,
+                &'static #parsers
+            )> for #input_name {
+                type Error = auto_lsp::core::errors::AstError;
+
+                fn try_from(
+                    (builder, document, parsers): (
+                        &#input_builder_name,
+                        &auto_lsp::core::document::Document,
+                        &'static #parsers
+                    )
+                ) -> Result<Self, Self::Error> {
+                    let builder_range = builder.get_range();
+
+                    #_builder
+
+                    Ok(#input_name {
+                        _data: #symbol_data::new(builder_range),
+                        #(#fields),*
+                    })
+                }
+            }
+        });
         builder.stage();
     }
 }
