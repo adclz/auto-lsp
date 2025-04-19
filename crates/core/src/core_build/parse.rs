@@ -27,7 +27,7 @@ use crate::salsa::db::BaseDb;
 use crate::salsa::tracked::get_ast;
 use crate::{
     ast::AstSymbol,
-    build::{Buildable, Queryable, TryFromBuilder},
+    build::{Buildable, Queryable},
 };
 use ariadne::{ColorGenerator, Report, ReportKind, Source};
 use lsp_types::Url;
@@ -40,7 +40,7 @@ use super::stack_builder::StackBuilder;
 /// This trait is implemented for all types that implement [`Buildable`] and [`Queryable`].
 pub trait InvokeParser<
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = AstError>,
+    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
 >
 {
     /// Creates a symbol.
@@ -57,7 +57,7 @@ pub trait InvokeParser<
 impl<T, Y> InvokeParser<T, Y> for Y
 where
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'b> TryFromBuilder<&'b T, Error = AstError>,
+    Y: AstSymbol + for<'b> TryFrom<(&'b T, &'b Document, &'static Parsers), Error = AstError>,
 {
     fn parse_symbol(
         db: &dyn BaseDatabase,
@@ -98,7 +98,8 @@ impl std::fmt::Display for AriadneReport {
 
 pub trait TryParse<
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = AstError>,
+    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers)>,
+    Error = AstError,
 >
 {
     /// Parses the provided test code and validates the AST symbol construction.
@@ -114,7 +115,7 @@ pub trait TryParse<
 impl<T, Y> TryParse<T, Y> for Y
 where
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = AstError>,
+    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
 {
     fn test_parse(test_code: &'static str, parsers: &'static Parsers) -> TestParseResult {
         let mut db = BaseDb::default();

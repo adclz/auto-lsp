@@ -71,11 +71,10 @@ where
 }
 
 /// Trait for downcasting a [`Buildable`] into an [`AstSymbol`].
-///
-/// Unlike [`TryFromBuilder`], which builds an entire symbol with its fields, this trait focuses
-/// on converting a generic [`Buildable`] into a specific type of [`AstSymbol`]. This operation is
-/// typically used for field-level downcasting.
-pub trait TryDownCast<T: Buildable, Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = AstError>>
+pub trait TryDownCast<
+    T: Buildable,
+    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
+>
 {
     type Output;
 
@@ -92,7 +91,7 @@ pub trait TryDownCast<T: Buildable, Y: AstSymbol + for<'a> TryFromBuilder<&'a T,
 impl<T, Y> TryDownCast<T, Y> for PendingSymbol
 where
     T: Buildable,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = AstError>,
+    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
 {
     type Output = Y;
 
@@ -104,23 +103,26 @@ where
         field_range: &std::ops::Range<usize>,
         input_name: &str,
     ) -> Result<Self::Output, AstError> {
-        self.0
-            .borrow()
-            .downcast_ref::<T>()
-            .ok_or(AstError::InvalidSymbol {
-                range: field_range.clone(),
-                field_name: field_name.to_string(),
-                parent_name: input_name.to_string(),
-                query: parsers.core.capture_names()[self.get_query_index()],
-            })?
-            .try_into_builder(parsers, document)
+        Y::try_from((
+            self.0
+                .borrow()
+                .downcast_ref::<T>()
+                .ok_or(AstError::InvalidSymbol {
+                    range: field_range.clone(),
+                    field_name: field_name.to_string(),
+                    parent_name: input_name.to_string(),
+                    query: parsers.core.capture_names()[self.get_query_index()],
+                })?,
+            document,
+            parsers,
+        ))
     }
 }
 
 impl<T, Y> TryDownCast<T, Y> for MaybePendingSymbol
 where
     T: Buildable,
-    Y: AstSymbol + for<'a> TryFromBuilder<&'a T, Error = AstError>,
+    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
 {
     type Output = Option<Y>;
 
@@ -144,7 +146,7 @@ impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
 where
     T: TryDownCast<Y, V, Output = V>,
     Y: Buildable,
-    V: AstSymbol + for<'a> TryFromBuilder<&'a Y, Error = AstError>,
+    V: AstSymbol + for<'a> TryFrom<(&'a Y, &'a Document, &'static Parsers), Error = AstError>,
 {
     type Output = Vec<V>;
 

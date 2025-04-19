@@ -23,7 +23,6 @@ use streaming_iterator::StreamingIterator;
 use tree_sitter::QueryCapture;
 
 use super::buildable::*;
-use super::downcast::*;
 use super::symbol::*;
 use super::utils::intersecting_ranges;
 use crate::core_ast::core::AstSymbol;
@@ -78,7 +77,7 @@ where
     /// a symbol from the root node.
     pub fn create_symbol<Y>(&mut self) -> Result<Y, ParseError>
     where
-        Y: AstSymbol + for<'c> TryFromBuilder<&'c T, Error = AstError>,
+        Y: AstSymbol + for<'c> TryFrom<(&'c T, &'c Document, &'static Parsers), Error = AstError>,
     {
         let result = self.build()?.ok_or::<ParseError>(
             (
@@ -93,12 +92,12 @@ where
             )
                 .into(),
         )?;
-        let result = result.0.borrow();
-        let result = result
-            .downcast_ref::<T>()
-            .unwrap() //Normally, this should never fail since the root node is created with the same type.
-            .try_into_builder(self.parsers, self.document)
-            .map_err(|err| ParseError::from((self.document, err)))?;
+        let result = Y::try_from((
+            result.0.borrow().downcast_ref::<T>().unwrap(),
+            self.document,
+            self.parsers,
+        ))
+        .map_err(|err| ParseError::from((self.document, err)))?;
         #[cfg(feature = "log")]
         log::debug!("\n{}", result);
         Ok(result)
