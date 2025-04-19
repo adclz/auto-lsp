@@ -2,6 +2,40 @@
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.5...auto-lsp-macros-v0.1.6)
+
+### Features
+
+- Implement TryFrom trait for EnumBuilder and StructBuilder - ([240a8ed](https://github.com/adclz/auto-lsp/commit/240a8ed33fbec0a1e6f9dfde4572ed5ca973009e))
+
+### Bug Fixes
+
+- *(enum)* Replace unreachable with AstError in enums - ([3b3213c](https://github.com/adclz/auto-lsp/commit/3b3213c09549f4dec851752b959dbe34ff41563f))
+
+### Refactor
+
+- *(choice)* Make choice macro return compile errors alongside input - ([039ec05](https://github.com/adclz/auto-lsp/commit/039ec051a084923a64b6aa3d12ae2217b2e344d0))
+- *(choice)* Update extract_variants to accept syn::DataEnum - ([2830cb4](https://github.com/adclz/auto-lsp/commit/2830cb489b49218a6e4e74c79e15ef230d9d80f2))
+- *(core)* LSP capabilities now support error propagation - ([f713cc1](https://github.com/adclz/auto-lsp/commit/f713cc1455a7c1862e9769aaa8369fb58d525902))
+- *(core_build)* Remove url field - ([763aca6](https://github.com/adclz/auto-lsp/commit/763aca6f0283bb6a865d1551948849d39c9a52ba))
+- *(errors)* Replace Diagnostic with AstError and update error handling across modules - ([8c47155](https://github.com/adclz/auto-lsp/commit/8c4715575af3626326624e808c795dcfce93bcef))
+- *(proc-macros)* Remove filter utilities module and remove deprecated code - ([4ce8494](https://github.com/adclz/auto-lsp/commit/4ce84944f0faffd0ba95c3b426fb699e84b4b7bc))
+- *(proc-macros)* Better utilities  for type name extraction - ([17ebdac](https://github.com/adclz/auto-lsp/commit/17ebdacf1cb86a1710fc901ff81b8c260afc30b6))
+- *(seq)* Make seq macro return compile errors alongside input - ([8a6c8c6](https://github.com/adclz/auto-lsp/commit/8a6c8c6da86bc7a616636e918dcf8927262b578b))
+- *(tests)* Rename test functions - ([cc18245](https://github.com/adclz/auto-lsp/commit/cc182458f4e1ab527e23dafd7dc007cbe79b217b))
+- Remove TryFromBuilder and TryIntoBuilder traits - ([7ce632c](https://github.com/adclz/auto-lsp/commit/7ce632ca1120de57a5f4d2daaab4b8973eb258d5))
+- Streamline GetSymbolData implementation and add inline attributes - ([342bb7c](https://github.com/adclz/auto-lsp/commit/342bb7c1e7396f8f79481415b6820e7a20c7df8c))
+- Remove Url references - ([9da8416](https://github.com/adclz/auto-lsp/commit/9da84165da43c37f8905a784c7279b337dcb1a2c))
+- Text retrieval methods now return Results - ([4de460d](https://github.com/adclz/auto-lsp/commit/4de460d09b03714eba62b5cb172ccf1ef6e2aab6))
+- Remove new_and_check method and add From trait idioms - ([40a1c42](https://github.com/adclz/auto-lsp/commit/40a1c4284aa7abce1071a8a99802566649b57bbf))
+- Move core and proc-macro to crates folder - ([9ca4d9c](https://github.com/adclz/auto-lsp/commit/9ca4d9c260d764dda4256a0bbbd85684a968c864))
+
+### Miscellaneous Tasks
+
+- *(license)* Update Cargo.toml files - ([dd5971f](https://github.com/adclz/auto-lsp/commit/dd5971f8d8c5e0ffa5fa0b97c0a3b3c517c2f82c))
+- *(license)* Add GPLv3 license header to all source files - ([60d6d5a](https://github.com/adclz/auto-lsp/commit/60d6d5abe8a3e10f79fe651de074fa61cad9e7f6))
+
+
 ## [0.1.5](https://github.com/adclz/auto-lsp/compare/auto-lsp-macros-v0.1.4...auto-lsp-macros-v0.1.5)
 
 ### Bug Fixes
