@@ -178,7 +178,7 @@ pub(crate) fn get_extension(path: &Url) -> Result<String, FileSystemError> {
     }
 
     path.to_file_path()
-        .map_err(|_| FileSystemError::FileUrl { path: path.clone() })?
+        .map_err(|_| FileSystemError::FileUrlToFilePath { path: path.clone() })?
         .extension()
         .map_or_else(
             || Err(FileSystemError::FileExtension { path: path.clone() }),
@@ -200,6 +200,7 @@ pub(crate) fn get_extension(path: &Url) -> Result<String, FileSystemError> {
 #[cfg(test)]
 mod tests {
     use super::get_extension;
+    use auto_lsp_core::errors::FileSystemError;
     use lsp_types::Url;
 
     #[cfg(windows)]
@@ -234,7 +235,6 @@ mod tests {
     fn test_get_extension_non_windows() {
         // Valid Linux/Unix paths
 
-        use auto_lsp_core::errors::FileSystemError;
         assert_eq!(
             get_extension(&Url::parse("file:///path/to/file.rs").unwrap())
                 .unwrap()
