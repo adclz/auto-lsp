@@ -383,7 +383,11 @@ impl EnumBuilder<'_> {
                             return Ok(Self::#variant_names(variant.try_into_builder(parsers, document)?));
                         };
                     )*
-                    unreachable!();
+                    Err(auto_lsp::core::errors::AstError::UnknownSymbol {
+                        range: builder.unique_field.get_rc().borrow().get_range(),
+                        symbol: parsers.core.capture_names()[builder.unique_field.get_query_index() as usize],
+                        parent_name: stringify!(#name)
+                    })
                 }
             }
         });
