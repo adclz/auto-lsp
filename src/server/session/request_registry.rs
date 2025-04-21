@@ -32,7 +32,7 @@ pub struct RequestRegistry<Db: BaseDatabase> {
 }
 
 impl<Db: BaseDatabase> RequestRegistry<Db> {
-    pub fn register<R, F>(&mut self, handler: F) -> &mut Self
+    pub fn on<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned,
@@ -50,7 +50,7 @@ impl<Db: BaseDatabase> RequestRegistry<Db> {
         self
     }
 
-    pub fn register_mut<R, F>(&mut self, handler: F) -> &mut Self
+    pub fn on_mut<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned,

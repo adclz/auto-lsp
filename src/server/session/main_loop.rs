@@ -39,7 +39,7 @@ impl<Db: BaseDatabase> Session<Db> {
                                 return Ok(());
                             };
 
-                            self.req_queue.incoming.register(req.id.clone(), req.method.clone());
+                            self.req_queue.incoming.on(req.id.clone(), req.method.clone());
 
                             let id = req.id.clone();
                             if let Some(response) = req_registry.handle(self, req.clone())? {

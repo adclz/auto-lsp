@@ -68,8 +68,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop(
-        register_requests(&mut request_registry),
-        register_notifications(&mut notification_registry),
+        on_requests(&mut request_registry),
+        on_notifications(&mut notification_registry),
     )?;
     io_threads.join()?;
 
@@ -78,33 +78,31 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-fn register_requests<Db: BaseDatabase>(
-    registry: &mut RequestRegistry<Db>,
-) -> &mut RequestRegistry<Db> {
+fn on_requests<Db: BaseDatabase>(registry: &mut RequestRegistry<Db>) -> &mut RequestRegistry<Db> {
     registry
-        .register::<DocumentDiagnosticRequest, _>(|s, p| get_diagnostics(&s.db, p))
-        .register::<DocumentSymbolRequest, _>(|s, p| get_document_symbols(&s.db, p))
-        .register::<HoverRequest, _>(|s, p| get_hover(&s.db, p))
-        .register::<SemanticTokensFullRequest, _>(|s, p| get_semantic_tokens_full(&s.db, p))
-        .register::<SelectionRangeRequest, _>(|s, p| get_selection_ranges(&s.db, p))
-        .register::<WorkspaceSymbolRequest, _>(|s, p| get_workspace_symbols(&s.db, p))
-        .register::<WorkspaceDiagnosticRequest, _>(|s, p| get_workspace_diagnostics(&s.db, p))
-        .register::<InlayHintRequest, _>(|s, p| get_inlay_hints(&s.db, p))
-        .register::<CodeActionRequest, _>(|s, p| get_code_actions(&s.db, p))
-        .register::<CodeLensRequest, _>(|s, p| get_code_lenses(&s.db, p))
-        .register::<Completion, _>(|s, p| get_completion_items(&s.db, p))
+        .on::<DocumentDiagnosticRequest, _>(|s, p| get_diagnostics(&s.db, p))
+        .on::<DocumentSymbolRequest, _>(|s, p| get_document_symbols(&s.db, p))
+        .on::<HoverRequest, _>(|s, p| get_hover(&s.db, p))
+        .on::<SemanticTokensFullRequest, _>(|s, p| get_semantic_tokens_full(&s.db, p))
+        .on::<SelectionRangeRequest, _>(|s, p| get_selection_ranges(&s.db, p))
+        .on::<WorkspaceSymbolRequest, _>(|s, p| get_workspace_symbols(&s.db, p))
+        .on::<WorkspaceDiagnosticRequest, _>(|s, p| get_workspace_diagnostics(&s.db, p))
+        .on::<InlayHintRequest, _>(|s, p| get_inlay_hints(&s.db, p))
+        .on::<CodeActionRequest, _>(|s, p| get_code_actions(&s.db, p))
+        .on::<CodeLensRequest, _>(|s, p| get_code_lenses(&s.db, p))
+        .on::<Completion, _>(|s, p| get_completion_items(&s.db, p))
 }
 
-fn register_notifications<Db: BaseDatabase>(
+fn on_notifications<Db: BaseDatabase>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .register_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
-        .register_mut::<DidChangeTextDocument, _>(|s, p| {
+        .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
+        .on_mut::<DidChangeTextDocument, _>(|s, p| {
             Ok(s.db.update(&p.text_document.uri, &p.content_changes)?)
         })
-        .register_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
-        .register_mut::<Cancel, _>(|s, p| {
+        .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
+        .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 lsp_types::NumberOrString::Number(id) => id.into(),
                 lsp_types::NumberOrString::String(id) => id.into(),
@@ -114,8 +112,8 @@ fn register_notifications<Db: BaseDatabase>(
             }
             Ok(())
         })
-        .register::<DidSaveTextDocument, _>(|s, p| Ok(()))
-        .register::<DidCloseTextDocument, _>(|s, p| Ok(()))
-        .register::<SetTrace, _>(|s, p| Ok(()))
-        .register::<LogTrace, _>(|s, p| Ok(()))
+        .on::<DidSaveTextDocument, _>(|s, p| Ok(()))
+        .on::<DidCloseTextDocument, _>(|s, p| Ok(()))
+        .on::<SetTrace, _>(|s, p| Ok(()))
+        .on::<LogTrace, _>(|s, p| Ok(()))
 }

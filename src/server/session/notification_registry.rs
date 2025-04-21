@@ -32,7 +32,7 @@ pub struct NotificationRegistry<Db: BaseDatabase> {
 }
 
 impl<Db: BaseDatabase> NotificationRegistry<Db> {
-    pub fn register<N, F>(&mut self, handler: F) -> &mut Self
+    pub fn on<N, F>(&mut self, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned,
@@ -49,7 +49,7 @@ impl<Db: BaseDatabase> NotificationRegistry<Db> {
         self
     }
 
-    pub fn register_mut<N, F>(&mut self, handler: F) -> &mut Self
+    pub fn on_mut<N, F>(&mut self, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned,

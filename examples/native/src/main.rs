@@ -61,12 +61,12 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut request_registry = RequestRegistry::<BaseDb>::default();
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
-    request_registry.register::<GetWorkspaceFiles, _>(|session, _| Ok(session.db.get_urls()));
+    request_registry.on::<GetWorkspaceFiles, _>(|session, _| Ok(session.db.get_urls()));
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop(
         &request_registry,
-        register_notifications(&mut notification_registry),
+        on_notifications(&mut notification_registry),
     )?;
     io_threads.join()?;
 
@@ -75,17 +75,17 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-fn register_notifications<Db: BaseDatabase>(
+fn on_notifications<Db: BaseDatabase>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .register_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
-        .register_mut::<DidChangeTextDocument, _>(|s, p| {
+        .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
+        .on_mut::<DidChangeTextDocument, _>(|s, p| {
             s.db.update(&p.text_document.uri, &p.content_changes)?;
             Ok(())
         })
-        .register_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
-        .register_mut::<Cancel, _>(|s, p| {
+        .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
+        .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 lsp_types::NumberOrString::Number(id) => id.into(),
                 lsp_types::NumberOrString::String(id) => id.into(),
@@ -95,8 +95,8 @@ fn register_notifications<Db: BaseDatabase>(
             }
             Ok(())
         })
-        .register::<DidSaveTextDocument, _>(|s, p| Ok(()))
-        .register::<DidCloseTextDocument, _>(|s, p| Ok(()))
-        .register::<SetTrace, _>(|s, p| Ok(()))
-        .register::<LogTrace, _>(|s, p| Ok(()))
+        .on::<DidSaveTextDocument, _>(|s, p| Ok(()))
+        .on::<DidCloseTextDocument, _>(|s, p| Ok(()))
+        .on::<SetTrace, _>(|s, p| Ok(()))
+        .on::<LogTrace, _>(|s, p| Ok(()))
 }
