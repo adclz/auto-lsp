@@ -99,12 +99,12 @@ fn register_notifications<Db: BaseDatabase>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .register::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
-        .register::<DidChangeTextDocument, _>(|s, p| {
+        .register_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
+        .register_mut::<DidChangeTextDocument, _>(|s, p| {
             Ok(s.db.update(&p.text_document.uri, &p.content_changes)?)
         })
-        .register::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
-        .register::<Cancel, _>(|s, p| {
+        .register_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
+        .register_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 lsp_types::NumberOrString::Number(id) => id.into(),
                 lsp_types::NumberOrString::String(id) => id.into(),

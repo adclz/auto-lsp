@@ -36,6 +36,23 @@ impl<Db: BaseDatabase> NotificationRegistry<Db> {
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned,
+        F: Fn(&Session<Db>, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
+    {
+        let method = N::METHOD.to_string();
+        let callback: RequestCallback<Db> = Box::new(move |session, params| {
+            let parsed_params: N::Params = serde_json::from_value(params)?;
+            handler(session, parsed_params)?;
+            Ok(serde_json::to_value(())?)
+        });
+
+        self.handlers.insert(method, callback);
+        self
+    }
+
+    pub fn register_mut<N, F>(&mut self, handler: F) -> &mut Self
+    where
+        N: lsp_types::notification::Notification,
+        N::Params: DeserializeOwned,
         F: Fn(&mut Session<Db>, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
     {
         let method = N::METHOD.to_string();

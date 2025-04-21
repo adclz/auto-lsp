@@ -37,6 +37,24 @@ impl<Db: BaseDatabase> RequestRegistry<Db> {
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned,
         R::Result: Serialize,
+        F: Fn(&Session<Db>, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
+    {
+        let method = R::METHOD.to_string();
+        let callback: RequestCallback<Db> = Box::new(move |session, params| {
+            let parsed_params: R::Params = serde_json::from_value(params)?;
+            let result = handler(session, parsed_params)?;
+            Ok(serde_json::to_value(result)?)
+        });
+
+        self.handlers.insert(method, callback);
+        self
+    }
+
+    pub fn register_mut<R, F>(&mut self, handler: F) -> &mut Self
+    where
+        R: lsp_types::request::Request,
+        R::Params: DeserializeOwned,
+        R::Result: Serialize,
         F: Fn(&mut Session<Db>, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
     {
         let method = R::METHOD.to_string();
