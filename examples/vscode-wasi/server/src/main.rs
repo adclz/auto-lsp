@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use std::error::Error;
+use std::panic::RefUnwindSafe;
 
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
 use auto_lsp::lsp_server::{self, Connection};
@@ -93,7 +94,7 @@ fn on_requests<Db: BaseDatabase>(registry: &mut RequestRegistry<Db>) -> &mut Req
         .on::<Completion, _>(|s, p| get_completion_items(&s.db, p))
 }
 
-fn on_notifications<Db: BaseDatabase>(
+fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry

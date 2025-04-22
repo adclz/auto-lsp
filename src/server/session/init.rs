@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::collections::HashMap;
 
+use super::task_pool::TaskPool;
 use super::InitOptions;
 use super::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
@@ -60,6 +61,8 @@ impl<Db: BaseDatabase + Default> Session<Db> {
         text_fn: TextFn,
         db: Db,
     ) -> Self {
+        let (sender, task_rx) = crossbeam_channel::unbounded();
+
         Self {
             init_options,
             connection,
@@ -67,6 +70,11 @@ impl<Db: BaseDatabase + Default> Session<Db> {
             extensions: HashMap::new(),
             req_queue: ReqQueue::default(),
             db,
+            task_rx,
+            task_pool: TaskPool::new_with_threads(
+                sender,
+                std::thread::available_parallelism().unwrap().get(),
+            ),
         }
     }
 

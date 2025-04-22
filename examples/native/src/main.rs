@@ -31,6 +31,7 @@ use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, Session};
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
 use std::ops::Deref;
+use std::panic::RefUnwindSafe;
 
 pub trait ExtendDb: BaseDatabase {
     fn get_urls(&self) -> Vec<String> {
@@ -61,7 +62,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut request_registry = RequestRegistry::<BaseDb>::default();
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
-    request_registry.on::<GetWorkspaceFiles, _>(|session, _| Ok(session.db.get_urls()));
+    request_registry
+        .on::<GetWorkspaceFiles, _>(|session, _| Ok(session.with_db(|db| db.get_urls()))?);
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop(
@@ -75,7 +77,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-fn on_notifications<Db: BaseDatabase>(
+fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry

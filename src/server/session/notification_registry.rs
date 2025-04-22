@@ -16,30 +16,40 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use super::Session;
+use super::{main_loop::Task, Session};
 use auto_lsp_core::salsa::db::BaseDatabase;
-use lsp_server::Notification;
+use lsp_server::{Message, Notification};
 use serde::de::DeserializeOwned;
-use std::collections::HashMap;
+use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
 
-type RequestCallback<Db> = Box<
-    dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync,
+/// Callback for parallelized notifications
+type Callback<Db> = Arc<
+    dyn Fn(&Db, serde_json::Value) -> anyhow::Result<serde_json::Value>
+        + Send
+        + Sync
+        + RefUnwindSafe
+        + 'static,
 >;
+
+/// Callback for synchronous mutable notifications
+type SyncMutCallback<Db> =
+    Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value>>;
 
 #[derive(Default)]
 pub struct NotificationRegistry<Db: BaseDatabase> {
-    handlers: HashMap<String, RequestCallback<Db>>,
+    handlers: HashMap<String, Callback<Db>>,
+    sync_mut_handlers: HashMap<String, SyncMutCallback<Db>>,
 }
 
-impl<Db: BaseDatabase> NotificationRegistry<Db> {
+impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
     pub fn on<N, F>(&mut self, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned,
-        F: Fn(&Session<Db>, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
+        F: Fn(&Db, N::Params) -> anyhow::Result<()> + Send + Sync + RefUnwindSafe + 'static,
     {
         let method = N::METHOD.to_string();
-        let callback: RequestCallback<Db> = Box::new(move |session, params| {
+        let callback: Callback<Db> = Arc::new(move |session, params| {
             let parsed_params: N::Params = serde_json::from_value(params)?;
             handler(session, parsed_params)?;
             Ok(serde_json::to_value(())?)
@@ -53,31 +63,63 @@ impl<Db: BaseDatabase> NotificationRegistry<Db> {
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned,
-        F: Fn(&mut Session<Db>, N::Params) -> anyhow::Result<()> + Send + Sync + 'static,
+        F: Fn(&mut Session<Db>, N::Params) -> anyhow::Result<()> + Send + 'static,
     {
         let method = N::METHOD.to_string();
-        let callback: RequestCallback<Db> = Box::new(move |session, params| {
+        let callback: SyncMutCallback<Db> = Box::new(move |session, params| {
             let parsed_params: N::Params = serde_json::from_value(params)?;
             handler(session, parsed_params)?;
             Ok(serde_json::to_value(())?)
         });
 
-        self.handlers.insert(method, callback);
+        self.sync_mut_handlers.insert(method, callback);
         self
     }
 
-    pub fn handle(&self, session: &mut Session<Db>, req: Notification) -> anyhow::Result<()> {
-        let params = req.params;
-        if let Some(callback) = self.handlers.get(&req.method) {
-            match callback(session, params) {
-                Ok(_) => Ok(()),
-                Err(err) => Err(err),
+    pub(crate) fn get(&self, req: &Notification) -> Option<&Callback<Db>> {
+        self.handlers.get(&req.method)
+    }
+
+    pub(crate) fn get_sync_mut(&self, req: &Notification) -> Option<&SyncMutCallback<Db>> {
+        self.sync_mut_handlers.get(&req.method)
+    }
+
+    pub(crate) fn exec(session: &Session<Db>, callback: &Callback<Db>, not: Notification) {
+        let params = not.params;
+
+        let snapshot = session.snapshot();
+        let cb = Arc::clone(callback);
+        session.task_pool.spawn(move |sender| {
+            let cb = cb.clone();
+            if let Err(e) = snapshot.with_db(|db| cb(&db, params)) {
+                sender.send(Task::NotificationError(e.into())).unwrap();
             }
+        });
+    }
+
+    pub(crate) fn exec_sync_mut(
+        session: &mut Session<Db>,
+        callback: &SyncMutCallback<Db>,
+        not: Notification,
+    ) -> anyhow::Result<()> {
+        if let Err(e) = callback(session, not.params) {
+            Self::handle_error(session, e)
         } else {
-            Err(anyhow::anyhow!(
-                "Method mismatch for notification '{}'",
-                req.method
-            ))
+            Ok(())
         }
+    }
+
+    pub(crate) fn handle_error(session: &Session<Db>, error: anyhow::Error) -> anyhow::Result<()> {
+        session
+            .connection
+            .sender
+            .send(Message::Notification(Notification {
+                method: "window/showMessage".to_string(),
+                params: serde_json::json!({
+                    "type": lsp_types::MessageType::ERROR,
+                    "message": error.to_string(),
+                }),
+            }))?;
+        Ok(())
     }
 }

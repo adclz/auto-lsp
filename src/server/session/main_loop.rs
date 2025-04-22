@@ -16,19 +16,28 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use std::panic::RefUnwindSafe;
+
 use super::Session;
 use crate::server::session::notification_registry::NotificationRegistry;
 use crate::server::session::request_registry::RequestRegistry;
+use anyhow::Error;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use crossbeam_channel::select;
-use lsp_server::{Message, Notification};
+use lsp_server::Message;
 
-impl<Db: BaseDatabase> Session<Db> {
+#[derive(Debug)]
+pub(crate) enum Task {
+    Response(lsp_server::Response),
+    NotificationError(Error),
+}
+
+impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> Session<Db> {
     /// Main loop of the LSP server, backed by [`lsp-server`] and [`crossbeam-channel`] crates.
-    pub fn main_loop(
-        &mut self,
-        req_registry: &RequestRegistry<Db>,
-        not_registry: &NotificationRegistry<Db>,
+    pub fn main_loop<'a>(
+        &'a mut self,
+        req_registry: &'a RequestRegistry<Db>,
+        not_registry: &'a NotificationRegistry<Db>,
     ) -> anyhow::Result<()> {
         loop {
             select! {
@@ -39,7 +48,7 @@ impl<Db: BaseDatabase> Session<Db> {
                                 return Ok(());
                             };
 
-                            self.req_queue.incoming.on(req.id.clone(), req.method.clone());
+                            self.req_queue.incoming.register(req.id.clone(), req.method.clone());
 
                             let id = req.id.clone();
                             if let Some(response) = req_registry.handle(self, req.clone())? {
@@ -50,18 +59,26 @@ impl<Db: BaseDatabase> Session<Db> {
                             }
                         }
                         Message::Notification(not) => {
-                            if let Err(err) = not_registry.handle(self, not) {
-                                self.connection.sender.send(Message::Notification(Notification {
-                                    method: "window/showMessage".to_string(),
-                                    params: serde_json::json!({
-                                        "type": lsp_types::MessageType::ERROR,
-                                        "message": err.to_string(),
-                                    })}
-                                ))?;
-                                log::error!("Error handling notification: {}", err.to_string());
+                            if let Some(method) = not_registry.get(&not) {
+                                NotificationRegistry::exec(self, method, not);
+                            } else if let Some(method) = not_registry.get_sync_mut(&not) {
+                                NotificationRegistry::exec_sync_mut(self, method, not)?;
+                            } else {
+                                NotificationRegistry::handle_error(self, anyhow::format_err!("Unknown notification: {}", not.method))?
                             }
                         }
                         Message::Response(_) => {}
+                    }
+                },
+                recv(self.task_rx) -> task => {
+                    match task? {
+                        Task::Response(resp) => {
+                            if !self.req_queue.incoming.is_completed(&resp.id) {
+                                self.req_queue.incoming.complete(&resp.id);
+                                self.connection.sender.send(Message::Response(resp))?;
+                            }
+                        },
+                        Task::NotificationError(err) => NotificationRegistry::handle_error(self, err)?,
                     }
                 }
             }
