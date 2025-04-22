@@ -24,16 +24,11 @@ use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
 
 /// Callback for parallelized notifications
 type Callback<Db> = Arc<
-    dyn Fn(&Db, serde_json::Value) -> anyhow::Result<serde_json::Value>
-        + Send
-        + Sync
-        + RefUnwindSafe
-        + 'static,
+    dyn Fn(&Db, serde_json::Value) -> anyhow::Result<()> + Send + Sync + RefUnwindSafe + 'static,
 >;
 
 /// Callback for synchronous mutable notifications
-type SyncMutCallback<Db> =
-    Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value>>;
+type SyncMutCallback<Db> = Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<()>>;
 
 /// A registry for LSP notifications.
 ///
@@ -64,7 +59,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
         let callback: Callback<Db> = Arc::new(move |session, params| {
             let parsed_params: N::Params = serde_json::from_value(params)?;
             handler(session, parsed_params)?;
-            Ok(serde_json::to_value(())?)
+            Ok(())
         });
 
         self.handlers.insert(method, callback);
@@ -82,7 +77,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
         let callback: SyncMutCallback<Db> = Box::new(move |session, params| {
             let parsed_params: N::Params = serde_json::from_value(params)?;
             handler(session, parsed_params)?;
-            Ok(serde_json::to_value(())?)
+            Ok(())
         });
 
         self.sync_mut_handlers.insert(method, callback);
