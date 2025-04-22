@@ -20,7 +20,7 @@ use crate::server::session::init::TextFn;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::Connection;
 use options::InitOptions;
-use std::collections::HashMap;
+use std::{collections::HashMap, panic::RefUnwindSafe};
 
 pub mod fs;
 pub mod init;
@@ -35,15 +35,29 @@ type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
 /// Main session object that holds both lsp server connection and initialization options.
 pub struct Session<Db: BaseDatabase> {
     /// Initialization options provided by the library user.
-    pub init_options: InitOptions,
+    pub(crate) init_options: InitOptions,
     pub connection: Connection,
     /// Text `fn` used to parse text files with the correct encoding.
     ///
     /// The client is responsible for providing the encoding at initialization (UTF-8, 16 or 32).
-    pub text_fn: TextFn,
+    pub(crate) text_fn: TextFn,
     /// Language extensions to parser mappings.
-    pub extensions: HashMap<String, String>,
+    pub(crate) extensions: HashMap<String, String>,
     /// Request queue for incoming requests
     pub req_queue: ReqQueue<Db>,
-    pub db: Db,
+    db: Db,
+}
+
+impl<Db: BaseDatabase> Session<Db> {
+    pub fn with_db<F, T>(&self, f: F) -> Result<T, salsa::Cancelled>
+    where
+        Self: RefUnwindSafe,
+        F: FnOnce(&Db) -> T + std::panic::UnwindSafe,
+    {
+        salsa::Cancelled::catch(|| f(&self.db))
+    }
+
+    pub fn mut_db(&mut self) -> &mut Db {
+        &mut self.db
+    }
 }

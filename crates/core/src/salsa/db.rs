@@ -24,7 +24,6 @@ use lsp_types::Url;
 use parking_lot::RwLock;
 use salsa::Setter;
 use salsa::{Database, Storage};
-use std::panic::RefUnwindSafe;
 use std::{hash::Hash, sync::Arc};
 use texter::core::text::Text;
 
@@ -66,18 +65,6 @@ pub trait BaseDatabase: Database {
     #[cfg(feature = "log")]
     fn take_logs(&self) -> Vec<String>;
 }
-
-pub trait WithDb {
-    fn with_db<F, T>(&self, f: F) -> Result<T, salsa::Cancelled>
-    where
-        Self: RefUnwindSafe,
-        F: FnOnce(&Self) -> T + std::panic::UnwindSafe,
-    {
-        salsa::Cancelled::catch(|| f(self))
-    }
-}
-
-impl<T: BaseDatabase> WithDb for T {}
 
 #[salsa::db]
 impl salsa::Database for BaseDb {
