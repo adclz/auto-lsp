@@ -50,12 +50,14 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> Session<Db> {
 
                             self.req_queue.incoming.register(req.id.clone(), req.method.clone());
 
-                            let id = req.id.clone();
-                            if let Some(response) = req_registry.handle(self, req.clone())? {
-                                 if !self.req_queue.incoming.is_completed(&id) {
-                                    self.req_queue.incoming.complete(&id);
-                                    self.connection.sender.send(Message::Response(response))?;
-                                }
+                            if let Some(method) = req_registry.get(&req) {
+                                RequestRegistry::exec(self, method, req);
+                            } else if let Some(method) = req_registry.get_sync_mut(&req) {
+                                RequestRegistry::exec_sync_mut(self, method, req)?;
+                            } else {
+                                RequestRegistry::complete(self,
+                                    RequestRegistry::<Db>::request_mismatch(req.id.clone(), anyhow::format_err!("Unknown request: {}", req.method))
+                                )?
                             }
                         }
                         Message::Notification(not) => {
@@ -72,12 +74,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> Session<Db> {
                 },
                 recv(self.task_rx) -> task => {
                     match task? {
-                        Task::Response(resp) => {
-                            if !self.req_queue.incoming.is_completed(&resp.id) {
-                                self.req_queue.incoming.complete(&resp.id);
-                                self.connection.sender.send(Message::Response(resp))?;
-                            }
-                        },
+                        Task::Response(resp) => RequestRegistry::complete(self, resp)?,
                         Task::NotificationError(err) => NotificationRegistry::handle_error(self, err)?,
                     }
                 }

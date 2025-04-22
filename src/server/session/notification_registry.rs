@@ -90,7 +90,6 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
         let snapshot = session.snapshot();
         let cb = Arc::clone(callback);
         session.task_pool.spawn(move |sender| {
-            let cb = cb.clone();
             if let Err(e) = snapshot.with_db(|db| cb(&db, params)) {
                 sender.send(Task::NotificationError(e.into())).unwrap();
             }

@@ -16,31 +16,41 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use super::Session;
+use super::{main_loop::Task, Session};
 use auto_lsp_core::salsa::db::BaseDatabase;
-use lsp_server::{Request, Response};
+use lsp_server::{Message, Request, RequestId, Response};
 use serde::{de::DeserializeOwned, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
 
-type RequestCallback<Db> = Box<
-    dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value> + Send + Sync,
+/// Callback for parallelized notifications
+type Callback<Db> = Arc<
+    dyn Fn(&Db, serde_json::Value) -> anyhow::Result<serde_json::Value>
+        + Send
+        + Sync
+        + RefUnwindSafe
+        + 'static,
 >;
+
+/// Callback for synchronous mutable notifications
+type SyncMutCallback<Db> =
+    Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value>>;
 
 #[derive(Default)]
 pub struct RequestRegistry<Db: BaseDatabase> {
-    handlers: HashMap<String, RequestCallback<Db>>,
+    handlers: HashMap<String, Callback<Db>>,
+    sync_mut_handlers: HashMap<String, SyncMutCallback<Db>>,
 }
 
-impl<Db: BaseDatabase> RequestRegistry<Db> {
+impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
     pub fn on<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned,
         R::Result: Serialize,
-        F: Fn(&Session<Db>, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
+        F: Fn(&Db, R::Params) -> anyhow::Result<R::Result> + Send + Sync + RefUnwindSafe + 'static,
     {
         let method = R::METHOD.to_string();
-        let callback: RequestCallback<Db> = Box::new(move |session, params| {
+        let callback: Callback<Db> = Arc::new(move |session, params| {
             let parsed_params: R::Params = serde_json::from_value(params)?;
             let result = handler(session, parsed_params)?;
             Ok(serde_json::to_value(result)?)
@@ -58,50 +68,101 @@ impl<Db: BaseDatabase> RequestRegistry<Db> {
         F: Fn(&mut Session<Db>, R::Params) -> anyhow::Result<R::Result> + Send + Sync + 'static,
     {
         let method = R::METHOD.to_string();
-        let callback: RequestCallback<Db> = Box::new(move |session, params| {
+        let callback: SyncMutCallback<Db> = Box::new(move |session, params| {
             let parsed_params: R::Params = serde_json::from_value(params)?;
             let result = handler(session, parsed_params)?;
             Ok(serde_json::to_value(result)?)
         });
 
-        self.handlers.insert(method, callback);
+        self.sync_mut_handlers.insert(method, callback);
         self
     }
 
-    pub fn handle(
-        &self,
-        session: &mut Session<Db>,
-        req: Request,
-    ) -> anyhow::Result<Option<Response>> {
-        let id = req.id.clone();
+    pub(crate) fn get(&self, req: &Request) -> Option<&Callback<Db>> {
+        self.handlers.get(&req.method)
+    }
+
+    pub(crate) fn get_sync_mut(&self, req: &Request) -> Option<&SyncMutCallback<Db>> {
+        self.sync_mut_handlers.get(&req.method)
+    }
+
+    pub(crate) fn exec(session: &Session<Db>, callback: &Callback<Db>, req: Request) {
         let params = req.params;
-        if let Some(callback) = self.handlers.get(&req.method) {
-            match callback(session, params) {
-                Ok(result) => Ok(Some(Response {
-                    id,
-                    result: Some(result),
-                    error: None,
-                })),
-                Err(err) => Ok(Some(Response {
-                    id,
-                    result: None,
-                    error: Some(lsp_server::ResponseError {
-                        code: -32803, // RequestFailed
-                        message: err.to_string(),
-                        data: None,
-                    }),
-                })),
+        let id = req.id.clone();
+
+        let snapshot = session.snapshot();
+        let cb = Arc::clone(callback);
+        session.task_pool.spawn(move |sender| {
+            let cb = cb.clone();
+            match snapshot.with_db(|db| cb(&db, params)) {
+                Err(e) => {
+                    log::warn!("Cancelled request: {}", e);
+                }
+                Ok(result) => match result {
+                    Ok(result) => sender
+                        .send(Task::Response(Response {
+                            id,
+                            result: Some(result),
+                            error: None,
+                        }))
+                        .unwrap(),
+                    Err(e) => {
+                        sender
+                            .send(Task::Response(Self::response_error(id, e.into())))
+                            .unwrap();
+                    }
+                },
             }
+        });
+    }
+
+    pub(crate) fn exec_sync_mut(
+        session: &mut Session<Db>,
+        callback: &SyncMutCallback<Db>,
+        req: Request,
+    ) -> anyhow::Result<()> {
+        if let Err(e) = callback(session, req.params.clone()) {
+            Self::complete(session, Self::response_error(req.id, e))
         } else {
-            Ok(Some(Response {
-                id,
-                result: None,
-                error: Some(lsp_server::ResponseError {
-                    code: -32601, // MethodNotFound
-                    message: format!("Method mismatch for request '{}'", req.method),
-                    data: None,
-                }),
-            }))
+            Ok(())
+        }
+    }
+
+    pub(crate) fn complete(
+        session: &mut Session<Db>,
+        response: lsp_server::Response,
+    ) -> anyhow::Result<()> {
+        let id = response.id.clone();
+        if !session.req_queue.incoming.is_completed(&id) {
+            session.req_queue.incoming.complete(&id);
+        }
+        Ok(session
+            .connection
+            .sender
+            .send(Message::Response(response))?)
+    }
+
+    pub(crate) fn response_error(id: RequestId, error: anyhow::Error) -> lsp_server::Response {
+        Response {
+            id,
+            result: None,
+            error: Some(lsp_server::ResponseError {
+                code: -32803, // RequestFailed
+                message: error.to_string(),
+                data: None,
+            }),
+        }
+    }
+
+    pub(crate) fn request_mismatch(id: RequestId, error: anyhow::Error) -> lsp_server::Response {
+        Response {
+            id,
+            result: None,
+            error: Some(lsp_server::ResponseError {
+                code: -32601, // MethodNotFound
+                message: format!("Method mismatch for request '{}'", error),
+                data: None,
+            }),
         }
     }
 }

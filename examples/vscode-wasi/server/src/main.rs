@@ -79,19 +79,21 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-fn on_requests<Db: BaseDatabase>(registry: &mut RequestRegistry<Db>) -> &mut RequestRegistry<Db> {
+fn on_requests<Db: BaseDatabase + Clone + RefUnwindSafe>(
+    registry: &mut RequestRegistry<Db>,
+) -> &mut RequestRegistry<Db> {
     registry
-        .on::<DocumentDiagnosticRequest, _>(|s, p| get_diagnostics(&s.db, p))
-        .on::<DocumentSymbolRequest, _>(|s, p| get_document_symbols(&s.db, p))
-        .on::<HoverRequest, _>(|s, p| get_hover(&s.db, p))
-        .on::<SemanticTokensFullRequest, _>(|s, p| get_semantic_tokens_full(&s.db, p))
-        .on::<SelectionRangeRequest, _>(|s, p| get_selection_ranges(&s.db, p))
-        .on::<WorkspaceSymbolRequest, _>(|s, p| get_workspace_symbols(&s.db, p))
-        .on::<WorkspaceDiagnosticRequest, _>(|s, p| get_workspace_diagnostics(&s.db, p))
-        .on::<InlayHintRequest, _>(|s, p| get_inlay_hints(&s.db, p))
-        .on::<CodeActionRequest, _>(|s, p| get_code_actions(&s.db, p))
-        .on::<CodeLensRequest, _>(|s, p| get_code_lenses(&s.db, p))
-        .on::<Completion, _>(|s, p| get_completion_items(&s.db, p))
+        .on::<DocumentDiagnosticRequest, _>(|s, p| get_diagnostics(s, p))
+        .on::<DocumentSymbolRequest, _>(|s, p| get_document_symbols(s, p))
+        .on::<HoverRequest, _>(|s, p| get_hover(s, p))
+        .on::<SemanticTokensFullRequest, _>(|s, p| get_semantic_tokens_full(s, p))
+        .on::<SelectionRangeRequest, _>(|s, p| get_selection_ranges(s, p))
+        .on::<WorkspaceSymbolRequest, _>(|s, p| get_workspace_symbols(s, p))
+        .on::<WorkspaceDiagnosticRequest, _>(|s, p| get_workspace_diagnostics(s, p))
+        .on::<InlayHintRequest, _>(|s, p| get_inlay_hints(s, p))
+        .on::<CodeActionRequest, _>(|s, p| get_code_actions(s, p))
+        .on::<CodeLensRequest, _>(|s, p| get_code_lenses(s, p))
+        .on::<Completion, _>(|s, p| get_completion_items(s, p))
 }
 
 fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
