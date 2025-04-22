@@ -79,6 +79,8 @@ impl salsa::Database for BaseDb {
     }
 }
 
+impl std::panic::RefUnwindSafe for BaseDb {}
+
 #[salsa::db]
 impl BaseDatabase for BaseDb {
     fn add_file_from_texter(
