@@ -44,12 +44,12 @@ pub struct Session<Db: BaseDatabase> {
     pub(crate) text_fn: TextFn,
     /// Language extensions to parser mappings.
     pub(crate) extensions: HashMap<String, String>,
+    pub(crate) task_rx: crossbeam_channel::Receiver<Task>,
+    pub(crate) task_pool: task_pool::TaskPool<Task>,
     /// Request queue for incoming requests
     pub req_queue: ReqQueue<Db>,
     pub connection: Connection,
     pub db: Db,
-    pub(crate) task_rx: crossbeam_channel::Receiver<Task>,
-    pub(crate) task_pool: task_pool::TaskPool<Task>,
 }
 
 impl<Db: BaseDatabase + Clone> Session<Db> {
@@ -64,6 +64,9 @@ pub struct DbSnapShot<Db: BaseDatabase + Send> {
     db: Db,
 }
 
+/// Perform an operation on the database that may be cancelled.
+///
+/// From: https://github.com/rust-lang/rust-analyzer/blob/4e4aee41c969e86adefdb8c687e2e91bb101329a/crates/ide/src/lib.rs#L862
 impl<Db: BaseDatabase + Clone + RefUnwindSafe> DbSnapShot<Db> {
     pub fn with_db<F, T>(&self, f: F) -> Result<T, salsa::Cancelled>
     where

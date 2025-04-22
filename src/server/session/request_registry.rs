@@ -22,7 +22,7 @@ use lsp_server::{Message, Request, RequestId, Response};
 use serde::{de::DeserializeOwned, Serialize};
 use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
 
-/// Callback for parallelized notifications
+/// Callback for parallelized requests
 type Callback<Db> = Arc<
     dyn Fn(&Db, serde_json::Value) -> anyhow::Result<serde_json::Value>
         + Send
@@ -31,10 +31,17 @@ type Callback<Db> = Arc<
         + 'static,
 >;
 
-/// Callback for synchronous mutable notifications
+/// Callback for synchronous mutable requests
 type SyncMutCallback<Db> =
     Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value>>;
 
+/// A registry for LSP requests.
+///
+/// This registry allows you to register handlers for LSP requests.
+///
+/// The handlers can be executed in a separate thread or synchronously with mutable access to the session.
+///
+/// The handlers are registered using the `on` and `on_mut` methods.
 #[derive(Default)]
 pub struct RequestRegistry<Db: BaseDatabase> {
     handlers: HashMap<String, Callback<Db>>,
@@ -60,6 +67,11 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
         self
     }
 
+    /// Register a synchronous mutable request handler.
+    ///
+    /// This handler is executed synchronously with mutable access to [`Session`].
+    ///
+    /// Note that there is no retry mechanism for cancelled or failed requests.
     pub fn on_mut<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,
@@ -86,6 +98,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
         self.sync_mut_handlers.get(&req.method)
     }
 
+    /// Push a request handler to the task pool.
     pub(crate) fn exec(session: &Session<Db>, callback: &Callback<Db>, req: Request) {
         let params = req.params;
         let id = req.id.clone();
@@ -116,6 +129,9 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
         });
     }
 
+    /// Execute a synchronous mutable request handler.
+    ///
+    /// Depending on the handler, this may cancel parallelized requests.
     pub(crate) fn exec_sync_mut(
         session: &mut Session<Db>,
         callback: &SyncMutCallback<Db>,

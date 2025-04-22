@@ -35,6 +35,13 @@ type Callback<Db> = Arc<
 type SyncMutCallback<Db> =
     Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value>>;
 
+/// A registry for LSP notifications.
+///
+/// This registry allows you to register handlers for LSP notifications.
+///
+/// The handlers can be executed in a separate thread or synchronously with mutable access to the session.
+///
+/// The handlers are registered using the `on` and `on_mut` methods.
 #[derive(Default)]
 pub struct NotificationRegistry<Db: BaseDatabase> {
     handlers: HashMap<String, Callback<Db>>,
@@ -42,6 +49,11 @@ pub struct NotificationRegistry<Db: BaseDatabase> {
 }
 
 impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
+    /// Register a notification handler that will be pushed to the task pool.
+    ///
+    /// This handler is Cancelable and will be executed in a separate thread.
+    ///
+    /// Note that there is no retry mechanism for cancelled or failed notifications.
     pub fn on<N, F>(&mut self, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,
@@ -59,6 +71,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
         self
     }
 
+    /// Register a notification handler that will be executed synchronously with a mutable access to [`Session`].
     pub fn on_mut<N, F>(&mut self, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,
@@ -84,18 +97,27 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
         self.sync_mut_handlers.get(&req.method)
     }
 
+    /// Push a notification handler to the task pool.
     pub(crate) fn exec(session: &Session<Db>, callback: &Callback<Db>, not: Notification) {
         let params = not.params;
 
         let snapshot = session.snapshot();
         let cb = Arc::clone(callback);
-        session.task_pool.spawn(move |sender| {
-            if let Err(e) = snapshot.with_db(|db| cb(&db, params)) {
-                sender.send(Task::NotificationError(e.into())).unwrap();
-            }
-        });
+        session
+            .task_pool
+            .spawn(move |sender| match snapshot.with_db(|db| cb(&db, params)) {
+                Err(e) => log::warn!("Cancelled notification: {}", e),
+                Ok(result) => {
+                    if let Err(e) = result {
+                        sender.send(Task::NotificationError(e.into())).unwrap();
+                    }
+                }
+            });
     }
 
+    /// Execute a synchronous mutable notification handler immediatly.
+    ///
+    /// Depending on the handler, this may cancel parallelized notifications.
     pub(crate) fn exec_sync_mut(
         session: &mut Session<Db>,
         callback: &SyncMutCallback<Db>,
