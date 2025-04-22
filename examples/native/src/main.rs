@@ -62,8 +62,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut request_registry = RequestRegistry::<BaseDb>::default();
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
-    request_registry
-        .on::<GetWorkspaceFiles, _>(|session, _| Ok(session.with_db(|db| db.get_urls()))?);
+    request_registry.on::<GetWorkspaceFiles, _>(|session, _| Ok(session.db.get_urls()));
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop(
