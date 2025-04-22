@@ -115,8 +115,8 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
             }
             Ok(())
         })
-        .on::<DidSaveTextDocument, _>(|s, p| Ok(()))
-        .on::<DidCloseTextDocument, _>(|s, p| Ok(()))
-        .on::<SetTrace, _>(|s, p| Ok(()))
-        .on::<LogTrace, _>(|s, p| Ok(()))
+        .on::<DidSaveTextDocument, _>(|_s, _p| Ok(()))
+        .on::<DidCloseTextDocument, _>(|_s, _p| Ok(()))
+        .on::<SetTrace, _>(|_s, _p| Ok(()))
+        .on::<LogTrace, _>(|_s, _p| Ok(()))
 }

@@ -44,8 +44,4 @@ impl<T> TaskPool<T> {
             task(sender);
         });
     }
-
-    pub(crate) fn len(&self) -> usize {
-        self.pool.current_num_threads()
-    }
 }

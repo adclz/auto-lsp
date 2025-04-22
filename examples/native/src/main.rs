@@ -23,14 +23,12 @@ use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
-use auto_lsp::lsp_types::request::DocumentDiagnosticRequest;
 use auto_lsp::python::PYTHON_PARSERS;
-use auto_lsp::server::capabilities::{changed_watched_files, get_diagnostics, open_text_document};
+use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
 use auto_lsp::server::RequestRegistry;
 use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, Session};
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
-use std::ops::Deref;
 use std::panic::RefUnwindSafe;
 
 pub trait ExtendDb: BaseDatabase {
@@ -96,8 +94,8 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
             }
             Ok(())
         })
-        .on::<DidSaveTextDocument, _>(|s, p| Ok(()))
-        .on::<DidCloseTextDocument, _>(|s, p| Ok(()))
-        .on::<SetTrace, _>(|s, p| Ok(()))
-        .on::<LogTrace, _>(|s, p| Ok(()))
+        .on::<DidSaveTextDocument, _>(|_s, _p| Ok(()))
+        .on::<DidCloseTextDocument, _>(|_s, _p| Ok(()))
+        .on::<SetTrace, _>(|_s, _p| Ok(()))
+        .on::<LogTrace, _>(|_s, _p| Ok(()))
 }
