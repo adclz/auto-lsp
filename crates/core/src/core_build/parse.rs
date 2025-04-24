@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use std::sync::Arc;
+
 use crate::ast::DynSymbol;
 use crate::document::Document;
 use crate::errors::AstError;
@@ -30,6 +32,7 @@ use crate::{
     build::{Buildable, Queryable},
 };
 use ariadne::{ColorGenerator, Report, ReportKind, Source};
+use id_arena::Arena;
 use lsp_types::Url;
 use texter::core::text::Text;
 
@@ -40,7 +43,16 @@ use super::stack_builder::StackBuilder;
 /// This trait is implemented for all types that implement [`Buildable`] and [`Queryable`].
 pub trait InvokeParser<
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
+    Y: AstSymbol
+        + for<'a> TryFrom<
+            (
+                &'a T,
+                &'a Document,
+                &'static Parsers,
+                &'a mut Arena<Arc<dyn AstSymbol>>,
+            ),
+            Error = AstError,
+        >,
 >
 {
     /// Creates a symbol.
@@ -51,19 +63,28 @@ pub trait InvokeParser<
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<Y, ParseError>;
+    ) -> Result<(Y, Arena<Arc<dyn AstSymbol>>), ParseError>;
 }
 
 impl<T, Y> InvokeParser<T, Y> for Y
 where
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'b> TryFrom<(&'b T, &'b Document, &'static Parsers), Error = AstError>,
+    Y: AstSymbol
+        + for<'b> TryFrom<
+            (
+                &'b T,
+                &'b Document,
+                &'static Parsers,
+                &'b mut Arena<Arc<dyn AstSymbol>>,
+            ),
+            Error = AstError,
+        >,
 {
     fn parse_symbol(
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<Y, ParseError> {
+    ) -> Result<(Y, Arena<Arc<dyn AstSymbol>>), ParseError> {
         StackBuilder::<T>::new(db, document, parsers).create_symbol()
     }
 }
@@ -72,8 +93,11 @@ where
 ///
 /// This type alias is useful for mapping language IDs to specific parsers,
 /// avoiding ambiguity.
-pub type InvokeParserFn =
-    fn(&dyn BaseDatabase, &'static Parsers, &Document) -> Result<DynSymbol, ParseError>;
+pub type InvokeParserFn = fn(
+    &dyn BaseDatabase,
+    &'static Parsers,
+    &Document,
+) -> Result<(DynSymbol, Arena<Arc<dyn AstSymbol>>), ParseError>;
 
 pub type TestParseResult<E = AriadneReport> = Result<(), Box<E>>;
 
@@ -150,7 +174,7 @@ where
                     diagnostic.to_label(&source, &mut colors, &mut report);
                 }
 
-                if let Some(ast) = ast.to_symbol() {
+                if let Some(ast) = ast.get_root() {
                     report.add_note(format!("{}", ast));
                 }
 

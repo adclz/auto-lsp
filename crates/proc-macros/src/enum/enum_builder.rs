@@ -357,20 +357,22 @@ impl EnumBuilder<'_> {
             impl TryFrom<(
                 &#input_builder_name,
                 &auto_lsp::core::document::Document,
-                &'static #parsers
+                &'static #parsers,
+                &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
             )> for #name {
                 type Error = auto_lsp::core::errors::AstError;
 
                 fn try_from(
-                    (builder, document, parsers): (
+                    (builder, document, parsers, arena): (
                         &#input_builder_name,
                         &auto_lsp::core::document::Document,
-                        &'static #parsers
+                        &'static #parsers,
+                        &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
                     )
                 ) -> Result<Self, Self::Error> {
                     #(
                         if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(#variant_types::try_from((variant, document, parsers))?));
+                            return Ok(Self::#variant_names(#variant_types::try_from((variant, document, parsers, arena))?));
                         };
                     )*
                     Err(auto_lsp::core::errors::AstError::UnknownSymbol {

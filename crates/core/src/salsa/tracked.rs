@@ -16,10 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use id_arena::Arena;
 use salsa::Accumulator;
 
 use super::db::{BaseDatabase, File};
-use crate::ast::DynSymbol;
+use crate::ast::{AstSymbol, DynSymbol};
 use crate::core_build::lexer::get_tree_sitter_errors;
 use crate::errors::ParseErrorAccumulator;
 use std::fmt::Formatter;
@@ -40,7 +41,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     get_tree_sitter_errors(db, &node, source_code);
 
     match (parsers.ast_parser)(db, parsers, &doc) {
-        Ok(ast) => ParsedAst::new(ast),
+        Ok((ast, arena)) => ParsedAst::new(ast, arena),
         Err(e) => {
             ParseErrorAccumulator::accumulate(e.clone().into(), db);
             ParsedAst::default()
@@ -52,6 +53,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 #[derive(Default, Clone)]
 pub struct ParsedAst {
     inner: Arc<Option<DynSymbol>>,
+    arena: Arena<Arc<dyn AstSymbol>>,
 }
 
 impl std::fmt::Debug for ParsedAst {
@@ -69,14 +71,19 @@ impl PartialEq for ParsedAst {
 impl Eq for ParsedAst {}
 
 impl ParsedAst {
-    fn new(ast: DynSymbol) -> Self {
+    fn new(ast: DynSymbol, arena: Arena<Arc<dyn AstSymbol>>) -> Self {
         Self {
             inner: Arc::new(Some(ast)),
+            arena,
         }
     }
 
-    pub fn to_symbol(&self) -> Option<&DynSymbol> {
+    pub fn get_root(&self) -> Option<&DynSymbol> {
         self.inner.as_ref().as_ref()
+    }
+
+    pub fn get_arena(&self) -> &Arena<Arc<dyn AstSymbol>> {
+        &self.arena
     }
 }
 

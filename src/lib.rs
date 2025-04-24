@@ -148,6 +148,7 @@ pub use anyhow;
 pub use ariadne;
 #[doc(hidden)]
 pub use constcat;
+pub use id_arena;
 #[cfg(any(feature = "lsp_server", test))]
 pub use lsp_server;
 pub use lsp_types;

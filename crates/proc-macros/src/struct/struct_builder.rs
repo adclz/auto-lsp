@@ -326,7 +326,7 @@ impl StructBuilder<'_> {
                 FieldType::Normal  => quote! {
                     let #name = builder
                         .#name
-                        .try_downcast(parsers, document, stringify!(#field_type), &builder_range, stringify!(#input_name))?
+                        .try_downcast(parsers, document, arena, stringify!(#field_type), &builder_range, stringify!(#input_name))?
                         .finalize()
                         .ok_or(auto_lsp::core::errors::AstError::MissingSymbol {
                             range: builder_range.clone(),
@@ -337,7 +337,8 @@ impl StructBuilder<'_> {
                 _=> quote! {
                         let #name = builder
                             .#name
-                            .try_downcast(parsers, document, stringify!(#field_type), &builder_range, stringify!(#input_name))?.finalize();
+                            .try_downcast(parsers, document, arena, stringify!(#field_type), &builder_range, stringify!(#input_name))?
+                            .finalize();
                     }
             })
             .stage()
@@ -347,15 +348,17 @@ impl StructBuilder<'_> {
             impl TryFrom<(
                 &#input_builder_name,
                 &auto_lsp::core::document::Document,
-                &'static #parsers
+                &'static #parsers,
+                &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
             )> for #input_name {
                 type Error = auto_lsp::core::errors::AstError;
 
                 fn try_from(
-                    (builder, document, parsers): (
+                    (builder, document, parsers, arena): (
                         &#input_builder_name,
                         &auto_lsp::core::document::Document,
-                        &'static #parsers
+                        &'static #parsers,
+                        &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
                     )
                 ) -> Result<Self, Self::Error> {
                     let builder_range = builder.get_range();

@@ -62,6 +62,12 @@ impl std::fmt::Display for DynSymbol {
 #[derive(Debug, Clone)]
 pub struct WeakSymbol(pub(crate) Weak<dyn AstSymbol>);
 
+impl<T: AstSymbol> From<T> for DynSymbol {
+    fn from(value: T) -> Self {
+        Self(Arc::new(value))
+    }
+}
+
 impl<T: AstSymbol> From<&Arc<T>> for DynSymbol {
     fn from(value: &Arc<T>) -> Self {
         Self(value.clone())

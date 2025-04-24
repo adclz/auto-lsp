@@ -16,6 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use std::sync::Arc;
+
+use id_arena::Arena;
+
 use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
 
 use super::{
@@ -26,7 +30,16 @@ use super::{
 /// Trait for downcasting a [`Buildable`] into an [`AstSymbol`].
 pub trait TryDownCast<
     T: Buildable,
-    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
+    Y: AstSymbol
+        + for<'a> TryFrom<
+            (
+                &'a T,
+                &'a Document,
+                &'static Parsers,
+                &'a mut Arena<Arc<dyn AstSymbol>>,
+            ),
+            Error = AstError,
+        >,
 >
 {
     type Output;
@@ -35,6 +48,7 @@ pub trait TryDownCast<
         &self,
         parsers: &'static Parsers,
         document: &Document,
+        arena: &mut Arena<Arc<dyn AstSymbol>>,
         field_name: &str,
         field_range: &std::ops::Range<usize>,
         input_name: &str,
@@ -44,7 +58,16 @@ pub trait TryDownCast<
 impl<T, Y> TryDownCast<T, Y> for PendingSymbol
 where
     T: Buildable,
-    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
+    Y: AstSymbol
+        + for<'a> TryFrom<
+            (
+                &'a T,
+                &'a Document,
+                &'static Parsers,
+                &'a mut Arena<Arc<dyn AstSymbol>>,
+            ),
+            Error = AstError,
+        >,
 {
     type Output = Y;
 
@@ -52,6 +75,7 @@ where
         &self,
         parsers: &'static Parsers,
         document: &Document,
+        arena: &mut Arena<Arc<dyn AstSymbol>>,
         field_name: &str,
         field_range: &std::ops::Range<usize>,
         input_name: &str,
@@ -68,6 +92,7 @@ where
                 })?,
             document,
             parsers,
+            arena,
         ))
     }
 }
@@ -75,7 +100,16 @@ where
 impl<T, Y> TryDownCast<T, Y> for MaybePendingSymbol
 where
     T: Buildable,
-    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
+    Y: AstSymbol
+        + for<'a> TryFrom<
+            (
+                &'a T,
+                &'a Document,
+                &'static Parsers,
+                &'a mut Arena<Arc<dyn AstSymbol>>,
+            ),
+            Error = AstError,
+        >,
 {
     type Output = Option<Y>;
 
@@ -83,13 +117,21 @@ where
         &self,
         parsers: &'static Parsers,
         document: &Document,
+        arena: &mut Arena<Arc<dyn AstSymbol>>,
         field_name: &str,
         field_range: &std::ops::Range<usize>,
         input_name: &str,
     ) -> Result<Self::Output, AstError> {
         self.as_ref().as_ref().map_or(Ok(None), |pending| {
             pending
-                .try_downcast(parsers, document, field_name, field_range, input_name)
+                .try_downcast(
+                    parsers,
+                    document,
+                    arena,
+                    field_name,
+                    field_range,
+                    input_name,
+                )
                 .map(Some)
         })
     }
@@ -99,7 +141,16 @@ impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
 where
     T: TryDownCast<Y, V, Output = V>,
     Y: Buildable,
-    V: AstSymbol + for<'a> TryFrom<(&'a Y, &'a Document, &'static Parsers), Error = AstError>,
+    V: AstSymbol
+        + for<'a> TryFrom<
+            (
+                &'a Y,
+                &'a Document,
+                &'static Parsers,
+                &'a mut Arena<Arc<dyn AstSymbol>>,
+            ),
+            Error = AstError,
+        >,
 {
     type Output = Vec<V>;
 
@@ -107,12 +158,22 @@ where
         &self,
         parsers: &'static Parsers,
         document: &Document,
+        arena: &mut Arena<Arc<dyn AstSymbol>>,
         field_name: &str,
         field_range: &std::ops::Range<usize>,
         input_name: &str,
     ) -> Result<Self::Output, AstError> {
         self.iter()
-            .map(|item| item.try_downcast(parsers, document, field_name, field_range, input_name))
+            .map(|item| {
+                item.try_downcast(
+                    parsers,
+                    document,
+                    arena,
+                    field_name,
+                    field_range,
+                    input_name,
+                )
+            })
             .collect::<Result<Vec<_>, AstError>>()
     }
 }

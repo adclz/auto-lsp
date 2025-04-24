@@ -17,7 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use std::marker::PhantomData;
+use std::sync::Arc;
 
+use id_arena::Arena;
 use salsa::Accumulator;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::QueryCapture;
@@ -75,10 +77,20 @@ where
     ///
     /// This method builds the AST for the provided range (if any) and attempts to derive
     /// a symbol from the root node.
-    pub fn create_symbol<Y>(&mut self) -> Result<Y, ParseError>
+    pub fn create_symbol<Y>(&mut self) -> Result<(Y, Arena<Arc<dyn AstSymbol>>), ParseError>
     where
-        Y: AstSymbol + for<'c> TryFrom<(&'c T, &'c Document, &'static Parsers), Error = AstError>,
+        Y: AstSymbol
+            + for<'c> TryFrom<
+                (
+                    &'c T,
+                    &'c Document,
+                    &'static Parsers,
+                    &'c mut Arena<Arc<dyn AstSymbol>>,
+                ),
+                Error = AstError,
+            >,
     {
+        let mut arena = Arena::<Arc<dyn AstSymbol>>::new();
         let result = self.build()?.ok_or::<ParseError>(
             (
                 self.document,
@@ -96,11 +108,12 @@ where
             result.0.borrow().downcast_ref::<T>().unwrap(),
             self.document,
             self.parsers,
+            &mut arena,
         ))
         .map_err(|err| ParseError::from((self.document, err)))?;
         #[cfg(feature = "log")]
         log::debug!("\n{}", result);
-        Ok(result)
+        Ok((result, arena))
     }
 
     /// Builds the AST based on Tree-sitter query captures.
