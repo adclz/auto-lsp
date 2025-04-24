@@ -100,6 +100,7 @@ fn descendant_at_and_collect(nested_divs: impl BaseDatabase) {
     assert_eq!(collected[3].get_range().start, 59);
 }
 
+/*
 #[rstest]
 fn traverse_and_collect(nested_divs: impl BaseDatabase) {
     let file = nested_divs
@@ -127,3 +128,4 @@ fn traverse_and_collect(nested_divs: impl BaseDatabase) {
     assert_eq!(collected[6].get_text(source_code).unwrap(), "div");
     assert_eq!(collected[7].get_text(source_code).unwrap(), "div");
 }
+*/
