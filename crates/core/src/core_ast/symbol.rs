@@ -18,11 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::{
     fmt::Debug,
+    ops::Deref,
     sync::{Arc, Weak},
 };
 
 use super::core::AstSymbol;
-use parking_lot::RwLock;
 
 /// Generic thread-safe wrapper around [AstSymbol] using [Arc] and [parking_lot::RwLock]
 ///
@@ -30,49 +30,51 @@ use parking_lot::RwLock;
 ///
 /// [`Symbol<T>`] also provides methods to convert to [DynSymbol] and [WeakSymbol]
 #[derive(Clone)]
-pub struct Symbol<T: AstSymbol>(pub(crate) Arc<RwLock<T>>);
+pub struct Symbol<T: AstSymbol>(pub(crate) Arc<T>);
 
-impl<T: AstSymbol> Symbol<T> {
-    pub fn read(&self) -> parking_lot::RwLockReadGuard<T> {
-        self.0.read()
+impl<T: AstSymbol> Deref for Symbol<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        self.0.deref()
     }
+}
 
-    #[doc(hidden)]
-    pub fn write(&self) -> parking_lot::RwLockWriteGuard<T> {
-        self.0.write()
+impl<T: AstSymbol> AsRef<T> for Symbol<T> {
+    fn as_ref(&self) -> &T {
+        self.0.as_ref()
     }
 }
 
 /// Generic Thread-safe wrapper around an [AstSymbol] trait object using [Arc] and [parking_lot::RwLock]
 #[derive(Clone)]
-pub struct DynSymbol(pub(crate) Arc<RwLock<dyn AstSymbol>>);
+pub struct DynSymbol(pub(crate) Arc<dyn AstSymbol>);
 
 impl DynSymbol {
     pub fn new(symbol: impl AstSymbol) -> Self {
-        Self(Arc::new(parking_lot::RwLock::new(symbol)))
+        Self(Arc::new(symbol))
     }
+}
 
-    pub fn read(&self) -> parking_lot::RwLockReadGuard<dyn AstSymbol> {
-        self.0.read()
-    }
+impl Deref for DynSymbol {
+    type Target = dyn AstSymbol;
 
-    #[doc(hidden)]
-    pub fn write(&self) -> parking_lot::RwLockWriteGuard<dyn AstSymbol> {
-        self.0.write()
+    fn deref(&self) -> &Self::Target {
+        self.0.deref()
     }
 }
 
 impl Debug for DynSymbol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Symbol")
-            .field("range", &self.read().get_range())
+            .field("range", &self.0.get_range())
             .finish()
     }
 }
 
 impl std::fmt::Display for DynSymbol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.read().fmt(f)
+        self.0.fmt(f)
     }
 }
 
@@ -80,13 +82,11 @@ impl std::fmt::Display for DynSymbol {
 ///
 /// Must be upgraded to a [DynSymbol] before use
 #[derive(Debug, Clone)]
-pub struct WeakSymbol(pub(crate) Weak<RwLock<dyn AstSymbol>>);
+pub struct WeakSymbol(pub(crate) Weak<dyn AstSymbol>);
 
 impl<T: AstSymbol> From<T> for Symbol<T> {
     fn from(value: T) -> Self {
-        let symbol = Self(Arc::new(RwLock::new(value)));
-        symbol.write().inject_parent((&symbol).into());
-        symbol
+        Self(Arc::new(value))
     }
 }
 

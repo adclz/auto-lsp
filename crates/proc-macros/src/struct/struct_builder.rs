@@ -83,7 +83,6 @@ impl ToTokens for StructBuilder<'_> {
 
         // Implement core capabilities
         self.impl_traverse(&mut builder);
-        self.impl_parent(&mut builder);
         self.impl_indented_display(&mut builder);
 
         // Implement other features
@@ -143,11 +142,9 @@ impl StructBuilder<'_> {
 
     fn impl_ast_symbol(&self, builder: &mut FieldBuilder) {
         let get_data = &self.paths.symbol_trait.get_data.sig;
-        let get_mut_data = &self.paths.symbol_trait.get_mut_data.sig;
 
         builder
             .add(quote! { #get_data { &self._data } })
-            .add(quote! { #get_mut_data { &mut self._data } })
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
     }
 
@@ -193,22 +190,6 @@ impl StructBuilder<'_> {
             None
             )
             .stage_trait(self.input_name, &self.paths.traverse.path);
-    }
-
-    fn impl_parent(&self, builder: &mut FieldBuilder) {
-        builder
-            .add_fn_iter(
-                self.fields,
-                &self.paths.parent.inject_parent.sig,
-                None,
-                |_, _, name, _, _| {
-                    quote! {
-                        self.#name.inject_parent(parent.clone());
-                    }
-                },
-                None,
-            )
-            .stage_trait(self.input_name, &self.paths.parent.path);
     }
 
     fn impl_queryable(&self, builder: &mut FieldBuilder) {

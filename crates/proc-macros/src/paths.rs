@@ -59,7 +59,6 @@ nested_struct!(
         pub symbol_trait: SymbolTrait {
             pub path: Path,
             pub get_data: Method,
-            pub get_mut_data: Method,
         },
 
         pub symbol_builder_trait: SymbolBuilderTrait {
@@ -124,10 +123,6 @@ nested_struct!(
             pub descendant_at_and_collect: Method,
             pub traverse_and_collect: Method
         },
-        pub parent: Parent {
-            pub path: Path,
-            pub inject_parent: Method
-        },
         pub display: Display {
             pub path: Path,
             pub fmt: Method
@@ -163,10 +158,6 @@ impl Default for Paths {
                 get_data: Method {
                     sig: quote! { #[inline] fn get_data(&self) -> &auto_lsp::core::ast::SymbolData },
                     variant: quote! { get_data() },
-                },
-                get_mut_data: Method {
-                    sig: quote! { #[doc(hidden)] #[inline] fn get_mut_data(&mut self) -> &mut auto_lsp::core::ast::SymbolData },
-                    variant: quote! { get_mut_data() },
                 },
             },
 
@@ -291,13 +282,6 @@ impl Default for Paths {
                 traverse_and_collect: Method {
                     sig: quote! { fn traverse_and_collect(&self, collect_fn: fn(auto_lsp::core::ast::DynSymbol) -> bool, collect: &mut Vec<auto_lsp::core::ast::DynSymbol>) },
                     variant: quote! { traverse_and_collect(collect_fn, collect) },
-                },
-            },
-            parent: Parent {
-                path: core_build(parse_quote!(Parent)),
-                inject_parent: Method {
-                    sig: quote! { fn inject_parent(&mut self, parent: auto_lsp::core::ast::WeakSymbol) },
-                    variant: quote! { inject_parent(parent) },
                 },
             },
             display: Display {

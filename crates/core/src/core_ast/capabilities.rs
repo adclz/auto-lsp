@@ -22,10 +22,7 @@ use super::core::AstSymbol;
 use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
-use lsp_types::{
-    request::GotoDeclarationResponse, CompletionItem,
-    GotoDefinitionResponse,
-};
+use lsp_types::{request::GotoDeclarationResponse, CompletionItem, GotoDefinitionResponse};
 
 /// [LSP DocumentSymbol specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
 pub trait BuildDocumentSymbols {
@@ -320,10 +317,8 @@ pub trait Traverse {
 
 impl Traverse for DynSymbol {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
-        if self.read().is_inside_offset(offset) {
-            self.read()
-                .descendant_at(offset)
-                .or_else(|| Some(self.clone()))
+        if self.0.is_inside_offset(offset) {
+            self.0.descendant_at(offset).or_else(|| Some(self.clone()))
         } else {
             None
         }
@@ -335,11 +330,11 @@ impl Traverse for DynSymbol {
         collect_fn: fn(DynSymbol) -> bool,
         collect: &mut Vec<DynSymbol>,
     ) -> Option<DynSymbol> {
-        if self.read().is_inside_offset(offset) {
+        if self.0.is_inside_offset(offset) {
             if collect_fn(self.clone()) {
                 collect.push(self.clone());
             }
-            self.read()
+            self.0
                 .descendant_at_and_collect(offset, collect_fn, collect)
         } else {
             None
@@ -354,15 +349,14 @@ impl Traverse for DynSymbol {
         if collect_fn(self.clone()) {
             collect.push(self.clone());
         }
-        self.read().traverse_and_collect(collect_fn, collect);
+        self.0.traverse_and_collect(collect_fn, collect);
     }
 }
 
 impl<T: AstSymbol> Traverse for Symbol<T> {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
-        let symbol = self.read();
-        match symbol.is_inside_offset(offset) {
-            true => symbol.descendant_at(offset).or_else(|| Some(self.into())),
+        match self.0.is_inside_offset(offset) {
+            true => self.0.descendant_at(offset).or_else(|| Some(self.into())),
             false => None,
         }
     }
@@ -374,13 +368,12 @@ impl<T: AstSymbol> Traverse for Symbol<T> {
         collect: &mut Vec<DynSymbol>,
     ) -> Option<DynSymbol> {
         let to_dyn: DynSymbol = self.into();
-        let symbol = self.read();
-        match symbol.is_inside_offset(offset) {
+        match self.0.is_inside_offset(offset) {
             true => {
                 if collect_fn(to_dyn.clone()) {
                     collect.push(to_dyn);
                 }
-                symbol
+                self.0
                     .descendant_at_and_collect(offset, collect_fn, collect)
                     .or_else(|| Some(self.into()))
             }
@@ -393,7 +386,7 @@ impl<T: AstSymbol> Traverse for Symbol<T> {
         collect_fn: fn(DynSymbol) -> bool,
         collect: &mut Vec<DynSymbol>,
     ) {
-        let symbol = self.read();
+        let symbol = &self.0;
         if collect_fn(self.into()) {
             collect.push(self.into());
         }
@@ -479,7 +472,7 @@ macro_rules! impl_dyn_symbol {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)-> $return_type: ty) => {
         impl $trait for DynSymbol {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<$return_type> {
-                self.read().$fn_name($($param_name),*)
+                self.0.$fn_name($($param_name),*)
             }
         }
     };
@@ -501,7 +494,7 @@ macro_rules! impl_build {
         impl<T: AstSymbol> $trait for Option<Symbol<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 if let Some(node) = self.as_ref() {
-                    node.read().$fn_name($($param_name),*)?;
+                    node.0.$fn_name($($param_name),*)?;
                 }
                 Ok(())
             }
@@ -510,7 +503,7 @@ macro_rules! impl_build {
         impl<T: AstSymbol> $trait for Vec<Symbol<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 for symbol in self.iter() {
-                    symbol.read().$fn_name($($param_name),*)?;
+                    symbol.0.$fn_name($($param_name),*)?;
                 }
                 Ok(())
             }

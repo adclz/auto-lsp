@@ -27,14 +27,14 @@ pub trait IndentedDisplay {
 
 impl<T: AstSymbol> IndentedDisplay for Symbol<T> {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
-        self.read().fmt_with_indent(f, indent)
+        self.0.fmt_with_indent(f, indent)
     }
 }
 
 impl<T: AstSymbol> IndentedDisplay for Option<Symbol<T>> {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
         if let Some(value) = self {
-            value.fmt_with_indent(f, indent)
+            value.0.fmt_with_indent(f, indent)
         } else {
             Ok(())
         }
@@ -44,7 +44,7 @@ impl<T: AstSymbol> IndentedDisplay for Option<Symbol<T>> {
 impl<T: AstSymbol> IndentedDisplay for Vec<Symbol<T>> {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
         for item in self {
-            item.read().fmt_with_indent(f, indent)?;
+            item.0.fmt_with_indent(f, indent)?;
         }
         Ok(())
     }

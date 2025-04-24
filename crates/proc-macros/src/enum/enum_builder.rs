@@ -56,7 +56,6 @@ impl ToTokens for EnumBuilder<'_> {
         self.impl_traverse(&mut builder);
         self.impl_indented_display(&mut builder);
         self.impl_queryable(&mut builder);
-        self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
 
         self.impl_code_actions(&mut builder);
@@ -111,11 +110,6 @@ impl EnumBuilder<'_> {
                 self.fields,
                 &self.paths.symbol_trait.get_data.sig,
                 &self.paths.symbol_trait.get_data.variant,
-            )
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.symbol_trait.get_mut_data.sig,
-                &self.paths.symbol_trait.get_mut_data.variant,
             )
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
     }
@@ -173,16 +167,6 @@ impl EnumBuilder<'_> {
                 };
             })
             .stage_trait(self.input_builder_name, queryable);
-    }
-
-    fn impl_parent(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.parent.inject_parent.sig,
-                &self.paths.parent.inject_parent.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.parent.path);
     }
 
     fn impl_scope(&self, builder: &mut VariantBuilder) {

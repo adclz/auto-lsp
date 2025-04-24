@@ -151,7 +151,7 @@ where
                 }
 
                 if let Some(ast) = ast.to_symbol() {
-                    report.add_note(format!("{}", ast.read()));
+                    report.add_note(format!("{}", ast));
                 }
 
                 Err(Box::new(AriadneReport {

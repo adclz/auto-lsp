@@ -67,36 +67,6 @@ pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
 }
 
-/// A trait for injecting a parent relationship into an AST symbol.
-///
-/// This trait is used to establish parent-child relationships in the AST,
-/// ensuring that newly created symbols are properly linked to their parent nodes.
-pub trait Parent {
-    fn inject_parent(&mut self, parent: WeakSymbol);
-}
-
-impl<T: AstSymbol> Parent for Symbol<T> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        self.write().set_parent(parent);
-    }
-}
-
-impl<T: AstSymbol> Parent for Option<Symbol<T>> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        if let Some(symbol) = self.as_mut() {
-            symbol.write().set_parent(parent);
-        }
-    }
-}
-
-impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        for symbol in self.iter_mut() {
-            symbol.write().set_parent(parent.clone());
-        }
-    }
-}
-
 /// A trait for adding symbols to builders created by the `#[seq]` macro.
 pub trait AddSymbol {
     /// Adds a symbol to the builder.
