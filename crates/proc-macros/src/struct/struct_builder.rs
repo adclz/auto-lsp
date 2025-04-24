@@ -121,20 +121,19 @@ impl ToTokens for StructBuilder<'_> {
 
 impl StructBuilder<'_> {
     fn struct_input(&self, builder: &mut FieldBuilder) {
-        let symbol = &self.paths.symbol;
         let symbol_data = &self.paths.symbol_data;
 
         builder
             .add(quote! { _data: #symbol_data })
             .add_iter(self.fields, |ty, _, name, field_type, _| match ty {
                 FieldType::Normal => quote! {
-                    pub #name: #symbol<#field_type>
+                    pub #name: std::sync::Arc<#field_type>
                 },
                 FieldType::Vec => quote! {
-                    pub #name: Vec<#symbol<#field_type>>
+                    pub #name: Vec<std::sync::Arc<#field_type>>
                 },
                 FieldType::Option => quote! {
-                    pub #name: Option<#symbol<#field_type>>
+                    pub #name: Option<std::sync::Arc<#field_type>>
                 },
             })
             .stage_struct(self.input_name);
@@ -314,7 +313,6 @@ impl StructBuilder<'_> {
         let try_downcast = &self.paths.try_downcast_trait;
         let builder_trait = &self.paths.symbol_builder_trait.path;
         let finalize = &self.paths.finalize_trait;
-        let symbol = &self.paths.symbol;
         let parsers = &self.paths.parsers;
 
         let _builder = FieldBuilder::default()

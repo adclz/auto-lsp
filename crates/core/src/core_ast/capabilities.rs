@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #![allow(unused_variables)]
 
+use std::sync::Arc;
+
 use super::core::AstSymbol;
 use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
@@ -353,7 +355,8 @@ impl Traverse for DynSymbol {
     }
 }
 
-impl<T: AstSymbol> Traverse for Symbol<T> {
+/*
+impl<T: AstSymbol> Traverse for Arc<T> {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
         match self.0.is_inside_offset(offset) {
             true => self.0.descendant_at(offset).or_else(|| Some(self.into())),
@@ -393,8 +396,8 @@ impl<T: AstSymbol> Traverse for Symbol<T> {
         symbol.traverse_and_collect(collect_fn, collect);
     }
 }
-
-impl<T: AstSymbol> Traverse for Option<Symbol<T>> {
+*/
+impl<T: AstSymbol> Traverse for Option<Arc<T>> {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
         self.as_ref()?.descendant_at(offset)
     }
@@ -420,7 +423,7 @@ impl<T: AstSymbol> Traverse for Option<Symbol<T>> {
     }
 }
 
-impl<T: AstSymbol> Traverse for Vec<Symbol<T>> {
+impl<T: AstSymbol> Traverse for Vec<Arc<T>> {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
         self.iter().find_map(|symbol| symbol.descendant_at(offset))
     }
@@ -491,19 +494,19 @@ impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc
 
 macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
-        impl<T: AstSymbol> $trait for Option<Symbol<T>> {
+        impl<T: AstSymbol> $trait for Option<Arc<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 if let Some(node) = self.as_ref() {
-                    node.0.$fn_name($($param_name),*)?;
+                    node.$fn_name($($param_name),*)?;
                 }
                 Ok(())
             }
         }
 
-        impl<T: AstSymbol> $trait for Vec<Symbol<T>> {
+        impl<T: AstSymbol> $trait for Vec<Arc<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 for symbol in self.iter() {
-                    symbol.0.$fn_name($($param_name),*)?;
+                    symbol.$fn_name($($param_name),*)?;
                 }
                 Ok(())
             }

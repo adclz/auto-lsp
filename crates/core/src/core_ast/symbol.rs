@@ -24,28 +24,6 @@ use std::{
 
 use super::core::AstSymbol;
 
-/// Generic thread-safe wrapper around [AstSymbol] using [Arc] and [parking_lot::RwLock]
-///
-/// Provides methods to read and write to the underlying [AstSymbol]
-///
-/// [`Symbol<T>`] also provides methods to convert to [DynSymbol] and [WeakSymbol]
-#[derive(Clone)]
-pub struct Symbol<T: AstSymbol>(pub(crate) Arc<T>);
-
-impl<T: AstSymbol> Deref for Symbol<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        self.0.deref()
-    }
-}
-
-impl<T: AstSymbol> AsRef<T> for Symbol<T> {
-    fn as_ref(&self) -> &T {
-        self.0.as_ref()
-    }
-}
-
 /// Generic Thread-safe wrapper around an [AstSymbol] trait object using [Arc] and [parking_lot::RwLock]
 #[derive(Clone)]
 pub struct DynSymbol(pub(crate) Arc<dyn AstSymbol>);
@@ -84,33 +62,27 @@ impl std::fmt::Display for DynSymbol {
 #[derive(Debug, Clone)]
 pub struct WeakSymbol(pub(crate) Weak<dyn AstSymbol>);
 
-impl<T: AstSymbol> From<T> for Symbol<T> {
-    fn from(value: T) -> Self {
-        Self(Arc::new(value))
+impl<T: AstSymbol> From<&Arc<T>> for DynSymbol {
+    fn from(value: &Arc<T>) -> Self {
+        Self(value.clone())
     }
 }
 
-impl<T: AstSymbol> From<&Symbol<T>> for DynSymbol {
-    fn from(value: &Symbol<T>) -> Self {
-        Self(value.0.clone())
+impl<T: AstSymbol> From<Arc<T>> for DynSymbol {
+    fn from(value: Arc<T>) -> Self {
+        Self(value.clone())
     }
 }
 
-impl<T: AstSymbol> From<Symbol<T>> for DynSymbol {
-    fn from(value: Symbol<T>) -> Self {
-        Self(value.0.clone())
+impl<T: AstSymbol> From<&Arc<T>> for WeakSymbol {
+    fn from(value: &Arc<T>) -> Self {
+        Self(Arc::downgrade(&value) as _)
     }
 }
 
-impl<T: AstSymbol> From<&Symbol<T>> for WeakSymbol {
-    fn from(value: &Symbol<T>) -> Self {
-        Self(Arc::downgrade(&value.0) as _)
-    }
-}
-
-impl<T: AstSymbol> From<Symbol<T>> for WeakSymbol {
-    fn from(value: Symbol<T>) -> Self {
-        Self(Arc::downgrade(&value.0) as _)
+impl<T: AstSymbol> From<Arc<T>> for WeakSymbol {
+    fn from(value: Arc<T>) -> Self {
+        Self(Arc::downgrade(&value) as _)
     }
 }
 

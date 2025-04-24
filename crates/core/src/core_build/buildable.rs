@@ -16,15 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use std::sync::Arc;
+
 use downcast_rs::{impl_downcast, Downcast};
 
-use crate::{
-    ast::WeakSymbol,
-    core_ast::{core::AstSymbol, symbol::Symbol},
-    document::Document,
-    errors::AstError,
-    parsers::Parsers,
-};
+use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
 
 use super::symbol::{MaybePendingSymbol, PendingSymbol};
 
@@ -163,25 +159,25 @@ pub trait Finalize<T: AstSymbol> {
 }
 
 impl<T: AstSymbol> Finalize<T> for T {
-    type Output = Symbol<T>;
+    type Output = Arc<T>;
 
     fn finalize(self) -> Self::Output {
-        Symbol::from(self)
+        Arc::new(self)
     }
 }
 
 impl<T: AstSymbol> Finalize<T> for Option<T> {
-    type Output = Option<Symbol<T>>;
+    type Output = Option<Arc<T>>;
 
     fn finalize(self) -> Self::Output {
-        self.map(|symbol| Symbol::from(symbol))
+        self.map(|symbol| Arc::new(symbol))
     }
 }
 
 impl<T: AstSymbol> Finalize<T> for Vec<T> {
-    type Output = Vec<Symbol<T>>;
+    type Output = Vec<Arc<T>>;
 
     fn finalize(self) -> Self::Output {
-        self.into_iter().map(|f| Symbol::from(f)).collect()
+        self.into_iter().map(|f| Arc::new(f)).collect()
     }
 }

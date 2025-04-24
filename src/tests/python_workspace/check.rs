@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::ops::Deref;
-
 use super::ast::{
     CompoundStatement, Expression, PrimaryExpression, Statement, TypedDefaultParameter,
 };
@@ -43,22 +41,16 @@ pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file
     let doc = file.document(db).read();
     let root = get_ast(db, file).to_symbol();
 
-    let module = root.as_ref().unwrap();
-    let module = module.read();
+    let module = root.unwrap();
     let module = module.downcast_ref::<Module>().unwrap();
 
     for node in &module.statements {
-        if let Statement::Compound(CompoundStatement::Function(function)) = node.read().deref() {
-            function
-                .parameters
-                .read()
-                .parameters
-                .iter()
-                .for_each(|param| {
-                    if let Parameter::TypedDefault(typed_param) = param.read().deref() {
-                        typed_param.check(db, &doc);
-                    }
-                });
+        if let Statement::Compound(CompoundStatement::Function(function)) = node.as_ref() {
+            function.parameters.parameters.iter().for_each(|param| {
+                if let Parameter::TypedDefault(typed_param) = param.as_ref() {
+                    typed_param.check(db, &doc);
+                }
+            });
         }
     }
 }
@@ -67,26 +59,26 @@ impl TypedDefaultParameter {
     fn check(&self, db: &dyn BaseDatabase, doc: &Document) {
         let source = doc.texter.text.as_bytes();
 
-        match self.parameter_type.read().get_text(source).unwrap() {
-            "int" => match self.value.read().is_integer() {
+        match self.parameter_type.get_text(source).unwrap() {
+            "int" => match self.value.is_integer() {
                 true => (),
                 false => {
                     CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
                 }
             },
-            "float" => match self.value.read().is_float() {
+            "float" => match self.value.is_float() {
                 true => (),
                 false => {
                     CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
                 }
             },
-            "str" => match self.value.read().is_string() {
+            "str" => match self.value.is_string() {
                 true => (),
                 false => {
                     CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
                 }
             },
-            "bool" => match self.value.read().is_true() || self.value.read().is_false() {
+            "bool" => match self.value.is_true() || self.value.is_false() {
                 true => (),
                 false => {
                     CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
@@ -110,8 +102,8 @@ impl TypedDefaultParameter {
             source: None,
             message: format!(
                 "Invalid value {} for type {}",
-                self.value.read().get_text(source_code).unwrap(),
-                self.parameter_type.read().get_text(source_code).unwrap()
+                self.value.get_text(source_code).unwrap(),
+                self.parameter_type.get_text(source_code).unwrap()
             ),
             related_information: None,
             tags: None,

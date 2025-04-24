@@ -43,7 +43,6 @@ pub struct Method {
 
 nested_struct!(
     pub struct Paths {
-        pub symbol: Path,
         pub dyn_symbol: Path,
         pub weak_symbol: Path,
         pub symbol_data: Path,
@@ -137,7 +136,6 @@ nested_struct!(
 impl Default for Paths {
     fn default() -> Self {
         Self {
-            symbol: core_ast(parse_quote!(Symbol)),
             dyn_symbol: core_ast(parse_quote!(DynSymbol)),
             weak_symbol: core_ast(parse_quote!(WeakSymbol)),
             symbol_data: core_ast(parse_quote!(SymbolData)),
