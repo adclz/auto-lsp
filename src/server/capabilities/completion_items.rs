@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::{BuildCompletionItems, BuildTriggeredCompletionItems};
+use crate::core::ast::BuildTriggeredCompletionItems;
 use auto_lsp_core::salsa::tracked::get_ast;
 use auto_lsp_core::{ast::Traverse, salsa::db::BaseDatabase};
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
@@ -34,35 +34,14 @@ pub fn get_completion_items<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = match get_ast(db, file).to_symbol() {
+    let root = match get_ast(db, file).get_root() {
         Some(root) => root,
         None => return Ok(None),
     };
 
     match params.context {
         Some(context) => match context.trigger_kind {
-            CompletionTriggerKind::INVOKED => {
-                let offset = match document.offset_at(lsp_types::Position {
-                    line: params.text_document_position.position.line,
-                    character: params.text_document_position.position.character - 1,
-                }) {
-                    Some(offset) => offset,
-                    None => return Ok(None),
-                };
-
-                let item = match root.descendant_at(offset) {
-                    Some(item) => {
-                        if let Some(node) = item.read().get_parent_scope() {
-                            node
-                        } else {
-                            return Ok(None);
-                        }
-                    }
-                    None => return Ok(None),
-                };
-
-                item.build_completion_items(&document, &mut results)?;
-            }
+            CompletionTriggerKind::INVOKED => (),
             CompletionTriggerKind::TRIGGER_CHARACTER => {
                 let trigger_character = context.trigger_character.unwrap();
                 let offset = match document.offset_at(lsp_types::Position {

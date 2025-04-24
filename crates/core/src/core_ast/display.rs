@@ -17,12 +17,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::ast::AstSymbol;
-use std::{fmt, sync::Arc};
+use std::{fmt, ops::Deref, sync::Arc};
 
 /// Trait for types that can be displayed with indentation
 pub trait IndentedDisplay {
     /// Same as fmt::Display::fmt, but with an additional indentation parameter
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result;
+}
+
+impl<T: AstSymbol> IndentedDisplay for Arc<T> {
+    fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
+        self.deref().fmt_with_indent(f, indent)
+    }
 }
 
 impl<T: AstSymbol> IndentedDisplay for Option<Arc<T>> {

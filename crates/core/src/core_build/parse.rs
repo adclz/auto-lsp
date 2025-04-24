@@ -122,7 +122,13 @@ impl std::fmt::Display for AriadneReport {
 
 pub trait TryParse<
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers)>,
+    Y: AstSymbol
+        + for<'a> TryFrom<(
+            &'a T,
+            &'a Document,
+            &'static Parsers,
+            &'a mut Arena<Arc<dyn AstSymbol>>,
+        )>,
     Error = AstError,
 >
 {
@@ -139,7 +145,16 @@ pub trait TryParse<
 impl<T, Y> TryParse<T, Y> for Y
 where
     T: Buildable + Queryable,
-    Y: AstSymbol + for<'a> TryFrom<(&'a T, &'a Document, &'static Parsers), Error = AstError>,
+    Y: AstSymbol
+        + for<'a> TryFrom<
+            (
+                &'a T,
+                &'a Document,
+                &'static Parsers,
+                &'a mut Arena<Arc<dyn AstSymbol>>,
+            ),
+            Error = AstError,
+        >,
 {
     fn test_parse(test_code: &'static str, parsers: &'static Parsers) -> TestParseResult {
         let mut db = BaseDb::default();

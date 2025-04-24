@@ -34,9 +34,6 @@ pub mod code_lenses;
 #[cfg(test)]
 pub mod completion_items;
 #[cfg(test)]
-#[cfg(feature = "deadlock_detection")]
-pub mod deadlock;
-#[cfg(test)]
 pub mod document_links;
 #[cfg(test)]
 pub mod document_symbols;

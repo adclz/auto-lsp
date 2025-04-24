@@ -37,13 +37,12 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
         let file = *file;
         let url = file.url(db);
         let document = file.document(db).read();
-        let ast = get_ast(db, file).to_symbol();
+        let ast = get_ast(db, file).get_root();
 
         let mut builder = DocumentSymbolsBuilder::default();
 
         if let Some(root) = ast {
-            root.read()
-                .build_document_symbols(&document, &mut builder)?;
+            root.build_document_symbols(&document, &mut builder)?;
         }
 
         symbols.extend(

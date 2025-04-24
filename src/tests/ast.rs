@@ -38,10 +38,10 @@ fn html_ast(sample_file: impl BaseDatabase) {
     let file = sample_file
         .get_file(&Url::parse("file:///test0.html").unwrap())
         .unwrap();
-    let document = file.document(&sample_file).read();
-    let root = get_ast(&sample_file, file).to_symbol();
+    let document = file.document(&sample_file);
+    let root = get_ast(&sample_file, file).get_root();
 
-    let ast = root.as_ref().unwrap().read();
+    let ast = root.unwrap();
 
     // Root node should be HtmlDocument
 
@@ -52,23 +52,22 @@ fn html_ast(sample_file: impl BaseDatabase) {
     // Should contain DocType, Script, Style, and Element
 
     assert_eq!(tags.len(), 4);
-    assert!(matches!(*tags[0].read(), Node::DocType(_)));
-    assert!(matches!(*tags[1].read(), Node::Script(_)));
-    assert!(matches!(*tags[2].read(), Node::Style(_)));
-    assert!(matches!(
-        *tags[3].read(),
-        Node::Element(Element::FullTag(_))
-    ));
+    assert!(matches!(*tags[0], Node::DocType(_)));
+    assert!(matches!(*tags[1], Node::Script(_)));
+    assert!(matches!(*tags[2], Node::Style(_)));
+    assert!(matches!(*tags[3], Node::Element(Element::FullTag(_))));
 
-    let tag_3 = tags[3].read();
+    let tag_3 = &tags[3];
 
     // Checks if Element node is a div
 
-    if let Node::Element(Element::FullTag(ref element)) = *tag_3 {
-        let start_tag = element.start_tag.read();
-        let tag_name = start_tag.tag_name.read();
+    if let Node::Element(Element::FullTag(ref element)) = tag_3.as_ref() {
+        let start_tag = &element.start_tag;
+        let tag_name = &start_tag.tag_name;
         assert_eq!(
-            tag_name.get_text(document.texter.text.as_bytes()).unwrap(),
+            tag_name
+                .get_text(document.read().texter.text.as_bytes())
+                .unwrap(),
             "div"
         );
 
@@ -79,12 +78,14 @@ fn html_ast(sample_file: impl BaseDatabase) {
 
         // Tag name should be span
 
-        if let Node::Element(Element::FullTag(ref element)) = *elements[0].read() {
-            let start_tag = element.start_tag.read();
-            let tag_name = start_tag.tag_name.read();
+        if let Node::Element(Element::FullTag(ref element)) = *elements[0] {
+            let start_tag = &element.start_tag;
+            let tag_name = &start_tag.tag_name;
 
             assert_eq!(
-                tag_name.get_text(document.texter.text.as_bytes()).unwrap(),
+                tag_name
+                    .get_text(document.read().texter.text.as_bytes())
+                    .unwrap(),
                 "span"
             );
         } else {
@@ -93,12 +94,11 @@ fn html_ast(sample_file: impl BaseDatabase) {
 
         // Tag name should be br
 
-        if let Node::Element(Element::SelfClosingTag(ref element)) = *elements[1].read() {
+        if let Node::Element(Element::SelfClosingTag(ref element)) = *elements[1] {
             assert_eq!(
                 element
                     .tag_name
-                    .read()
-                    .get_text(document.texter.text.as_bytes())
+                    .get_text(document.read().texter.text.as_bytes())
                     .unwrap(),
                 "br"
             );

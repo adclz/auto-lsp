@@ -32,7 +32,7 @@ pub fn get_hover<Db: BaseDatabase>(db: &Db, params: HoverParams) -> anyhow::Resu
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = match get_ast(db, file).to_symbol() {
+    let root = match get_ast(db, file).get_root() {
         Some(item) => item,
         None => return Ok(None),
     };

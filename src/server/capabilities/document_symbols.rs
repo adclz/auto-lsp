@@ -35,7 +35,7 @@ pub fn get_document_symbols<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).to_symbol();
+    let root = get_ast(db, file).get_root();
 
     let mut builder = DocumentSymbolsBuilder::default();
 

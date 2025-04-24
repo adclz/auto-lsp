@@ -23,9 +23,11 @@ use auto_lsp_core::build::{Buildable, InvokeParser, Queryable};
 use auto_lsp_core::document::Document;
 use auto_lsp_core::parsers::Parsers;
 use downcast_rs::Downcast;
+use id_arena::Arena;
 use impls::impls;
 use static_assertions::{assert_fields, assert_impl_all};
 use std::fmt::Display;
+use std::sync::Arc;
 
 #[test]
 fn simple_seq() {
@@ -33,7 +35,9 @@ fn simple_seq() {
     struct Module {}
 
     assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
-    assert!(impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers)>));
+    assert!(
+        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+    );
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data);
 
@@ -54,7 +58,9 @@ fn seq_with_field() {
     struct Function {}
 
     assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
-    assert!(impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers)>));
+    assert!(
+        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+    );
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
 
@@ -75,7 +81,9 @@ fn simple_choice() {
     struct A {}
 
     assert_impl_all!(Choice: Send, Sync, Clone, Display, Downcast, AstSymbol);
-    assert!(impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Document, &'static Parsers)>));
+    assert!(
+        impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+    );
     assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
     assert_impl_all!(ChoiceBuilder: Queryable, Buildable);
@@ -99,7 +107,9 @@ fn multiple_choices() {
     struct B {}
 
     assert_impl_all!(Choice: Send, Sync, Clone, Display, Downcast, AstSymbol);
-    assert!(impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Document, &'static Parsers)>));
+    assert!(
+        impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+    );
     assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
     assert_impl_all!(ChoiceBuilder: Queryable, Buildable);
@@ -120,7 +130,9 @@ fn seq_with_optional() {
     struct Function {}
 
     assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
-    assert!(impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers)>));
+    assert!(
+        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+    );
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
 
@@ -138,7 +150,9 @@ fn seq_with_recursive() {
     }
 
     assert_impl_all!(A: Send, Sync, Clone, Display, Downcast, AstSymbol);
-    assert!(impls!(A: TryFrom<(&'static ABuilder, &'static Document, &'static Parsers)>));
+    assert!(
+        impls!(A: TryFrom<(&'static ABuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+    );
     assert!(impls!(A: InvokeParser<ABuilder, A>));
     assert_fields!(A: _data, elems);
 

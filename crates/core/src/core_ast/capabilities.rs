@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #![allow(unused_variables)]
 
+use std::ops::Deref;
 use std::sync::Arc;
 
 use super::core::AstSymbol;
@@ -355,11 +356,13 @@ impl Traverse for DynSymbol {
     }
 }
 
-/*
 impl<T: AstSymbol> Traverse for Arc<T> {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
-        match self.0.is_inside_offset(offset) {
-            true => self.0.descendant_at(offset).or_else(|| Some(self.into())),
+        match self.is_inside_offset(offset) {
+            true => self
+                .deref()
+                .descendant_at(offset)
+                .or_else(|| Some(self.into())),
             false => None,
         }
     }
@@ -371,12 +374,12 @@ impl<T: AstSymbol> Traverse for Arc<T> {
         collect: &mut Vec<DynSymbol>,
     ) -> Option<DynSymbol> {
         let to_dyn: DynSymbol = self.into();
-        match self.0.is_inside_offset(offset) {
+        match self.is_inside_offset(offset) {
             true => {
                 if collect_fn(to_dyn.clone()) {
                     collect.push(to_dyn);
                 }
-                self.0
+                self.deref()
                     .descendant_at_and_collect(offset, collect_fn, collect)
                     .or_else(|| Some(self.into()))
             }
@@ -389,14 +392,10 @@ impl<T: AstSymbol> Traverse for Arc<T> {
         collect_fn: fn(DynSymbol) -> bool,
         collect: &mut Vec<DynSymbol>,
     ) {
-        let symbol = &self.0;
-        if collect_fn(self.into()) {
-            collect.push(self.into());
-        }
-        symbol.traverse_and_collect(collect_fn, collect);
+        self.deref().traverse_and_collect(collect_fn, collect);
     }
 }
-*/
+
 impl<T: AstSymbol> Traverse for Option<Arc<T>> {
     fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
         self.as_ref()?.descendant_at(offset)

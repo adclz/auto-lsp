@@ -36,7 +36,7 @@ pub fn get_semantic_tokens_full<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let ast = get_ast(db, file).to_symbol();
+    let ast = get_ast(db, file).get_root();
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 
@@ -59,7 +59,7 @@ pub fn get_semantic_tokens_range<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let ast = get_ast(db, file).to_symbol();
+    let ast = get_ast(db, file).get_root();
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 

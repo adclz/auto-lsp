@@ -50,10 +50,10 @@ fn query_ast(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    let file0_ast = get_ast(&foo_bar, file0).get_root();
     assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
@@ -73,10 +73,10 @@ fn update_file(mut foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    let file0_ast = get_ast(&foo_bar, file0).get_root();
     assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
@@ -107,10 +107,10 @@ fn update_file(mut foo_bar: impl BaseDatabase) {
         )
         .expect("Failed to update file");
 
-    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    let file0_ast = get_ast(&foo_bar, file0).get_root();
     assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
@@ -127,10 +127,10 @@ fn remove_file(mut foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .expect("Expected file1 to exist");
 
-    let file0_ast = get_ast(&foo_bar, file0).to_symbol();
+    let file0_ast = get_ast(&foo_bar, file0).get_root();
     assert!(file0_ast.is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
     let logs = foo_bar.take_logs();
@@ -152,7 +152,7 @@ fn remove_file(mut foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test1.py").expect("Invalid URL"))
         .is_some());
 
-    let file1_ast = get_ast(&foo_bar, file1).to_symbol();
+    let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
     assert!(foo_bar.take_logs().is_empty());

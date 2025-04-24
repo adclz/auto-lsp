@@ -39,7 +39,7 @@ pub struct CheckErrorAccumulator(pub lsp_types::Diagnostic);
 #[salsa::tracked]
 pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file: File) {
     let doc = file.document(db).read();
-    let root = get_ast(db, file).to_symbol();
+    let root = get_ast(db, file).get_root();
 
     let module = root.unwrap();
     let module = module.downcast_ref::<Module>().unwrap();
