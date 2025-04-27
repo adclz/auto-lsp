@@ -47,7 +47,6 @@ dependencies = [
  "crossbeam-channel",
  "dashmap",
  "downcast-rs",
- "id-arena",
  "log",
  "lsp-server",
  "lsp-types",
@@ -77,7 +76,6 @@ dependencies = [
  "cfg-if",
  "dashmap",
  "downcast-rs",
- "id-arena",
  "log",
  "lsp-types",
  "parking_lot",
@@ -479,12 +477,6 @@ dependencies = [
  "quote",
  "syn",
 ]
-
-[[package]]
-name = "id-arena"
-version = "2.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25a2bc672d1148e28034f176e01fffebb08b35768468cc954630da77a1449005"
 
 [[package]]
 name = "ident_case"
