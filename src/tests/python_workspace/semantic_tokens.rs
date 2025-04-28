@@ -56,7 +56,7 @@ impl BuildSemanticTokens for Function {
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
         builder.push(
-            self.name.read().get_lsp_range(doc).unwrap(),
+            self.name.get_lsp_range(doc).unwrap(),
             SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
             SUPPORTED_MODIFIERS
                 .iter()

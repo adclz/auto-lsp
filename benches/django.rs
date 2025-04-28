@@ -47,7 +47,7 @@ pub fn parse(c: &mut Criterion) {
     c.bench_function("parse_django_file", move |b| {
         b.iter(|| {
             let file = db.get_file(&uri).unwrap();
-            let ast = get_ast(&db, file).to_symbol();
+            let ast = get_ast(&db, file).get_root();
             assert!(ast.is_some())
         });
     });
@@ -67,7 +67,7 @@ pub fn lsp_requests(c: &mut Criterion) {
 
     let file = db.get_file(&uri).unwrap();
 
-    let ast = get_ast(&db, file).to_symbol();
+    let ast = get_ast(&db, file).get_root();
     let document = file.document(&db).read();
 
     c.bench_function("code_actions", |b| {

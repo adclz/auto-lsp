@@ -46,7 +46,7 @@ impl<Db: BaseDatabase> Session<Db> {
         let options = InitializationOptions::deserialize(
             params
                 .initialization_options
-                .ok_or_else(|| RuntimeError::MissingOptions)?,
+                .ok_or(RuntimeError::MissingOptions)?,
         )
         .unwrap();
 
@@ -106,7 +106,7 @@ impl<Db: BaseDatabase> Session<Db> {
                                 Ok((parsers, url, text)) => self
                                     .db
                                     .add_file_from_texter(parsers, &url, text)
-                                    .map_err(|err| RuntimeError::from(err)),
+                                    .map_err(RuntimeError::from),
                                 Err(err) => Err(RuntimeError::from(err)),
                             })
                             .collect::<Vec<_>>()

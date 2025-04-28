@@ -43,9 +43,6 @@ pub struct Method {
 
 nested_struct!(
     pub struct Paths {
-        pub symbol: Path,
-        pub dyn_symbol: Path,
-        pub weak_symbol: Path,
         pub symbol_data: Path,
         pub pending_symbol: Path,
         pub maybe_pending_symbol: Path,
@@ -72,7 +69,6 @@ nested_struct!(
 
         pub add_symbol_trait: Path,
         pub try_downcast_trait: Path,
-        pub finalize_trait: Path,
 
         pub lsp_code_lens: LspCodeLens {
             pub path: Path,
@@ -118,16 +114,6 @@ nested_struct!(
             pub path: Path,
             pub is_scope: Method
         },
-        pub traverse: Traverse {
-            pub path: Path,
-            pub descendant_at: Method,
-            pub descendant_at_and_collect: Method,
-            pub traverse_and_collect: Method
-        },
-        pub parent: Parent {
-            pub path: Path,
-            pub inject_parent: Method
-        },
         pub display: Display {
             pub path: Path,
             pub fmt: Method
@@ -142,9 +128,6 @@ nested_struct!(
 impl Default for Paths {
     fn default() -> Self {
         Self {
-            symbol: core_ast(parse_quote!(Symbol)),
-            dyn_symbol: core_ast(parse_quote!(DynSymbol)),
-            weak_symbol: core_ast(parse_quote!(WeakSymbol)),
             symbol_data: core_ast(parse_quote!(SymbolData)),
             pending_symbol: core_build(parse_quote!(PendingSymbol)),
             maybe_pending_symbol: core_build(parse_quote!(MaybePendingSymbol)),
@@ -165,7 +148,7 @@ impl Default for Paths {
                     variant: quote! { get_data() },
                 },
                 get_mut_data: Method {
-                    sig: quote! { #[doc(hidden)] #[inline] fn get_mut_data(&mut self) -> &mut auto_lsp::core::ast::SymbolData },
+                    sig: quote! { #[inline] fn get_mut_data(&mut self) -> &mut auto_lsp::core::ast::SymbolData },
                     variant: quote! { get_mut_data() },
                 },
             },
@@ -176,8 +159,9 @@ impl Default for Paths {
                     sig: quote! { fn new(
                         query: &auto_lsp::tree_sitter::Query,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
+                        id: usize
                     ) -> Option<Self> },
-                    variant: quote! { new(query, capture) },
+                    variant: quote! { new(query, capture, id) },
                 },
                 add: Method {
                     sig: quote! { fn add(
@@ -185,8 +169,9 @@ impl Default for Paths {
                         capture: &auto_lsp::tree_sitter::QueryCapture,
                         parsers: &'static auto_lsp::core::parsers::Parsers,
                         document: &auto_lsp::core::document::Document,
+                        id: usize,
                     ) -> Result<Option<auto_lsp::core::build::PendingSymbol>, auto_lsp::core::errors::AstError> },
-                    variant: quote! { add(capture, parsers, document) },
+                    variant: quote! { add(capture, parsers, document, id) },
                 },
                 get_range: Method {
                     sig: quote! { fn get_range(&self) -> std::ops::Range<usize> },
@@ -199,7 +184,6 @@ impl Default for Paths {
             },
             add_symbol_trait: core_build(parse_quote!(AddSymbol)),
             try_downcast_trait: core_build(parse_quote!(TryDownCast)),
-            finalize_trait: core_build(parse_quote!(Finalize)),
 
             lsp_document_symbols: LspDocumentSymbols {
                 path: core_ast(parse_quote!(BuildDocumentSymbols)),
@@ -276,28 +260,6 @@ impl Default for Paths {
                 is_scope: Method {
                     sig: quote! { fn is_scope(&self) -> bool },
                     variant: quote! { is_scope() },
-                },
-            },
-            traverse: Traverse {
-                path: core_ast(parse_quote!(Traverse)),
-                descendant_at: Method {
-                    sig: quote! { fn descendant_at(&self, offset: usize) -> Option<auto_lsp::core::ast::DynSymbol> },
-                    variant: quote! { descendant_at(offset) },
-                },
-                descendant_at_and_collect: Method {
-                    sig: quote! { fn descendant_at_and_collect(&self, offset: usize, collect_fn: fn(auto_lsp::core::ast::DynSymbol) -> bool, collect: &mut Vec<auto_lsp::core::ast::DynSymbol>) -> Option<auto_lsp::core::ast::DynSymbol> },
-                    variant: quote! { descendant_at_and_collect(offset, collect_fn, collect) },
-                },
-                traverse_and_collect: Method {
-                    sig: quote! { fn traverse_and_collect(&self, collect_fn: fn(auto_lsp::core::ast::DynSymbol) -> bool, collect: &mut Vec<auto_lsp::core::ast::DynSymbol>) },
-                    variant: quote! { traverse_and_collect(collect_fn, collect) },
-                },
-            },
-            parent: Parent {
-                path: core_build(parse_quote!(Parent)),
-                inject_parent: Method {
-                    sig: quote! { fn inject_parent(&mut self, parent: auto_lsp::core::ast::WeakSymbol) },
-                    variant: quote! { inject_parent(parent) },
                 },
             },
             display: Display {

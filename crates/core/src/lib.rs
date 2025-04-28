@@ -28,7 +28,6 @@ pub mod ast {
     pub use crate::core_ast::core::*;
     pub use crate::core_ast::data::*;
     pub use crate::core_ast::display::*;
-    pub use crate::core_ast::symbol::*;
 }
 
 /// This module contains everything related to building ast symbols

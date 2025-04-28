@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use super::python_utils::create_python_db;
 use auto_lsp_core::{
-    ast::BuildDocumentSymbols,
     document_symbols_builder::DocumentSymbolsBuilder,
     salsa::{db::BaseDatabase, tracked::get_ast},
 };
@@ -42,7 +41,7 @@ fn foo_bar_document_symbols(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).to_symbol();
+    let root = get_ast(&foo_bar, file).get_root();
 
     let ast = root.as_ref().unwrap();
 
@@ -77,7 +76,7 @@ fn foo_bar_nested_bazdocument_symbols(foo_bar_nested_baz: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar_nested_baz).read();
-    let root = get_ast(&foo_bar_nested_baz, file).to_symbol();
+    let root = get_ast(&foo_bar_nested_baz, file).get_root();
 
     let ast = root.as_ref().unwrap();
 

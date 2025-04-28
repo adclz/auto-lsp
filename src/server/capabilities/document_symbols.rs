@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::BuildDocumentSymbols;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
@@ -35,7 +34,7 @@ pub fn get_document_symbols<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).to_symbol();
+    let root = get_ast(db, file).get_root();
 
     let mut builder = DocumentSymbolsBuilder::default();
 

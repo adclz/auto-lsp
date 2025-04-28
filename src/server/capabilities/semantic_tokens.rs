@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::BuildSemanticTokens;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
 use lsp_types::{
@@ -36,7 +35,7 @@ pub fn get_semantic_tokens_full<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let ast = get_ast(db, file).to_symbol();
+    let ast = get_ast(db, file).get_root();
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 
@@ -59,7 +58,7 @@ pub fn get_semantic_tokens_range<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let ast = get_ast(db, file).to_symbol();
+    let ast = get_ast(db, file).get_root();
 
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 

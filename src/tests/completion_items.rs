@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::core::ast::BuildCompletionItems;
-use auto_lsp_core::ast::{BuildTriggeredCompletionItems, Traverse};
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::salsa::tracked::get_ast;
 use lsp_types::Url;
@@ -44,10 +43,10 @@ fn global_completion_items(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).to_symbol();
+    let root = get_ast(&foo_bar, file).get_root();
 
     // Module returns globally available completion items
-    let module = root.as_ref().unwrap().read();
+    let module = root.unwrap();
     let module = module.downcast_ref::<Module>().unwrap();
 
     let mut completion_items = vec![];
@@ -59,7 +58,7 @@ fn global_completion_items(foo_bar: impl BaseDatabase) {
     assert_eq!(completion_items[0].label, "def ...");
 
     // Function should do the same
-    let function = module.statements[0].read();
+    let function = &module.statements[0];
 
     let mut completion_items = vec![];
     function
@@ -99,9 +98,9 @@ fn triggered_completion_items(mut foo_bar: impl BaseDatabase) {
         .unwrap();
 
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).to_symbol();
+    let root = get_ast(&foo_bar, file);
 
-    let node = root.as_ref().unwrap().descendant_at(75).unwrap();
+    let node = root.descendant_at(75).unwrap();
 
     let mut completion_items = vec![];
     node.build_triggered_completion_items(".", &document, &mut completion_items)

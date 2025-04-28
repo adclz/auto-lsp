@@ -28,10 +28,7 @@ impl BuildCodeActions for Module {
         doc: &Document,
         acc: &mut Vec<lsp_types::CodeActionOrCommand>,
     ) -> anyhow::Result<()> {
-        for statement in &self.statements {
-            statement.read().build_code_actions(doc, acc)?;
-        }
-        Ok(())
+        self.statements.build_code_actions(doc, acc)
     }
 }
 

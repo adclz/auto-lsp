@@ -53,10 +53,8 @@ impl ToTokens for EnumBuilder<'_> {
         self.enum_input(&mut builder);
 
         self.impl_ast_symbol(&mut builder);
-        self.impl_traverse(&mut builder);
         self.impl_indented_display(&mut builder);
         self.impl_queryable(&mut builder);
-        self.impl_parent(&mut builder);
         self.impl_scope(&mut builder);
 
         self.impl_code_actions(&mut builder);
@@ -75,12 +73,19 @@ impl ToTokens for EnumBuilder<'_> {
         self.struct_input_builder(&mut builder);
 
         builder.add(quote! {
-            fn get_range(&self) -> std::ops::Range<usize> {
-                self.unique_field.get_rc().borrow().get_range()
+            #[inline]
+            fn get_query_index(&self) -> usize {
+                self.unique_field.get_query_index()
             }
 
-            fn get_query_index(&self) -> usize {
-                self.unique_field.get_rc().borrow().get_query_index()
+            #[inline]
+            fn get_id(&self) -> usize {
+                self.unique_field.get_id()
+            }
+
+            #[inline]
+            fn get_range(&self) -> std::ops::Range<usize> {
+                self.unique_field.get_range()
             }
         });
         self.fn_new(&mut builder);
@@ -120,26 +125,6 @@ impl EnumBuilder<'_> {
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
     }
 
-    fn impl_traverse(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.traverse.descendant_at.sig,
-                &self.paths.traverse.descendant_at.variant,
-            )
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.traverse.descendant_at_and_collect.sig,
-                &self.paths.traverse.descendant_at_and_collect.variant,
-            )
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.traverse.traverse_and_collect.sig,
-                &self.paths.traverse.traverse_and_collect.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.traverse.path);
-    }
-
     fn impl_indented_display(&self, builder: &mut VariantBuilder) {
         builder
             .add_pattern_match_iter(
@@ -173,16 +158,6 @@ impl EnumBuilder<'_> {
                 };
             })
             .stage_trait(self.input_builder_name, queryable);
-    }
-
-    fn impl_parent(&self, builder: &mut VariantBuilder) {
-        builder
-            .add_pattern_match_iter(
-                self.fields,
-                &self.paths.parent.inject_parent.sig,
-                &self.paths.parent.inject_parent.variant,
-            )
-            .stage_trait(self.input_name, &self.paths.parent.path);
     }
 
     fn impl_scope(&self, builder: &mut VariantBuilder) {
@@ -354,7 +329,7 @@ impl EnumBuilder<'_> {
 
         builder.add(quote! {
             #sig {
-                self.unique_field.get_rc().borrow_mut().#variant
+                self.unique_field.borrow_mut().#variant
             }
         });
     }
@@ -372,25 +347,29 @@ impl EnumBuilder<'_> {
         builder.add(quote! {
             impl TryFrom<(
                 &#input_builder_name,
+                &Option<usize>,
                 &auto_lsp::core::document::Document,
-                &'static #parsers
+                &'static #parsers,
+                &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>           
             )> for #name {
                 type Error = auto_lsp::core::errors::AstError;
 
                 fn try_from(
-                    (builder, document, parsers): (
+                    (builder, parent_id, document, parsers, all_nodes): (
                         &#input_builder_name,
+                        &Option<usize>,
                         &auto_lsp::core::document::Document,
-                        &'static #parsers
+                        &'static #parsers,
+                        &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>  
                     )
                 ) -> Result<Self, Self::Error> {
                     #(
-                        if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(#variant_types::try_from((variant, document, parsers))?));
+                        if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
+                            return Ok(Self::#variant_names(#variant_types::try_from((variant, parent_id, document, parsers, all_nodes))?));
                         };
                     )*
                     Err(auto_lsp::core::errors::AstError::UnknownSymbol {
-                        range: builder.unique_field.get_rc().borrow().get_range(),
+                        range: builder.unique_field.get_range(),
                         symbol: parsers.core.capture_names()[builder.unique_field.get_query_index() as usize],
                         parent_name: stringify!(#name)
                     })

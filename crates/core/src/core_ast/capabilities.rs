@@ -18,14 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #![allow(unused_variables)]
 
+use std::sync::Arc;
+
 use super::core::AstSymbol;
-use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
-use lsp_types::{
-    request::GotoDeclarationResponse, CompletionItem,
-    GotoDefinitionResponse,
-};
+use lsp_types::{request::GotoDeclarationResponse, CompletionItem, GotoDefinitionResponse};
 
 /// [LSP DocumentSymbol specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol)
 pub trait BuildDocumentSymbols {
@@ -301,158 +299,6 @@ pub trait BuildCodeActions {
 
 // Special capabilities
 
-/// Tree traversal
-pub trait Traverse {
-    /// Finds minimal symbol at the given offset
-    fn descendant_at(&self, offset: usize) -> Option<DynSymbol>;
-
-    /// Finds minimal symbol at the given offset and collects all symbols matching the condition during the search
-    fn descendant_at_and_collect(
-        &self,
-        offset: usize,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) -> Option<DynSymbol>;
-
-    // Traverse all symbols starting from this one and collect all symbols matching the condition
-    fn traverse_and_collect(&self, collect_fn: fn(DynSymbol) -> bool, collect: &mut Vec<DynSymbol>);
-}
-
-impl Traverse for DynSymbol {
-    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
-        if self.read().is_inside_offset(offset) {
-            self.read()
-                .descendant_at(offset)
-                .or_else(|| Some(self.clone()))
-        } else {
-            None
-        }
-    }
-
-    fn descendant_at_and_collect(
-        &self,
-        offset: usize,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) -> Option<DynSymbol> {
-        if self.read().is_inside_offset(offset) {
-            if collect_fn(self.clone()) {
-                collect.push(self.clone());
-            }
-            self.read()
-                .descendant_at_and_collect(offset, collect_fn, collect)
-        } else {
-            None
-        }
-    }
-
-    fn traverse_and_collect(
-        &self,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) {
-        if collect_fn(self.clone()) {
-            collect.push(self.clone());
-        }
-        self.read().traverse_and_collect(collect_fn, collect);
-    }
-}
-
-impl<T: AstSymbol> Traverse for Symbol<T> {
-    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
-        let symbol = self.read();
-        match symbol.is_inside_offset(offset) {
-            true => symbol.descendant_at(offset).or_else(|| Some(self.into())),
-            false => None,
-        }
-    }
-
-    fn descendant_at_and_collect(
-        &self,
-        offset: usize,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) -> Option<DynSymbol> {
-        let to_dyn: DynSymbol = self.into();
-        let symbol = self.read();
-        match symbol.is_inside_offset(offset) {
-            true => {
-                if collect_fn(to_dyn.clone()) {
-                    collect.push(to_dyn);
-                }
-                symbol
-                    .descendant_at_and_collect(offset, collect_fn, collect)
-                    .or_else(|| Some(self.into()))
-            }
-            false => None,
-        }
-    }
-
-    fn traverse_and_collect(
-        &self,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) {
-        let symbol = self.read();
-        if collect_fn(self.into()) {
-            collect.push(self.into());
-        }
-        symbol.traverse_and_collect(collect_fn, collect);
-    }
-}
-
-impl<T: AstSymbol> Traverse for Option<Symbol<T>> {
-    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
-        self.as_ref()?.descendant_at(offset)
-    }
-
-    fn descendant_at_and_collect(
-        &self,
-        offset: usize,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) -> Option<DynSymbol> {
-        self.as_ref()?
-            .descendant_at_and_collect(offset, collect_fn, collect)
-    }
-
-    fn traverse_and_collect(
-        &self,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) {
-        if let Some(symbol) = self.as_ref() {
-            symbol.traverse_and_collect(collect_fn, collect);
-        }
-    }
-}
-
-impl<T: AstSymbol> Traverse for Vec<Symbol<T>> {
-    fn descendant_at(&self, offset: usize) -> Option<DynSymbol> {
-        self.iter().find_map(|symbol| symbol.descendant_at(offset))
-    }
-
-    fn descendant_at_and_collect(
-        &self,
-        offset: usize,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) -> Option<DynSymbol> {
-        self.iter()
-            .find_map(|symbol| symbol.descendant_at_and_collect(offset, collect_fn, collect))
-    }
-
-    fn traverse_and_collect(
-        &self,
-        collect_fn: fn(DynSymbol) -> bool,
-        collect: &mut Vec<DynSymbol>,
-    ) {
-        for symbol in self.iter() {
-            symbol.traverse_and_collect(collect_fn, collect);
-        }
-    }
-}
-
 /// Delimiting a symbol's scope
 pub trait Scope {
     /// Tell this symbol is a scope
@@ -475,42 +321,21 @@ pub trait Comment {
     }
 }
 
-macro_rules! impl_dyn_symbol {
-    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)-> $return_type: ty) => {
-        impl $trait for DynSymbol {
-            fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<$return_type> {
-                self.read().$fn_name($($param_name),*)
-            }
-        }
-    };
-}
-
-impl_dyn_symbol!(GetHover, get_hover(&self, doc: &Document) -> Option<lsp_types::Hover>);
-impl_dyn_symbol!(GetGoToDefinition, go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse>);
-impl_dyn_symbol!(GetGoToDeclaration, go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse>);
-impl_dyn_symbol!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) -> ());
-impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) -> ());
-impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) -> ());
-impl_dyn_symbol!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) -> ());
-impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) -> ());
-impl_dyn_symbol!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>)  -> ());
-impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>)  -> ());
-
 macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
-        impl<T: AstSymbol> $trait for Option<Symbol<T>> {
+        impl<T: AstSymbol> $trait for Option<Arc<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 if let Some(node) = self.as_ref() {
-                    node.read().$fn_name($($param_name),*)?;
+                    node.$fn_name($($param_name),*)?;
                 }
                 Ok(())
             }
         }
 
-        impl<T: AstSymbol> $trait for Vec<Symbol<T>> {
+        impl<T: AstSymbol> $trait for Vec<Arc<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
                 for symbol in self.iter() {
-                    symbol.read().$fn_name($($param_name),*)?;
+                    symbol.$fn_name($($param_name),*)?;
                 }
                 Ok(())
             }

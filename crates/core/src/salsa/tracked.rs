@@ -19,10 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use salsa::Accumulator;
 
 use super::db::{BaseDatabase, File};
-use crate::ast::DynSymbol;
+use crate::ast::AstSymbol;
 use crate::core_build::lexer::get_tree_sitter_errors;
 use crate::errors::ParseErrorAccumulator;
 use std::fmt::Formatter;
+use std::ops::Deref;
 use std::sync::Arc;
 
 #[salsa::tracked(no_eq, return_ref)]
@@ -40,7 +41,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     get_tree_sitter_errors(db, &node, source_code);
 
     match (parsers.ast_parser)(db, parsers, &doc) {
-        Ok(ast) => ParsedAst::new(ast),
+        Ok(nodes) => ParsedAst::new(nodes),
         Err(e) => {
             ParseErrorAccumulator::accumulate(e.clone().into(), db);
             ParsedAst::default()
@@ -51,37 +52,61 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 /// Cheap cloneable wrapper around a parsed AST
 #[derive(Default, Clone)]
 pub struct ParsedAst {
-    inner: Arc<Option<DynSymbol>>,
+    nodes: Arc<Vec<Arc<dyn AstSymbol>>>,
 }
 
 impl std::fmt::Debug for ParsedAst {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ParsedAst").field(&self.inner).finish()
+        f.debug_struct("ParsedAst")
+            .field("nodes", &self.nodes.len())
+            .finish()
     }
 }
 
 impl PartialEq for ParsedAst {
     fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.inner, &other.inner)
+        Arc::ptr_eq(&self.nodes, &other.nodes)
     }
 }
 
 impl Eq for ParsedAst {}
 
-impl ParsedAst {
-    fn new(ast: DynSymbol) -> Self {
-        Self {
-            inner: Arc::new(Some(ast)),
-        }
-    }
+impl Deref for ParsedAst {
+    type Target = Arc<Vec<Arc<dyn AstSymbol>>>;
 
-    pub fn to_symbol(&self) -> Option<&DynSymbol> {
-        self.inner.as_ref().as_ref()
+    fn deref(&self) -> &Self::Target {
+        &self.nodes
     }
 }
 
-impl<'a> From<&'a ParsedAst> for Option<&'a DynSymbol> {
-    fn from(parsed_ast: &'a ParsedAst) -> Option<&'a DynSymbol> {
-        parsed_ast.inner.as_ref().as_ref()
+impl ParsedAst {
+    fn new(nodes: Vec<Arc<dyn AstSymbol>>) -> Self {
+        Self {
+            nodes: Arc::new(nodes),
+        }
+    }
+
+    pub fn get_root(&self) -> Option<&Arc<dyn AstSymbol>> {
+        self.nodes.first()
+    }
+
+    /// Returns the first descendant of the root node that matches the given type.
+    pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstSymbol>> {
+        let mut best: Option<&Arc<dyn AstSymbol>> = None;
+
+        for node in self.nodes.iter() {
+            let range = node.get_range();
+
+            if range.start > offset {
+                // No point continuing
+                break;
+            }
+
+            if node.is_inside_offset(offset) {
+                best = Some(node);
+            }
+        }
+
+        best
     }
 }

@@ -34,9 +34,6 @@ pub mod code_lenses;
 #[cfg(test)]
 pub mod completion_items;
 #[cfg(test)]
-#[cfg(feature = "deadlock_detection")]
-pub mod deadlock;
-#[cfg(test)]
 pub mod document_links;
 #[cfg(test)]
 pub mod document_symbols;
@@ -47,6 +44,8 @@ pub mod html_corpus;
 #[cfg(test)]
 pub mod inlay_hints;
 #[cfg(test)]
+pub mod iter;
+#[cfg(test)]
 pub mod proc_macros;
 #[cfg(test)]
 pub mod python_corpus;
@@ -55,7 +54,5 @@ pub mod python_corpus;
 pub mod salsa;
 #[cfg(test)]
 pub mod semantic_tokens;
-#[cfg(test)]
-pub mod traverse;
 #[cfg(test)]
 pub mod type_errors;

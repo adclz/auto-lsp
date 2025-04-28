@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::ast::{AstSymbol, Symbol};
-use std::fmt;
+use crate::ast::AstSymbol;
+use std::{fmt, ops::Deref, sync::Arc};
 
 /// Trait for types that can be displayed with indentation
 pub trait IndentedDisplay {
@@ -25,13 +25,13 @@ pub trait IndentedDisplay {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result;
 }
 
-impl<T: AstSymbol> IndentedDisplay for Symbol<T> {
+impl<T: AstSymbol> IndentedDisplay for Arc<T> {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
-        self.read().fmt_with_indent(f, indent)
+        self.deref().fmt_with_indent(f, indent)
     }
 }
 
-impl<T: AstSymbol> IndentedDisplay for Option<Symbol<T>> {
+impl<T: AstSymbol> IndentedDisplay for Option<Arc<T>> {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
         if let Some(value) = self {
             value.fmt_with_indent(f, indent)
@@ -41,10 +41,10 @@ impl<T: AstSymbol> IndentedDisplay for Option<Symbol<T>> {
     }
 }
 
-impl<T: AstSymbol> IndentedDisplay for Vec<Symbol<T>> {
+impl<T: AstSymbol> IndentedDisplay for Vec<Arc<T>> {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter, indent: usize) -> fmt::Result {
         for item in self {
-            item.read().fmt_with_indent(f, indent)?;
+            item.fmt_with_indent(f, indent)?;
         }
         Ok(())
     }

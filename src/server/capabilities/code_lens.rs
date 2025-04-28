@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::BuildCodeLenses;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{CodeLens, CodeLensParams};
 
@@ -33,7 +32,7 @@ pub fn get_code_lenses<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = get_ast(db, file).to_symbol();
+    let root = get_ast(db, file).get_root();
 
     if let Some(root) = root {
         root.build_code_lenses(&document, &mut results)?

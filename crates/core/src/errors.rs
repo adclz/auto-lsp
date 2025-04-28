@@ -104,11 +104,9 @@ pub enum AstError {
         range: std::ops::Range<usize>,
         query: &'static [&'static str],
     },
-    #[error("Invalid {field_name:?} for {parent_name:?}, received query: {query:?}")]
+    #[error("Invalid symbol: {query:?}")]
     InvalidSymbol {
         range: std::ops::Range<usize>,
-        field_name: String,
-        parent_name: String,
         query: &'static str,
     },
     #[error("Unknown symbol {symbol:?} in {parent_name:?}")]
@@ -166,7 +164,7 @@ impl From<LexerError> for ParseError {
     }
 }
 
-//// Main accumulator for parse errors
+/// Main accumulator for parse errors
 ///
 /// This is meant to be used in salsa queries to accumulate parse errors.
 #[salsa::accumulator]
