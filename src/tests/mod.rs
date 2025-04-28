@@ -55,6 +55,4 @@ pub mod salsa;
 #[cfg(test)]
 pub mod semantic_tokens;
 #[cfg(test)]
-pub mod traverse;
-#[cfg(test)]
 pub mod type_errors;
