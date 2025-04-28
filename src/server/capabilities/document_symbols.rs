@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::BuildDocumentSymbols;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};

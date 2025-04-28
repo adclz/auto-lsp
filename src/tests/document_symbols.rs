@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use super::python_utils::create_python_db;
 use auto_lsp_core::{
-    ast::BuildDocumentSymbols,
     document_symbols_builder::DocumentSymbolsBuilder,
     salsa::{db::BaseDatabase, tracked::get_ast},
 };

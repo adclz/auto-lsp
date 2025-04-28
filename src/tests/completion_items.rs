@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::core::ast::BuildCompletionItems;
-use auto_lsp_core::ast::BuildTriggeredCompletionItems;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::salsa::tracked::get_ast;
 use lsp_types::Url;

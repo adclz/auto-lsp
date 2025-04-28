@@ -164,7 +164,7 @@ impl From<LexerError> for ParseError {
     }
 }
 
-//// Main accumulator for parse errors
+/// Main accumulator for parse errors
 ///
 /// This is meant to be used in salsa queries to accumulate parse errors.
 #[salsa::accumulator]

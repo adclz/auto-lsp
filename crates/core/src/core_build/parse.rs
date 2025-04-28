@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::build::TryFromParams;
@@ -156,7 +155,7 @@ where
                     diagnostic.to_label(&source, &mut colors, &mut report);
                 }
 
-                if let Some(ast) = ast.get(0) {
+                if let Some(ast) = ast.first() {
                     report.add_note(format!("{}", ast));
                 }
 

@@ -78,7 +78,7 @@ where
         if let Some(parent_id) = parent_id {
             result.get_mut_data().parent = id_map.get(parent_id).cloned();
         }
-        result.get_mut_data().id = id.clone();
+        result.get_mut_data().id = *id;
 
         let arc = Arc::new(result);
 

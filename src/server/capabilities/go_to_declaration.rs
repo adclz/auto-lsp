@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::GetGoToDeclaration;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse};
 

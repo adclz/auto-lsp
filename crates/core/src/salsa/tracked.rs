@@ -91,7 +91,7 @@ impl ParsedAst {
     }
 
     /// Returns the first descendant of the root node that matches the given type.
-    pub fn descendant_at<'a>(&'a self, offset: usize) -> Option<&'a Arc<dyn AstSymbol>> {
+    pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstSymbol>> {
         let mut best: Option<&Arc<dyn AstSymbol>> = None;
 
         for node in self.nodes.iter() {
