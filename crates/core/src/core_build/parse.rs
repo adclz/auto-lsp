@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::build::TryFromParams;
 use crate::document::Document;
 use crate::errors::AstError;
 use crate::errors::ParseError;
@@ -42,18 +43,7 @@ use super::stack_builder::StackBuilder;
 /// This trait is implemented for all types that implement [`Buildable`] and [`Queryable`].
 pub trait InvokeParser<
     T: Buildable + Queryable,
-    Y: AstSymbol
-        + for<'a> TryFrom<
-            (
-                &'a T,
-                &'a Option<usize>,
-                &'a Document,
-                &'static Parsers,
-                &'a HashMap<usize, usize>,
-                &'a mut Vec<Arc<dyn AstSymbol>>,
-            ),
-            Error = AstError,
-        >,
+    Y: AstSymbol + for<'a> TryFrom<TryFromParams<'a, T>, Error = AstError>,
 >
 {
     /// Creates a symbol.
@@ -70,18 +60,7 @@ pub trait InvokeParser<
 impl<T, Y> InvokeParser<T, Y> for Y
 where
     T: Buildable + Queryable,
-    Y: AstSymbol
-        + for<'b> TryFrom<
-            (
-                &'b T,
-                &'b Option<usize>,
-                &'b Document,
-                &'static Parsers,
-                &'b HashMap<usize, usize>,
-                &'b mut Vec<Arc<dyn AstSymbol>>,
-            ),
-            Error = AstError,
-        >,
+    Y: AstSymbol + for<'a> TryFrom<TryFromParams<'a, T>, Error = AstError>,
 {
     fn parse_symbol(
         db: &dyn BaseDatabase,
@@ -125,15 +104,7 @@ impl std::fmt::Display for AriadneReport {
 
 pub trait TryParse<
     T: Buildable + Queryable,
-    Y: AstSymbol
-        + for<'a> TryFrom<(
-            &'a T,
-            &'a Option<usize>,
-            &'a Document,
-            &'static Parsers,
-            &'a HashMap<usize, usize>,
-            &'a mut Vec<Arc<dyn AstSymbol>>,
-        )>,
+    Y: AstSymbol + for<'a> TryFrom<TryFromParams<'a, T>>,
     Error = AstError,
 >
 {
@@ -150,18 +121,7 @@ pub trait TryParse<
 impl<T, Y> TryParse<T, Y> for Y
 where
     T: Buildable + Queryable,
-    Y: AstSymbol
-        + for<'a> TryFrom<
-            (
-                &'a T,
-                &'a Option<usize>,
-                &'a Document,
-                &'static Parsers,
-                &'a HashMap<usize, usize>,
-                &'a mut Vec<Arc<dyn AstSymbol>>,
-            ),
-            Error = AstError,
-        >,
+    Y: AstSymbol + for<'a> TryFrom<TryFromParams<'a, T>, Error = AstError>,
 {
     fn test_parse(test_code: &'static str, parsers: &'static Parsers) -> TestParseResult {
         let mut db = BaseDb::default();

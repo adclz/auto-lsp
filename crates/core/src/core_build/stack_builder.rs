@@ -81,18 +81,7 @@ where
     /// a symbol from the root node.
     pub fn create_symbol<Y>(&mut self) -> Result<Vec<Arc<dyn AstSymbol>>, ParseError>
     where
-        Y: AstSymbol
-            + for<'c> TryFrom<
-                (
-                    &'c T,
-                    &'c Option<usize>,
-                    &'c Document,
-                    &'static Parsers,
-                    &'c HashMap<usize, usize>,
-                    &'c mut Vec<Arc<dyn AstSymbol>>,
-                ),
-                Error = AstError,
-            >,
+        Y: AstSymbol + for<'c> TryFrom<TryFromParams<'c, T>, Error = AstError>,
     {
         let result = self.build()?.ok_or::<ParseError>(
             (

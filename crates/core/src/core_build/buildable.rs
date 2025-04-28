@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use super::symbol::{MaybePendingSymbol, PendingSymbol};
 use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
 use downcast_rs::{impl_downcast, Downcast};
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 /// Trait implemented by all builders created with the seq macro.
 pub trait Buildable: Downcast {
@@ -61,6 +61,15 @@ impl_downcast!(Buildable);
 pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
 }
+
+pub type TryFromParams<'a, T> = (
+    &'a T,
+    &'a Option<usize>,
+    &'a Document,
+    &'static Parsers,
+    &'a HashMap<usize, usize>,
+    &'a mut Vec<Arc<dyn AstSymbol>>,
+);
 
 /// A trait for adding symbols to builders created by the `#[seq]` macro.
 pub trait AddSymbol {

@@ -16,7 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
+use crate::{
+    build::TryFromParams, core_ast::core::AstSymbol, document::Document, errors::AstError,
+    parsers::Parsers,
+};
 use std::{collections::HashMap, sync::Arc};
 
 use super::{
@@ -27,18 +30,7 @@ use super::{
 /// Trait for downcasting a [`Buildable`] into an [`AstSymbol`].
 pub trait TryDownCast<
     T: Buildable,
-    Y: AstSymbol
-        + for<'a> TryFrom<
-            (
-                &'a T,
-                &'a Option<usize>,
-                &'a Document,
-                &'static Parsers,
-                &'a HashMap<usize, usize>,
-                &'a mut Vec<Arc<dyn AstSymbol>>,
-            ),
-            Error = AstError,
-        >,
+    Y: AstSymbol + for<'a> TryFrom<TryFromParams<'a, T>, Error = AstError>,
 >
 {
     type Output;
@@ -56,18 +48,7 @@ pub trait TryDownCast<
 impl<T, Y> TryDownCast<T, Y> for PendingSymbol
 where
     T: Buildable,
-    Y: AstSymbol
-        + for<'a> TryFrom<
-            (
-                &'a T,
-                &'a Option<usize>,
-                &'a Document,
-                &'static Parsers,
-                &'a HashMap<usize, usize>,
-                &'a mut Vec<Arc<dyn AstSymbol>>,
-            ),
-            Error = AstError,
-        >,
+    Y: AstSymbol + for<'a> TryFrom<TryFromParams<'a, T>, Error = AstError>,
 {
     type Output = Arc<Y>;
 
@@ -109,18 +90,7 @@ where
 impl<T, Y> TryDownCast<T, Y> for MaybePendingSymbol
 where
     T: Buildable,
-    Y: AstSymbol
-        + for<'a> TryFrom<
-            (
-                &'a T,
-                &'a Option<usize>,
-                &'a Document,
-                &'static Parsers,
-                &'a HashMap<usize, usize>,
-                &'a mut Vec<Arc<dyn AstSymbol>>,
-            ),
-            Error = AstError,
-        >,
+    Y: AstSymbol + for<'a> TryFrom<TryFromParams<'a, T>, Error = AstError>,
 {
     type Output = Option<Arc<Y>>;
 
@@ -144,18 +114,7 @@ impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
 where
     T: TryDownCast<Y, V, Output = Arc<V>>,
     Y: Buildable,
-    V: AstSymbol
-        + for<'a> TryFrom<
-            (
-                &'a Y,
-                &'a Option<usize>,
-                &'a Document,
-                &'static Parsers,
-                &'a HashMap<usize, usize>,
-                &'a mut Vec<Arc<dyn AstSymbol>>,
-            ),
-            Error = AstError,
-        >,
+    V: AstSymbol + for<'a> TryFrom<TryFromParams<'a, Y>, Error = AstError>,
 {
     type Output = Vec<Arc<V>>;
 
