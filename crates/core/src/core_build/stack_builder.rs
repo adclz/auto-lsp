@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -51,7 +50,7 @@ where
     /// Symbols created while building the AST
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
-    node_ids: HashMap<usize, usize>,
+    id_ctr: usize,
 }
 
 impl<'a, T> StackBuilder<'a, T>
@@ -71,7 +70,7 @@ where
             document,
             roots: vec![],
             stack: vec![],
-            node_ids: HashMap::new(),
+            id_ctr: 0,
         }
     }
 
@@ -97,7 +96,7 @@ where
                 .into(),
         )?;
 
-        let mut all_nodes = Vec::with_capacity(self.node_ids.len());
+        let mut all_nodes = Vec::with_capacity(self.id_ctr);
 
         let result = Arc::new(
             Y::try_from((
@@ -105,14 +104,17 @@ where
                 &None,
                 self.document,
                 self.parsers,
-                &self.node_ids,
                 &mut all_nodes,
             ))
             .map_err(|err| ParseError::from((self.document, err)))?,
         );
 
+        debug_assert_eq!(result.get_id(), 0);
+
         all_nodes.push(result);
-        all_nodes.sort_unstable_by_key(|f| f.get_data().id);
+        all_nodes.sort_unstable_by_key(|f| f.get_id());
+
+        debug_assert_eq!(self.id_ctr, all_nodes.len());
 
         Ok(all_nodes)
     }
@@ -135,15 +137,8 @@ where
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
 
-            eprintln!(
-                "{:?} {}",
-                self.parsers.core.capture_names()[capture.index as usize],
-                capture.node.id()
-            );
-
             // Current parent
             let mut parent = self.stack.pop();
-            self.node_ids.insert(capture.node.id(), self.node_ids.len());
 
             loop {
                 match &parent {
@@ -176,7 +171,8 @@ where
     ///
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture) -> Result<(), ParseError> {
-        let mut node = T::new(&self.parsers.core, capture);
+        let mut node = T::new(&self.parsers.core, capture, self.id_ctr);
+        self.id_ctr += 1;
 
         match node.take() {
             Some(builder) => {
@@ -204,8 +200,9 @@ where
         let add = parent
             .0
             .borrow_mut()
-            .add(capture, self.parsers, self.document);
+            .add(capture, self.parsers, self.document, self.id_ctr);
 
+        self.id_ctr += 1;
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.

@@ -159,8 +159,9 @@ impl Default for Paths {
                     sig: quote! { fn new(
                         query: &auto_lsp::tree_sitter::Query,
                         capture: &auto_lsp::tree_sitter::QueryCapture,
+                        id: usize
                     ) -> Option<Self> },
-                    variant: quote! { new(query, capture) },
+                    variant: quote! { new(query, capture, id) },
                 },
                 add: Method {
                     sig: quote! { fn add(
@@ -168,8 +169,9 @@ impl Default for Paths {
                         capture: &auto_lsp::tree_sitter::QueryCapture,
                         parsers: &'static auto_lsp::core::parsers::Parsers,
                         document: &auto_lsp::core::document::Document,
+                        id: usize,
                     ) -> Result<Option<auto_lsp::core::build::PendingSymbol>, auto_lsp::core::errors::AstError> },
-                    variant: quote! { add(capture, parsers, document) },
+                    variant: quote! { add(capture, parsers, document, id) },
                 },
                 get_range: Method {
                     sig: quote! { fn get_range(&self) -> std::ops::Range<usize> },

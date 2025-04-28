@@ -20,7 +20,7 @@ use crate::{
     build::TryFromParams, core_ast::core::AstSymbol, document::Document, errors::AstError,
     parsers::Parsers,
 };
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use super::{
     buildable::Buildable,
@@ -40,7 +40,6 @@ pub trait TryDownCast<
         parent_id: &Option<usize>,
         document: &Document,
         parsers: &'static Parsers,
-        id_map: &HashMap<usize, usize>,
         all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError>;
 }
@@ -57,7 +56,6 @@ where
         parent_id: &Option<usize>,
         document: &Document,
         parsers: &'static Parsers,
-        id_map: &HashMap<usize, usize>,
         all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError> {
         let mut result = Y::try_from((
@@ -70,13 +68,10 @@ where
             &None,
             document,
             parsers,
-            id_map,
             all_nodes,
         ))?;
-        if let Some(parent_id) = parent_id {
-            result.get_mut_data().parent = id_map.get(parent_id).cloned();
-        }
-        result.get_mut_data().id = *id_map.get(&self.get_id()).unwrap();
+        result.get_mut_data().parent = parent_id.clone();
+        result.get_mut_data().id = self.get_id();
 
         let arc = Arc::new(result);
         all_nodes.push(Arc::clone(&arc) as _);
@@ -96,12 +91,11 @@ where
         parent_id: &Option<usize>,
         document: &Document,
         parsers: &'static Parsers,
-        id_map: &HashMap<usize, usize>,
         all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError> {
         self.as_ref().as_ref().map_or(Ok(None), |pending| {
             pending
-                .try_downcast(parent_id, document, parsers, id_map, all_nodes)
+                .try_downcast(parent_id, document, parsers, all_nodes)
                 .map(Some)
         })
     }
@@ -120,11 +114,10 @@ where
         parent_id: &Option<usize>,
         document: &Document,
         parsers: &'static Parsers,
-        id_map: &HashMap<usize, usize>,
         all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError> {
         self.iter()
-            .map(|item| item.try_downcast(parent_id, document, parsers, id_map, all_nodes))
+            .map(|item| item.try_downcast(parent_id, document, parsers, all_nodes))
             .collect::<Result<Vec<_>, AstError>>()
     }
 }

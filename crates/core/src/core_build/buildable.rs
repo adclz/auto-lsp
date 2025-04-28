@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use super::symbol::{MaybePendingSymbol, PendingSymbol};
 use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
 use downcast_rs::{impl_downcast, Downcast};
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 /// Trait implemented by all builders created with the seq macro.
 pub trait Buildable: Downcast {
@@ -28,7 +28,11 @@ pub trait Buildable: Downcast {
     /// # Returns
     /// - `Some(Self)` if a valid builder can be created for the given capture.
     /// - `None` for enums if the corresponding variant is not found.
-    fn new(query: &tree_sitter::Query, capture: &tree_sitter::QueryCapture) -> Option<Self>
+    fn new(
+        query: &tree_sitter::Query,
+        capture: &tree_sitter::QueryCapture,
+        id: usize,
+    ) -> Option<Self>
     where
         Self: Sized;
 
@@ -43,6 +47,7 @@ pub trait Buildable: Downcast {
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
         document: &Document,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError>;
 
     fn get_range(&self) -> std::ops::Range<usize>;
@@ -67,7 +72,6 @@ pub type TryFromParams<'a, T> = (
     &'a Option<usize>,
     &'a Document,
     &'static Parsers,
-    &'a HashMap<usize, usize>,
     &'a mut Vec<Arc<dyn AstSymbol>>,
 );
 
@@ -80,6 +84,7 @@ pub trait AddSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError>;
 }
 
@@ -88,6 +93,7 @@ impl AddSymbol for MaybePendingSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError> {
         if self.is_some() {
             return Ok(None);
@@ -98,7 +104,7 @@ impl AddSymbol for MaybePendingSymbol {
                 Some(_) => {
                     return Ok(None);
                 }
-                None => match Y::new(&parsers.core, capture) {
+                None => match Y::new(&parsers.core, capture, id) {
                     Some(node) => {
                         self.swap(&mut node.into());
                         return Ok(self.0.clone());
@@ -124,10 +130,11 @@ impl AddSymbol for Vec<PendingSymbol> {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError> {
         let name = parsers.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
-            match Y::new(&parsers.core, capture) {
+            match Y::new(&parsers.core, capture, id) {
                 Some(node) => {
                     let node = PendingSymbol::new(node);
                     self.push(node.clone());

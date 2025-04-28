@@ -350,24 +350,22 @@ impl EnumBuilder<'_> {
                 &Option<usize>,
                 &auto_lsp::core::document::Document,
                 &'static #parsers,
-                &std::collections::HashMap<usize, usize>,
                 &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>           
             )> for #name {
                 type Error = auto_lsp::core::errors::AstError;
 
                 fn try_from(
-                    (builder, parent_id, document, parsers, id_map, all_nodes): (
+                    (builder, parent_id, document, parsers, all_nodes): (
                         &#input_builder_name,
                         &Option<usize>,
                         &auto_lsp::core::document::Document,
                         &'static #parsers,
-                        &std::collections::HashMap<usize, usize>,
                         &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>  
                     )
                 ) -> Result<Self, Self::Error> {
                     #(
                         if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(#variant_types::try_from((variant, parent_id, document, parsers, id_map, all_nodes))?));
+                            return Ok(Self::#variant_names(#variant_types::try_from((variant, parent_id, document, parsers, all_nodes))?));
                         };
                     )*
                     Err(auto_lsp::core::errors::AstError::UnknownSymbol {

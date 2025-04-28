@@ -235,7 +235,7 @@ impl StructBuilder<'_> {
             let range = capture.node.range();
             Some(Self {
                 query_index: capture.index as usize,
-                id: capture.node.id(),
+                id,
                 range: std::ops::Range {
                     start: range.start_byte,
                     end: range.end_byte,
@@ -256,7 +256,7 @@ impl StructBuilder<'_> {
             |_, _, name, field_type, builder| {
                 quote! {
 
-                    if let Some(node) =  self.#name.add::<#builder>(capture, parsers)? {
+                    if let Some(node) =  self.#name.add::<#builder>(capture, parsers, id)? {
                        return Ok(Some(node))
                     };
                 }
@@ -281,13 +281,14 @@ impl StructBuilder<'_> {
                 use #try_downcast;
                 use #builder_trait;
 
-                let parent_id = Some(builder.get_id());
+                let id = builder.get_id();
+                let parent_id = Some(id.clone());
             })
             .add_iter(self.fields, |ty, _, name, field_type, _| match ty {
                 FieldType::Normal => quote! {
                     let #name = builder
                         .#name
-                        .try_downcast(&parent_id, document, parsers, id_map, all_nodes)?
+                        .try_downcast(&parent_id, document, parsers, all_nodes)?
                         .ok_or(auto_lsp::core::errors::AstError::MissingSymbol {
                             range: builder_range.clone(),
                             symbol: stringify!(#name),
@@ -297,7 +298,7 @@ impl StructBuilder<'_> {
                 _ => quote! {
                     let #name = builder
                         .#name
-                        .try_downcast(&parent_id, document, parsers, id_map, all_nodes)?;
+                        .try_downcast(&parent_id, document, parsers, all_nodes)?;
                 },
             })
             .stage()
@@ -309,18 +310,16 @@ impl StructBuilder<'_> {
                 &Option<usize>,
                 &auto_lsp::core::document::Document,
                 &'static #parsers,
-                &std::collections::HashMap<usize, usize>,
                 &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
             )> for #input_name {
                 type Error = auto_lsp::core::errors::AstError;
 
                 fn try_from(
-                    (builder, parent_id, document, parsers, id_map, all_nodes): (
+                    (builder, parent_id, document, parsers, all_nodes): (
                         &#input_builder_name,
                         &Option<usize>,
                         &auto_lsp::core::document::Document,
                         &'static #parsers,
-                        &std::collections::HashMap<usize, usize>,
                         &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
                     )
                 ) -> Result<Self, Self::Error> {
@@ -329,7 +328,7 @@ impl StructBuilder<'_> {
                     #_builder
 
                     Ok(#input_name {
-                        _data: #symbol_data::new(builder_range),
+                        _data: #symbol_data::new(builder_range, id),
                         #(#fields),*
                     })
                 }
