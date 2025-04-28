@@ -302,7 +302,7 @@ impl StructBuilder<'_> {
             |_, _, name, field_type, builder| {
                 quote! {
 
-                    if let Some(node) =  self.#name.add::<#builder>(capture, parsers, stringify!(#input_name), stringify!(#field_type))? {
+                    if let Some(node) =  self.#name.add::<#builder>(capture, parsers)? {
                        return Ok(Some(node))
                     };
                 }

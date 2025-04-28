@@ -71,8 +71,6 @@ pub trait AddSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        parent_name: &str,
-        field_name: &str,
     ) -> Result<Option<PendingSymbol>, AstError>;
 }
 
@@ -81,8 +79,6 @@ impl AddSymbol for MaybePendingSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        parent_name: &str,
-        field_name: &str,
     ) -> Result<Option<PendingSymbol>, AstError> {
         if self.is_some() {
             return Ok(None);
@@ -119,8 +115,6 @@ impl AddSymbol for Vec<PendingSymbol> {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        parent_name: &str,
-        field_name: &str,
     ) -> Result<Option<PendingSymbol>, AstError> {
         let name = parsers.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
