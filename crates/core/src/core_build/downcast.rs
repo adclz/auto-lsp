@@ -61,11 +61,10 @@ where
         all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError> {
         let mut result = Y::try_from((
-            self.0
-                .borrow()
+            self.borrow()
                 .downcast_ref::<T>()
                 .ok_or(AstError::InvalidSymbol {
-                    range: self.get_rc().borrow().get_range().clone(),
+                    range: self.get_range().clone(),
                     query: parsers.core.capture_names()[self.get_query_index()],
                 })?,
             &None,
@@ -74,14 +73,12 @@ where
             id_map,
             all_nodes,
         ))?;
-        let id = id_map.get(&self.get_id()).unwrap();
         if let Some(parent_id) = parent_id {
             result.get_mut_data().parent = id_map.get(parent_id).cloned();
         }
-        result.get_mut_data().id = *id;
+        result.get_mut_data().id = *id_map.get(&self.get_id()).unwrap();
 
         let arc = Arc::new(result);
-
         all_nodes.push(Arc::clone(&arc) as _);
         Ok(arc)
     }

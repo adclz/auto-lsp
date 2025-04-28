@@ -73,16 +73,19 @@ impl ToTokens for EnumBuilder<'_> {
         self.struct_input_builder(&mut builder);
 
         builder.add(quote! {
-            fn get_range(&self) -> std::ops::Range<usize> {
-                self.unique_field.get_rc().borrow().get_range()
-            }
-
+            #[inline]
             fn get_query_index(&self) -> usize {
-                self.unique_field.get_rc().borrow().get_query_index()
+                self.unique_field.get_query_index()
             }
 
+            #[inline]
             fn get_id(&self) -> usize {
-                self.unique_field.get_rc().borrow().get_id()
+                self.unique_field.get_id()
+            }
+
+            #[inline]
+            fn get_range(&self) -> std::ops::Range<usize> {
+                self.unique_field.get_range()
             }
         });
         self.fn_new(&mut builder);
@@ -326,7 +329,7 @@ impl EnumBuilder<'_> {
 
         builder.add(quote! {
             #sig {
-                self.unique_field.get_rc().borrow_mut().#variant
+                self.unique_field.borrow_mut().#variant
             }
         });
     }
@@ -363,12 +366,12 @@ impl EnumBuilder<'_> {
                     )
                 ) -> Result<Self, Self::Error> {
                     #(
-                        if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
+                        if let Some(variant) = builder.unique_field.borrow().downcast_ref::<#variant_builder_names>() {
                             return Ok(Self::#variant_names(#variant_types::try_from((variant, parent_id, document, parsers, id_map, all_nodes))?));
                         };
                     )*
                     Err(auto_lsp::core::errors::AstError::UnknownSymbol {
-                        range: builder.unique_field.get_rc().borrow().get_range(),
+                        range: builder.unique_field.get_range(),
                         symbol: parsers.core.capture_names()[builder.unique_field.get_query_index() as usize],
                         parent_name: stringify!(#name)
                     })

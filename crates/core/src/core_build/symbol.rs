@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use std::cell::RefCell;
+use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
 use super::buildable::*;
@@ -34,16 +35,33 @@ impl PendingSymbol {
         PendingSymbol(Rc::new(RefCell::new(builder)))
     }
 
+    #[inline]
     pub fn get_query_index(&self) -> usize {
         self.0.borrow().get_query_index()
     }
 
+    #[inline]
     pub fn get_id(&self) -> usize {
         self.0.borrow().get_id()
     }
 
-    pub fn get_rc(&self) -> &Rc<RefCell<dyn Buildable>> {
+    #[inline]
+    pub fn get_range(&self) -> std::ops::Range<usize> {
+        self.0.borrow().get_range()
+    }
+}
+
+impl Deref for PendingSymbol {
+    type Target = Rc<RefCell<dyn Buildable>>;
+
+    fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl DerefMut for PendingSymbol {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 

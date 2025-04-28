@@ -101,7 +101,7 @@ impl AddSymbol for MaybePendingSymbol {
                 None => match Y::new(&parsers.core, capture) {
                     Some(node) => {
                         self.swap(&mut node.into());
-                        return Ok(self.as_ref().clone());
+                        return Ok(self.0.clone());
                     }
                     None => {
                         return Err(AstError::InvalidSymbol {

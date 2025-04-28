@@ -101,7 +101,7 @@ where
 
         let result = Arc::new(
             Y::try_from((
-                result.0.borrow().downcast_ref::<T>().unwrap(),
+                result.borrow().downcast_ref::<T>().unwrap(),
                 &None,
                 self.document,
                 self.parsers,
@@ -159,7 +159,7 @@ where
                     }
                     // If there's a parent, checks if the parent's range intersects with the current capture.
                     Some(p) => {
-                        if intersecting_ranges(&p.0.borrow().get_range(), &capture.node.range()) {
+                        if intersecting_ranges(&p.get_range(), &capture.node.range()) {
                             // If it intersects, create a child node.
                             self.create_child_node(p, &capture);
                             break;
@@ -223,7 +223,7 @@ where
                             },
                             symbol: self.parsers.core.capture_names()[capture.index as usize],
                             parent_name: self.parsers.core.capture_names()
-                                [parent.0.borrow().get_query_index()],
+                                [parent.get_query_index()],
                         },
                     )
                         .into(),
