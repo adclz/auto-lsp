@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::BuildCodeLenses;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::Url;
 use rstest::{fixture, rstest};
@@ -40,7 +39,7 @@ fn foo_bar_code_lens(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).to_symbol();
+    let root = get_ast(&foo_bar, file).get_root();
 
     let ast = root.as_ref().unwrap();
 

@@ -28,10 +28,7 @@ impl BuildCodeLenses for Module {
         doc: &Document,
         acc: &mut Vec<lsp_types::CodeLens>,
     ) -> anyhow::Result<()> {
-        for statement in &self.statements {
-            statement.read().build_code_lenses(doc, acc)?;
-        }
-        Ok(())
+        self.statements.build_code_lenses(doc, acc)
     }
 }
 
@@ -41,9 +38,8 @@ impl BuildCodeLenses for Function {
         doc: &Document,
         acc: &mut Vec<lsp_types::CodeLens>,
     ) -> anyhow::Result<()> {
-        let read = self.name.read();
         acc.push(lsp_types::CodeLens {
-            range: read.get_lsp_range(doc)?,
+            range: self.name.get_lsp_range(doc)?,
             command: None,
             data: None,
         });

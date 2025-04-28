@@ -19,8 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use super::capabilities::*;
 use super::data::*;
 use super::display::*;
-use super::symbol::*;
-use crate::build::Parent;
 use crate::document::Document;
 use crate::errors::PositionError;
 use downcast_rs::{impl_downcast, DowncastSync};
@@ -49,17 +47,15 @@ pub trait AstSymbol:
     + BuildSemanticTokens
     + BuildCodeActions
     // special
-    + Traverse
     + Scope
     + GetSymbolData
-    + Parent
     + Display
     + IndentedDisplay
     {
     /// Retrieves the data of the symbol.
     fn get_data(&self) -> &SymbolData;
 
-    /// Retrieves the mutable data of the symbol.
+    #[doc(hidden)]
     fn get_mut_data(&mut self) -> &mut SymbolData;
 
     #[inline]
@@ -76,27 +72,6 @@ pub trait AstSymbol:
             }
             None => Err(PositionError::WrongTextRange { range })
         }
-    }
-
-    /// Get the symbol's nearest scope.
-    ///
-    /// The scope defines the search area for references and completion items.
-    fn get_parent_scope(&self) -> Option<DynSymbol> {
-        let mut parent = self.get_data().get_parent();
-        while let Some(weak) = parent {
-            #[allow(clippy::all)]
-            let symbol: DynSymbol = match weak.into() {
-                Some(symbol) => symbol,
-                None => return None
-            };
-
-            let read = symbol.read();
-            if symbol.read().is_scope() {
-                return Some(symbol.clone());
-            }
-                parent = read.get_parent();
-            }
-        None
     }
 
     #[inline]
@@ -121,4 +96,4 @@ pub trait AstSymbol:
     }
 }
 
-impl_downcast!(AstSymbol);
+impl_downcast!(sync AstSymbol);

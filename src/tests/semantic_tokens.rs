@@ -44,13 +44,12 @@ fn foo_bar_semantic_tokens(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).to_symbol();
+    let root = get_ast(&foo_bar, file).get_root();
 
     let ast = root.unwrap();
 
     let mut builder = auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder::new("".into());
-    let module = ast.read();
-    let module = module.downcast_ref::<Module>().unwrap();
+    let module = ast.downcast_ref::<Module>().unwrap();
 
     module
         .build_semantic_tokens(&document, &mut builder)

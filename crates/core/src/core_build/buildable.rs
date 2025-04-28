@@ -16,17 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use downcast_rs::{impl_downcast, Downcast};
-
-use crate::{
-    ast::WeakSymbol,
-    core_ast::{core::AstSymbol, symbol::Symbol},
-    document::Document,
-    errors::AstError,
-    parsers::Parsers,
-};
-
 use super::symbol::{MaybePendingSymbol, PendingSymbol};
+use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
+use downcast_rs::{impl_downcast, Downcast};
+use std::sync::Arc;
 
 /// Trait implemented by all builders created with the seq macro.
 pub trait Buildable: Downcast {
@@ -35,7 +28,11 @@ pub trait Buildable: Downcast {
     /// # Returns
     /// - `Some(Self)` if a valid builder can be created for the given capture.
     /// - `None` for enums if the corresponding variant is not found.
-    fn new(query: &tree_sitter::Query, capture: &tree_sitter::QueryCapture) -> Option<Self>
+    fn new(
+        query: &tree_sitter::Query,
+        capture: &tree_sitter::QueryCapture,
+        id: usize,
+    ) -> Option<Self>
     where
         Self: Sized;
 
@@ -50,11 +47,14 @@ pub trait Buildable: Downcast {
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
         document: &Document,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError>;
 
     fn get_range(&self) -> std::ops::Range<usize>;
 
     fn get_query_index(&self) -> usize;
+
+    fn get_id(&self) -> usize;
 }
 
 impl_downcast!(Buildable);
@@ -67,35 +67,13 @@ pub trait Queryable {
     const QUERY_NAMES: &'static [&'static str];
 }
 
-/// A trait for injecting a parent relationship into an AST symbol.
-///
-/// This trait is used to establish parent-child relationships in the AST,
-/// ensuring that newly created symbols are properly linked to their parent nodes.
-pub trait Parent {
-    fn inject_parent(&mut self, parent: WeakSymbol);
-}
-
-impl<T: AstSymbol> Parent for Symbol<T> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        self.write().set_parent(parent);
-    }
-}
-
-impl<T: AstSymbol> Parent for Option<Symbol<T>> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        if let Some(symbol) = self.as_mut() {
-            symbol.write().set_parent(parent);
-        }
-    }
-}
-
-impl<T: AstSymbol> Parent for Vec<Symbol<T>> {
-    fn inject_parent(&mut self, parent: WeakSymbol) {
-        for symbol in self.iter_mut() {
-            symbol.write().set_parent(parent.clone());
-        }
-    }
-}
+pub type TryFromParams<'a, T> = (
+    &'a T,
+    &'a Option<usize>,
+    &'a Document,
+    &'static Parsers,
+    &'a mut Vec<Arc<dyn AstSymbol>>,
+);
 
 /// A trait for adding symbols to builders created by the `#[seq]` macro.
 pub trait AddSymbol {
@@ -106,8 +84,7 @@ pub trait AddSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        parent_name: &str,
-        field_name: &str,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError>;
 }
 
@@ -116,8 +93,7 @@ impl AddSymbol for MaybePendingSymbol {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        parent_name: &str,
-        field_name: &str,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError> {
         if self.is_some() {
             return Ok(None);
@@ -128,10 +104,10 @@ impl AddSymbol for MaybePendingSymbol {
                 Some(_) => {
                     return Ok(None);
                 }
-                None => match Y::new(&parsers.core, capture) {
+                None => match Y::new(&parsers.core, capture, id) {
                     Some(node) => {
                         self.swap(&mut node.into());
-                        return Ok(self.as_ref().clone());
+                        return Ok(self.0.clone());
                     }
                     None => {
                         return Err(AstError::InvalidSymbol {
@@ -139,8 +115,6 @@ impl AddSymbol for MaybePendingSymbol {
                                 start: capture.node.start_byte(),
                                 end: capture.node.end_byte(),
                             },
-                            field_name: field_name.to_string(),
-                            parent_name: parent_name.to_string(),
                             query: parsers.core.capture_names()[capture.index as usize],
                         })
                     }
@@ -156,12 +130,11 @@ impl AddSymbol for Vec<PendingSymbol> {
         &mut self,
         capture: &tree_sitter::QueryCapture,
         parsers: &'static Parsers,
-        parent_name: &str,
-        field_name: &str,
+        id: usize,
     ) -> Result<Option<PendingSymbol>, AstError> {
         let name = parsers.core.capture_names()[capture.index as usize];
         if Y::QUERY_NAMES.contains(&name) {
-            match Y::new(&parsers.core, capture) {
+            match Y::new(&parsers.core, capture, id) {
                 Some(node) => {
                     let node = PendingSymbol::new(node);
                     self.push(node.clone());
@@ -173,45 +146,11 @@ impl AddSymbol for Vec<PendingSymbol> {
                             start: capture.node.start_byte(),
                             end: capture.node.end_byte(),
                         },
-                        field_name: field_name.to_string(),
-                        parent_name: parent_name.to_string(),
                         query: parsers.core.capture_names()[capture.index as usize],
                     })
                 }
             }
         }
         Ok(None)
-    }
-}
-
-/// Finalize trait to convert AST symbols to [`Symbol`]s.
-pub trait Finalize<T: AstSymbol> {
-    type Output;
-
-    /// Converts the AST symbol to a [`Symbol`].
-    fn finalize(self) -> Self::Output;
-}
-
-impl<T: AstSymbol> Finalize<T> for T {
-    type Output = Symbol<T>;
-
-    fn finalize(self) -> Self::Output {
-        Symbol::from(self)
-    }
-}
-
-impl<T: AstSymbol> Finalize<T> for Option<T> {
-    type Output = Option<Symbol<T>>;
-
-    fn finalize(self) -> Self::Output {
-        self.map(|symbol| Symbol::from(symbol))
-    }
-}
-
-impl<T: AstSymbol> Finalize<T> for Vec<T> {
-    type Output = Vec<Symbol<T>>;
-
-    fn finalize(self) -> Self::Output {
-        self.into_iter().map(|f| Symbol::from(f)).collect()
     }
 }

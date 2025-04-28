@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::ops::Deref;
-
 use crate::core::ast::GetHover;
 use crate::python::ast::{CompoundStatement, Statement};
 use auto_lsp_core::salsa::db::BaseDatabase;
@@ -45,16 +43,14 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).to_symbol();
+    let root = get_ast(&foo_bar, file).get_root();
 
     let ast = root.unwrap();
+    let module = ast.downcast_ref::<Module>().unwrap();
 
-    let module = ast.read();
-    let module = module.downcast_ref::<Module>().unwrap();
-
-    let foo = module.statements[0].read();
-    if let Statement::Compound(CompoundStatement::Function(foo)) = foo.deref() {
-        let foo_name = foo.name.read();
+    let foo = &module.statements[0];
+    if let Statement::Compound(CompoundStatement::Function(foo)) = foo.as_ref() {
+        let foo_name = &foo.name;
 
         let foo_hover = foo_name.get_hover(&document).unwrap();
 
@@ -69,10 +65,10 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
         panic!("Expected function statement");
     }
 
-    let bar = module.statements[1].read();
+    let bar = &module.statements[1];
 
-    if let Statement::Compound(CompoundStatement::Function(foo)) = bar.deref() {
-        let bar_name = foo.name.read();
+    if let Statement::Compound(CompoundStatement::Function(foo)) = bar.as_ref() {
+        let bar_name = &foo.name;
 
         let bar_hover = bar_name.get_hover(&document).unwrap();
 

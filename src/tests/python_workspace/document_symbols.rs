@@ -43,14 +43,10 @@ impl BuildDocumentSymbols for Function {
         self.body.build_document_symbols(doc, &mut nested_builder)?;
 
         builder.push_symbol(lsp_types::DocumentSymbol {
-            name: self
-                .name
-                .read()
-                .get_text(doc.texter.text.as_bytes())?
-                .to_string(),
+            name: self.name.get_text(doc.texter.text.as_bytes())?.to_string(),
             kind: lsp_types::SymbolKind::FUNCTION,
-            range: self.name.read().get_lsp_range(doc)?,
-            selection_range: self.name.read().get_lsp_range(doc)?,
+            range: self.name.get_lsp_range(doc)?,
+            selection_range: self.name.get_lsp_range(doc)?,
             tags: None,
             detail: None,
             deprecated: None,

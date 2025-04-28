@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use std::marker::PhantomData;
+use std::sync::Arc;
 
 use salsa::Accumulator;
 use streaming_iterator::StreamingIterator;
@@ -49,6 +50,7 @@ where
     /// Symbols created while building the AST
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
+    id_ctr: usize,
 }
 
 impl<'a, T> StackBuilder<'a, T>
@@ -68,16 +70,17 @@ where
             document,
             roots: vec![],
             stack: vec![],
+            id_ctr: 0,
         }
     }
 
-    /// Creates a symbol of type [`Y`] based on the specified range.
+    /// Creates a symbol of type [`Y`].
     ///
-    /// This method builds the AST for the provided range (if any) and attempts to derive
+    /// This method builds the AST and attempts to derive
     /// a symbol from the root node.
-    pub fn create_symbol<Y>(&mut self) -> Result<Y, ParseError>
+    pub fn create_symbol<Y>(&mut self) -> Result<Vec<Arc<dyn AstSymbol>>, ParseError>
     where
-        Y: AstSymbol + for<'c> TryFrom<(&'c T, &'c Document, &'static Parsers), Error = AstError>,
+        Y: AstSymbol + for<'c> TryFrom<TryFromParams<'c, T>, Error = AstError>,
     {
         let result = self.build()?.ok_or::<ParseError>(
             (
@@ -92,15 +95,28 @@ where
             )
                 .into(),
         )?;
-        let result = Y::try_from((
-            result.0.borrow().downcast_ref::<T>().unwrap(),
-            self.document,
-            self.parsers,
-        ))
-        .map_err(|err| ParseError::from((self.document, err)))?;
-        #[cfg(feature = "log")]
-        log::debug!("\n{}", result);
-        Ok(result)
+
+        let mut all_nodes = Vec::with_capacity(self.id_ctr);
+
+        let result = Arc::new(
+            Y::try_from((
+                result.borrow().downcast_ref::<T>().unwrap(),
+                &None,
+                self.document,
+                self.parsers,
+                &mut all_nodes,
+            ))
+            .map_err(|err| ParseError::from((self.document, err)))?,
+        );
+
+        debug_assert_eq!(result.get_id(), 0);
+
+        all_nodes.push(result);
+        all_nodes.sort_unstable_by_key(|f| f.get_id());
+
+        debug_assert_eq!(self.id_ctr, all_nodes.len());
+
+        Ok(all_nodes)
     }
 
     /// Builds the AST based on Tree-sitter query captures.
@@ -137,10 +153,10 @@ where
                         }
                     }
                     // If there's a parent, checks if the parent's range intersects with the current capture.
-                    Some(p) => {
-                        if intersecting_ranges(&p.0.borrow().get_range(), &capture.node.range()) {
+                    Some(parent) => {
+                        if intersecting_ranges(&parent.get_range(), &capture.node.range()) {
                             // If it intersects, create a child node.
-                            self.create_child_node(p, &capture);
+                            self.create_child_node(parent, &capture);
                             break;
                         }
                     }
@@ -155,13 +171,15 @@ where
     ///
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture) -> Result<(), ParseError> {
-        let mut node = T::new(&self.parsers.core, capture);
+        let mut node = T::new(&self.parsers.core, capture, self.id_ctr);
+
+        self.id_ctr += 1;
 
         match node.take() {
             Some(builder) => {
                 let node = PendingSymbol::new(builder);
                 self.roots.push(node.clone());
-                self.stack.push(node);
+                self.stack.push(node.clone());
                 Ok(())
             }
             None => Err((
@@ -183,7 +201,9 @@ where
         let add = parent
             .0
             .borrow_mut()
-            .add(capture, self.parsers, self.document);
+            .add(capture, self.parsers, self.document, self.id_ctr);
+
+        self.id_ctr += 1;
 
         match add {
             Err(e) => {
@@ -202,7 +222,7 @@ where
                             },
                             symbol: self.parsers.core.capture_names()[capture.index as usize],
                             parent_name: self.parsers.core.capture_names()
-                                [parent.0.borrow().get_query_index()],
+                                [parent.get_query_index()],
                         },
                     )
                         .into(),

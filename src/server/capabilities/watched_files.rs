@@ -49,12 +49,12 @@ pub fn changed_watched_files<Db: BaseDatabase>(
 
             let (parsers, url, text) = session
                 .read_file(&file_path)
-                .map_err(|e| RuntimeError::from(e))?;
+                .map_err(RuntimeError::from)?;
             log::info!("Watched Files: Created - {}", uri.to_string());
             session
                 .db
                 .add_file_from_texter(parsers, &url, text)
-                .map_err(|err| RuntimeError::from(err))
+                .map_err(RuntimeError::from)
         }
         FileChangeType::CHANGED => {
             let uri = &file.uri;
@@ -80,7 +80,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                         session
                             .db
                             .remove_file(uri)
-                            .map_err(|err| RuntimeError::from(err))?;
+                            .map_err(RuntimeError::from)?;
                         let file_path = uri.to_file_path().map_err(|_| {
                             RuntimeError::from(FileSystemError::FileUrlToFilePath {
                                 path: uri.clone(),
@@ -89,11 +89,11 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                         log::info!("Watched Files: Changed - {}", uri.to_string());
                         let (parsers, url, text) = session
                             .read_file(&file_path)
-                            .map_err(|err| RuntimeError::from(err))?;
+                            .map_err(RuntimeError::from)?;
                         session
                             .db
                             .add_file_from_texter(parsers, &url, text)
-                            .map_err(|err| RuntimeError::from(err))
+                            .map_err(RuntimeError::from)
                     } else {
                         // The file is already in db and the content is the same
                         // We can ignore this change
@@ -108,7 +108,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
             session
                 .db
                 .remove_file(&file.uri)
-                .map_err(|err| RuntimeError::from(err))
+                .map_err(RuntimeError::from)
         }
         // Should never happen
         _ => Ok(()),
