@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use salsa::Accumulator;
 
 use super::db::{BaseDatabase, File};
-use crate::ast::{AstSymbol, DynSymbol};
+use crate::ast::AstSymbol;
 use crate::core_build::lexer::get_tree_sitter_errors;
 use crate::errors::ParseErrorAccumulator;
 use std::fmt::Formatter;

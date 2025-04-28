@@ -18,11 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #![allow(unused_variables)]
 
-use std::ops::Deref;
 use std::sync::Arc;
 
 use super::core::AstSymbol;
-use super::symbol::*;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
 use lsp_types::{request::GotoDeclarationResponse, CompletionItem, GotoDefinitionResponse};
@@ -322,27 +320,6 @@ pub trait Comment {
         false
     }
 }
-
-macro_rules! impl_dyn_symbol {
-    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)-> $return_type: ty) => {
-        impl $trait for DynSymbol {
-            fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<$return_type> {
-                self.0.$fn_name($($param_name),*)
-            }
-        }
-    };
-}
-
-impl_dyn_symbol!(GetHover, get_hover(&self, doc: &Document) -> Option<lsp_types::Hover>);
-impl_dyn_symbol!(GetGoToDefinition, go_to_definition(&self, doc: &Document) -> Option<GotoDefinitionResponse>);
-impl_dyn_symbol!(GetGoToDeclaration, go_to_declaration(&self, doc: &Document) -> Option<GotoDeclarationResponse>);
-impl_dyn_symbol!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder) -> ());
-impl_dyn_symbol!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) -> ());
-impl_dyn_symbol!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>) -> ());
-impl_dyn_symbol!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>) -> ());
-impl_dyn_symbol!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) -> ());
-impl_dyn_symbol!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>)  -> ());
-impl_dyn_symbol!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>)  -> ());
 
 macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {

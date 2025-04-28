@@ -43,8 +43,6 @@ pub struct Method {
 
 nested_struct!(
     pub struct Paths {
-        pub dyn_symbol: Path,
-        pub weak_symbol: Path,
         pub symbol_data: Path,
         pub pending_symbol: Path,
         pub maybe_pending_symbol: Path,
@@ -130,8 +128,6 @@ nested_struct!(
 impl Default for Paths {
     fn default() -> Self {
         Self {
-            dyn_symbol: core_ast(parse_quote!(DynSymbol)),
-            weak_symbol: core_ast(parse_quote!(WeakSymbol)),
             symbol_data: core_ast(parse_quote!(SymbolData)),
             pending_symbol: core_build(parse_quote!(PendingSymbol)),
             maybe_pending_symbol: core_build(parse_quote!(MaybePendingSymbol)),

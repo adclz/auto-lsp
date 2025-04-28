@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::ast::DynSymbol;
 use crate::document::Document;
 use crate::errors::AstError;
 use crate::errors::ParseError;
