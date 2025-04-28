@@ -74,9 +74,9 @@ where
         }
     }
 
-    /// Creates a symbol of type [`Y`] based on the specified range.
+    /// Creates a symbol of type [`Y`].
     ///
-    /// This method builds the AST for the provided range (if any) and attempts to derive
+    /// This method builds the AST and attempts to derive
     /// a symbol from the root node.
     pub fn create_symbol<Y>(&mut self) -> Result<Vec<Arc<dyn AstSymbol>>, ParseError>
     where
@@ -153,10 +153,10 @@ where
                         }
                     }
                     // If there's a parent, checks if the parent's range intersects with the current capture.
-                    Some(p) => {
-                        if intersecting_ranges(&p.get_range(), &capture.node.range()) {
+                    Some(parent) => {
+                        if intersecting_ranges(&parent.get_range(), &capture.node.range()) {
                             // If it intersects, create a child node.
-                            self.create_child_node(p, &capture);
+                            self.create_child_node(parent, &capture);
                             break;
                         }
                     }
@@ -172,6 +172,7 @@ where
     /// The root node is the top-level symbol in the AST, and only one root node can exist.
     fn create_root_node(&mut self, capture: &QueryCapture) -> Result<(), ParseError> {
         let mut node = T::new(&self.parsers.core, capture, self.id_ctr);
+
         self.id_ctr += 1;
 
         match node.take() {
@@ -203,6 +204,7 @@ where
             .add(capture, self.parsers, self.document, self.id_ctr);
 
         self.id_ctr += 1;
+
         match add {
             Err(e) => {
                 // Parent did not accept the child node and returned an error.

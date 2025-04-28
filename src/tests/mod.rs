@@ -44,6 +44,8 @@ pub mod html_corpus;
 #[cfg(test)]
 pub mod inlay_hints;
 #[cfg(test)]
+pub mod iter;
+#[cfg(test)]
 pub mod proc_macros;
 #[cfg(test)]
 pub mod python_corpus;
