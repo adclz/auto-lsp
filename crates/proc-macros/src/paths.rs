@@ -71,7 +71,6 @@ nested_struct!(
 
         pub add_symbol_trait: Path,
         pub try_downcast_trait: Path,
-        pub finalize_trait: Path,
 
         pub lsp_code_lens: LspCodeLens {
             pub path: Path,
@@ -193,7 +192,6 @@ impl Default for Paths {
             },
             add_symbol_trait: core_build(parse_quote!(AddSymbol)),
             try_downcast_trait: core_build(parse_quote!(TryDownCast)),
-            finalize_trait: core_build(parse_quote!(Finalize)),
 
             lsp_document_symbols: LspDocumentSymbols {
                 path: core_ast(parse_quote!(BuildDocumentSymbols)),

@@ -320,7 +320,6 @@ impl StructBuilder<'_> {
         let symbol_data = &self.paths.symbol_data;
         let try_downcast = &self.paths.try_downcast_trait;
         let builder_trait = &self.paths.symbol_builder_trait.path;
-        let finalize = &self.paths.finalize_trait;
         let parsers = &self.paths.parsers;
 
         let _builder = FieldBuilder::default()

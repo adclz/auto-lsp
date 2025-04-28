@@ -144,35 +144,3 @@ impl AddSymbol for Vec<PendingSymbol> {
         Ok(None)
     }
 }
-
-/// Finalize trait to convert AST symbols to [`Symbol`]s.
-pub trait Finalize<T: AstSymbol> {
-    type Output;
-
-    /// Converts the AST symbol to a [`Symbol`].
-    fn finalize(self) -> Self::Output;
-}
-
-impl<T: AstSymbol> Finalize<T> for T {
-    type Output = Arc<T>;
-
-    fn finalize(self) -> Self::Output {
-        Arc::new(self)
-    }
-}
-
-impl<T: AstSymbol> Finalize<T> for Option<T> {
-    type Output = Option<Arc<T>>;
-
-    fn finalize(self) -> Self::Output {
-        self.map(Arc::new)
-    }
-}
-
-impl<T: AstSymbol> Finalize<T> for Vec<T> {
-    type Output = Vec<Arc<T>>;
-
-    fn finalize(self) -> Self::Output {
-        self.into_iter().map(Arc::new).collect()
-    }
-}
