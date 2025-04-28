@@ -72,13 +72,7 @@ macro_rules! configure_parsers {
                             use $crate::core::build::InvokeParser;
 
                             $root::parse_symbol(db, parsers, document)
-                                .map(|(symbol, arena)| {
-                                    (
-                                        symbol.into(),
-                                        arena,
-                                    )
-                                })
-                            }
+                        }
                     }
                 );
                 ),*

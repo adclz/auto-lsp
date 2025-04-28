@@ -65,7 +65,7 @@ pub trait InvokeParser<
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<(Arc<Y>, Vec<Arc<dyn AstSymbol>>), ParseError>;
+    ) -> Result<Vec<Arc<dyn AstSymbol>>, ParseError>;
 }
 
 impl<T, Y> InvokeParser<T, Y> for Y
@@ -88,8 +88,8 @@ where
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<(Arc<Y>, Vec<Arc<dyn AstSymbol>>), ParseError> {
-        StackBuilder::<T>::new(db, document, parsers).create_symbol()
+    ) -> Result<Vec<Arc<dyn AstSymbol>>, ParseError> {
+        StackBuilder::<T>::new(db, document, parsers).create_symbol::<Y>()
     }
 }
 
@@ -101,7 +101,7 @@ pub type InvokeParserFn = fn(
     &dyn BaseDatabase,
     &'static Parsers,
     &Document,
-) -> Result<(DynSymbol, Vec<Arc<dyn AstSymbol>>), ParseError>;
+) -> Result<Vec<Arc<dyn AstSymbol>>, ParseError>;
 
 pub type TestParseResult<E = AriadneReport> = Result<(), Box<E>>;
 
@@ -197,7 +197,7 @@ where
                     diagnostic.to_label(&source, &mut colors, &mut report);
                 }
 
-                if let Some(ast) = ast.get_root() {
+                if let Some(ast) = ast.get(0) {
                     report.add_note(format!("{}", ast));
                 }
 

@@ -79,7 +79,7 @@ where
     ///
     /// This method builds the AST for the provided range (if any) and attempts to derive
     /// a symbol from the root node.
-    pub fn create_symbol<Y>(&mut self) -> Result<(Arc<Y>, Vec<Arc<dyn AstSymbol>>), ParseError>
+    pub fn create_symbol<Y>(&mut self) -> Result<Vec<Arc<dyn AstSymbol>>, ParseError>
     where
         Y: AstSymbol
             + for<'c> TryFrom<
@@ -122,19 +122,10 @@ where
             .map_err(|err| ParseError::from((self.document, err)))?,
         );
 
-        all_nodes.push(result.clone());
+        all_nodes.push(result);
         all_nodes.sort_unstable_by_key(|f| f.get_data().id);
 
-        // Print nodes organized by layer
-        for (node) in &all_nodes {
-            eprintln!(
-                "Node: {:?} : {} <- {:?}",
-                node.get_range(),
-                node.get_data().id,
-                node.get_data().parent
-            );
-        }
-        Ok((result, all_nodes))
+        Ok(all_nodes)
     }
 
     /// Builds the AST based on Tree-sitter query captures.
