@@ -47,7 +47,6 @@ pub trait AstSymbol:
     + BuildSemanticTokens
     + BuildCodeActions
     // special
-    + Traverse
     + Scope
     + GetSymbolData
     + Display

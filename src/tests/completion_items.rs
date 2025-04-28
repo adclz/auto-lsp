@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::core::ast::BuildCompletionItems;
-use auto_lsp_core::ast::{BuildTriggeredCompletionItems, Traverse};
+use auto_lsp_core::ast::BuildTriggeredCompletionItems;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::salsa::tracked::get_ast;
 use lsp_types::Url;
@@ -99,9 +99,9 @@ fn triggered_completion_items(mut foo_bar: impl BaseDatabase) {
         .unwrap();
 
     let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).get_root();
+    let root = get_ast(&foo_bar, file);
 
-    let node = root.as_ref().unwrap().descendant_at(75).unwrap();
+    let node = root.descendant_at(75).unwrap();
 
     let mut completion_items = vec![];
     node.build_triggered_completion_items(".", &document, &mut completion_items)

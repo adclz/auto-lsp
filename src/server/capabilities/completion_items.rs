@@ -17,8 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::core::ast::BuildTriggeredCompletionItems;
+use auto_lsp_core::salsa::db::BaseDatabase;
 use auto_lsp_core::salsa::tracked::get_ast;
-use auto_lsp_core::{ast::Traverse, salsa::db::BaseDatabase};
 use lsp_types::{CompletionParams, CompletionResponse, CompletionTriggerKind};
 
 pub fn get_completion_items<Db: BaseDatabase>(
@@ -34,10 +34,7 @@ pub fn get_completion_items<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = match get_ast(db, file).get_root() {
-        Some(root) => root,
-        None => return Ok(None),
-    };
+    let ast = get_ast(db, file);
 
     match params.context {
         Some(context) => match context.trigger_kind {
@@ -52,7 +49,7 @@ pub fn get_completion_items<Db: BaseDatabase>(
                     None => return Ok(None),
                 };
 
-                let item = match root.descendant_at(offset) {
+                let item = match ast.descendant_at(offset) {
                     Some(item) => item,
                     None => return Ok(None),
                 };

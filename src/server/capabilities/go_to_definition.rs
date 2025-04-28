@@ -16,12 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::core::ast::GetGoToDefinition;
 use anyhow::Ok;
-use auto_lsp_core::{
-    ast::Traverse,
-    salsa::{db::BaseDatabase, tracked::get_ast},
-};
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
 
 /// Request to go to the definition of a symbol
@@ -38,15 +34,12 @@ pub fn go_to_definition<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = match get_ast(db, file).get_root() {
-        Some(root) => root,
-        None => return Ok(None),
-    };
+    let ast = get_ast(db, file);
 
     let position = params.text_document_position_params.position;
 
     let offset = document.offset_at(position).unwrap();
-    let item = root.descendant_at(offset);
+    let item = ast.descendant_at(offset);
 
     match item {
         Some(item) => item.go_to_definition(&document),

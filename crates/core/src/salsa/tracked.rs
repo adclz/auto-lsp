@@ -84,6 +84,26 @@ impl ParsedAst {
     pub fn get_arena(&self) -> &Vec<Arc<dyn AstSymbol>> {
         &self.nodes
     }
+
+    /// Returns the first descendant of the root node that matches the given type.
+    pub fn descendant_at<'a>(&'a self, offset: usize) -> Option<&'a Arc<dyn AstSymbol>> {
+        let mut best: Option<&Arc<dyn AstSymbol>> = None;
+
+        for node in self.nodes.iter() {
+            let range = node.get_range();
+
+            if range.start > offset {
+                // No point continuing
+                break;
+            }
+
+            if node.is_inside_offset(offset) {
+                best = Some(node);
+            }
+        }
+
+        best
+    }
 }
 
 impl<'a> From<&'a ParsedAst> for Option<&'a DynSymbol> {

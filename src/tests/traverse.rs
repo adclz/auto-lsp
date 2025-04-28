@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
+/*
 use super::{html_utils::create_html_db, html_workspace::*};
 use auto_lsp_core::ast::{GetSymbolData, Traverse};
 use auto_lsp_core::salsa::db::BaseDatabase;
@@ -100,7 +100,7 @@ fn descendant_at_and_collect(nested_divs: impl BaseDatabase) {
     assert_eq!(collected[3].get_range().start, 59);
 }
 
-/*
+
 #[rstest]
 fn traverse_and_collect(nested_divs: impl BaseDatabase) {
     let file = nested_divs

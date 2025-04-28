@@ -116,12 +116,6 @@ nested_struct!(
             pub path: Path,
             pub is_scope: Method
         },
-        pub traverse: Traverse {
-            pub path: Path,
-            pub descendant_at: Method,
-            pub descendant_at_and_collect: Method,
-            pub traverse_and_collect: Method
-        },
         pub display: Display {
             pub path: Path,
             pub fmt: Method
@@ -268,21 +262,6 @@ impl Default for Paths {
                 is_scope: Method {
                     sig: quote! { fn is_scope(&self) -> bool },
                     variant: quote! { is_scope() },
-                },
-            },
-            traverse: Traverse {
-                path: core_ast(parse_quote!(Traverse)),
-                descendant_at: Method {
-                    sig: quote! { fn descendant_at(&self, offset: usize) -> Option<auto_lsp::core::ast::DynSymbol> },
-                    variant: quote! { descendant_at(offset) },
-                },
-                descendant_at_and_collect: Method {
-                    sig: quote! { fn descendant_at_and_collect(&self, offset: usize, collect_fn: fn(auto_lsp::core::ast::DynSymbol) -> bool, collect: &mut Vec<auto_lsp::core::ast::DynSymbol>) -> Option<auto_lsp::core::ast::DynSymbol> },
-                    variant: quote! { descendant_at_and_collect(offset, collect_fn, collect) },
-                },
-                traverse_and_collect: Method {
-                    sig: quote! { fn traverse_and_collect(&self, collect_fn: fn(auto_lsp::core::ast::DynSymbol) -> bool, collect: &mut Vec<auto_lsp::core::ast::DynSymbol>) },
-                    variant: quote! { traverse_and_collect(collect_fn, collect) },
                 },
             },
             display: Display {

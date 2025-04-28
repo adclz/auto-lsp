@@ -17,10 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::core::ast::GetHover;
-use auto_lsp_core::{
-    ast::Traverse,
-    salsa::{db::BaseDatabase, tracked::get_ast},
-};
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::{Hover, HoverParams};
 
 /// Request to get hover information for a symbol at a position
@@ -32,14 +29,11 @@ pub fn get_hover<Db: BaseDatabase>(db: &Db, params: HoverParams) -> anyhow::Resu
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = match get_ast(db, file).get_root() {
-        Some(item) => item,
-        None => return Ok(None),
-    };
+    let ast = get_ast(db, file);
     let position = params.text_document_position_params.position;
 
     let offset = document.offset_at(position).unwrap();
-    let item = root.descendant_at(offset);
+    let item = ast.descendant_at(offset);
 
     match item {
         Some(item) => item.get_hover(&document),

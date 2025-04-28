@@ -17,10 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::core::ast::GetGoToDeclaration;
-use auto_lsp_core::{
-    ast::Traverse,
-    salsa::{db::BaseDatabase, tracked::get_ast},
-};
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse};
 
 /// Request to go to the declaration of a symbol
@@ -37,15 +34,12 @@ pub fn go_to_declaration<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let root = match get_ast(db, file).get_root() {
-        Some(root) => root,
-        None => return Ok(None),
-    };
+    let ast = get_ast(db, file);
 
     let position = params.text_document_position_params.position;
 
     let offset = document.offset_at(position).unwrap();
-    let item = root.descendant_at(offset);
+    let item = ast.descendant_at(offset);
 
     match item {
         Some(item) => item.go_to_declaration(&document),

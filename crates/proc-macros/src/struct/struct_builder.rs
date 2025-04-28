@@ -81,8 +81,6 @@ impl ToTokens for StructBuilder<'_> {
         // Implement the AstSymbol trait
         self.impl_ast_symbol(&mut builder);
 
-        // Implement core capabilities
-        self.impl_traverse(&mut builder);
         self.impl_indented_display(&mut builder);
 
         // Implement other features
@@ -151,50 +149,6 @@ impl StructBuilder<'_> {
             .add(quote! { #get_data { &self._data } })
             .add(quote! { #get_mut_data { &mut self._data } })
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
-    }
-
-    fn impl_traverse(&self, builder: &mut FieldBuilder) {
-        let symbol_trait = &self.paths.symbol_trait.path;
-        builder
-            .add_fn_iter(
-                self.fields,
-                &self.paths.traverse.descendant_at.sig,
-                Some(quote! {
-                    use #symbol_trait;
-                }),
-                |_, _, name, _, _| {
-                    quote! {
-                        if let Some(symbol) = self.#name.descendant_at(offset) {
-                           return Some(symbol);
-                        }
-                    }
-                },
-                Some(quote! { None }),
-            )
-            .add_fn_iter(
-                self.fields,
-                &self.paths.traverse.descendant_at_and_collect.sig,
-                Some(quote! {
-                    use #symbol_trait;
-                }),
-                |_, _, name, _, _| {
-                    quote! {
-                        if let Some(symbol) = self.#name.descendant_at_and_collect(offset, collect_fn, collect) {
-                           return Some(symbol);
-                        }
-                    }
-                },
-                Some(quote! { None }),
-            )
-            .add_fn_iter(self.fields, &self.paths.traverse.traverse_and_collect.sig, None,
-                |_, _, name, _, _| {
-                    quote! {
-                        self.#name.traverse_and_collect(collect_fn, collect);
-                    }
-                },
-            None
-            )
-            .stage_trait(self.input_name, &self.paths.traverse.path);
     }
 
     fn impl_queryable(&self, builder: &mut FieldBuilder) {
