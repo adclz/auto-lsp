@@ -56,6 +56,9 @@ pub trait AstSymbol:
     /// Retrieves the data of the symbol.
     fn get_data(&self) -> &SymbolData;
 
+    #[doc(hidden)]
+    fn get_mut_data(&mut self) -> &mut SymbolData;
+
     #[inline]
     /// Retrieves the text of the symbol based on its range within the provided source code.
     fn get_text<'a>(&self, source_code: &'a [u8]) -> Result<&'a str, PositionError> {

@@ -81,6 +81,10 @@ impl ToTokens for EnumBuilder<'_> {
             fn get_query_index(&self) -> usize {
                 self.unique_field.get_rc().borrow().get_query_index()
             }
+
+            fn get_id(&self) -> usize {
+                self.unique_field.get_rc().borrow().get_id()
+            }
         });
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
@@ -110,6 +114,11 @@ impl EnumBuilder<'_> {
                 self.fields,
                 &self.paths.symbol_trait.get_data.sig,
                 &self.paths.symbol_trait.get_data.variant,
+            )
+            .add_pattern_match_iter(
+                self.fields,
+                &self.paths.symbol_trait.get_mut_data.sig,
+                &self.paths.symbol_trait.get_mut_data.variant,
             )
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
     }
@@ -356,23 +365,27 @@ impl EnumBuilder<'_> {
         builder.add(quote! {
             impl TryFrom<(
                 &#input_builder_name,
+                &Option<usize>,
                 &auto_lsp::core::document::Document,
                 &'static #parsers,
-                &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
+                &std::collections::HashMap<usize, usize>,
+                &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>           
             )> for #name {
                 type Error = auto_lsp::core::errors::AstError;
 
                 fn try_from(
-                    (builder, document, parsers, arena): (
+                    (builder, parent_id, document, parsers, id_map, all_nodes): (
                         &#input_builder_name,
+                        &Option<usize>,
                         &auto_lsp::core::document::Document,
                         &'static #parsers,
-                        &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
+                        &std::collections::HashMap<usize, usize>,
+                        &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>  
                     )
                 ) -> Result<Self, Self::Error> {
                     #(
                         if let Some(variant) = builder.unique_field.get_rc().borrow().downcast_ref::<#variant_builder_names>() {
-                            return Ok(Self::#variant_names(#variant_types::try_from((variant, document, parsers, arena))?));
+                            return Ok(Self::#variant_names(#variant_types::try_from((variant, parent_id, document, parsers, id_map, all_nodes))?));
                         };
                     )*
                     Err(auto_lsp::core::errors::AstError::UnknownSymbol {

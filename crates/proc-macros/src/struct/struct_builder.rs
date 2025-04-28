@@ -101,6 +101,10 @@ impl ToTokens for StructBuilder<'_> {
             fn get_query_index(&self) -> usize {
                 self.query_index
             }
+
+            fn get_id(&self) -> usize {
+                self.id
+            }
         });
         self.fn_new(&mut builder);
         self.fn_add(&mut builder);
@@ -141,9 +145,11 @@ impl StructBuilder<'_> {
 
     fn impl_ast_symbol(&self, builder: &mut FieldBuilder) {
         let get_data = &self.paths.symbol_trait.get_data.sig;
+        let get_mut_data = &self.paths.symbol_trait.get_mut_data.sig;
 
         builder
             .add(quote! { #get_data { &self._data } })
+            .add(quote! { #get_mut_data { &mut self._data } })
             .stage_trait(self.input_name, &self.paths.symbol_trait.path);
     }
 
@@ -248,6 +254,7 @@ impl StructBuilder<'_> {
 
         builder
             .add(quote! { query_index: usize })
+            .add(quote! { id: usize })
             .add(quote! { range: std::ops::Range<usize> })
             .add_iter(self.fields, |ty, _, name, _, _| match ty {
                 FieldType::Vec => quote! { #name: Vec<#pending_symbol> },
@@ -274,6 +281,7 @@ impl StructBuilder<'_> {
             let range = capture.node.range();
             Some(Self {
                 query_index: capture.index as usize,
+                id: capture.node.id(),
                 range: std::ops::Range {
                     start: range.start_byte,
                     end: range.end_byte,
@@ -318,28 +326,26 @@ impl StructBuilder<'_> {
         let _builder = FieldBuilder::default()
             .add(quote! {
                 use #try_downcast;
-                use #finalize;
                 use #builder_trait;
+
+                let parent_id = Some(builder.get_id());
             })
-            .add_iter(self.fields,
-                |ty, _, name, field_type, _| match ty  {
-                FieldType::Normal  => quote! {
+            .add_iter(self.fields, |ty, _, name, field_type, _| match ty {
+                FieldType::Normal => quote! {
                     let #name = builder
                         .#name
-                        .try_downcast(parsers, document, arena, stringify!(#field_type), &builder_range, stringify!(#input_name))?
-                        .finalize()
+                        .try_downcast(&parent_id, document, parsers, id_map, all_nodes)?
                         .ok_or(auto_lsp::core::errors::AstError::MissingSymbol {
                             range: builder_range.clone(),
                             symbol: stringify!(#name),
                             parent_name: stringify!(#input_name),
                         })?;
                 },
-                _=> quote! {
-                        let #name = builder
-                            .#name
-                            .try_downcast(parsers, document, arena, stringify!(#field_type), &builder_range, stringify!(#input_name))?
-                            .finalize();
-                    }
+                _ => quote! {
+                    let #name = builder
+                        .#name
+                        .try_downcast(&parent_id, document, parsers, id_map, all_nodes)?;
+                },
             })
             .stage()
             .to_token_stream();
@@ -347,18 +353,22 @@ impl StructBuilder<'_> {
         builder.add(quote! {
             impl TryFrom<(
                 &#input_builder_name,
+                &Option<usize>,
                 &auto_lsp::core::document::Document,
                 &'static #parsers,
-                &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
+                &std::collections::HashMap<usize, usize>,
+                &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
             )> for #input_name {
                 type Error = auto_lsp::core::errors::AstError;
 
                 fn try_from(
-                    (builder, document, parsers, arena): (
+                    (builder, parent_id, document, parsers, id_map, all_nodes): (
                         &#input_builder_name,
+                        &Option<usize>,
                         &auto_lsp::core::document::Document,
                         &'static #parsers,
-                        &mut auto_lsp::id_arena::Arena<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
+                        &std::collections::HashMap<usize, usize>,
+                        &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstSymbol>>,
                     )
                 ) -> Result<Self, Self::Error> {
                     let builder_range = builder.get_range();

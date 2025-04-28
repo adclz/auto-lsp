@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use id_arena::Arena;
 use salsa::Accumulator;
 
 use super::db::{BaseDatabase, File};
@@ -53,7 +52,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 #[derive(Default, Clone)]
 pub struct ParsedAst {
     inner: Arc<Option<DynSymbol>>,
-    arena: Arena<Arc<dyn AstSymbol>>,
+    nodes: Vec<Arc<dyn AstSymbol>>,
 }
 
 impl std::fmt::Debug for ParsedAst {
@@ -71,10 +70,10 @@ impl PartialEq for ParsedAst {
 impl Eq for ParsedAst {}
 
 impl ParsedAst {
-    fn new(ast: DynSymbol, arena: Arena<Arc<dyn AstSymbol>>) -> Self {
+    fn new(root: DynSymbol, nodes: Vec<Arc<dyn AstSymbol>>) -> Self {
         Self {
-            inner: Arc::new(Some(ast)),
-            arena,
+            inner: Arc::new(Some(root)),
+            nodes,
         }
     }
 
@@ -82,8 +81,8 @@ impl ParsedAst {
         self.inner.as_ref().as_ref()
     }
 
-    pub fn get_arena(&self) -> &Arena<Arc<dyn AstSymbol>> {
-        &self.arena
+    pub fn get_arena(&self) -> &Vec<Arc<dyn AstSymbol>> {
+        &self.nodes
     }
 }
 

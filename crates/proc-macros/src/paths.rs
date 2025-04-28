@@ -58,6 +58,7 @@ nested_struct!(
         pub symbol_trait: SymbolTrait {
             pub path: Path,
             pub get_data: Method,
+            pub get_mut_data: Method,
         },
 
         pub symbol_builder_trait: SymbolBuilderTrait {
@@ -156,6 +157,10 @@ impl Default for Paths {
                 get_data: Method {
                     sig: quote! { #[inline] fn get_data(&self) -> &auto_lsp::core::ast::SymbolData },
                     variant: quote! { get_data() },
+                },
+                get_mut_data: Method {
+                    sig: quote! { #[inline] fn get_mut_data(&mut self) -> &mut auto_lsp::core::ast::SymbolData },
+                    variant: quote! { get_mut_data() },
                 },
             },
 

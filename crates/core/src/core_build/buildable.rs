@@ -16,13 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::sync::Arc;
-
-use downcast_rs::{impl_downcast, Downcast};
-
-use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
-
 use super::symbol::{MaybePendingSymbol, PendingSymbol};
+use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
+use downcast_rs::{impl_downcast, Downcast};
+use std::sync::Arc;
 
 /// Trait implemented by all builders created with the seq macro.
 pub trait Buildable: Downcast {
@@ -51,6 +48,8 @@ pub trait Buildable: Downcast {
     fn get_range(&self) -> std::ops::Range<usize>;
 
     fn get_query_index(&self) -> usize;
+
+    fn get_id(&self) -> usize;
 }
 
 impl_downcast!(Buildable);
@@ -105,8 +104,6 @@ impl AddSymbol for MaybePendingSymbol {
                                 start: capture.node.start_byte(),
                                 end: capture.node.end_byte(),
                             },
-                            field_name: field_name.to_string(),
-                            parent_name: parent_name.to_string(),
                             query: parsers.core.capture_names()[capture.index as usize],
                         })
                     }
@@ -139,8 +136,6 @@ impl AddSymbol for Vec<PendingSymbol> {
                             start: capture.node.start_byte(),
                             end: capture.node.end_byte(),
                         },
-                        field_name: field_name.to_string(),
-                        parent_name: parent_name.to_string(),
                         query: parsers.core.capture_names()[capture.index as usize],
                     })
                 }
@@ -170,7 +165,7 @@ impl<T: AstSymbol> Finalize<T> for Option<T> {
     type Output = Option<Arc<T>>;
 
     fn finalize(self) -> Self::Output {
-        self.map(|symbol| Arc::new(symbol))
+        self.map(Arc::new)
     }
 }
 
@@ -178,6 +173,6 @@ impl<T: AstSymbol> Finalize<T> for Vec<T> {
     type Output = Vec<Arc<T>>;
 
     fn finalize(self) -> Self::Output {
-        self.into_iter().map(|f| Arc::new(f)).collect()
+        self.into_iter().map(Arc::new).collect()
     }
 }

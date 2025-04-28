@@ -16,10 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use id_arena::Arena;
 use salsa::Accumulator;
 use streaming_iterator::StreamingIterator;
 use tree_sitter::QueryCapture;
@@ -51,6 +51,7 @@ where
     /// Symbols created while building the AST
     roots: Vec<PendingSymbol>,
     stack: Vec<PendingSymbol>,
+    node_ids: HashMap<usize, usize>,
 }
 
 impl<'a, T> StackBuilder<'a, T>
@@ -70,6 +71,7 @@ where
             document,
             roots: vec![],
             stack: vec![],
+            node_ids: HashMap::new(),
         }
     }
 
@@ -77,20 +79,21 @@ where
     ///
     /// This method builds the AST for the provided range (if any) and attempts to derive
     /// a symbol from the root node.
-    pub fn create_symbol<Y>(&mut self) -> Result<(Y, Arena<Arc<dyn AstSymbol>>), ParseError>
+    pub fn create_symbol<Y>(&mut self) -> Result<(Arc<Y>, Vec<Arc<dyn AstSymbol>>), ParseError>
     where
         Y: AstSymbol
             + for<'c> TryFrom<
                 (
                     &'c T,
+                    &'c Option<usize>,
                     &'c Document,
                     &'static Parsers,
-                    &'c mut Arena<Arc<dyn AstSymbol>>,
+                    &'c HashMap<usize, usize>,
+                    &'c mut Vec<Arc<dyn AstSymbol>>,
                 ),
                 Error = AstError,
             >,
     {
-        let mut arena = Arena::<Arc<dyn AstSymbol>>::new();
         let result = self.build()?.ok_or::<ParseError>(
             (
                 self.document,
@@ -104,16 +107,34 @@ where
             )
                 .into(),
         )?;
-        let result = Y::try_from((
-            result.0.borrow().downcast_ref::<T>().unwrap(),
-            self.document,
-            self.parsers,
-            &mut arena,
-        ))
-        .map_err(|err| ParseError::from((self.document, err)))?;
-        #[cfg(feature = "log")]
-        log::debug!("\n{}", result);
-        Ok((result, arena))
+
+        let mut all_nodes = Vec::with_capacity(self.node_ids.len());
+
+        let result = Arc::new(
+            Y::try_from((
+                result.0.borrow().downcast_ref::<T>().unwrap(),
+                &None,
+                self.document,
+                self.parsers,
+                &self.node_ids,
+                &mut all_nodes,
+            ))
+            .map_err(|err| ParseError::from((self.document, err)))?,
+        );
+
+        all_nodes.push(result.clone());
+        all_nodes.sort_unstable_by_key(|f| f.get_data().id);
+
+        // Print nodes organized by layer
+        for (node) in &all_nodes {
+            eprintln!(
+                "Node: {:?} : {} <- {:?}",
+                node.get_range(),
+                node.get_data().id,
+                node.get_data().parent
+            );
+        }
+        Ok((result, all_nodes))
     }
 
     /// Builds the AST based on Tree-sitter query captures.
@@ -134,8 +155,15 @@ where
         while let Some((m, capture_index)) = captures.next() {
             let capture = m.captures[*capture_index];
 
+            eprintln!(
+                "{:?} {}",
+                self.parsers.core.capture_names()[capture.index as usize],
+                capture.node.id()
+            );
+
             // Current parent
             let mut parent = self.stack.pop();
+            self.node_ids.insert(capture.node.id(), self.node_ids.len());
 
             loop {
                 match &parent {
@@ -174,7 +202,7 @@ where
             Some(builder) => {
                 let node = PendingSymbol::new(builder);
                 self.roots.push(node.clone());
-                self.stack.push(node);
+                self.stack.push(node.clone());
                 Ok(())
             }
             None => Err((

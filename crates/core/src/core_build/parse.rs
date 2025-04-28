@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::ast::DynSymbol;
@@ -32,7 +33,6 @@ use crate::{
     build::{Buildable, Queryable},
 };
 use ariadne::{ColorGenerator, Report, ReportKind, Source};
-use id_arena::Arena;
 use lsp_types::Url;
 use texter::core::text::Text;
 
@@ -47,9 +47,11 @@ pub trait InvokeParser<
         + for<'a> TryFrom<
             (
                 &'a T,
+                &'a Option<usize>,
                 &'a Document,
                 &'static Parsers,
-                &'a mut Arena<Arc<dyn AstSymbol>>,
+                &'a HashMap<usize, usize>,
+                &'a mut Vec<Arc<dyn AstSymbol>>,
             ),
             Error = AstError,
         >,
@@ -63,7 +65,7 @@ pub trait InvokeParser<
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<(Y, Arena<Arc<dyn AstSymbol>>), ParseError>;
+    ) -> Result<(Arc<Y>, Vec<Arc<dyn AstSymbol>>), ParseError>;
 }
 
 impl<T, Y> InvokeParser<T, Y> for Y
@@ -73,9 +75,11 @@ where
         + for<'b> TryFrom<
             (
                 &'b T,
+                &'b Option<usize>,
                 &'b Document,
                 &'static Parsers,
-                &'b mut Arena<Arc<dyn AstSymbol>>,
+                &'b HashMap<usize, usize>,
+                &'b mut Vec<Arc<dyn AstSymbol>>,
             ),
             Error = AstError,
         >,
@@ -84,7 +88,7 @@ where
         db: &dyn BaseDatabase,
         parsers: &'static Parsers,
         document: &Document,
-    ) -> Result<(Y, Arena<Arc<dyn AstSymbol>>), ParseError> {
+    ) -> Result<(Arc<Y>, Vec<Arc<dyn AstSymbol>>), ParseError> {
         StackBuilder::<T>::new(db, document, parsers).create_symbol()
     }
 }
@@ -97,7 +101,7 @@ pub type InvokeParserFn = fn(
     &dyn BaseDatabase,
     &'static Parsers,
     &Document,
-) -> Result<(DynSymbol, Arena<Arc<dyn AstSymbol>>), ParseError>;
+) -> Result<(DynSymbol, Vec<Arc<dyn AstSymbol>>), ParseError>;
 
 pub type TestParseResult<E = AriadneReport> = Result<(), Box<E>>;
 
@@ -125,9 +129,11 @@ pub trait TryParse<
     Y: AstSymbol
         + for<'a> TryFrom<(
             &'a T,
+            &'a Option<usize>,
             &'a Document,
             &'static Parsers,
-            &'a mut Arena<Arc<dyn AstSymbol>>,
+            &'a HashMap<usize, usize>,
+            &'a mut Vec<Arc<dyn AstSymbol>>,
         )>,
     Error = AstError,
 >
@@ -149,9 +155,11 @@ where
         + for<'a> TryFrom<
             (
                 &'a T,
+                &'a Option<usize>,
                 &'a Document,
                 &'static Parsers,
-                &'a mut Arena<Arc<dyn AstSymbol>>,
+                &'a HashMap<usize, usize>,
+                &'a mut Vec<Arc<dyn AstSymbol>>,
             ),
             Error = AstError,
         >,

@@ -23,9 +23,9 @@ use auto_lsp_core::build::{Buildable, InvokeParser, Queryable};
 use auto_lsp_core::document::Document;
 use auto_lsp_core::parsers::Parsers;
 use downcast_rs::Downcast;
-use id_arena::Arena;
 use impls::impls;
 use static_assertions::{assert_fields, assert_impl_all};
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::sync::Arc;
 
@@ -36,7 +36,7 @@ fn simple_seq() {
 
     assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(
-        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Option<usize>, &'static Document, &'static Parsers, &'static HashMap<usize, usize>, &'static mut Vec<Arc<dyn AstSymbol>>)>)
     );
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data);
@@ -59,7 +59,7 @@ fn seq_with_field() {
 
     assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(
-        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Option<usize>, &'static Document, &'static Parsers, &'static HashMap<usize, usize>, &'static mut Vec<Arc<dyn AstSymbol>>)>)
     );
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
@@ -82,7 +82,7 @@ fn simple_choice() {
 
     assert_impl_all!(Choice: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(
-        impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+        impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Option<usize>, &'static Document, &'static Parsers, &'static HashMap<usize, usize>, &'static mut Vec<Arc<dyn AstSymbol>>)>)
     );
     assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
@@ -108,7 +108,7 @@ fn multiple_choices() {
 
     assert_impl_all!(Choice: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(
-        impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+        impls!(Choice: TryFrom<(&'static ChoiceBuilder, &'static Option<usize>, &'static Document, &'static Parsers, &'static HashMap<usize, usize>, &'static mut Vec<Arc<dyn AstSymbol>>)>)
     );
     assert!(impls!(Choice: InvokeParser<ChoiceBuilder, Choice>));
 
@@ -131,7 +131,7 @@ fn seq_with_optional() {
 
     assert_impl_all!(Module: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(
-        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+        impls!(Module: TryFrom<(&'static ModuleBuilder, &'static Option<usize>, &'static Document, &'static Parsers, &'static HashMap<usize, usize>, &'static mut Vec<Arc<dyn AstSymbol>>)>)
     );
     assert!(impls!(Module: InvokeParser<ModuleBuilder, Module>));
     assert_fields!(Module: _data, function);
@@ -151,7 +151,7 @@ fn seq_with_recursive() {
 
     assert_impl_all!(A: Send, Sync, Clone, Display, Downcast, AstSymbol);
     assert!(
-        impls!(A: TryFrom<(&'static ABuilder, &'static Document, &'static Parsers, &'static mut Arena<Arc<dyn AstSymbol>>)>)
+        impls!(A: TryFrom<(&'static ABuilder, &'static Option<usize>, &'static Document, &'static Parsers, &'static HashMap<usize, usize>, &'static mut Vec<Arc<dyn AstSymbol>>)>)
     );
     assert!(impls!(A: InvokeParser<ABuilder, A>));
     assert_fields!(A: _data, elems);

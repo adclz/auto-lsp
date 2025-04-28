@@ -16,11 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::sync::Arc;
-
-use id_arena::Arena;
-
 use crate::{core_ast::core::AstSymbol, document::Document, errors::AstError, parsers::Parsers};
+use std::{collections::HashMap, sync::Arc};
 
 use super::{
     buildable::Buildable,
@@ -34,9 +31,11 @@ pub trait TryDownCast<
         + for<'a> TryFrom<
             (
                 &'a T,
+                &'a Option<usize>,
                 &'a Document,
                 &'static Parsers,
-                &'a mut Arena<Arc<dyn AstSymbol>>,
+                &'a HashMap<usize, usize>,
+                &'a mut Vec<Arc<dyn AstSymbol>>,
             ),
             Error = AstError,
         >,
@@ -46,12 +45,11 @@ pub trait TryDownCast<
 
     fn try_downcast(
         &self,
-        parsers: &'static Parsers,
+        parent_id: &Option<usize>,
         document: &Document,
-        arena: &mut Arena<Arc<dyn AstSymbol>>,
-        field_name: &str,
-        field_range: &std::ops::Range<usize>,
-        input_name: &str,
+        parsers: &'static Parsers,
+        id_map: &HashMap<usize, usize>,
+        all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError>;
 }
 
@@ -62,38 +60,49 @@ where
         + for<'a> TryFrom<
             (
                 &'a T,
+                &'a Option<usize>,
                 &'a Document,
                 &'static Parsers,
-                &'a mut Arena<Arc<dyn AstSymbol>>,
+                &'a HashMap<usize, usize>,
+                &'a mut Vec<Arc<dyn AstSymbol>>,
             ),
             Error = AstError,
         >,
 {
-    type Output = Y;
+    type Output = Arc<Y>;
 
     fn try_downcast(
         &self,
-        parsers: &'static Parsers,
+        parent_id: &Option<usize>,
         document: &Document,
-        arena: &mut Arena<Arc<dyn AstSymbol>>,
-        field_name: &str,
-        field_range: &std::ops::Range<usize>,
-        input_name: &str,
+        parsers: &'static Parsers,
+        id_map: &HashMap<usize, usize>,
+        all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError> {
-        Y::try_from((
+        let mut result = Y::try_from((
             self.0
                 .borrow()
                 .downcast_ref::<T>()
                 .ok_or(AstError::InvalidSymbol {
-                    range: field_range.clone(),
-                    field_name: field_name.to_string(),
-                    parent_name: input_name.to_string(),
+                    range: self.get_rc().borrow().get_range().clone(),
                     query: parsers.core.capture_names()[self.get_query_index()],
                 })?,
+            &None,
             document,
             parsers,
-            arena,
-        ))
+            id_map,
+            all_nodes,
+        ))?;
+        let id = id_map.get(&self.get_id()).unwrap();
+        if let Some(parent_id) = parent_id {
+            result.get_mut_data().parent = id_map.get(parent_id).cloned();
+        }
+        result.get_mut_data().id = id.clone();
+
+        let arc = Arc::new(result);
+
+        all_nodes.push(Arc::clone(&arc) as _);
+        Ok(arc)
     }
 }
 
@@ -104,34 +113,28 @@ where
         + for<'a> TryFrom<
             (
                 &'a T,
+                &'a Option<usize>,
                 &'a Document,
                 &'static Parsers,
-                &'a mut Arena<Arc<dyn AstSymbol>>,
+                &'a HashMap<usize, usize>,
+                &'a mut Vec<Arc<dyn AstSymbol>>,
             ),
             Error = AstError,
         >,
 {
-    type Output = Option<Y>;
+    type Output = Option<Arc<Y>>;
 
     fn try_downcast(
         &self,
-        parsers: &'static Parsers,
+        parent_id: &Option<usize>,
         document: &Document,
-        arena: &mut Arena<Arc<dyn AstSymbol>>,
-        field_name: &str,
-        field_range: &std::ops::Range<usize>,
-        input_name: &str,
+        parsers: &'static Parsers,
+        id_map: &HashMap<usize, usize>,
+        all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError> {
         self.as_ref().as_ref().map_or(Ok(None), |pending| {
             pending
-                .try_downcast(
-                    parsers,
-                    document,
-                    arena,
-                    field_name,
-                    field_range,
-                    input_name,
-                )
+                .try_downcast(parent_id, document, parsers, id_map, all_nodes)
                 .map(Some)
         })
     }
@@ -139,41 +142,33 @@ where
 
 impl<T, Y, V> TryDownCast<Y, V> for Vec<T>
 where
-    T: TryDownCast<Y, V, Output = V>,
+    T: TryDownCast<Y, V, Output = Arc<V>>,
     Y: Buildable,
     V: AstSymbol
         + for<'a> TryFrom<
             (
                 &'a Y,
+                &'a Option<usize>,
                 &'a Document,
                 &'static Parsers,
-                &'a mut Arena<Arc<dyn AstSymbol>>,
+                &'a HashMap<usize, usize>,
+                &'a mut Vec<Arc<dyn AstSymbol>>,
             ),
             Error = AstError,
         >,
 {
-    type Output = Vec<V>;
+    type Output = Vec<Arc<V>>;
 
     fn try_downcast(
         &self,
-        parsers: &'static Parsers,
+        parent_id: &Option<usize>,
         document: &Document,
-        arena: &mut Arena<Arc<dyn AstSymbol>>,
-        field_name: &str,
-        field_range: &std::ops::Range<usize>,
-        input_name: &str,
+        parsers: &'static Parsers,
+        id_map: &HashMap<usize, usize>,
+        all_nodes: &mut Vec<Arc<dyn AstSymbol>>,
     ) -> Result<Self::Output, AstError> {
         self.iter()
-            .map(|item| {
-                item.try_downcast(
-                    parsers,
-                    document,
-                    arena,
-                    field_name,
-                    field_range,
-                    input_name,
-                )
-            })
+            .map(|item| item.try_downcast(parent_id, document, parsers, id_map, all_nodes))
             .collect::<Result<Vec<_>, AstError>>()
     }
 }

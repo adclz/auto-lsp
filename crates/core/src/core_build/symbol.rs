@@ -38,6 +38,10 @@ impl PendingSymbol {
         self.0.borrow().get_query_index()
     }
 
+    pub fn get_id(&self) -> usize {
+        self.0.borrow().get_id()
+    }
+
     pub fn get_rc(&self) -> &Rc<RefCell<dyn Buildable>> {
         &self.0
     }

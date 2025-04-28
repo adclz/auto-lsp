@@ -18,15 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use crate::ast::AstSymbol;
 
-use super::symbol::*;
-
 /// Core data of any ast symbol
 #[derive(Clone)]
 pub struct SymbolData {
     /// The parent of the symbol
-    pub parent: Option<WeakSymbol>,
+    pub parent: Option<usize>,
     /// The byte range of the symbol in the source code
     pub range: std::ops::Range<usize>,
+    pub id: usize,
 }
 
 impl SymbolData {
@@ -34,6 +33,7 @@ impl SymbolData {
         Self {
             parent: None,
             range,
+            id: 0,
         }
     }
 }
