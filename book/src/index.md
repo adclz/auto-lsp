@@ -79,11 +79,9 @@ To address this, `auto_lsp`  provides testing and logging utilities to help you 
 
 ## Features
 
-- `deadlock_detection`: Enable [`parking_lot`](https://crates.io/crates/parking_lot)'s deadlock detection (not compatible with `wasm`).
-- `log`: Enable logging. (uses [`stderrlog`](https://crates.io/crates/stderrlog))
+
 - `lsp_server`: Enable the LSP server (uses [`lsp_server`](https://crates.io/crates/lsp-server)).
-- `rayon`: Enable [`rayon`](https://crates.io/crates/rayon) support (only compatible with `wasi-p1-threads`).
-- `wasm`: Enable wasm support.
+- `wasm`: Enable wasm support (only compatible with `wasi-p1-threads`).
 - `html`: Enable the html workspace mock for testing purposes.
 - `python`: Enable the python workspace mock for testing purposes.
 

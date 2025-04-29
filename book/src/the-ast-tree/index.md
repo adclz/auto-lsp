@@ -26,7 +26,7 @@ This would generate:
 ```rust, ignore
 #[derive(Clone)]
 pub struct Module {
-    pub function: Option<Symbol<Function>>,
+    pub function: Option<Arc<Function>>,
 }
 
 #[derive(Clone)]

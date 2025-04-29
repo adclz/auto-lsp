@@ -11,7 +11,7 @@ To start a new [`Session`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struc
 
 TThe server communicates with an LSP client using one of lsp_server's tranport methods: `stdio`, `tcp` or `memory`.
 
-```rust
+```rust, ignore
 use std::error::Error;
 use auto_lsp::server::{InitOptions, LspOptions, Session};
 use auto_lsp::python::PYTHON_PARSERS;
@@ -42,79 +42,3 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 ## LSP Options
 
 The [`LspOptions`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.LspOptions.html) struct contains various settings to enable or disable different LSP features like diagnostics, document symbols, and more.
-
-Depending on how your AST is structured, all requests are fullfiled automatically.
-
-Just 2 options require specific implementations:
-
-### Document Links
-
-Configuring Document Links requires a [`RegexToDocumentLink`](https://docs.rs/auto-lsp/latest/auto_lsp/server/struct.RegexToDocumentLink.html) struct.
-
-```rust, ignore
-use auto_lsp::server::{RegexToDocumentLink, Session};
-use auto_lsp::core::document::Document;
-use auto_lsp::core::workspace::Workspace;
-use auto_lsp::lsp_types::{DocumentLink, Url};
-use auto_lsp::regex::Regex;
-
-let regex = Regex::new(r"(\w+):(\d+)").unwrap();
-
-fn to_document_link(m: regex::Match, line: usize, document: &Document, workspace: &Workspace, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink {
-   lsp_types::DocumentLink {
-        data: None,
-        tooltip: Some(m.as_str().to_string()),
-        target:None,
-        range: lsp_types::Range {
-                    start: lsp_types::Position {
-                        line: line as u32,
-                        character: m.start() as u32,
-                    },
-                    end: lsp_types::Position {
-                        line: line as u32,
-                        character: m.end() as u32,
-                    },
-               },
-         }
-   }
-
-RegexToDocumentLink {
-    regex,
-    to_document_link,
-};
-
-```
-
-### Semantic Tokens
-
-Semantic Tokens that are defined previously with the [`define_semantic_token_types!`](workspace-and-document/configuring-semantic-tokens.md)
-and `define_semantic_token_modifiers!` macros
-must be provided to the LSP Server.
-
-```rust, ignore
-use auto_lsp::lsp_types::SemanticTokenType;
-use auto_lsp::define_semantic_token_types;
-use phf::phf_map;
-
-define_semantic_token_types! {
-    standard {
-         "namespace" => NAMESPACE,
-         "type" => TYPE,
-         "function" => FUNCTION,
-    }
-}
-
-define_semantic_token_modifiers![standard {
-    "declaration" => DECLARATION,
-    "readonly" => READONLY,
-}];
-
-let lsp_options = LspOptions {
-    semantic_tokens: Some (SemanticTokensList {
-        token_types: &TOKEN_TYPES,
-        token_modifiers: &TOKEN_MODIFIERS,
-    }),
-    ..Default::default()
-},
-
-```

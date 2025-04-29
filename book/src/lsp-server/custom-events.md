@@ -9,9 +9,7 @@ The callback methods take two parameters:
  - `Parameters`: The request or notification parameters.
 
 ```admonish
-Registering a request or notification with the same method name as an existing one in the server will override the previous registration. 
-
-This can be useful if you plan to extend or modify certain LSP server features, but it requires careful attention.
+Registering a request or notification with the same method name as an existing one in the server will override the previous registration.
 ```
 
 To add a request, implement the `Request` trait from `lsp_types`:

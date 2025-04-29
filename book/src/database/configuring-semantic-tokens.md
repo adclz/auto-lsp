@@ -69,7 +69,7 @@ define_semantic_token_modifiers![
 impl BuildSemanticTokens for MyType {
     fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {
         builder.push(
-            self.name.read().get_lsp_range(doc),
+            self.name.get_lsp_range(doc),
             SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
             SUPPORTED_MODIFIERS.iter().position(|x| *x == DECLARATION).unwrap() as u32,
         );

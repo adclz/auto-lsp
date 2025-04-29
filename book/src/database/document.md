@@ -6,7 +6,7 @@ Thanks to [`texter`](https://github.com/airblast-dev/texter) crate, text in any 
 
 `texter` also provides an efficient way to update documents incrementally.
 
-the Document struct has the following fields:
+The Document struct has the following fields:
 
  - `texter`: a texter struct that stores the document.
  - `tree`: The tree-sitter syntax tree.
