@@ -72,7 +72,6 @@ thiserror = "2.0.12"
 
 [features]
 default = []
-log = ["auto-lsp-core/log"]
 lsp_server = [
     "dep:serde",
     "dep:serde_json",

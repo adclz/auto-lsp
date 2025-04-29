@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-auto-lsp = { path = "../../", features = ["lsp_server", "log", "python"] }
+auto-lsp = { path = "../../", features = ["lsp_server", "python"] }
 assert_cmd = "2.0.16"
 tokio = { version = "1.44.0", features = ["full"] }
 escargot = "0.5.13"

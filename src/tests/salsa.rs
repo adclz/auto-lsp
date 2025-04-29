@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use super::python_utils::create_python_db;
-use auto_lsp_core::{salsa::db::BaseDatabase, salsa::tracked::get_ast};
+use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use lsp_types::Url;
 use rstest::{fixture, rstest};
 
