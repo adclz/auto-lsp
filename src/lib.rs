@@ -151,9 +151,6 @@ pub use constcat;
 #[cfg(any(feature = "lsp_server", test))]
 pub use lsp_server;
 pub use lsp_types;
-pub use parking_lot;
-#[cfg(feature = "rayon")]
-pub use rayon;
 pub use salsa;
 pub use texter;
 pub use tree_sitter;

@@ -21,6 +21,7 @@ use auto_lsp_core::errors::{ExtensionError, FileSystemError, RuntimeError};
 use auto_lsp_core::parsers::Parsers;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_types::{InitializeParams, Url};
+use rayon::prelude::*;
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::Read};
@@ -80,39 +81,21 @@ impl<Db: BaseDatabase> Session<Db> {
                 })
                 .collect::<Vec<_>>();
 
-            #[cfg(not(feature = "rayon"))]
-            errors.extend(
-                files
-                    .into_iter()
-                    .map(|file| match self.read_file(&file.into_path()) {
-                        Ok((parsers, url, text)) => self
-                            .db
-                            .add_file_from_texter(parsers, &url, text)
-                            .map_err(|err| RuntimeError::from(err)),
-                        Err(err) => Err(RuntimeError::from(err)),
-                    })
-                    .collect::<Vec<_>>(),
-            );
-
-            #[cfg(feature = "rayon")]
-            {
-                use rayon::prelude::*;
-                errors.extend(rayon_par_bridge::par_bridge(
-                    16,
-                    files.into_par_iter(),
-                    |file_iter| {
-                        file_iter
-                            .map(|file| match self.read_file(&file.into_path()) {
-                                Ok((parsers, url, text)) => self
-                                    .db
-                                    .add_file_from_texter(parsers, &url, text)
-                                    .map_err(RuntimeError::from),
-                                Err(err) => Err(RuntimeError::from(err)),
-                            })
-                            .collect::<Vec<_>>()
-                    },
-                ));
-            }
+            errors.extend(rayon_par_bridge::par_bridge(
+                16,
+                files.into_par_iter(),
+                |file_iter| {
+                    file_iter
+                        .map(|file| match self.read_file(&file.into_path()) {
+                            Ok((parsers, url, text)) => self
+                                .db
+                                .add_file_from_texter(parsers, &url, text)
+                                .map_err(RuntimeError::from),
+                            Err(err) => Err(RuntimeError::from(err)),
+                        })
+                        .collect::<Vec<_>>()
+                },
+            ));
         }
 
         Ok(errors)

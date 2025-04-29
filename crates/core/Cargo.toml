@@ -20,7 +20,7 @@ anyhow = { workspace = true }
 regex = { workspace = true }
 cfg-if = { workspace = true }
 aho-corasick = { workspace = true }
-salsa = { workspace = true, features = ["macros"] }
+salsa = { workspace = true }
 dashmap = { workspace = true }
 ariadne = { workspace = true, features = ["auto-color"] }
 log = { workspace = true, optional = true }
@@ -35,5 +35,4 @@ rstest = { workspace = true }
 
 [features]
 log = ["dep:log"]
-deadlock_detection = ["parking_lot/nightly", "parking_lot/deadlock_detection"]
-rayon = ["dep:rayon", "parking_lot/nightly", "salsa/rayon"]
+wasm = ["parking_lot/nightly"]

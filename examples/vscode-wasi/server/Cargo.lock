@@ -79,7 +79,6 @@ dependencies = [
  "log",
  "lsp-types",
  "parking_lot",
- "rayon",
  "regex",
  "salsa",
  "streaming-iterator",
