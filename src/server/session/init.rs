@@ -212,7 +212,11 @@ impl<Db: BaseDatabase + Default> Session<Db> {
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.
-        session.init_workspace(params)?;
+        let init_results = session.init_workspace(params)?;
+        if !init_results.is_empty() {
+            //todo: What to do with workspace initilization errors ?
+            //There might be a lot of errors and sending them back to the client may not be the best decision.
+        };
 
         Ok(session)
     }
