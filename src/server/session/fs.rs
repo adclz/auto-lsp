@@ -47,7 +47,7 @@ impl<Db: BaseDatabase> Session<Db> {
         let options = InitializationOptions::deserialize(
             params
                 .initialization_options
-                .ok_or(RuntimeError::MissingOptions)?,
+                .ok_or(RuntimeError::MissingPerFileParser)?,
         )
         .unwrap();
 
