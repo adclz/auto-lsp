@@ -55,10 +55,9 @@ impl From<ParseError> for lsp_types::Diagnostic {
 
 impl From<&ParseError> for lsp_types::Diagnostic {
     fn from(error: &ParseError) -> Self {
-        let message = error.to_string();
-        let range = match error {
-            ParseError::LexerError { range, .. } => *range,
-            ParseError::AstError { range, .. } => *range,
+        let (range, message) = match error {
+            ParseError::AstError { range, error } => (*range, error.to_string()),
+            ParseError::LexerError { range, error } => (*range, error.to_string()),
         };
         lsp_types::Diagnostic {
             range,
