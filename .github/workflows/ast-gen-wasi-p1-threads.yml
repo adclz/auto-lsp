@@ -28,4 +28,4 @@ jobs:
              sudo apt update
              sudo apt install gcc-multilib -y    
       - name: Run tests
-        run: cargo test --features=wasm,python,html,rayon,log --target wasm32-wasip1-threads  
+        run: cargo test --features=wasm,python,html --target wasm32-wasip1-threads  
