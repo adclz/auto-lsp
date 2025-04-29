@@ -237,7 +237,7 @@ impl Default for Paths {
             lsp_hover_info: LspHoverInfo {
                 path: core_ast(parse_quote!(GetHover)),
                 get_hover: Method {
-                    sig: quote! { fn get_hover(&self, doc: &auto_lsp::core::document::Document) -> anyhow::Result<Option<auto_lsp::lsp_types::Hover>> },
+                    sig: quote! { fn get_hover(&self, doc: &auto_lsp::core::document::Document) -> auto_lsp::anyhow::Result<Option<auto_lsp::lsp_types::Hover>> },
                     variant: quote! { get_hover(doc) },
                 },
             },
