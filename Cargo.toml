@@ -43,7 +43,11 @@ tree-sitter-html = { version = "0.23.2", optional = true }
 
 [workspace]
 members = ["crates/core", "crates/proc-macros"]
-exclude = ["examples/vscode-wasi/server", "examples/native"]
+exclude = [
+    "examples/vscode-wasi/server",
+    "examples/vscode-native/server",
+    "examples/native",
+]
 
 [workspace.dependencies]
 texter = { version = "0.1.5", default-features = false }
