@@ -1,0 +1,11 @@
+{
+    "private": true,
+    "name": "server",
+    "displayName": "Native Language Server",
+    "version": "0.1.0",
+    "author": "Microsoft Corporation",
+    "license": "MIT",
+    "scripts": {
+        "build": "cargo build --release --target x86_64-pc-windows-gnu && cargo build --release --target x86_64-unknown-linux-gnu"
+    }
+}

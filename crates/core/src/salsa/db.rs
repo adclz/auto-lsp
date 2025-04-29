@@ -40,9 +40,9 @@ pub struct File {
 #[derive(Default, Clone)]
 pub struct BaseDb {
     storage: Storage<Self>,
-    #[cfg(feature = "log")]
-    logs: Arc<parking_lot::Mutex<Vec<String>>>,
     pub(crate) files: DashMap<Url, File>,
+    #[cfg(debug_assertions)]
+    logs: Arc<parking_lot::Mutex<Vec<String>>>,
 }
 
 #[salsa::db]
@@ -62,14 +62,14 @@ pub trait BaseDatabase: Database {
     fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError>;
     fn get_file(&self, file: &Url) -> Option<File>;
     fn get_files(&self) -> &DashMap<Url, File>;
-    #[cfg(feature = "log")]
+    #[cfg(debug_assertions)]
     fn take_logs(&self) -> Vec<String>;
 }
 
 #[salsa::db]
 impl salsa::Database for BaseDb {
     fn salsa_event(&self, _event: &dyn Fn() -> salsa::Event) {
-        #[cfg(feature = "log")]
+        #[cfg(debug_assertions)]
         {
             let event = _event();
             if let salsa::EventKind::WillExecute { .. } = event.kind {
@@ -78,6 +78,8 @@ impl salsa::Database for BaseDb {
         }
     }
 }
+
+impl std::panic::RefUnwindSafe for BaseDb {}
 
 #[salsa::db]
 impl BaseDatabase for BaseDb {
@@ -145,7 +147,8 @@ impl BaseDatabase for BaseDb {
     fn get_files(&self) -> &DashMap<Url, File> {
         &self.files
     }
-    #[cfg(feature = "log")]
+
+    #[cfg(debug_assertions)]
     fn take_logs(&self) -> Vec<String> {
         std::mem::take(&mut self.logs.lock())
     }

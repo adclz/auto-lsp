@@ -23,14 +23,13 @@ use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
-use auto_lsp::lsp_types::request::DocumentDiagnosticRequest;
 use auto_lsp::python::PYTHON_PARSERS;
-use auto_lsp::server::capabilities::{changed_watched_files, get_diagnostics, open_text_document};
+use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
 use auto_lsp::server::RequestRegistry;
 use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, Session};
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
-use std::ops::Deref;
+use std::panic::RefUnwindSafe;
 
 pub trait ExtendDb: BaseDatabase {
     fn get_urls(&self) -> Vec<String> {
@@ -61,12 +60,12 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut request_registry = RequestRegistry::<BaseDb>::default();
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
-    request_registry.register::<GetWorkspaceFiles, _>(|session, _| Ok(session.db.get_urls()));
+    request_registry.on::<GetWorkspaceFiles, _>(|s, _| Ok(s.get_urls()));
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop(
         &request_registry,
-        register_notifications(&mut notification_registry),
+        on_notifications(&mut notification_registry),
     )?;
     io_threads.join()?;
 
@@ -75,17 +74,17 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
-fn register_notifications<Db: BaseDatabase>(
+fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .register::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
-        .register::<DidChangeTextDocument, _>(|s, p| {
+        .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
+        .on_mut::<DidChangeTextDocument, _>(|s, p| {
             s.db.update(&p.text_document.uri, &p.content_changes)?;
             Ok(())
         })
-        .register::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
-        .register::<Cancel, _>(|s, p| {
+        .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
+        .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 lsp_types::NumberOrString::Number(id) => id.into(),
                 lsp_types::NumberOrString::String(id) => id.into(),
@@ -95,8 +94,8 @@ fn register_notifications<Db: BaseDatabase>(
             }
             Ok(())
         })
-        .register::<DidSaveTextDocument, _>(|s, p| Ok(()))
-        .register::<DidCloseTextDocument, _>(|s, p| Ok(()))
-        .register::<SetTrace, _>(|s, p| Ok(()))
-        .register::<LogTrace, _>(|s, p| Ok(()))
+        .on::<DidSaveTextDocument, _>(|_s, _p| Ok(()))
+        .on::<DidCloseTextDocument, _>(|_s, _p| Ok(()))
+        .on::<SetTrace, _>(|_s, _p| Ok(()))
+        .on::<LogTrace, _>(|_s, _p| Ok(()))
 }

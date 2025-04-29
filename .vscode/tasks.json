@@ -4,8 +4,14 @@
 		{
 			"type": "npm",
 			"script": "build",
-			"label": "npm: build",
+			"label": "npm: build wasi",
 			"path": "examples/vscode-wasi"
+		},
+		{
+			"type": "npm",
+			"script": "build",
+			"label": "npm: build native",
+			"path": "examples/vscode-native"
 		}
 	]
 }

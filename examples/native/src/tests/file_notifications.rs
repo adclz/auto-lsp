@@ -82,18 +82,15 @@ async fn workspace_files(
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file1.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file1.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file2.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file2.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/nested/file3.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/nested/file3.py")));
 
     Ok(())
 }
@@ -139,13 +136,11 @@ async fn remove_file_notification(
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file2.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file2.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/nested/file3.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/nested/file3.py")));
 
     Ok(())
 }
@@ -195,18 +190,15 @@ async fn open_existing_document(
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file1.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file1.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file2.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file2.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/nested/file3.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/nested/file3.py")));
 
     Ok(())
 }
@@ -256,23 +248,19 @@ async fn open_new_document(
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file1.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file1.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file2.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file2.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/nested/file3.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/nested/file3.py")));
     assert!(workspace_response
         .result
         .iter()
-        .find(|x| x.ends_with("testbed/file4.py"))
-        .is_some());
+        .any(|x| x.ends_with("testbed/file4.py")));
 
     Ok(())
 }

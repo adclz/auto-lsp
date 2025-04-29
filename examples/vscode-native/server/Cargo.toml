@@ -1,0 +1,9 @@
+[package]
+name = "vscode-lsp-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+auto-lsp = { path = "../../../", features = ["lsp_server", "python"] }
+tree-sitter-python = "0.23.6"
+stderrlog = "0.6.0"

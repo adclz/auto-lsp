@@ -30,7 +30,7 @@ use auto_lsp::lsp_types::request::{
     DocumentSymbolRequest, HoverRequest, InlayHintRequest, SelectionRangeRequest,
     SemanticTokensFullRequest, WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
 };
-use auto_lsp::lsp_types::{self, CompletionOptions};
+use auto_lsp::lsp_types::CompletionOptions;
 use auto_lsp::python::PYTHON_PARSERS;
 use auto_lsp::server::capabilities::{
     changed_watched_files, get_code_actions, get_code_lenses, get_completion_items,
@@ -42,6 +42,12 @@ use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, RequestReg
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
     let db = BaseDb::default();
+
+    stderrlog::new()
+        .modules([module_path!(), "auto_lsp"])
+        .verbosity(4)
+        .init()
+        .unwrap();
 
     let mut session = Session::create(
         InitOptions {
@@ -107,8 +113,8 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
         .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
         .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
-                lsp_types::NumberOrString::Number(id) => id.into(),
-                lsp_types::NumberOrString::String(id) => id.into(),
+                auto_lsp::lsp_types::NumberOrString::Number(id) => id.into(),
+                auto_lsp::lsp_types::NumberOrString::String(id) => id.into(),
             };
             if let Some(response) = s.req_queue.incoming.cancel(id) {
                 s.connection.sender.send(response.into())?;

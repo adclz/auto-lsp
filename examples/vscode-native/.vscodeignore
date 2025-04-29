@@ -1,0 +1,8 @@
+*
+*/**
+
+!package.json
+!client/dist/**
+!client/out/**
+
+!server/target/wasm32-wasip1-threads/release/server.wasm

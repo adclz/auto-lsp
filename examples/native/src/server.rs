@@ -46,7 +46,7 @@ impl TestServer {
             .run()
             .expect("Failed to build server");
 
-        result.command().current_dir(&curr_dir).spawn()?;
+        result.command().current_dir(curr_dir).spawn()?;
         Ok(())
     }
 
@@ -54,7 +54,7 @@ impl TestServer {
         let bin = cargo_bin("native-lsp");
 
         Command::new(bin)
-            .current_dir(&curr_dir)
+            .current_dir(curr_dir)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

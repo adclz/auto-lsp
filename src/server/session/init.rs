@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::collections::HashMap;
 
+use super::task_pool::TaskPool;
 use super::InitOptions;
 use super::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
@@ -60,6 +61,12 @@ impl<Db: BaseDatabase + Default> Session<Db> {
         text_fn: TextFn,
         db: Db,
     ) -> Self {
+        let (sender, task_rx) = crossbeam_channel::unbounded();
+
+        let max_threads = std::thread::available_parallelism().unwrap().get();
+
+        log::info!("Max threads: {}", max_threads);
+
         Self {
             init_options,
             connection,
@@ -67,6 +74,8 @@ impl<Db: BaseDatabase + Default> Session<Db> {
             extensions: HashMap::new(),
             req_queue: ReqQueue::default(),
             db,
+            task_rx,
+            task_pool: TaskPool::new_with_threads(sender, max_threads),
         }
     }
 
@@ -203,7 +212,11 @@ impl<Db: BaseDatabase + Default> Session<Db> {
 
         // Initialize the session with the client's initialization options.
         // This will also add all documents, parse and send diagnostics.
-        session.init_workspace(params)?;
+        let init_results = session.init_workspace(params)?;
+        if !init_results.is_empty() {
+            //todo: What to do with workspace initilization errors ?
+            //There might be a lot of errors and sending them back to the client may not be the best decision.
+        };
 
         Ok(session)
     }

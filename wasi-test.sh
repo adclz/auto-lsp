@@ -1,1 +1,1 @@
-cargo test --features=python,html,wasm,rayon,log --target wasm32-wasip1-threads
+cargo test --features=python,html,wasm --target wasm32-wasip1-threads
