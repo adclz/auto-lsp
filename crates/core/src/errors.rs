@@ -114,10 +114,18 @@ pub enum AstError {
         symbol: &'static str,
         parent_name: &'static str,
     },
-    // Happens when a #[seq] field tis empty
+    // Happens when a #[seq] field is empty
     #[error("Missing symbol {symbol:?} in {parent_name:?}")]
     MissingSymbol {
         range: std::ops::Range<usize>,
+        symbol: &'static str,
+        parent_name: &'static str,
+    },
+
+
+    #[error("Unexpected {symbol:?} in {parent_name:?}")]
+    UnexpectedSymbol {
+        range: tree_sitter::Range,
         symbol: &'static str,
         parent_name: &'static str,
     },
@@ -130,6 +138,8 @@ impl From<(&Document, AstError)> for ParseError {
             AstError::UnknownSymbol { range, .. } => range,
             AstError::InvalidSymbol { range, .. } => range,
             AstError::MissingSymbol { range, .. } => range,
+            // temp
+            AstError::UnexpectedSymbol { range, .. } => &(range.start_byte..range.end_byte),
         };
         let range = document.range_at(range.clone()).unwrap_or_default();
         Self::AstError { range, error }
