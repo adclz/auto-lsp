@@ -1,3 +1,21 @@
+/*
+This file is part of auto-lsp.
+Copyright (C) 2025 CLAUZEL Adrien
+
+auto-lsp is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+
 mod ir;
 mod json;
 mod output;
@@ -7,10 +25,10 @@ mod utils;
 
 use crate::json::{NodeType, TypeInfo};
 use crate::output::{generate_enum, generate_struct};
-use crate::supertypes::{generate_super_type, SUPER_TYPES};
+use crate::supertypes::{generate_super_type, SuperType, SUPER_TYPES};
 use crate::utils::{sanitize_string, sanitize_string_to_pascal};
 use proc_macro2::TokenStream;
-use quote::{format_ident, ToTokens};
+use quote::{format_ident, quote, ToTokens};
 use std::collections::{HashMap, HashSet};
 use std::sync::{LazyLock, Mutex};
 
@@ -19,7 +37,7 @@ pub(crate) static NAMED_RULES: LazyLock<Mutex<Vec<String>>> = LazyLock::new(Defa
 
 pub(crate) struct OperatorList {
     index: usize,
-    operators: Vec<String>,
+    operators: Vec<TypeInfo>,
 }
 
 /// List of fields/children that are only composed of operators
@@ -35,7 +53,10 @@ pub(crate) static ANONYMOUS_TYPES: LazyLock<Mutex<HashSet<String>>> =
     LazyLock::new(Default::default);
 
 /// Map of node kind to node id
-pub(crate) static NODE_ID_FOR_NAME: LazyLock<Mutex<HashMap<String, u16>>> =
+pub(crate) static NODE_ID_FOR_NAMED_NODE: LazyLock<Mutex<HashMap<String, u16>>> =
+    LazyLock::new(Default::default);
+
+pub(crate) static NODE_ID_FOR_UNNAMED_NODE: LazyLock<Mutex<HashMap<String, u16>>> =
     LazyLock::new(Default::default);
 
 /// Map of field name to field id
@@ -45,14 +66,19 @@ pub(crate) static FIELD_ID_FOR_NAME: LazyLock<Mutex<HashMap<String, u16>>> =
 pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
     let nodes: Vec<NodeType> = serde_json::from_str(&source).expect("Invalid JSON");
 
-    let mut output = TokenStream::new();
+    let mut output = quote! {
+        #![allow(clippy)]
+        #![allow(unused)]
+        #![allow(non_camel_case_types)]
+        #![allow(non_snake_case)]
+    };
     for node in &nodes {
         if node.named {
             NAMED_RULES
                 .lock()
                 .unwrap()
                 .push(sanitize_string_to_pascal(&node.kind));
-            NODE_ID_FOR_NAME.lock().unwrap().insert(
+            NODE_ID_FOR_NAMED_NODE.lock().unwrap().insert(
                 node.kind.clone(),
                 language.id_for_node_kind(&node.kind, true),
             );
@@ -66,7 +92,7 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
                 });
             }
         } else {
-            NODE_ID_FOR_NAME.lock().unwrap().insert(
+            NODE_ID_FOR_UNNAMED_NODE.lock().unwrap().insert(
                 node.kind.clone(),
                 language.id_for_node_kind(&node.kind, false),
             );
@@ -80,49 +106,47 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
         }
     }
 
+    SUPER_TYPES.with(|s| {
+        let mut super_types = s.lock().unwrap();
+        let mut new_super_types = HashMap::new();
+
+        for (super_type_name, super_type) in super_types.iter() {
+            let mut new_super_type = SuperType::default();
+
+            super_type.types.iter().enumerate().for_each(|(i, key)| {
+                if let Some(nested_super_type) = super_types.get(key) {
+                    new_super_type.types.extend(nested_super_type.types.clone());
+                } else {
+                    new_super_type.types.push(key.clone());
+                }
+                new_super_type.variants.push(super_type.variants[i].clone())
+            });
+            new_super_types.insert(super_type_name.clone(), new_super_type);
+        };
+
+        new_super_types
+            .into_iter()
+            .for_each(|(name, s)| {
+                super_types.insert(name.clone(), s.clone());
+            })
+    });
+
     for node in &nodes {
         output.extend(node.to_token_stream());
     }
 
     for (_, operators) in &*OPERATORS_RULES.lock().unwrap() {
-        let id = format_ident!("Operators_{}", operators.index);
-
-        let sanitized_operators = operators
-            .operators
-            .iter()
-            .map(|op| format_ident!("Token_{}", sanitize_string_to_pascal(op)).to_token_stream())
-            .collect::<Vec<_>>();
-
         output.extend(generate_enum(
-            &id,
-            &sanitized_operators,
+            &format_ident!("Operators_{}", operators.index),
             &operators.operators,
         ));
     }
 
     for (id, values) in &*INLINE_MULTIPLE_RULES.lock().unwrap() {
-        let id = format_ident!("{}", sanitize_string(&id));
-
-        let mut variants = vec![];
-        let mut types = vec![];
-
-        for value in values {
-            let variant_name = format_ident!("{}", &sanitize_string_to_pascal(&value.kind));
-            if !value.named {
-                variants.push(format_ident!("Token_{}", variant_name.clone()).to_token_stream());
-            } else if SUPER_TYPES.with(|s| s.lock().unwrap().contains_key(&value.kind)) {
-                let supertype =
-                    SUPER_TYPES.with(|s| s.lock().unwrap().get(&value.kind).unwrap().clone());
-                variants.extend(supertype.variants);
-                types.extend(supertype.types);
-                continue;
-            } else {
-                variants.push(variant_name.to_token_stream());
-            }
-            types.push(value.kind.clone());
-        }
-
-        output.extend(generate_enum(&id, &variants, &types));
+        output.extend(generate_enum(
+            &format_ident!("{}", sanitize_string(&id)),
+            &values,
+        ));
     }
 
     for name in ANONYMOUS_TYPES.lock().unwrap().iter() {
@@ -136,30 +160,12 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
     }
 
     let super_types_clone = SUPER_TYPES.with(|s| s.lock().unwrap().clone());
-
-    let output_s = SUPER_TYPES.with(|s| {
-        let mut output = TokenStream::new();
-
-        for (super_type_name, super_type) in s.lock().unwrap().iter() {
-            let super_type_name = format_ident!("{}", &sanitize_string_to_pascal(&super_type_name));
-
-            let mut variants = vec![];
-            let mut types = vec![];
-
-            super_type.types.iter().enumerate().for_each(|(i, t)| {
-                if let Some(super_type) = super_types_clone.get(t) {
-                    variants.extend(super_type.variants.clone());
-                    types.extend(super_type.types.clone());
-                } else {
-                    variants.push(super_type.variants[i].clone());
-                    types.push(super_type.types[i].clone());
-                }
-            });
-            output.extend(generate_enum(&super_type_name, &variants, &types));
+        for (super_type_name, super_type) in super_types_clone.iter() {
+            output.extend(generate_enum(
+                &format_ident!("{}", &sanitize_string_to_pascal(&super_type_name)),
+                &super_type.variants,
+            ));
         }
-        output
-    });
 
-    output.extend(output_s);
     output
 }

@@ -1,13 +1,29 @@
+/*
+This file is part of auto-lsp.
+Copyright (C) 2025 CLAUZEL Adrien
+
+auto-lsp is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
-use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use crate::json::TypeInfo;
 use crate::NodeType;
-use crate::utils::sanitize_string_to_pascal;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub(crate) struct SuperType {
-    pub(crate) variants: Vec<TokenStream>,
+    pub(crate) variants: Vec<TypeInfo>,
     pub(crate) types: Vec<String>,
 }
 
@@ -24,14 +40,8 @@ pub(crate) fn generate_super_type(node: &NodeType) -> SuperType {
         .map(|subtypes| {
             subtypes
                 .iter()
-                .map(|subtype| {
-                    let subtype_name =
-                        format_ident!("{}", sanitize_string_to_pascal(&subtype.kind));
-                    quote! {
-                        #subtype_name
-                    }
-                })
-                .collect::<Vec<TokenStream>>()
+                .cloned()
+                .collect::<Vec<_>>()
         })
         .unwrap_or_default();
 

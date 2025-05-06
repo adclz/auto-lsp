@@ -1,34 +1,53 @@
+/*
+This file is part of auto-lsp.
+Copyright (C) 2025 CLAUZEL Adrien
+
+auto-lsp is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+
+use crate::json::{NodeType, TypeInfo};
+use crate::utils::sanitize_string_to_pascal;
+use crate::{NODE_ID_FOR_NAMED_NODE, NODE_ID_FOR_UNNAMED_NODE};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use crate::json::NodeType;
-use crate::NODE_ID_FOR_NAME;
-use crate::utils::sanitize_string_to_pascal;
+use crate::supertypes::SUPER_TYPES;
 
 impl ToTokens for NodeType {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.extend(
-            if self.is_struct() {
-                self.create_struct().to_token_stream()
-            } else if self.is_enum() {
-                self.create_enum().to_token_stream()
-            } else if self.is_token() {
-                generate_struct(
-                    &format_ident!("Token_{}", &sanitize_string_to_pascal(&self.kind)),
-                    &self.kind,
-                    &vec![],
-                    &vec![],
-                    &vec![])
-            } else if !self.is_supertype() {
-                generate_struct(
-                    &format_ident!("{}", &sanitize_string_to_pascal(&self.kind)),
-                    &self.kind,
-                    &vec![],
-                    &vec![],
-                    &vec![])
-            } else {
-                TokenStream::new()
-            }
-        );
+        tokens.extend(if self.is_struct() {
+            self.create_struct().to_token_stream()
+        } else if self.is_enum() {
+            self.create_enum().to_token_stream()
+        } else if self.is_token() {
+            generate_struct(
+                &format_ident!("Token_{}", &sanitize_string_to_pascal(&self.kind)),
+                &self.kind,
+                &vec![],
+                &vec![],
+                &vec![],
+            )
+        } else if !self.is_supertype() {
+            generate_struct(
+                &format_ident!("{}", &sanitize_string_to_pascal(&self.kind)),
+                &self.kind,
+                &vec![],
+                &vec![],
+                &vec![],
+            )
+        } else {
+            TokenStream::new()
+        });
     }
 }
 
@@ -65,7 +84,6 @@ impl NodeType {
                 },
             );
 
-
         generate_struct(
             &format_ident!("{}", sanitize_string_to_pascal(&self.kind)),
             &self.kind,
@@ -76,37 +94,10 @@ impl NodeType {
     }
 
     fn create_enum(&self) -> impl ToTokens {
-        // Get enum variants
-        let variants = self
-            .subtypes
-            .as_ref()
-            .map(|subtypes| {
-                subtypes
-                    .iter()
-                    .map(|subtype| {
-                        let subtype_name =
-                            format_ident!("{}", sanitize_string_to_pascal(&subtype.kind));
-                        quote! {
-                        #subtype_name
-                    }
-                    })
-                    .collect::<Vec<TokenStream>>()
-            })
-            .unwrap_or_default();
-
-        // Get enum types
-        let types = self
-            .subtypes
-            .as_ref()
-            .map(|subtypes| {
-                subtypes
-                    .iter()
-                    .map(|subtype| subtype.kind.clone())
-                    .collect::<Vec<String>>()
-            })
-            .unwrap_or_default();
-
-        generate_enum(&format_ident!("{}", sanitize_string_to_pascal(&self.kind)), &variants, &types)
+        generate_enum(
+            &format_ident!("{}", sanitize_string_to_pascal(&self.kind)),
+            (&self).subtypes.as_ref().unwrap(),
+        )
     }
 }
 
@@ -115,29 +106,28 @@ pub(crate) fn generate_struct(
     struct_type: &String,
     struct_fields: &Vec<TokenStream>,
     struct_fields_collect: &Vec<TokenStream>,
-    struct_fields_finalize: &Vec<TokenStream>
-)
-    -> TokenStream {
+    struct_fields_finalize: &Vec<TokenStream>,
+) -> TokenStream {
     let cursor = if struct_fields_collect.is_empty() {
-        quote! { }
+        quote! {}
     } else {
         quote! { let mut cursor = node.walk(); }
     };
 
-    let of_type = match NODE_ID_FOR_NAME.lock().unwrap().get(struct_type) {
+    let of_type = match NODE_ID_FOR_NAMED_NODE.lock().unwrap().get(struct_type) {
         Some(id) => {
-            quote ! {
+            quote! {
                 impl #struct_name {
-                    pub fn contains(node: &tree_sitter::Node) -> bool {
+                    pub fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
                         matches!(node.kind_id(), #id)
                     }
                 }
             }
         }
         None => {
-            quote ! {
+            quote! {
                 impl #struct_name {
-                    pub fn contains(node: &tree_sitter::Node) -> bool {
+                    pub fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
                         matches!(node.kind(), #struct_type)
                     }
                 }
@@ -155,7 +145,7 @@ pub(crate) fn generate_struct(
     };
 
     let struct_fields_collect = if struct_fields_collect.is_empty() {
-        quote! { }
+        quote! {}
     } else {
         quote! { #(#struct_fields_collect);*; }
     };
@@ -204,29 +194,105 @@ pub(crate) fn generate_struct(
     }
 }
 
-pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TokenStream>, types: &Vec<String>) -> TokenStream {
-    let types = types.iter()
-        .map(|n| {
-            *NODE_ID_FOR_NAME.lock().unwrap().get(n).unwrap()
-        }).collect::<Vec<_>>();
+pub(crate) fn generate_enum(
+    variant_name: &Ident,
+    variants: &Vec<TypeInfo>,
+) -> TokenStream {
+    let mut r_variants = vec![];
+    let mut r_types = vec![];
+
+    let mut super_types_variants: Vec<_> = vec![];
+    let mut super_types_types: Vec<Vec<_>> = vec![];
+
+    for value in variants {
+        let variant_name = format_ident!("{}", &sanitize_string_to_pascal(&value.kind));
+        if !value.named {
+            r_variants.push(format_ident!("Token_{}", variant_name.clone()).to_token_stream());
+
+            let type_name = if value.named {
+                *NODE_ID_FOR_NAMED_NODE.lock().unwrap().get(&value.kind).unwrap()
+            } else {
+                *NODE_ID_FOR_UNNAMED_NODE.lock().unwrap().get(&value.kind).unwrap()
+            };
+
+            r_types.push(type_name);
+        } else if SUPER_TYPES.with(|s| s.lock().unwrap().contains_key(&value.kind)) {
+            let supertype =
+                SUPER_TYPES.with(|s| s.lock().unwrap().get(&value.kind).unwrap().clone());
+            super_types_variants.push(variant_name.to_token_stream());
+            super_types_types.push(
+                supertype.types.iter().map(|t| {
+                    *NODE_ID_FOR_NAMED_NODE.lock().unwrap().get::<String>(&t.clone()).unwrap()
+                }).collect()
+            );
+        } else {
+            r_variants.push(variant_name.to_token_stream());
+            r_types.push(*NODE_ID_FOR_NAMED_NODE.lock().unwrap().get(&value.kind).unwrap());
+        }
+    }
+
+    let pattern_matching = match (r_types.is_empty(), super_types_types.is_empty()) {
+        (false, false) => {
+            let k = quote! {
+            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, &mut *index))?))),*,
+            /// Super types
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, &mut *index))?))),*,
+            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                range: node.range(),
+                symbol: node.kind(),
+                parent_name: stringify!(#variant_name),
+            })
+        };
+        k},
+        (true, false) => {
+            let k = quote! {
+            /// Super types
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, &mut *index))?))),*,
+            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                range: node.range(),
+                symbol: node.kind(),
+                parent_name: stringify!(#variant_name),
+            })
+        };
+            k
+        },
+        (false, true) => quote! {
+            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, &mut *index))?))),*,
+            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                range: node.range(),
+                symbol: node.kind(),
+                parent_name: stringify!(#variant_name),
+            })
+        },
+        _ => quote! {
+            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                range: node.range(),
+                symbol: node.kind(),
+                parent_name: stringify!(#variant_name),
+            })
+        },
+    };
+
+    r_variants.extend(super_types_variants);
+    r_types.extend(super_types_types.into_iter().flatten());
 
     quote! {
         #[derive(Debug, Clone, PartialEq)]
         pub enum #variant_name {
-            #(#variants(#variants)),*
+            #(#r_variants(#r_variants)),*
         }
 
         impl auto_lsp::core::ast::AstNode for #variant_name {
             fn range(&self) -> &auto_lsp::tree_sitter::Range {
                 match self {
-                    #(Self::#variants(node) => node.range()),*
+                    #(Self::#r_variants(node) => node.range()),*
                 }
             }
         }
 
         impl #variant_name {
-            pub fn contains(node: &tree_sitter::Node) -> bool {
-                matches!(node.kind_id(), #(#types)|*)
+            pub fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
+                matches!(node.kind_id(), #(#r_types)|*)
             }
         }
 
@@ -243,14 +309,10 @@ pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TokenStream>, t
                     &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstNode>>)
             ) -> Result<Self, Self::Error> {
                 match node.kind_id() {
-                    #(#types => Ok(Self::#variants(#variants::try_from((node, &mut *index))?))),*,
-                    _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
-                        range: node.range(),
-                        symbol: node.kind(),
-                        parent_name: stringify!(#variant_name),
-                    })
+                    #pattern_matching
                 }
             }
         }
-    }.to_token_stream()
+    }
+    .to_token_stream()
 }

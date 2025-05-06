@@ -1,3 +1,21 @@
+/*
+This file is part of auto-lsp.
+Copyright (C) 2025 CLAUZEL Adrien
+
+auto-lsp is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+
 use crate::ir::{Child, Field, FieldOrChildren, Kind};
 use crate::utils::sanitize_string_to_pascal;
 use crate::{OperatorList, ANONYMOUS_TYPES, INLINE_MULTIPLE_RULES, NAMED_RULES, OPERATORS_RULES};
@@ -15,7 +33,7 @@ pub(crate) struct NodeType {
     #[serde(default)]
     pub(crate) children: Option<ChildInfo>,
     #[serde(default)]
-    pub(crate) subtypes: Option<Vec<NodeType>>,
+    pub(crate) subtypes: Option<Vec<TypeInfo>>,
 }
 
 impl NodeType {
@@ -52,8 +70,7 @@ impl FieldInfo {
         let optional = self.required.unwrap_or(false);
         let multiple = self.multiple.unwrap_or(false);
         match (optional, multiple) {
-            (true, true) => Kind::Vec,
-            (false, true) => Kind::Vec,
+            (_, true) => Kind::Vec,
             (true, false) => Kind::Base,
             (false, false) => Kind::Option,
         }
@@ -83,7 +100,7 @@ impl FieldInfo {
             let len = lock.len();
             let op = lock.entry(rule.clone()).or_insert(OperatorList {
                 index: len,
-                operators: self.types.iter().map(|n| n.kind.clone()).collect(),
+                operators: self.types.iter().cloned().collect(),
             });
 
             format_ident!("Operators_{}", op.index)
@@ -128,10 +145,9 @@ impl ChildInfo {
         let optional = self.required.unwrap_or(false);
         let multiple = self.multiple.unwrap_or(false);
         match (optional, multiple) {
-            (true, true) => Kind::Vec,
-            (false, true) => Kind::Vec,
-            (true, false) => Kind::Option,
-            (false, false) => Kind::Base,
+            (_, true) => Kind::Vec,
+            (true, false) => Kind::Base,
+            (false, false) => Kind::Option,
         }
     }
 
@@ -159,7 +175,7 @@ impl ChildInfo {
             let len = lock.len();
             let op = lock.entry(rule.clone()).or_insert(OperatorList {
                 index: len,
-                operators: self.types.iter().map(|n| n.kind.clone()).collect(),
+                operators: self.types.iter().cloned().collect(),
             });
 
             format_ident!("Operators_{}", op.index)
