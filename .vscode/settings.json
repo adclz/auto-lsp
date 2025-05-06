@@ -12,6 +12,7 @@
 		"examples/vscode-wasi/server/Cargo.toml",
 		"examples/vscode-native/server/Cargo.toml",
 		"examples/native/Cargo.toml",
+		"examples/ast-python/Cargo.toml",
 		"crates/codegen/Cargo.toml"
 	],
 }

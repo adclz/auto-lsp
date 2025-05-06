@@ -47,6 +47,7 @@ exclude = [
     "examples/vscode-wasi/server",
     "examples/vscode-native/server",
     "examples/native",
+    "examples/ast-python",
     "crates/codegen",
 ]
 
