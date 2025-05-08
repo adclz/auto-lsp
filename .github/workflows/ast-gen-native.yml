@@ -19,6 +19,14 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - run: rustup toolchain install nightly
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all-features --workspace
+      - name: main crate
+        run: cargo test --all-features --workspace
+      - name: python ast
+        working-directory: ./examples/ast-python
+        run: cargo test
+      - name: html ast
+        working-directory: ./examples/ast-html
+        run: cargo test  
