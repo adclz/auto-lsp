@@ -100,7 +100,7 @@ impl FieldInfo {
             let len = lock.len();
             let op = lock.entry(rule.clone()).or_insert(OperatorList {
                 index: len,
-                operators: self.types.iter().cloned().collect(),
+                operators: self.types.to_vec(),
             });
 
             format_ident!("Operators_{}", op.index)
@@ -175,7 +175,7 @@ impl ChildInfo {
             let len = lock.len();
             let op = lock.entry(rule.clone()).or_insert(OperatorList {
                 index: len,
-                operators: self.types.iter().cloned().collect(),
+                operators: self.types.to_vec(),
             });
 
             format_ident!("Operators_{}", op.index)

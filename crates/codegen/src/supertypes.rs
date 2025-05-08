@@ -38,10 +38,7 @@ pub(crate) fn generate_super_type(node: &NodeType) -> SuperType {
         .subtypes
         .as_ref()
         .map(|subtypes| {
-            subtypes
-                .iter()
-                .cloned()
-                .collect::<Vec<_>>()
+            subtypes.to_vec()
         })
         .unwrap_or_default();
 

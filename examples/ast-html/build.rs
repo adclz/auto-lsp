@@ -1,5 +1,5 @@
 use auto_lsp_codegen::generate;
-use std::{env, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 fn main() {
     println!("cargo:rerun-if-changed=../../crates/codegen/src");

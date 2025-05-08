@@ -64,11 +64,11 @@ pub(crate) static FIELD_ID_FOR_NAME: LazyLock<Mutex<HashMap<String, u16>>> =
     LazyLock::new(Default::default);
 
 pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
-    let nodes: Vec<NodeType> = serde_json::from_str(&source).expect("Invalid JSON");
+    let nodes: Vec<NodeType> = serde_json::from_str(source).expect("Invalid JSON");
 
     let mut output = quote! {
         // Auto-generated file. Do not edit manually.
-        #![allow(clippy)]
+        #![allow(clippy::all)]
         #![allow(unused)]
         #![allow(dead_code)]
         #![allow(non_camel_case_types)]
@@ -104,7 +104,7 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
             SUPER_TYPES.with(|s| {
                 s.lock()
                     .unwrap()
-                    .insert(node.kind.clone(), generate_super_type(&node));
+                    .insert(node.kind.clone(), generate_super_type(node));
             });
         }
     }
@@ -125,20 +125,18 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
                 new_super_type.variants.push(super_type.variants[i].clone())
             });
             new_super_types.insert(super_type_name.clone(), new_super_type);
-        };
+        }
 
-        new_super_types
-            .into_iter()
-            .for_each(|(name, s)| {
-                super_types.insert(name.clone(), s.clone());
-            })
+        new_super_types.into_iter().for_each(|(name, s)| {
+            super_types.insert(name.clone(), s.clone());
+        })
     });
 
     for node in &nodes {
         output.extend(node.to_token_stream());
     }
 
-    for (_, operators) in &*OPERATORS_RULES.lock().unwrap() {
+    for operators in (*OPERATORS_RULES.lock().unwrap()).values() {
         output.extend(generate_enum(
             &format_ident!("Operators_{}", operators.index),
             &operators.operators,
@@ -147,15 +145,15 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
 
     for (id, values) in &*INLINE_MULTIPLE_RULES.lock().unwrap() {
         output.extend(generate_enum(
-            &format_ident!("{}", sanitize_string(&id)),
-            &values,
+            &format_ident!("{}", sanitize_string(id)),
+            values,
         ));
     }
 
     for name in ANONYMOUS_TYPES.lock().unwrap().iter() {
         output.extend(generate_struct(
-            &format_ident!("{}", &sanitize_string_to_pascal(&name)),
-            &name,
+            &format_ident!("{}", &sanitize_string_to_pascal(name)),
+            name,
             &vec![],
             &vec![],
             &vec![],
@@ -163,12 +161,12 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
     }
 
     let super_types_clone = SUPER_TYPES.with(|s| s.lock().unwrap().clone());
-        for (super_type_name, super_type) in super_types_clone.iter() {
-            output.extend(generate_enum(
-                &format_ident!("{}", &sanitize_string_to_pascal(&super_type_name)),
-                &super_type.variants,
-            ));
-        }
+    for (super_type_name, super_type) in super_types_clone.iter() {
+        output.extend(generate_enum(
+            &format_ident!("{}", &sanitize_string_to_pascal(super_type_name)),
+            &super_type.variants,
+        ));
+    }
 
     output
 }

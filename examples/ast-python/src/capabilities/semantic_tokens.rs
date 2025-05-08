@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
+use crate::generated::{
+    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
+};
 use auto_lsp::core::ast::{AstNode, BuildSemanticTokens};
 use auto_lsp::core::document::Document;
-use auto_lsp::core::semantic_tokens_builder;
 use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
-use crate::generated::{CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module};
+use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
 
 define_semantic_token_types![
     standard {
@@ -67,7 +68,7 @@ impl BuildSemanticTokens for CompoundStatement_SimpleStatement {
 impl BuildSemanticTokens for FunctionDefinition {
     fn build_semantic_tokens(
         &self,
-        doc: &Document,
+        _doc: &Document,
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
         builder.push(

@@ -22,7 +22,6 @@ use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
 use lsp_types::Url;
 use thiserror::Error;
 
-use crate::document::Document;
 
 /// Error type coming from either tree-sitter or ast parsing.
 ///

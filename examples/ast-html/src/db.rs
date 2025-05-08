@@ -32,7 +32,7 @@ configure_parsers!(
 pub fn create_html_db(source_code: &'static [&str]) -> impl BaseDatabase {
     let mut db = BaseDb::default();
     source_code.iter().enumerate().for_each(|(i, source_code)| {
-        let url = Url::parse(&format!("file:///test{}.html", i)).expect("Failed to parse URL");
+        let url = Url::parse(&format!("file:///test{i}.html")).expect("Failed to parse URL");
 
         db.add_file_from_texter(
             HTML_PARSERS

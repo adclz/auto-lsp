@@ -16,11 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::db::create_python_db;
-use crate::generated::{
-    Block, CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, PassStatement,
-    SimpleStatement,
-};
-use auto_lsp::core::ast::AstNode;
+use crate::generated::{CompoundStatement_SimpleStatement, PassStatement, SimpleStatement};
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::lsp_types::Url;
@@ -45,11 +41,6 @@ fn sort(foo_bar: impl BaseDatabase) {
     let document = file.document(&foo_bar).read();
     let source_code = document.texter.text.as_bytes();
     let ast = get_ast(&foo_bar, file);
-
-    let items = ast
-        .iter()
-        .filter_map(|n| n.get_text(source_code).ok())
-        .collect::<Vec<_>>();
 
     // Nodes should be sorted by their position in the source code
     assert_eq!(

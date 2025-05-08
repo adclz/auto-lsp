@@ -15,11 +15,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use crate::generated::{
+    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
+};
 use auto_lsp::core::ast::BuildCodeActions;
-use auto_lsp::{anyhow, lsp_types};
 use auto_lsp::core::document::Document;
 use auto_lsp::lsp_types::CodeActionOrCommand;
-use crate::generated::{Block, CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module};
+use auto_lsp::{anyhow, lsp_types};
 
 impl BuildCodeActions for Module {
     fn build_code_actions(
@@ -38,26 +40,32 @@ impl BuildCodeActions for CompoundStatement_SimpleStatement {
         acc: &mut Vec<lsp_types::CodeActionOrCommand>,
     ) -> anyhow::Result<()> {
         match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(CompoundStatement::FunctionDefinition(f)) => {
-                f.build_code_actions(doc, acc)
-            }
-            _ => Ok(())
+            CompoundStatement_SimpleStatement::CompoundStatement(
+                CompoundStatement::FunctionDefinition(f),
+            ) => f.build_code_actions(doc, acc),
+            _ => Ok(()),
         }
     }
 }
 
 impl BuildCodeActions for FunctionDefinition {
-    fn build_code_actions(&self, doc: &Document, acc: &mut Vec<CodeActionOrCommand>) -> anyhow::Result<()> {
-        acc.push(lsp_types::CodeActionOrCommand::CodeAction(lsp_types::CodeAction {
-            title: "A code action".to_string(),
-            kind: None,
-            diagnostics: None,
-            edit: None,
-            command: None,
-            is_preferred: None,
-            disabled: None,
-            data: None,
-        }));
+    fn build_code_actions(
+        &self,
+        _doc: &Document,
+        acc: &mut Vec<CodeActionOrCommand>,
+    ) -> anyhow::Result<()> {
+        acc.push(lsp_types::CodeActionOrCommand::CodeAction(
+            lsp_types::CodeAction {
+                title: "A code action".to_string(),
+                kind: None,
+                diagnostics: None,
+                edit: None,
+                command: None,
+                is_preferred: None,
+                disabled: None,
+                data: None,
+            },
+        ));
         Ok(())
     }
 }

@@ -1,5 +1,5 @@
 use crate::errors::PositionError;
-use downcast_rs::{impl_downcast, Downcast, DowncastSync};
+use downcast_rs::{impl_downcast, DowncastSync};
 use std::cmp::Ordering;
 use std::sync::Arc;
 
@@ -59,7 +59,7 @@ pub trait AstNode:
 
     fn get_text<'a>(&self, source_code: &'a [u8]) -> Result<&'a str, PositionError> {
         let range = self.get_range();
-        let range = range.start_byte as usize..range.end_byte as usize;
+        let range = range.start_byte..range.end_byte;
         match source_code.get(range.start..range.end) {
             Some(text) => match std::str::from_utf8(text) {
                 Ok(text) => Ok(text),
@@ -84,12 +84,10 @@ pub trait AstNode:
                 // Potential parent found — go deeper to find tighter parent
                 result = Some(node);
                 low = mid + 1;
+            } else if range.start_byte > self_range.start_byte {
+                high = mid;
             } else {
-                if range.start_byte > self_range.start_byte {
-                    high = mid;
-                } else {
-                    low = mid + 1;
-                }
+                low = mid + 1;
             }
         }
 
@@ -101,7 +99,7 @@ impl_downcast!(AstNode);
 
 impl PartialEq for dyn AstNode {
     fn eq(&self, other: &Self) -> bool {
-        self.get_range().eq(&other.get_range())
+        self.get_range().eq(other.get_range())
     }
 }
 

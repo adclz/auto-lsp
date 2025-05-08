@@ -15,10 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use auto_lsp::tree_sitter::Parser;
-use insta::{assert_debug_snapshot, with_settings};
 
-use crate::generated::Module;
 
 pub(crate) type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 

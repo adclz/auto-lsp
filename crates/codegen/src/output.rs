@@ -96,7 +96,7 @@ impl NodeType {
     fn create_enum(&self) -> impl ToTokens {
         generate_enum(
             &format_ident!("{}", sanitize_string_to_pascal(&self.kind)),
-            (&self).subtypes.as_ref().unwrap(),
+            self.subtypes.as_ref().unwrap(),
         )
     }
 }

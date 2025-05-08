@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use crate::document::Document;
 use crate::errors::{DataBaseError, TreeSitterError};
-use crate::parsers::{Parsers};
+use crate::parsers::Parsers;
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
 use parking_lot::RwLock;
@@ -73,7 +73,7 @@ impl salsa::Database for BaseDb {
         {
             let event = _event();
             if let salsa::EventKind::WillExecute { .. } = event.kind {
-                self.logs.lock().push(format!("{:?}", event));
+                self.logs.lock().push(format!("{event:?}"));
             }
         }
     }

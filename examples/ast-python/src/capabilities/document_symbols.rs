@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use auto_lsp::core::ast::{AstNode, BuildCodeLenses, BuildDocumentSymbols};
+use auto_lsp::core::ast::{AstNode, BuildDocumentSymbols};
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
 use auto_lsp::{anyhow, lsp_types};

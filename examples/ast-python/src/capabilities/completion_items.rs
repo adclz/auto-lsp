@@ -15,12 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use std::sync::LazyLock;
+use crate::generated::{FunctionDefinition, Identifier, Module};
 use auto_lsp::core::ast::{BuildCompletionItems, BuildTriggeredCompletionItems};
 use auto_lsp::core::document::Document;
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::CompletionItem;
-use crate::generated::{FunctionDefinition, Identifier, Module};
+use std::sync::LazyLock;
 
 /// Globally available completion items
 static GLOBAL_COMPLETION_ITEMS: LazyLock<Vec<lsp_types::CompletionItem>> = LazyLock::new(|| {
@@ -34,21 +34,34 @@ static GLOBAL_COMPLETION_ITEMS: LazyLock<Vec<lsp_types::CompletionItem>> = LazyL
 });
 
 impl BuildCompletionItems for Module {
-    fn build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) -> auto_lsp::anyhow::Result<()> {
+    fn build_completion_items(
+        &self,
+        _doc: &Document,
+        acc: &mut Vec<CompletionItem>,
+    ) -> auto_lsp::anyhow::Result<()> {
         acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
         Ok(())
     }
 }
 
 impl BuildCompletionItems for FunctionDefinition {
-    fn build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>) -> auto_lsp::anyhow::Result<()> {
+    fn build_completion_items(
+        &self,
+        _doc: &Document,
+        acc: &mut Vec<CompletionItem>,
+    ) -> auto_lsp::anyhow::Result<()> {
         acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
         Ok(())
     }
 }
 
 impl BuildTriggeredCompletionItems for Identifier {
-    fn build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>) -> auto_lsp::anyhow::Result<()> {
+    fn build_triggered_completion_items(
+        &self,
+        trigger: &str,
+        _doc: &Document,
+        acc: &mut Vec<CompletionItem>,
+    ) -> auto_lsp::anyhow::Result<()> {
         if trigger == "." {
             acc.push(CompletionItem {
                 label: "triggered! ...".to_string(),
