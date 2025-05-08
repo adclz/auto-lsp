@@ -57,7 +57,7 @@ macro_rules! configure_parsers {
                             document: &$crate::core::document::Document | {
                                 let mut index = vec![];
                                 let root = $root::try_from((&document.tree.root_node(), &mut index))
-                                    .map_err(|e| $crate::core::errors::ParseError::from((document, e)))?;
+                                    .map_err(|e| $crate::core::errors::ParseError::from(e))?;
                                 index.push(std::sync::Arc::new(root));
                                 Ok(index)
                             }
