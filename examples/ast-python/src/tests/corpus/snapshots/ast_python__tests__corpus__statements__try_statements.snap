@@ -1,0 +1,541 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            TryStatement(
+                TryStatement {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    children: [
+                        ExceptClause(
+                            ExceptClause {
+                                alias: None,
+                                value: Some(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                children: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                        ExceptClause(
+                            ExceptClause {
+                                alias: None,
+                                value: Some(
+                                    AsPattern(
+                                        AsPattern {
+                                            alias: Some(
+                                                AsPatternTarget {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                children: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                        ExceptClause(
+                            ExceptClause {
+                                alias: Some(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                value: Some(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                children: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                        ExceptClause(
+                            ExceptClause {
+                                alias: None,
+                                value: None,
+                                children: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            TryStatement(
+                TryStatement {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    children: [
+                        ExceptClause(
+                            ExceptClause {
+                                alias: None,
+                                value: Some(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                children: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                        ElseClause(
+                            ElseClause {
+                                body: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                        FinallyClause(
+                            FinallyClause {
+                                children: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            TryStatement(
+                TryStatement {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    children: [
+                        ExceptGroupClause(
+                            ExceptGroupClause {
+                                children: [
+                                    Expression(
+                                        PrimaryExpression(
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                    Block(
+                                        Block {
+                                            alternative: [],
+                                            children: [
+                                                SimpleStatement(
+                                                    ExpressionStatement(
+                                                        ExpressionStatement {
+                                                            children: [
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                        ExceptGroupClause(
+                            ExceptGroupClause {
+                                children: [
+                                    Expression(
+                                        AsPattern(
+                                            AsPattern {
+                                                alias: Some(
+                                                    AsPatternTarget {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                children: [
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    Block(
+                                        Block {
+                                            alternative: [],
+                                            children: [
+                                                SimpleStatement(
+                                                    ExpressionStatement(
+                                                        ExpressionStatement {
+                                                            children: [
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                        ElseClause(
+                            ElseClause {
+                                body: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                        FinallyClause(
+                            FinallyClause {
+                                children: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

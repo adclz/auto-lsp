@@ -1,0 +1,464 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_PlusEqual(
+                                    Token_PlusEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_GreaterGreaterEqual(
+                                    Token_GreaterGreaterEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_SlashSlashEqual(
+                                    Token_SlashSlashEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_AtEqual(
+                                    Token_AtEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_MinusEqual(
+                                    Token_MinusEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_PercentEqual(
+                                    Token_PercentEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_SlashEqual(
+                                    Token_SlashEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Float(
+                                            Float {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_StarEqual(
+                                    Token_StarEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_AmpersandEqual(
+                                    Token_AmpersandEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_CaretEqual(
+                                    Token_CaretEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_LessLessEqual(
+                                    Token_LessLessEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_PipeEqual(
+                                    Token_PipeEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                operator: Token_StarStarEqual(
+                                    Token_StarStarEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

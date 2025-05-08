@@ -1,0 +1,195 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            MatchStatement(
+                MatchStatement {
+                    body: Block {
+                        alternative: [
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Assignment(
+                                                            Assignment {
+                                                                right: Some(
+                                                                    Expression(
+                                                                        PrimaryExpression(
+                                                                            Integer(
+                                                                                Integer {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                                left: Pattern(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                Type: None,
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            Integer(
+                                                Integer {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                    CasePattern {
+                                        children: Some(
+                                            Integer(
+                                                Integer {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Assignment(
+                                                            Assignment {
+                                                                right: Some(
+                                                                    Expression(
+                                                                        PrimaryExpression(
+                                                                            Integer(
+                                                                                Integer {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                                left: Pattern(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                Type: None,
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            Integer(
+                                                Integer {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                    CasePattern {
+                                        children: Some(
+                                            SplatPattern(
+                                                SplatPattern {
+                                                    children: Some(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ],
+                        children: [],
+                        [RANGE]
+                    },
+                    subject: [
+                        PrimaryExpression(
+                            Tuple(
+                                Tuple {
+                                    children: [
+                                        Expression(
+                                            PrimaryExpression(
+                                                Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        Expression(
+                                            PrimaryExpression(
+                                                Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        Expression(
+                                            PrimaryExpression(
+                                                Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

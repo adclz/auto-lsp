@@ -1,0 +1,69 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            DeleteStatement(
+                DeleteStatement {
+                    children: ExpressionList(
+                        ExpressionList {
+                            children: [
+                                PrimaryExpression(
+                                    Subscript(
+                                        Subscript {
+                                            subscript: [
+                                                Expression(
+                                                    PrimaryExpression(
+                                                        Integer(
+                                                            Integer {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                ),
+                                            ],
+                                            value: Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                PrimaryExpression(
+                                    Subscript(
+                                        Subscript {
+                                            subscript: [
+                                                Expression(
+                                                    PrimaryExpression(
+                                                        Integer(
+                                                            Integer {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                ),
+                                            ],
+                                            value: Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

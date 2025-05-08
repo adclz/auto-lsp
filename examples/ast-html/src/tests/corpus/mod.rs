@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::{snap};
+use crate::snap;
 use utils::Result;
 mod utils;
 
@@ -26,21 +26,25 @@ fn tags() -> Result {
 
 #[test]
 fn tags_with_attributes() -> Result {
-    snap!(r#"<input value=yes class="a" data-💩></input>"#, tags_with_attributes)
+    snap!(
+        r#"<input value=yes class="a" data-💩></input>"#,
+        tags_with_attributes
+    )
 }
-
 
 #[test]
 fn nested_tags() -> Result {
-    snap!(r#"<div>
+    snap!(
+        r#"<div>
   <span>a</span>
   b
   <b>c</b>
   Multi-line
   text
-</div>"#, nested_tags)
+</div>"#,
+        nested_tags
+    )
 }
-
 
 #[test]
 fn void_tags() -> Result {
@@ -52,10 +56,7 @@ fn void_tags() -> Result {
 
 #[test]
 fn void_tags_at_eof() -> Result {
-    snap!(
-        r#"<img src="something.png">"#,
-        void_tags_at_eof
-    )
+    snap!(r#"<img src="something.png">"#, void_tags_at_eof)
 }
 
 #[test]
@@ -204,8 +205,5 @@ fn multiple_entities_in_tag_content() -> Result {
 
 #[test]
 fn omitted_end_tags() -> Result {
-    snap!(
-        r#"<!doctype html><html><head>"#,
-        omitted_end_tags
-    )
+    snap!(r#"<!doctype html><html><head>"#, omitted_end_tags)
 }

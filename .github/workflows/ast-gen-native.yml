@@ -27,7 +27,11 @@ jobs:
         run: cargo test --all-features --workspace
       - name: python ast
         working-directory: ./examples/ast-python
-        run: cargo test
+        env:
+          INSTA_UPDATE: new
+        run: cargo insta test --accept
       - name: html ast
         working-directory: ./examples/ast-html
-        run: cargo test  
+        env:
+          INSTA_UPDATE: new
+        run: cargo insta test --accept

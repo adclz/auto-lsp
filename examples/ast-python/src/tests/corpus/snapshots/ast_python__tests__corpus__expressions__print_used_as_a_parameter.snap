@@ -1,0 +1,255 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [
+                            DefaultParameter(
+                                DefaultParameter {
+                                    name: Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    value: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [
+                            ListSplatPattern(
+                                ListSplatPattern {
+                                    children: Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [
+                            DictionarySplatPattern(
+                                DictionarySplatPattern {
+                                    children: Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

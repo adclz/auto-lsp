@@ -18,271 +18,319 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use super::utils::Result;
 use crate::snap;
-use rstest::rstest;
-
-#[rstest]
-#[case("-1")]
-#[case("0xDEAD")]
-#[case("0XDEAD")]
-#[case("1j")]
-#[case("-1j")]
-#[case("0o123")]
-#[case("0O123")]
-#[case("0b001")]
-#[case("0B001")]
-#[case("1_1")]
-#[case("0B1_1")]
-#[case("0O1_1")]
-#[case("0L")]
-fn integers(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn integers() -> Result {
+    snap!(
+        r#"
+-1
+0xDEAD
+0XDEAD
+1j
+-1j
+0o123
+0O123
+0b001
+0B001
+1_1
+0B1_1
+0O1_1
+0L
+"#
+    )
 }
 
-#[rstest]
-#[case("-.6_6")]
-#[case("+.1_1")]
-#[case("123.4123")]
-#[case("123.123J")]
-#[case("1_1.3_1")]
-#[case("1_1.")]
-#[case("1e+3_4j")]
-#[case(".3e1_4")]
-fn floats(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn floats() -> Result {
+    snap!(
+        r#"
+-.6_6
++.1_1
+123.4123
+123.123J
+1_1.3_1
+1_1.
+1e+3_4j
+.3e1_4
+"#
+    )
 }
 
-#[rstest]
-#[case("1e322")]
-#[case("1e-3")]
-#[case("1e+3")]
-#[case("1.8e10")]
-#[case("1.e10")]
-#[case("-1e10")]
-fn scientific_notation_floats(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn scientific_notation_floats() -> Result {
+    snap!(
+        r#"
+1e322
+1e-3
+1e+3
+1.8e10
+1.e10
+-1e10
+"#
+    )
 }
 
-#[rstest]
-#[case(r#""I'm ok""#)]
-#[case(r#"'"ok"'"#)]
-#[case(r#"UR'bye'"#)]
-#[case(r#"b'sup'"#)]
-#[case(r#"B"sup""#)]
-#[case(r#"`1`"#)]
-#[case(r#""\\"#)]
-#[case(r#""/""#)]
-#[case(
-    r#""multiline \
-string""#
-)]
-#[case(r#"b"\x12\u12\U12\x13\N{WINKING FACE}""#)]
-#[case(r#""\xab\1\12\123\'\"\a\b\f\r\n\t\v\\""#)]
-#[case(r#""\xgh\o123\p\q\c\d\e\u12\U1234""#)]
-#[case(r#"f'\N{GREEK CAPITAL LETTER DELTA}'"#)]
-fn strings(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn strings() -> Result {
+    snap!(
+        r#"
+"I'm ok"
+'"ok"'
+UR'bye'
+b'sup'
+B"sup"
+`1`
+"\\"
+"/"
+"multiline \
+string"
+b"\x12\u12\U12\x13\N{WINKING FACE}"
+"\xab\1\12\123\'\"\a\b\f\r\n\t\v\\"
+"\xgh\o123\p\q\c\d\e\u12\U1234"
+f'\N{GREEK CAPITAL LETTER DELTA}'
+"#
+    )
 }
 
-#[rstest]
-#[case(r#"'ab\x00cd'"#)]
-#[case(r#""\n""#)]
-#[case(r#"r'ab\x00cd'"#)]
-#[case(r#"ur"\n""#)]
-#[case(r#"fr"\{0}""#)]
-#[case(r#"r"\\""#)]
-#[case(
-    r#"r'"a\
+#[test]
+fn raw_strings() -> Result {
+    snap!(
+        r#"
+'ab\x00cd'
+"\n"
+
+# no escape sequences in these
+r'ab\x00cd'
+ur"\n"
+
+# raw f-string
+fr"\{0}"
+
+r"\\"
+r'"a\
 de\
-fg"'"#
-)]
-fn raw_strings(#[case] input: &str) -> Result {
-    snap!(input)
+fg"'
+"#
+    )
 }
 
-#[rstest]
-#[case(
-    r#"re.compile(r"(\n|\A)#include\s*['\"]"
-           r"(?P<name>[\w\d./\\]+[.]src)['\"]")"#
-)]
-fn raw_strings_with_escaped_quotes(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn raw_strings_with_escaped_quotes() -> Result {
+    snap!(
+        r#"
+re.compile(r"(\n|\A)#include\s*['\"]"
+           r"(?P<name>[\w\d./\\]+[.]src)['\"]")
+"#
+    )
 }
 
-#[rstest]
-#[case(r#"f"a {b(f'c {e} d')} e""#)]
-#[case(r#"f"""a"{b}c""""#)]
-#[case(r#"f"""a""{b}c""""#)]
-#[case(r#"f"a {{}} e""#)]
-#[case(r#"f"a {b}}}""#)]
-#[case(r#"f"a {{{b}""#)]
-#[case(r#"f"a {{b}}""#)]
-#[case(r#"f"a {{{b}}}""#)]
-#[case(r#"f"{c,}""#)]
-#[case(r#"f"{yield d}""#)]
-#[case(r#"f"{*a,}""#)]
-#[case(
-    r#"def function():
+#[test]
+fn format_strings() -> Result {
+    snap!(
+        r#"
+# nested!
+f"a {b(f'c {e} d')} e"
+f"""a"{b}c"""
+f"""a""{b}c"""
+f"a {{}} e"
+f"a {b}}}"
+f"a {{{b}"
+f"a {{b}}"
+f"a {{{b}}}"
+f"{c,}"
+f"{yield d}"
+f"{*a,}"
+
+def function():
     return f"""
 {"string1" if True else
- "string2"}""""#
-)]
-#[case(
-    r#"def test(self):
+ "string2"}"""
+
+def test(self):
     self.assertEqual(f'''A complex trick: {
 2  # two
-}''', 'A complex trick: 2')"#
-)]
-fn format_strings(#[case] input: &str) -> Result {
-    snap!(input)
+}''', 'A complex trick: 2')
+"#
+    )
 }
 
-#[rstest]
-#[case(r#"f"a {b:2} {c:34.5}""#)]
-#[case(r#"f"{b:{c.d}.{d.e}}""#)]
-#[case(r#"f"{a:#06x}""#)]
-#[case(r#"f"{a=}""#)]
-#[case(r#"f"{a=:.2f}""#)]
-#[case(r#"f"{value:{width + padding!r}.{precision}}""#)]
-fn format_strings_with_format_specifiers(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn format_strings_with_specifiers() -> Result {
+    snap!(
+        r#"
+f"a {b:2} {c:34.5}"
+f"{b:{c.d}.{d.e}}"
+f"{a:#06x}"
+f"{a=}"
+f"{a=:.2f}"
+f"{value:{width + padding!r}.{precision}}"
+"#
+    )
 }
 
-#[rstest]
-#[case(r#""\x12 \123 \u1234""#)]
-fn unicode_escape_sequences(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn unicode_escape_sequences() -> Result {
+    snap!(
+        r#"
+"\x12 \123 \u1234"
+"#
+    )
 }
 
-#[rstest]
-#[case("True")]
-#[case("False")]
-#[case("None")]
-fn other_primitives(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn other_primitives() -> Result {
+    snap!(
+        r#"
+True
+False
+None
+"#
+    )
 }
 
-#[rstest]
-#[case(r#""one" "two" "three""#)]
-fn concatenated_strings(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn concatenated_strings() -> Result {
+    snap!(
+        r#"
+"one" "two" "three"
+"#
+    )
 }
 
-#[rstest]
-#[case(
-    r#""""
+#[test]
+fn multi_line_strings() -> Result {
+    snap!(
+        r#"
+"""
 A double quote hello,
 without double or single quotes.
-""""#
-)]
-#[case(
-    r#""""
+"""
+
+"""
 A double quote "hello",
 with double quotes.
-""""#
-)]
-#[case(
-    r#""""
+"""
+
+"""
 A double quote 'hello',
 with single quotes.
-""""#
-)]
-#[case(
-    r#"'''
+"""
+
+'''
 A single quote hello,
 without double or single quotes.
-'''"#
-)]
-#[case(
-    r#"'''
+'''
+
+'''
 A single quote 'hello',
 with single quotes.
-'''"#
-)]
-#[case(
-    r#"'''
+'''
+
+'''
 A single quote "hello",
 with double quotes.
-'''"#
-)]
-#[case(
-    r#""""
+'''
+
+"""
 A double quote hello\n\
 with an escaped newline\n\
 and another escaped newline\n\
-""""#
-)]
-fn multi_line_strings(#[case] input: &str) -> Result {
-    snap!(input)
+"""
+"#
+    )
 }
 
-#[rstest]
-#[case("[a, b, [c, d]]")]
-#[case("[*()]")]
-#[case("[*[]]")]
-#[case("[*a]")]
-#[case("[*a.b]")]
-#[case("[*a[b].c]")]
-#[case("[*a()]")]
-fn lists(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn lists() -> Result {
+    snap!(
+        r#"
+[a, b, [c, d]]
+[*()]
+[*[]]
+[*a]
+[*a.b]
+[*a[b].c]
+[*a()]
+"#
+    )
 }
 
-#[rstest]
-#[case("[a + b for (a, b) in items]")]
-#[case("[a for b in c for a in b]")]
-#[case("[(x,y) for x in [1,2,3] for y in [1,2,3] if True]")]
-#[case("[a for a in lambda: True, lambda: False if a()]")]
-fn list_comprehensions(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn list_comprehensions() -> Result {
+    snap!(
+        r#"
+[a + b for (a, b) in items]
+[a for b in c for a in b]
+[(x,y) for x in [1,2,3] for y in [1,2,3] if True]
+[a for a in lambda: True, lambda: False if a()]
+"#
+    )
 }
 
-#[rstest]
-#[case("{a: 1, b: 2}")]
-#[case("{}")]
-#[case("{**{}}")]
-#[case("{**a}")]
-#[case("{**a.b}")]
-#[case("{**a[b].c}")]
-#[case("{**a()}")]
-fn dictionaries(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn dictionaries() -> Result {
+    snap!(
+        r#"
+{a: 1, b: 2}
+{}
+{**{}}
+{**a}
+{**a.b}
+{**a[b].c}
+{**a()}
+"#
+    )
 }
 
-#[rstest]
-#[case("{a: b for a, b in items}")]
-#[case("{a: b for c in d for e in items}")]
-fn dictionary_comprehensions(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn dictionary_comprehensions() -> Result {
+    snap!(
+        r#"
+{a: b for a, b in items}
+{a: b for c in d for e in items}
+"#
+    )
 }
 
-#[rstest]
-#[case("{a, b, c,}")]
-#[case("{*{}}")]
-fn sets(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn sets() -> Result {
+    snap!(
+        r#"
+{a, b, c,}
+{*{}}
+"#
+    )
 }
 
-#[rstest]
-#[case("{a[b][c] for a, b, c in items}")]
-#[case("{r for s in qs for n in ms}")]
-fn set_comprehensions(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn set_comprehensions() -> Result {
+    snap!(
+        r#"
+{a[b][c] for a, b, c in items}
+{r for s in qs for n in ms}
+"#
+    )
 }
 
-#[rstest]
-#[case("()")]
-#[case("(a, b)")]
-#[case("(a, b, c,)")]
-#[case("(print, exec)")]
-fn simple_tuples(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn simple_tuples() -> Result {
+    snap!(
+        r#"
+()
+(a, b)
+(a, b, c,)
+(print, exec)
+"#
+    )
 }
 
-#[rstest]
-#[case("(a[b][c] for a, b, c in items)")]
-#[case("dict((a, b) for a, b in d)")]
-#[case("(a for b in c for d in e,)")]
-#[case("(x for x in range(1, 10))")]
-fn generator_expressions(#[case] input: &str) -> Result {
-    snap!(input)
+#[test]
+fn generator_expressions() -> Result {
+    snap!(
+        r#"
+(a[b][c] for a, b, c in items)
+dict((a, b) for a, b in d)
+(a for b in c for d in e,)
+(x for x in range(1, 10))
+"#
+    )
 }

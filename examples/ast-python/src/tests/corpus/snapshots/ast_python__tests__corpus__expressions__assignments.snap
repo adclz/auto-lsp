@@ -1,0 +1,334 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            Integer(
+                                                Integer {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                Type: None,
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    ExpressionList(
+                                        ExpressionList {
+                                            children: [
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                left: PatternList(
+                                    PatternList {
+                                        children: [
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                                Type: None,
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    ExpressionList(
+                                        ExpressionList {
+                                            children: [
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                left: PatternList(
+                                    PatternList {
+                                        children: [
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            ListSplatPattern(
+                                                ListSplatPattern {
+                                                    children: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                                Type: None,
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    ExpressionList(
+                                        ExpressionList {
+                                            children: [
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                left: PatternList(
+                                    PatternList {
+                                        children: [
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                                Type: None,
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Assignment(
+                                        Assignment {
+                                            right: Some(
+                                                Expression(
+                                                    PrimaryExpression(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                ),
+                                            ),
+                                            left: Pattern(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                            Type: None,
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Subscript(
+                                        Subscript {
+                                            subscript: [
+                                                Expression(
+                                                    PrimaryExpression(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                ),
+                                            ],
+                                            value: Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                Type: None,
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                left: PatternList(
+                                    PatternList {
+                                        children: [
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            ListSplatPattern(
+                                                ListSplatPattern {
+                                                    children: Attribute(
+                                                        Attribute {
+                                                            attribute: Identifier {
+                                                                [RANGE]
+                                                            },
+                                                            object: Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                                Type: None,
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

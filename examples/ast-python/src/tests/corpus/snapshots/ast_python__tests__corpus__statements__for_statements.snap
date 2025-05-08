@@ -1,0 +1,265 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            ForStatement(
+                ForStatement {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                PrintStatement(
+                                    PrintStatement {
+                                        argument: [
+                                            PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                        children: None,
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                            CompoundStatement(
+                                ForStatement(
+                                    ForStatement {
+                                        body: Block {
+                                            alternative: [],
+                                            children: [
+                                                SimpleStatement(
+                                                    PrintStatement(
+                                                        PrintStatement {
+                                                            argument: [
+                                                                PrimaryExpression(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            children: None,
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                        alternative: None,
+                                        right: Expression(
+                                            PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        left: PatternList(
+                                            PatternList {
+                                                children: [
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    alternative: Some(
+                        ElseClause {
+                            body: Block {
+                                alternative: [],
+                                children: [
+                                    SimpleStatement(
+                                        PrintStatement(
+                                            PrintStatement {
+                                                argument: [
+                                                    PrimaryExpression(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                ],
+                                                children: None,
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ],
+                                [RANGE]
+                            },
+                            [RANGE]
+                        },
+                    ),
+                    right: Expression(
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ),
+                    left: PatternList(
+                        PatternList {
+                            children: [
+                                Identifier(
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ),
+                                Identifier(
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            ForStatement(
+                ForStatement {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    alternative: None,
+                    right: Expression(
+                        PrimaryExpression(
+                            List(
+                                List {
+                                    children: [
+                                        Expression(
+                                            PrimaryExpression(
+                                                Tuple(
+                                                    Tuple {
+                                                        children: [
+                                                            Expression(
+                                                                PrimaryExpression(
+                                                                    Integer(
+                                                                        Integer {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        Expression(
+                                            PrimaryExpression(
+                                                Tuple(
+                                                    Tuple {
+                                                        children: [
+                                                            Expression(
+                                                                PrimaryExpression(
+                                                                    Integer(
+                                                                        Integer {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        Expression(
+                                            PrimaryExpression(
+                                                Tuple(
+                                                    Tuple {
+                                                        children: [
+                                                            Expression(
+                                                                PrimaryExpression(
+                                                                    Integer(
+                                                                        Integer {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ),
+                    left: PatternList(
+                        PatternList {
+                            children: [
+                                Identifier(
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

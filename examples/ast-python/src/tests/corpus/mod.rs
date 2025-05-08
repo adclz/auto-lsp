@@ -17,5 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 mod expressions;
 mod literals;
+mod pattern_matching;
 mod statements;
 mod utils;

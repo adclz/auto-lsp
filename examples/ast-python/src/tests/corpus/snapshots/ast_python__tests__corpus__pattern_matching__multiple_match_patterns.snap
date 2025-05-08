@@ -1,0 +1,109 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            MatchStatement(
+                MatchStatement {
+                    body: Block {
+                        alternative: [
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ReturnStatement(
+                                                ReturnStatement {
+                                                    children: Some(
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Call(
+                                                                    Call {
+                                                                        function: Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        arguments: ArgumentList(
+                                                                            ArgumentList {
+                                                                                children: [],
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            DottedName(
+                                                DottedName {
+                                                    children: [
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                    CasePattern {
+                                        children: Some(
+                                            DottedName(
+                                                DottedName {
+                                                    children: [
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ],
+                        children: [],
+                        [RANGE]
+                    },
+                    subject: [
+                        PrimaryExpression(
+                            Ellipsis(
+                                Ellipsis {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                        PrimaryExpression(
+                            Ellipsis(
+                                Ellipsis {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

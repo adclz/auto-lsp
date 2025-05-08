@@ -1,0 +1,78 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            Call(
+                                                Call {
+                                                    function: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    arguments: ArgumentList(
+                                                        ArgumentList {
+                                                            children: [
+                                                                KeywordArgument(
+                                                                    KeywordArgument {
+                                                                        value: PrimaryExpression(
+                                                                            Identifier(
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                        name: Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                Type: None,
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

@@ -1,0 +1,91 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            MatchStatement(
+                MatchStatement {
+                    body: Block {
+                        alternative: [
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Assignment(
+                                                            Assignment {
+                                                                right: Some(
+                                                                    Expression(
+                                                                        PrimaryExpression(
+                                                                            Integer(
+                                                                                Integer {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                                left: Pattern(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                Type: None,
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            SplatPattern(
+                                                SplatPattern {
+                                                    children: Some(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ],
+                        children: [],
+                        [RANGE]
+                    },
+                    subject: [
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

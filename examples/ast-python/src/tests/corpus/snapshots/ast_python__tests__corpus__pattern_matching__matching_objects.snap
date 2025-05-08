@@ -1,0 +1,602 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            MatchStatement(
+                MatchStatement {
+                    body: Block {
+                        alternative: [
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Call(
+                                                                    Call {
+                                                                        function: Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        arguments: ArgumentList(
+                                                                            ArgumentList {
+                                                                                children: [
+                                                                                    Expression(
+                                                                                        PrimaryExpression(
+                                                                                            Identifier(
+                                                                                                Identifier {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                    ),
+                                                                                    Expression(
+                                                                                        PrimaryExpression(
+                                                                                            Identifier(
+                                                                                                Identifier {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                    ),
+                                                                                ],
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            ClassPattern(
+                                                ClassPattern {
+                                                    children: [
+                                                        DottedName(
+                                                            DottedName {
+                                                                children: [
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        CasePattern(
+                                                            CasePattern {
+                                                                children: Some(
+                                                                    KeywordPattern(
+                                                                        KeywordPattern {
+                                                                            children: [
+                                                                                Identifier(
+                                                                                    Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                TuplePattern(
+                                                                                    TuplePattern {
+                                                                                        children: [
+                                                                                            CasePattern(
+                                                                                                CasePattern {
+                                                                                                    children: Some(
+                                                                                                        DottedName(
+                                                                                                            DottedName {
+                                                                                                                children: [
+                                                                                                                    Identifier {
+                                                                                                                        [RANGE]
+                                                                                                                    },
+                                                                                                                ],
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            CasePattern(
+                                                                                                CasePattern {
+                                                                                                    children: Some(
+                                                                                                        DottedName(
+                                                                                                            DottedName {
+                                                                                                                children: [
+                                                                                                                    Identifier {
+                                                                                                                        [RANGE]
+                                                                                                                    },
+                                                                                                                ],
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Call(
+                                                                    Call {
+                                                                        function: Attribute(
+                                                                            Attribute {
+                                                                                attribute: Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                                object: Identifier(
+                                                                                    Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        arguments: ArgumentList(
+                                                                            ArgumentList {
+                                                                                children: [],
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            UnionPattern(
+                                                UnionPattern {
+                                                    children: [
+                                                        ClassPattern(
+                                                            ClassPattern {
+                                                                children: [
+                                                                    DottedName(
+                                                                        DottedName {
+                                                                            children: [
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                    CasePattern(
+                                                                        CasePattern {
+                                                                            children: Some(
+                                                                                KeywordPattern(
+                                                                                    KeywordPattern {
+                                                                                        children: [
+                                                                                            Identifier(
+                                                                                                Identifier {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            String(
+                                                                                                String {
+                                                                                                    children: [
+                                                                                                        StringStart(
+                                                                                                            StringStart {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringContent(
+                                                                                                            StringContent {
+                                                                                                                children: [],
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringEnd(
+                                                                                                            StringEnd {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        ClassPattern(
+                                                            ClassPattern {
+                                                                children: [
+                                                                    DottedName(
+                                                                        DottedName {
+                                                                            children: [
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Call(
+                                                                    Call {
+                                                                        function: Attribute(
+                                                                            Attribute {
+                                                                                attribute: Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                                object: Identifier(
+                                                                                    Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        arguments: ArgumentList(
+                                                                            ArgumentList {
+                                                                                children: [],
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Ellipsis(
+                                                                    Ellipsis {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            ClassPattern(
+                                                ClassPattern {
+                                                    children: [
+                                                        DottedName(
+                                                            DottedName {
+                                                                children: [
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        CasePattern(
+                                                            CasePattern {
+                                                                children: Some(
+                                                                    KeywordPattern(
+                                                                        KeywordPattern {
+                                                                            children: [
+                                                                                Identifier(
+                                                                                    Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                String(
+                                                                                    String {
+                                                                                        children: [
+                                                                                            StringStart(
+                                                                                                StringStart {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            StringContent(
+                                                                                                StringContent {
+                                                                                                    children: [],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            StringEnd(
+                                                                                                StringEnd {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            PassStatement(
+                                                PassStatement {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            ClassPattern(
+                                                ClassPattern {
+                                                    children: [
+                                                        DottedName(
+                                                            DottedName {
+                                                                children: [
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            RaiseStatement(
+                                                RaiseStatement {
+                                                    cause: None,
+                                                    children: Some(
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Call(
+                                                                    Call {
+                                                                        function: Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        arguments: ArgumentList(
+                                                                            ArgumentList {
+                                                                                children: [
+                                                                                    Expression(
+                                                                                        PrimaryExpression(
+                                                                                            String(
+                                                                                                String {
+                                                                                                    children: [
+                                                                                                        StringStart(
+                                                                                                            StringStart {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringContent(
+                                                                                                            StringContent {
+                                                                                                                children: [],
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        Interpolation(
+                                                                                                            Interpolation {
+                                                                                                                format_specifier: None,
+                                                                                                                expression: Expression(
+                                                                                                                    PrimaryExpression(
+                                                                                                                        Identifier(
+                                                                                                                            Identifier {
+                                                                                                                                [RANGE]
+                                                                                                                            },
+                                                                                                                        ),
+                                                                                                                    ),
+                                                                                                                ),
+                                                                                                                type_conversion: None,
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringEnd(
+                                                                                                            StringEnd {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                    ),
+                                                                                ],
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            DottedName(
+                                                DottedName {
+                                                    children: [
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ],
+                        children: [],
+                        [RANGE]
+                    },
+                    subject: [
+                        PrimaryExpression(
+                            Call(
+                                Call {
+                                    function: Attribute(
+                                        Attribute {
+                                            attribute: Identifier {
+                                                [RANGE]
+                                            },
+                                            object: Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                    arguments: ArgumentList(
+                                        ArgumentList {
+                                            children: [],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

@@ -1,0 +1,306 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            MatchStatement(
+                MatchStatement {
+                    body: Block {
+                        alternative: [
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            ExpressionStatement(
+                                                ExpressionStatement {
+                                                    children: [
+                                                        Assignment(
+                                                            Assignment {
+                                                                right: Some(
+                                                                    Expression(
+                                                                        PrimaryExpression(
+                                                                            Call(
+                                                                                Call {
+                                                                                    function: Attribute(
+                                                                                        Attribute {
+                                                                                            attribute: Identifier {
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                            object: Identifier(
+                                                                                                Identifier {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                    arguments: ArgumentList(
+                                                                                        ArgumentList {
+                                                                                            children: [
+                                                                                                Expression(
+                                                                                                    PrimaryExpression(
+                                                                                                        Identifier(
+                                                                                                            Identifier {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                ),
+                                                                                            ],
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                                left: Pattern(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                Type: None,
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            ListPattern(
+                                                ListPattern {
+                                                    children: [
+                                                        CasePattern(
+                                                            CasePattern {
+                                                                children: Some(
+                                                                    String(
+                                                                        String {
+                                                                            children: [
+                                                                                StringStart(
+                                                                                    StringStart {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                StringContent(
+                                                                                    StringContent {
+                                                                                        children: [],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                StringEnd(
+                                                                                    StringEnd {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        CasePattern(
+                                                            CasePattern {
+                                                                children: Some(
+                                                                    AsPattern(
+                                                                        AsPattern {
+                                                                            alias: None,
+                                                                            children: [
+                                                                                CasePattern(
+                                                                                    CasePattern {
+                                                                                        children: Some(
+                                                                                            TuplePattern(
+                                                                                                TuplePattern {
+                                                                                                    children: [
+                                                                                                        CasePattern(
+                                                                                                            CasePattern {
+                                                                                                                children: Some(
+                                                                                                                    UnionPattern(
+                                                                                                                        UnionPattern {
+                                                                                                                            children: [
+                                                                                                                                String(
+                                                                                                                                    String {
+                                                                                                                                        children: [
+                                                                                                                                            StringStart(
+                                                                                                                                                StringStart {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringContent(
+                                                                                                                                                StringContent {
+                                                                                                                                                    children: [],
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringEnd(
+                                                                                                                                                StringEnd {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                        ],
+                                                                                                                                        [RANGE]
+                                                                                                                                    },
+                                                                                                                                ),
+                                                                                                                                String(
+                                                                                                                                    String {
+                                                                                                                                        children: [
+                                                                                                                                            StringStart(
+                                                                                                                                                StringStart {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringContent(
+                                                                                                                                                StringContent {
+                                                                                                                                                    children: [],
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringEnd(
+                                                                                                                                                StringEnd {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                        ],
+                                                                                                                                        [RANGE]
+                                                                                                                                    },
+                                                                                                                                ),
+                                                                                                                                String(
+                                                                                                                                    String {
+                                                                                                                                        children: [
+                                                                                                                                            StringStart(
+                                                                                                                                                StringStart {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringContent(
+                                                                                                                                                StringContent {
+                                                                                                                                                    children: [],
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringEnd(
+                                                                                                                                                StringEnd {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                        ],
+                                                                                                                                        [RANGE]
+                                                                                                                                    },
+                                                                                                                                ),
+                                                                                                                                String(
+                                                                                                                                    String {
+                                                                                                                                        children: [
+                                                                                                                                            StringStart(
+                                                                                                                                                StringStart {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringContent(
+                                                                                                                                                StringContent {
+                                                                                                                                                    children: [],
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                            StringEnd(
+                                                                                                                                                StringEnd {
+                                                                                                                                                    [RANGE]
+                                                                                                                                                },
+                                                                                                                                            ),
+                                                                                                                                        ],
+                                                                                                                                        [RANGE]
+                                                                                                                                    },
+                                                                                                                                ),
+                                                                                                                            ],
+                                                                                                                            [RANGE]
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                ),
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                Identifier(
+                                                                                    Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ],
+                        children: [],
+                        [RANGE]
+                    },
+                    subject: [
+                        PrimaryExpression(
+                            Call(
+                                Call {
+                                    function: Attribute(
+                                        Attribute {
+                                            attribute: Identifier {
+                                                [RANGE]
+                                            },
+                                            object: Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                    arguments: ArgumentList(
+                                        ArgumentList {
+                                            children: [],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

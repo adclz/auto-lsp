@@ -1,8 +1,0 @@
----
-source: src/tests/corpus/literals.rs
-expression: module
----
-Module {
-    children: [],
-    [RANGE]
-}

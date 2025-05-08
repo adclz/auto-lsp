@@ -1,0 +1,110 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            IfStatement(
+                IfStatement {
+                    alternative: [],
+                    consequence: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                PrintStatement(
+                                    PrintStatement {
+                                        argument: [
+                                            PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                        children: None,
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                            CompoundStatement(
+                                WhileStatement(
+                                    WhileStatement {
+                                        body: Block {
+                                            alternative: [],
+                                            children: [],
+                                            [RANGE]
+                                        },
+                                        alternative: None,
+                                        condition: PrimaryExpression(
+                                            Call(
+                                                Call {
+                                                    function: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    arguments: ArgumentList(
+                                                        ArgumentList {
+                                                            children: [],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    condition: PrimaryExpression(
+                        Identifier(
+                            Identifier {
+                                [RANGE]
+                            },
+                        ),
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

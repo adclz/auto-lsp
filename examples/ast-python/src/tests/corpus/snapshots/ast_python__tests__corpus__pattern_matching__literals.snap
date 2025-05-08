@@ -1,0 +1,303 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            MatchStatement(
+                MatchStatement {
+                    body: Block {
+                        alternative: [
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            PassStatement(
+                                                PassStatement {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            UnionPattern(
+                                                UnionPattern {
+                                                    children: [
+                                                        Integer(
+                                                            Integer {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        Integer(
+                                                            Integer {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            PassStatement(
+                                                PassStatement {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            String(
+                                                String {
+                                                    children: [
+                                                        StringStart(
+                                                            StringStart {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        StringContent(
+                                                            StringContent {
+                                                                children: [],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        StringEnd(
+                                                            StringEnd {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            PassStatement(
+                                                PassStatement {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            ConcatenatedString(
+                                                ConcatenatedString {
+                                                    children: [
+                                                        String {
+                                                            children: [
+                                                                StringStart(
+                                                                    StringStart {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                StringContent(
+                                                                    StringContent {
+                                                                        children: [],
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                StringEnd(
+                                                                    StringEnd {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                        String {
+                                                            children: [
+                                                                StringStart(
+                                                                    StringStart {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                StringContent(
+                                                                    StringContent {
+                                                                        children: [],
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                StringEnd(
+                                                                    StringEnd {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            PassStatement(
+                                                PassStatement {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            UnionPattern(
+                                                UnionPattern {
+                                                    children: [
+                                                        Float(
+                                                            Float {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        Float(
+                                                            Float {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            PassStatement(
+                                                PassStatement {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            UnionPattern(
+                                                UnionPattern {
+                                                    children: [
+                                                        True(
+                                                            True {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        False(
+                                                            False {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                            CaseClause {
+                                guard: None,
+                                consequence: Block {
+                                    alternative: [],
+                                    children: [
+                                        SimpleStatement(
+                                            PassStatement(
+                                                PassStatement {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                                children: [
+                                    CasePattern {
+                                        children: Some(
+                                            None(
+                                                None {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ],
+                        children: [],
+                        [RANGE]
+                    },
+                    subject: [
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

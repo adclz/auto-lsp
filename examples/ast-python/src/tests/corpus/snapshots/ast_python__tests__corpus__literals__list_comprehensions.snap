@@ -1,0 +1,425 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                ListComprehension(
+                                    ListComprehension {
+                                        body: PrimaryExpression(
+                                            BinaryOperator(
+                                                BinaryOperator {
+                                                    right: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    left: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    operator: Token_Plus(
+                                                        Token_Plus {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        children: [
+                                            ForInClause(
+                                                ForInClause {
+                                                    left: Pattern(
+                                                        TuplePattern(
+                                                            TuplePattern {
+                                                                children: [
+                                                                    Pattern(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    Pattern(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    right: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                ListComprehension(
+                                    ListComprehension {
+                                        body: PrimaryExpression(
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        children: [
+                                            ForInClause(
+                                                ForInClause {
+                                                    left: Pattern(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    right: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            ForInClause(
+                                                ForInClause {
+                                                    left: Pattern(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    right: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                ListComprehension(
+                                    ListComprehension {
+                                        body: PrimaryExpression(
+                                            Tuple(
+                                                Tuple {
+                                                    children: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        children: [
+                                            ForInClause(
+                                                ForInClause {
+                                                    left: Pattern(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    right: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                List(
+                                                                    List {
+                                                                        children: [
+                                                                            Expression(
+                                                                                PrimaryExpression(
+                                                                                    Integer(
+                                                                                        Integer {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                            Expression(
+                                                                                PrimaryExpression(
+                                                                                    Integer(
+                                                                                        Integer {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                            Expression(
+                                                                                PrimaryExpression(
+                                                                                    Integer(
+                                                                                        Integer {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                        ],
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            ForInClause(
+                                                ForInClause {
+                                                    left: Pattern(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    right: [
+                                                        Expression(
+                                                            PrimaryExpression(
+                                                                List(
+                                                                    List {
+                                                                        children: [
+                                                                            Expression(
+                                                                                PrimaryExpression(
+                                                                                    Integer(
+                                                                                        Integer {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                            Expression(
+                                                                                PrimaryExpression(
+                                                                                    Integer(
+                                                                                        Integer {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                            Expression(
+                                                                                PrimaryExpression(
+                                                                                    Integer(
+                                                                                        Integer {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                        ],
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            IfClause(
+                                                IfClause {
+                                                    children: PrimaryExpression(
+                                                        True(
+                                                            True {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                ListComprehension(
+                                    ListComprehension {
+                                        body: PrimaryExpression(
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        children: [
+                                            ForInClause(
+                                                ForInClause {
+                                                    left: Pattern(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    right: [
+                                                        Expression(
+                                                            Lambda(
+                                                                Lambda {
+                                                                    parameters: None,
+                                                                    body: PrimaryExpression(
+                                                                        True(
+                                                                            True {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                        Token_Comma(
+                                                            Token_Comma {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        Expression(
+                                                            Lambda(
+                                                                Lambda {
+                                                                    parameters: None,
+                                                                    body: PrimaryExpression(
+                                                                        False(
+                                                                            False {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            IfClause(
+                                                IfClause {
+                                                    children: PrimaryExpression(
+                                                        Call(
+                                                            Call {
+                                                                function: Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                arguments: ArgumentList(
+                                                                    ArgumentList {
+                                                                        children: [],
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

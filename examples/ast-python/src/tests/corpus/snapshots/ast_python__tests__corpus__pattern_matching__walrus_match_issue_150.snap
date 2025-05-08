@@ -1,0 +1,135 @@
+---
+source: src/tests/corpus/pattern_matching.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            IfStatement(
+                IfStatement {
+                    alternative: [],
+                    consequence: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    condition: NamedExpression(
+                        NamedExpression {
+                            value: PrimaryExpression(
+                                Call(
+                                    Call {
+                                        function: Attribute(
+                                            Attribute {
+                                                attribute: Identifier {
+                                                    [RANGE]
+                                                },
+                                                object: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        arguments: ArgumentList(
+                                            ArgumentList {
+                                                children: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            String(
+                                                                String {
+                                                                    children: [
+                                                                        StringStart(
+                                                                            StringStart {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        StringContent(
+                                                                            StringContent {
+                                                                                children: [],
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        StringEnd(
+                                                                            StringEnd {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ],
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    KeywordArgument(
+                                                        KeywordArgument {
+                                                            value: PrimaryExpression(
+                                                                Attribute(
+                                                                    Attribute {
+                                                                        attribute: Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                        object: Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            name: Identifier {
+                                                                [RANGE]
+                                                            },
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                            name: Identifier {
+                                [RANGE]
+                            },
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

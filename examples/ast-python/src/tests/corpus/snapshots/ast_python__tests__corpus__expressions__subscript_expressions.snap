@@ -1,0 +1,129 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Subscript(
+                                    Subscript {
+                                        subscript: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        value: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Subscript(
+                                    Subscript {
+                                        subscript: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        value: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Subscript(
+                                    Subscript {
+                                        subscript: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        value: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

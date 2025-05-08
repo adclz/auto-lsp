@@ -1,0 +1,100 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            PrintStatement(
+                PrintStatement {
+                    argument: [],
+                    children: Some(
+                        Chevron {
+                            children: PrimaryExpression(
+                                Identifier(
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            PrintStatement(
+                PrintStatement {
+                    argument: [
+                        PrimaryExpression(
+                            String(
+                                String {
+                                    children: [
+                                        StringStart(
+                                            StringStart {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        StringContent(
+                                            StringContent {
+                                                children: [],
+                                                [RANGE]
+                                            },
+                                        ),
+                                        StringEnd(
+                                            StringEnd {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                        PrimaryExpression(
+                            String(
+                                String {
+                                    children: [
+                                        StringStart(
+                                            StringStart {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        StringContent(
+                                            StringContent {
+                                                children: [],
+                                                [RANGE]
+                                            },
+                                        ),
+                                        StringEnd(
+                                            StringEnd {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    children: Some(
+                        Chevron {
+                            children: PrimaryExpression(
+                                Identifier(
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

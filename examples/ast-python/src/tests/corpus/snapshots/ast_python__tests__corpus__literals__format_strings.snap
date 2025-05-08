@@ -1,0 +1,957 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Call(
+                                                                Call {
+                                                                    function: Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                    arguments: ArgumentList(
+                                                                        ArgumentList {
+                                                                            children: [
+                                                                                Expression(
+                                                                                    PrimaryExpression(
+                                                                                        String(
+                                                                                            String {
+                                                                                                children: [
+                                                                                                    StringStart(
+                                                                                                        StringStart {
+                                                                                                            [RANGE]
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    StringContent(
+                                                                                                        StringContent {
+                                                                                                            children: [],
+                                                                                                            [RANGE]
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    Interpolation(
+                                                                                                        Interpolation {
+                                                                                                            format_specifier: None,
+                                                                                                            expression: Expression(
+                                                                                                                PrimaryExpression(
+                                                                                                                    Identifier(
+                                                                                                                        Identifier {
+                                                                                                                            [RANGE]
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                ),
+                                                                                                            ),
+                                                                                                            type_conversion: None,
+                                                                                                            [RANGE]
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    StringContent(
+                                                                                                        StringContent {
+                                                                                                            children: [],
+                                                                                                            [RANGE]
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    StringEnd(
+                                                                                                        StringEnd {
+                                                                                                            [RANGE]
+                                                                                                        },
+                                                                                                    ),
+                                                                                                ],
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                        ),
+                                                                                    ),
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: ExpressionList(
+                                                        ExpressionList {
+                                                            children: [
+                                                                PrimaryExpression(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: Yield(
+                                                        Yield {
+                                                            children: Some(
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    expression: ExpressionList(
+                                                        ExpressionList {
+                                                            children: [
+                                                                PrimaryExpression(
+                                                                    ListSplat(
+                                                                        ListSplat {
+                                                                            children: Identifier(
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    type_conversion: None,
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            Expression(
+                                                PrimaryExpression(
+                                                    String(
+                                                        String {
+                                                            children: [
+                                                                StringStart(
+                                                                    StringStart {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                StringContent(
+                                                                    StringContent {
+                                                                        children: [],
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                Interpolation(
+                                                                    Interpolation {
+                                                                        format_specifier: None,
+                                                                        expression: Expression(
+                                                                            ConditionalExpression(
+                                                                                ConditionalExpression {
+                                                                                    children: [
+                                                                                        PrimaryExpression(
+                                                                                            String(
+                                                                                                String {
+                                                                                                    children: [
+                                                                                                        StringStart(
+                                                                                                            StringStart {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringContent(
+                                                                                                            StringContent {
+                                                                                                                children: [],
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringEnd(
+                                                                                                            StringEnd {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                        PrimaryExpression(
+                                                                                            True(
+                                                                                                True {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                        PrimaryExpression(
+                                                                                            String(
+                                                                                                String {
+                                                                                                    children: [
+                                                                                                        StringStart(
+                                                                                                            StringStart {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringContent(
+                                                                                                            StringContent {
+                                                                                                                children: [],
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringEnd(
+                                                                                                            StringEnd {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                    ],
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                        type_conversion: None,
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                StringEnd(
+                                                                    StringEnd {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Call(
+                                                        Call {
+                                                            function: Attribute(
+                                                                Attribute {
+                                                                    attribute: Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                    object: Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            arguments: ArgumentList(
+                                                                ArgumentList {
+                                                                    children: [
+                                                                        Expression(
+                                                                            PrimaryExpression(
+                                                                                String(
+                                                                                    String {
+                                                                                        children: [
+                                                                                            StringStart(
+                                                                                                StringStart {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            StringContent(
+                                                                                                StringContent {
+                                                                                                    children: [],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            Interpolation(
+                                                                                                Interpolation {
+                                                                                                    format_specifier: None,
+                                                                                                    expression: Expression(
+                                                                                                        PrimaryExpression(
+                                                                                                            Integer(
+                                                                                                                Integer {
+                                                                                                                    [RANGE]
+                                                                                                                },
+                                                                                                            ),
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                    type_conversion: None,
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            StringEnd(
+                                                                                                StringEnd {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                        ),
+                                                                        Expression(
+                                                                            PrimaryExpression(
+                                                                                String(
+                                                                                    String {
+                                                                                        children: [
+                                                                                            StringStart(
+                                                                                                StringStart {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            StringContent(
+                                                                                                StringContent {
+                                                                                                    children: [],
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                            StringEnd(
+                                                                                                StringEnd {
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    parameters: Parameters {
+                        children: [
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

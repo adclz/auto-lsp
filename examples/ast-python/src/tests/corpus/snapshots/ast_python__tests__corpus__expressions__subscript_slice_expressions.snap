@@ -1,0 +1,165 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Subscript(
+                                    Subscript {
+                                        subscript: [
+                                            Slice(
+                                                Slice {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        value: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Subscript(
+                                    Subscript {
+                                        subscript: [
+                                            Slice(
+                                                Slice {
+                                                    children: [
+                                                        PrimaryExpression(
+                                                            Integer(
+                                                                Integer {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        value: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Subscript(
+                                    Subscript {
+                                        subscript: [
+                                            Slice(
+                                                Slice {
+                                                    children: [
+                                                        PrimaryExpression(
+                                                            Integer(
+                                                                Integer {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                        PrimaryExpression(
+                                                            Integer(
+                                                                Integer {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Ellipsis(
+                                                        Ellipsis {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        value: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Subscript(
+                                    Subscript {
+                                        subscript: [
+                                            Slice(
+                                                Slice {
+                                                    children: [],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        value: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

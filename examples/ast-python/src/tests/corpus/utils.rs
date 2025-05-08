@@ -26,31 +26,6 @@ pub(crate) type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 macro_rules! snap {
     ($input: expr) => {{
         let input = format!("{}", $input);
-        let snap_shot: String = input.chars()
-        .map(|c| {
-            if c == '+' {
-                'p'
-            } else if c == '-' {
-                '-'
-            } else if c == '.' {
-                'd'
-            } else if c == '~' {
-                't'
-            } else if c == '(' {
-                'l'
-            } else if c == '/' {
-                's'
-            } else if c.is_alphanumeric() || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect();
-
-        let mut settings = ::insta::Settings::clone_current();
-        settings.set_snapshot_suffix(&snap_shot);
-        let _guard = settings.bind_to_scope();
 
         let mut p = ::auto_lsp::tree_sitter::Parser::new();
         p.set_language(&tree_sitter_python::LANGUAGE.into())

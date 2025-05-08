@@ -1,0 +1,321 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                List(
+                                    List {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                            Expression(
+                                                PrimaryExpression(
+                                                    List(
+                                                        List {
+                                                            children: [
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                List(
+                                    List {
+                                        children: [
+                                            ListSplat(
+                                                ListSplat {
+                                                    children: Expression(
+                                                        PrimaryExpression(
+                                                            Tuple(
+                                                                Tuple {
+                                                                    children: [],
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                List(
+                                    List {
+                                        children: [
+                                            ListSplat(
+                                                ListSplat {
+                                                    children: Expression(
+                                                        PrimaryExpression(
+                                                            List(
+                                                                List {
+                                                                    children: [],
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                List(
+                                    List {
+                                        children: [
+                                            ListSplat(
+                                                ListSplat {
+                                                    children: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                List(
+                                    List {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Attribute(
+                                                        Attribute {
+                                                            attribute: Identifier {
+                                                                [RANGE]
+                                                            },
+                                                            object: ListSplat(
+                                                                ListSplat {
+                                                                    children: Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                List(
+                                    List {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Attribute(
+                                                        Attribute {
+                                                            attribute: Identifier {
+                                                                [RANGE]
+                                                            },
+                                                            object: Subscript(
+                                                                Subscript {
+                                                                    subscript: [
+                                                                        Expression(
+                                                                            PrimaryExpression(
+                                                                                Identifier(
+                                                                                    Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    value: ListSplat(
+                                                                        ListSplat {
+                                                                            children: Identifier(
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                List(
+                                    List {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Call(
+                                                        Call {
+                                                            function: ListSplat(
+                                                                ListSplat {
+                                                                    children: Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            arguments: ArgumentList(
+                                                                ArgumentList {
+                                                                    children: [],
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

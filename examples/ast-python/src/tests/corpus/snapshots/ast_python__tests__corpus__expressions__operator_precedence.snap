@@ -1,0 +1,100 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                BinaryOperator(
+                                    BinaryOperator {
+                                        right: BinaryOperator(
+                                            BinaryOperator {
+                                                right: Attribute(
+                                                    Attribute {
+                                                        attribute: Identifier {
+                                                            [RANGE]
+                                                        },
+                                                        object: Attribute(
+                                                            Attribute {
+                                                                attribute: Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                                object: Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                left: Subscript(
+                                                    Subscript {
+                                                        subscript: [
+                                                            Expression(
+                                                                PrimaryExpression(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        value: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                operator: Token_Star(
+                                                    Token_Star {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        left: Call(
+                                            Call {
+                                                function: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                arguments: ArgumentList(
+                                                    ArgumentList {
+                                                        children: [],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        operator: Token_Plus(
+                                            Token_Plus {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

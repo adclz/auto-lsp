@@ -1,0 +1,332 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_Less(
+                                            Token_Less {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Token_LessEqual(
+                                            Token_LessEqual {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Token_EqualEqual(
+                                            Token_EqualEqual {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Token_GreaterEqual(
+                                            Token_GreaterEqual {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Token_Greater(
+                                            Token_Greater {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    right: ComparisonOperator(
+                                        ComparisonOperator {
+                                            operators: [
+                                                Token_EqualEqual(
+                                                    Token_EqualEqual {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    left: NotOperator(
+                                        NotOperator {
+                                            argument: ComparisonOperator(
+                                                ComparisonOperator {
+                                                    operators: [
+                                                        Token_EqualEqual(
+                                                            Token_EqualEqual {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    children: [
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                    operator: Token_Or(
+                                        Token_Or {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_NotIn(
+                                            Token_NotIn {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_IsNot(
+                                            Token_IsNot {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    right: ComparisonOperator(
+                                        ComparisonOperator {
+                                            operators: [
+                                                Token_NotEqual(
+                                                    Token_NotEqual {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    left: ComparisonOperator(
+                                        ComparisonOperator {
+                                            operators: [
+                                                Token_Is(
+                                                    Token_Is {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    operator: Token_And(
+                                        Token_And {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_LessGreater(
+                                            Token_LessGreater {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

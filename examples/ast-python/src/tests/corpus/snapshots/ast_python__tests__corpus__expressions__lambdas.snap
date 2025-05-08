@@ -1,0 +1,270 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            Lambda(
+                                Lambda {
+                                    parameters: Some(
+                                        LambdaParameters {
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    body: PrimaryExpression(
+                                        Call(
+                                            Call {
+                                                function: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                arguments: ArgumentList(
+                                                    ArgumentList {
+                                                        children: [
+                                                            Expression(
+                                                                PrimaryExpression(
+                                                                    BinaryOperator(
+                                                                        BinaryOperator {
+                                                                            right: Identifier(
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            left: String(
+                                                                                String {
+                                                                                    children: [
+                                                                                        StringStart(
+                                                                                            StringStart {
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                        ),
+                                                                                        StringContent(
+                                                                                            StringContent {
+                                                                                                children: [],
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                        ),
+                                                                                        StringEnd(
+                                                                                            StringEnd {
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                        ),
+                                                                                    ],
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            operator: Token_Percent(
+                                                                                Token_Percent {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            Lambda(
+                                Lambda {
+                                    parameters: None,
+                                    body: PrimaryExpression(
+                                        True(
+                                            True {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            Lambda(
+                                Lambda {
+                                    parameters: Some(
+                                        LambdaParameters {
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                DefaultParameter(
+                                                    DefaultParameter {
+                                                        name: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        value: PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                ListSplatPattern(
+                                                    ListSplatPattern {
+                                                        children: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                DictionarySplatPattern(
+                                                    DictionarySplatPattern {
+                                                        children: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    body: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            Lambda(
+                                Lambda {
+                                    parameters: Some(
+                                        LambdaParameters {
+                                            children: [
+                                                TuplePattern(
+                                                    TuplePattern {
+                                                        children: [
+                                                            Pattern(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            Pattern(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    body: PrimaryExpression(
+                                        Tuple(
+                                            Tuple {
+                                                children: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

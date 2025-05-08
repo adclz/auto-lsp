@@ -1,0 +1,100 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                BinaryOperator(
+                                    BinaryOperator {
+                                        right: BinaryOperator(
+                                            BinaryOperator {
+                                                right: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                left: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                operator: Token_StarStar(
+                                                    Token_StarStar {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        left: Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        operator: Token_StarStar(
+                                            Token_StarStar {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                UnaryOperator(
+                                    UnaryOperator {
+                                        argument: BinaryOperator(
+                                            BinaryOperator {
+                                                right: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                left: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                operator: Token_StarStar(
+                                                    Token_StarStar {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        operator: Token_Minus(
+                                            Token_Minus {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

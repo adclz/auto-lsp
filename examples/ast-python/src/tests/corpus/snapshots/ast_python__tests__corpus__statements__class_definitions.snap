@@ -1,0 +1,302 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            ClassDefinition(
+                ClassDefinition {
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            CompoundStatement(
+                                FunctionDefinition(
+                                    FunctionDefinition {
+                                        body: Block {
+                                            alternative: [],
+                                            children: [
+                                                SimpleStatement(
+                                                    ReturnStatement(
+                                                        ReturnStatement {
+                                                            children: Some(
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                        parameters: Parameters {
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                        return_type: None,
+                                        type_parameters: None,
+                                        name: Identifier {
+                                            [RANGE]
+                                        },
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    superclasses: None,
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            ClassDefinition(
+                ClassDefinition {
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                PassStatement(
+                                    PassStatement {
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    superclasses: Some(
+                        ArgumentList {
+                            children: [],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            ClassDefinition(
+                ClassDefinition {
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            CompoundStatement(
+                                FunctionDefinition(
+                                    FunctionDefinition {
+                                        body: Block {
+                                            alternative: [],
+                                            children: [
+                                                SimpleStatement(
+                                                    ReturnStatement(
+                                                        ReturnStatement {
+                                                            children: None,
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                        parameters: Parameters {
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                        return_type: None,
+                                        type_parameters: None,
+                                        name: Identifier {
+                                            [RANGE]
+                                        },
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    superclasses: Some(
+                        ArgumentList {
+                            children: [
+                                Expression(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            ClassDefinition(
+                ClassDefinition {
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                PassStatement(
+                                    PassStatement {
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    superclasses: Some(
+                        ArgumentList {
+                            children: [
+                                Expression(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                Expression(
+                                    PrimaryExpression(
+                                        Subscript(
+                                            Subscript {
+                                                subscript: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ],
+                                                value: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+        CompoundStatement(
+            ClassDefinition(
+                ClassDefinition {
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                PassStatement(
+                                    PassStatement {
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    superclasses: Some(
+                        ArgumentList {
+                            children: [
+                                Expression(
+                                    PrimaryExpression(
+                                        Subscript(
+                                            Subscript {
+                                                subscript: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ],
+                                                value: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

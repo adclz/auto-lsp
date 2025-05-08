@@ -1,0 +1,283 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: Some(
+                        WildcardImport {
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                },
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                    },
+                                ),
+                                DottedName(
+                                    DottedName {
+                                        children: [
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                    },
+                                ),
+                                DottedName(
+                                    DottedName {
+                                        children: [
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}
