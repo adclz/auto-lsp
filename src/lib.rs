@@ -71,8 +71,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #[cfg(any(feature = "lsp_server", test))]
 pub mod server;
 
-mod tests;
-
 /// Re-export of the [`auto_lsp_core`] crate
 pub mod core {
     pub use auto_lsp_core::ast;
