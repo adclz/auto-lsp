@@ -1,0 +1,105 @@
+---
+source: src/tests/corpus/mod.rs
+expression: document
+---
+Document {
+    children: [
+        ScriptElement(
+            ScriptElement {
+                children: [
+                    StartTag(
+                        StartTag {
+                            children: [
+                                TagName(
+                                    TagName {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    RawText(
+                        RawText {
+                            [RANGE]
+                        },
+                    ),
+                    EndTag(
+                        EndTag {
+                            children: TagName {
+                                [RANGE]
+                            },
+                            [RANGE]
+                        },
+                    ),
+                ],
+                [RANGE]
+            },
+        ),
+        StyleElement(
+            StyleElement {
+                children: [
+                    StartTag(
+                        StartTag {
+                            children: [
+                                TagName(
+                                    TagName {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    RawText(
+                        RawText {
+                            [RANGE]
+                        },
+                    ),
+                    EndTag(
+                        EndTag {
+                            children: TagName {
+                                [RANGE]
+                            },
+                            [RANGE]
+                        },
+                    ),
+                ],
+                [RANGE]
+            },
+        ),
+        ScriptElement(
+            ScriptElement {
+                children: [
+                    StartTag(
+                        StartTag {
+                            children: [
+                                TagName(
+                                    TagName {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    RawText(
+                        RawText {
+                            [RANGE]
+                        },
+                    ),
+                    EndTag(
+                        EndTag {
+                            children: TagName {
+                                [RANGE]
+                            },
+                            [RANGE]
+                        },
+                    ),
+                ],
+                [RANGE]
+            },
+        ),
+    ],
+    [RANGE]
+}

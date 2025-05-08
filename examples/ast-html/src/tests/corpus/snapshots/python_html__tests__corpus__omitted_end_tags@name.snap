@@ -1,0 +1,52 @@
+---
+source: src/tests/corpus/mod.rs
+expression: document
+---
+Document {
+    children: [
+        Doctype(
+            Doctype {
+                [RANGE]
+            },
+        ),
+        Element(
+            Element {
+                children: [
+                    StartTag(
+                        StartTag {
+                            children: [
+                                TagName(
+                                    TagName {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    Element(
+                        Element {
+                            children: [
+                                StartTag(
+                                    StartTag {
+                                        children: [
+                                            TagName(
+                                                TagName {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                ],
+                [RANGE]
+            },
+        ),
+    ],
+    [RANGE]
+}

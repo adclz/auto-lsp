@@ -1,0 +1,14 @@
+---
+source: src/tests/corpus/mod.rs
+expression: document
+---
+Document {
+    children: [
+        Doctype(
+            Doctype {
+                [RANGE]
+            },
+        ),
+    ],
+    [RANGE]
+}

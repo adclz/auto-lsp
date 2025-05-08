@@ -1,0 +1,149 @@
+---
+source: src/tests/corpus/mod.rs
+expression: document
+---
+Document {
+    children: [
+        Element(
+            Element {
+                children: [
+                    StartTag(
+                        StartTag {
+                            children: [
+                                TagName(
+                                    TagName {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    Element(
+                        Element {
+                            children: [
+                                StartTag(
+                                    StartTag {
+                                        children: [
+                                            TagName(
+                                                TagName {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Attribute(
+                                                Attribute {
+                                                    children: [
+                                                        AttributeName(
+                                                            AttributeName {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        QuotedAttributeValue(
+                                                            QuotedAttributeValue {
+                                                                children: Some(
+                                                                    AttributeValue {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    Element(
+                        Element {
+                            children: [
+                                StartTag(
+                                    StartTag {
+                                        children: [
+                                            TagName(
+                                                TagName {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    Element(
+                        Element {
+                            children: [
+                                SelfClosingTag(
+                                    SelfClosingTag {
+                                        children: [
+                                            TagName(
+                                                TagName {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Attribute(
+                                                Attribute {
+                                                    children: [
+                                                        AttributeName(
+                                                            AttributeName {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        AttributeValue(
+                                                            AttributeValue {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Attribute(
+                                                Attribute {
+                                                    children: [
+                                                        AttributeName(
+                                                            AttributeName {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        AttributeValue(
+                                                            AttributeValue {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    EndTag(
+                        EndTag {
+                            children: TagName {
+                                [RANGE]
+                            },
+                            [RANGE]
+                        },
+                    ),
+                ],
+                [RANGE]
+            },
+        ),
+    ],
+    [RANGE]
+}

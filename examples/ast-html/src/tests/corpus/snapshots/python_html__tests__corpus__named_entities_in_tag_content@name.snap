@@ -1,0 +1,61 @@
+---
+source: src/tests/corpus/mod.rs
+expression: document
+---
+Document {
+    children: [
+        Element(
+            Element {
+                children: [
+                    StartTag(
+                        StartTag {
+                            children: [
+                                TagName(
+                                    TagName {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    Text(
+                        Text {
+                            [RANGE]
+                        },
+                    ),
+                    Entity(
+                        Entity {
+                            [RANGE]
+                        },
+                    ),
+                    Text(
+                        Text {
+                            [RANGE]
+                        },
+                    ),
+                    Entity(
+                        Entity {
+                            [RANGE]
+                        },
+                    ),
+                    Text(
+                        Text {
+                            [RANGE]
+                        },
+                    ),
+                    EndTag(
+                        EndTag {
+                            children: TagName {
+                                [RANGE]
+                            },
+                            [RANGE]
+                        },
+                    ),
+                ],
+                [RANGE]
+            },
+        ),
+    ],
+    [RANGE]
+}
