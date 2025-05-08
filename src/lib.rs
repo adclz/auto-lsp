@@ -37,36 +37,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //!
 //! ## Quick example
 //!
-//! Let's say you have a toy language with a root node named **document** containing a list of **function** nodes,
-//! each containing a unique **name**.
-//!
-//! A simple query file to capture the root document and function names:
-//!
-//! ```lisp
-//! (document) @document
-//! (function
-//!     (name) @name) @function
-//! ```
-//!
-//! The corresponding AST definition in Rust:
-//!
-//! ```rust
-//! # use auto_lsp::core::ast::*;
-//! # use auto_lsp::seq;
-//! #[seq(query = "document")]
-//! struct Document {
-//!    functions: Vec<Function>
-//! }
-//!
-//! #[seq(query = "function")]
-//! struct Function {
-//!    name: Name
-//! }
-//!
-//! #[seq(query = "name")]
-//! struct Name {}
-//! ```
-//!
 //! Now that you have your AST defined, you can:
 //!  - Implement the [AST traits](https://adclz.github.io/auto-lsp/ast-and-queries/seq.html#seq-attributes) and create a LSP server (with the `lsp_server` feature).
 //!  - Add your own logic for testing purposes, code generation, etc.
