@@ -20,17 +20,16 @@ use super::lexer::get_tree_sitter_errors;
 use crate::ast::AstNode;
 use crate::errors::ParseErrorAccumulator;
 use salsa::Accumulator;
-use std::hash::Hash;
 use std::ops::Deref;
 use std::sync::Arc;
 
 #[salsa::tracked(no_eq, return_ref)]
-pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst2 {
+pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
     let doc = file.document(db).read();
 
     if doc.texter.text.is_empty() {
-        return ParsedAst2::default();
+        return ParsedAst::default();
     }
 
     let node = doc.tree.root_node();
@@ -41,28 +40,44 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst2 {
     match (parsers.ast_parser)(db, &doc) {
         Ok(mut nodes) => {
             nodes.sort_unstable();
-            ParsedAst2::new(nodes)
+            ParsedAst::new(nodes)
         }
         Err(e) => {
             ParseErrorAccumulator::accumulate(e.clone().into(), db);
-            ParsedAst2::default()
+            ParsedAst::default()
         }
     }
 }
 
 /// Cheap cloneable wrapper around a parsed AST
-#[derive(Debug, Default, Clone)]
-pub struct ParsedAst2 {
-    pub nodes: Vec<Arc<dyn AstNode>>,
+#[derive(Debug, Default, Clone, Eq)]
+pub struct ParsedAst {
+    pub nodes: Arc<Vec<Arc<dyn AstNode>>>,
 }
 
-impl ParsedAst2 {
+impl PartialEq for ParsedAst {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.nodes, &other.nodes)
+    }
+}
+
+impl Deref for ParsedAst {
+    type Target = Vec<Arc<dyn AstNode>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.nodes
+    }
+}
+
+impl ParsedAst {
     pub(crate) fn new(nodes: Vec<Arc<dyn AstNode>>) -> Self {
-        Self { nodes }
+        Self {
+            nodes: Arc::new(nodes),
+        }
     }
 
     pub fn get_root(&self) -> Option<&Arc<dyn AstNode>> {
-        self.nodes.get(0)
+        self.nodes.first()
     }
 
     pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
@@ -97,19 +112,3 @@ impl ParsedAst2 {
         best
     }
 }
-
-impl Deref for ParsedAst2 {
-    type Target = Vec<Arc<dyn AstNode>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.nodes
-    }
-}
-
-impl PartialEq for ParsedAst2 {
-    fn eq(&self, other: &Self) -> bool {
-        todo!()
-    }
-}
-
-impl Eq for ParsedAst2 {}
