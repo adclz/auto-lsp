@@ -89,9 +89,6 @@ pub mod core {
 #[doc(hidden)]
 pub mod configure;
 
-// Re-export of [`seq`] and [`choice`] macros
-pub use auto_lsp_macros::*;
-
 pub use anyhow;
 pub use ariadne;
 #[doc(hidden)]
