@@ -1,0 +1,86 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    ExpressionList(
+                                        ExpressionList {
+                                            children: [
+                                                PrimaryExpression(
+                                                    Integer(
+                                                        Integer {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                PrimaryExpression(
+                                                    ListSplat(
+                                                        ListSplat {
+                                                            children: Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                Type: None,
+                                left: PatternList(
+                                    PatternList {
+                                        children: [
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

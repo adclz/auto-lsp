@@ -1,0 +1,73 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Assignment(
+                                        Assignment {
+                                            right: Some(
+                                                Expression(
+                                                    PrimaryExpression(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                ),
+                                            ),
+                                            Type: None,
+                                            left: Pattern(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                Type: None,
+                                left: Pattern(
+                                    Subscript(
+                                        Subscript {
+                                            value: Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            subscript: [
+                                                Expression(
+                                                    PrimaryExpression(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

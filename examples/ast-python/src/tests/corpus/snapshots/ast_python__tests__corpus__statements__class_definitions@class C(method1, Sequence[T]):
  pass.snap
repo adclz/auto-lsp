@@ -1,0 +1,74 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            ClassDefinition(
+                ClassDefinition {
+                    type_parameters: None,
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                PassStatement(
+                                    PassStatement {
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    superclasses: Some(
+                        ArgumentList {
+                            children: [
+                                Expression(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                Expression(
+                                    PrimaryExpression(
+                                        Subscript(
+                                            Subscript {
+                                                value: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                subscript: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

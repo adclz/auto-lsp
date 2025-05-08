@@ -1,0 +1,32 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            AssertStatement(
+                AssertStatement {
+                    children: [
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

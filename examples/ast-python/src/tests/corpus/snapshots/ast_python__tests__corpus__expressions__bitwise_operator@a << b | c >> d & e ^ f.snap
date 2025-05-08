@@ -1,0 +1,102 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                BinaryOperator(
+                                    BinaryOperator {
+                                        right: BinaryOperator(
+                                            BinaryOperator {
+                                                right: BinaryOperator(
+                                                    BinaryOperator {
+                                                        right: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        left: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        operator: Token_Caret(
+                                                            Token_Caret {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                left: BinaryOperator(
+                                                    BinaryOperator {
+                                                        right: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        left: Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        operator: Token_ShiftRight(
+                                                            Token_ShiftRight {
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                operator: Token_Ampersand(
+                                                    Token_Ampersand {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        left: BinaryOperator(
+                                            BinaryOperator {
+                                                right: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                left: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                operator: Token_ShiftLeft(
+                                                    Token_ShiftLeft {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        operator: Token_Pipe(
+                                            Token_Pipe {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

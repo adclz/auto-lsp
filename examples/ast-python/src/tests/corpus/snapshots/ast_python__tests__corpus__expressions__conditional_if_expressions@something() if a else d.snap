@@ -1,0 +1,59 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ConditionalExpression(
+                                ConditionalExpression {
+                                    children: [
+                                        PrimaryExpression(
+                                            Call(
+                                                Call {
+                                                    function: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    arguments: ArgumentList(
+                                                        ArgumentList {
+                                                            children: [],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        PrimaryExpression(
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        PrimaryExpression(
+                                            Identifier(
+                                                Identifier {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

@@ -1,0 +1,44 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                operator: Token_SlashEqual(
+                                    Token_SlashEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

@@ -1,0 +1,35 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            NamedExpression(
+                                NamedExpression {
+                                    value: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    name: Identifier {
+                                        [RANGE]
+                                    },
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

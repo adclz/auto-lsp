@@ -1,0 +1,42 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                BinaryOperator(
+                                    BinaryOperator {
+                                        right: Float(
+                                            Float {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        left: Integer(
+                                            Integer {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        operator: Token_Plus(
+                                            Token_Plus {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

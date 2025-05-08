@@ -1,0 +1,78 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                ParenthesizedExpression(
+                                    ParenthesizedExpression {
+                                        children: Expression(
+                                            NamedExpression(
+                                                NamedExpression {
+                                                    value: PrimaryExpression(
+                                                        ParenthesizedExpression(
+                                                            ParenthesizedExpression {
+                                                                children: Expression(
+                                                                    NamedExpression(
+                                                                        NamedExpression {
+                                                                            value: PrimaryExpression(
+                                                                                ParenthesizedExpression(
+                                                                                    ParenthesizedExpression {
+                                                                                        children: Expression(
+                                                                                            NamedExpression(
+                                                                                                NamedExpression {
+                                                                                                    value: PrimaryExpression(
+                                                                                                        Integer(
+                                                                                                            Integer {
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                    name: Identifier {
+                                                                                                        [RANGE]
+                                                                                                    },
+                                                                                                    [RANGE]
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                            name: Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    name: Identifier {
+                                                        [RANGE]
+                                                    },
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

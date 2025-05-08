@@ -1,0 +1,33 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            Lambda(
+                                Lambda {
+                                    body: PrimaryExpression(
+                                        True(
+                                            True {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    parameters: None,
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

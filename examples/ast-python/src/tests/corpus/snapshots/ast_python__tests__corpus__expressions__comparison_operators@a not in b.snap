@@ -1,0 +1,44 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_NotIn(
+                                            Token_NotIn {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

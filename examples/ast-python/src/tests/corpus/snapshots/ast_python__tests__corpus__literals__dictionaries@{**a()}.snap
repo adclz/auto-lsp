@@ -1,0 +1,52 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Dictionary(
+                                    Dictionary {
+                                        children: [
+                                            DictionarySplat(
+                                                DictionarySplat {
+                                                    children: PrimaryExpression(
+                                                        Call(
+                                                            Call {
+                                                                function: Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                arguments: ArgumentList(
+                                                                    ArgumentList {
+                                                                        children: [],
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

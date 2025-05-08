@@ -1,0 +1,105 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    type_conversion: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    format_specifier: Some(
+                                                        FormatSpecifier {
+                                                            children: [
+                                                                FormatExpression {
+                                                                    expression: Expression(
+                                                                        PrimaryExpression(
+                                                                            Attribute(
+                                                                                Attribute {
+                                                                                    attribute: Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                    object: Identifier(
+                                                                                        Identifier {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                    type_conversion: None,
+                                                                    format_specifier: None,
+                                                                    [RANGE]
+                                                                },
+                                                                FormatExpression {
+                                                                    expression: Expression(
+                                                                        PrimaryExpression(
+                                                                            Attribute(
+                                                                                Attribute {
+                                                                                    attribute: Identifier {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                    object: Identifier(
+                                                                                        Identifier {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                    ),
+                                                                    type_conversion: None,
+                                                                    format_specifier: None,
+                                                                    [RANGE]
+                                                                },
+                                                            ],
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

@@ -1,0 +1,44 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        AugmentedAssignment(
+                            AugmentedAssignment {
+                                operator: Token_StarEqual(
+                                    Token_StarEqual {
+                                        [RANGE]
+                                    },
+                                ),
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                right: Expression(
+                                    PrimaryExpression(
+                                        Float(
+                                            Float {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

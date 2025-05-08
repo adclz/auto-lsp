@@ -1,0 +1,61 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    right: BooleanOperator(
+                                        BooleanOperator {
+                                            right: PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                            operator: Token_And(
+                                                Token_And {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                            left: PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                            [RANGE]
+                                        },
+                                    ),
+                                    operator: Token_Or(
+                                        Token_Or {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    left: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

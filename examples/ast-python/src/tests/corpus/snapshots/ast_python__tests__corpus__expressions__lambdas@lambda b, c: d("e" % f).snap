@@ -1,0 +1,103 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            Lambda(
+                                Lambda {
+                                    body: PrimaryExpression(
+                                        Call(
+                                            Call {
+                                                function: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                arguments: ArgumentList(
+                                                    ArgumentList {
+                                                        children: [
+                                                            Expression(
+                                                                PrimaryExpression(
+                                                                    BinaryOperator(
+                                                                        BinaryOperator {
+                                                                            right: Identifier(
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            left: String(
+                                                                                String {
+                                                                                    children: [
+                                                                                        StringStart(
+                                                                                            StringStart {
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                        ),
+                                                                                        StringContent(
+                                                                                            StringContent {
+                                                                                                children: [],
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                        ),
+                                                                                        StringEnd(
+                                                                                            StringEnd {
+                                                                                                [RANGE]
+                                                                                            },
+                                                                                        ),
+                                                                                    ],
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            operator: Token_Percent(
+                                                                                Token_Percent {
+                                                                                    [RANGE]
+                                                                                },
+                                                                            ),
+                                                                            [RANGE]
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    parameters: Some(
+                                        LambdaParameters {
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

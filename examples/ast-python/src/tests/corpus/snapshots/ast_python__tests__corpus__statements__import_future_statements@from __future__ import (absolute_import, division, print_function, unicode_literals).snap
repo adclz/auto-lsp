@@ -1,0 +1,58 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            FutureImportStatement(
+                FutureImportStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ],
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

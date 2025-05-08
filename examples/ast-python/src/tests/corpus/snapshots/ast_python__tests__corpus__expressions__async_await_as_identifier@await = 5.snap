@@ -1,0 +1,42 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            Integer(
+                                                Integer {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                Type: None,
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

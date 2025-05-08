@@ -1,0 +1,34 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Yield(
+                            Yield {
+                                children: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            Integer(
+                                                Integer {
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

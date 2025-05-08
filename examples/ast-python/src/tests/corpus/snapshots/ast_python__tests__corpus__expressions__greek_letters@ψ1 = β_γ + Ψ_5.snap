@@ -1,0 +1,57 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            BinaryOperator(
+                                                BinaryOperator {
+                                                    right: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    left: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    operator: Token_Plus(
+                                                        Token_Plus {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                Type: None,
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

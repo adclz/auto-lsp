@@ -1,0 +1,31 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            PrintStatement(
+                PrintStatement {
+                    argument: [
+                        NotOperator(
+                            NotOperator {
+                                argument: PrimaryExpression(
+                                    True(
+                                        True {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

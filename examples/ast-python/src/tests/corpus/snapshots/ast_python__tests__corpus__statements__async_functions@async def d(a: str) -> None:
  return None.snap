@@ -1,0 +1,85 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            Expression(
+                                                PrimaryExpression(
+                                                    None(
+                                                        None {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: Some(
+                        Type {
+                            children: Expression(
+                                PrimaryExpression(
+                                    None(
+                                        None {
+                                            [RANGE]
+                                        },
+                                    ),
+                                ),
+                            ),
+                            [RANGE]
+                        },
+                    ),
+                    type_parameters: None,
+                    parameters: Parameters {
+                        children: [
+                            TypedParameter(
+                                TypedParameter {
+                                    Type: Type {
+                                        children: Expression(
+                                            PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                    children: Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

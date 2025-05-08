@@ -1,0 +1,115 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            ExpressionList(
+                                                ExpressionList {
+                                                    children: [
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    parameters: Parameters {
+                        children: [
+                            DefaultParameter(
+                                DefaultParameter {
+                                    name: TuplePattern(
+                                        TuplePattern {
+                                            children: [
+                                                Pattern(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                Pattern(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    value: PrimaryExpression(
+                                        Tuple(
+                                            Tuple {
+                                                children: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Integer(
+                                                                Integer {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Integer(
+                                                                Integer {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

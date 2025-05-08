@@ -1,0 +1,47 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Tuple(
+                                    Tuple {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

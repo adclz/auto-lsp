@@ -1,0 +1,44 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Set(
+                                    Set {
+                                        children: [
+                                            ListSplat(
+                                                ListSplat {
+                                                    children: Expression(
+                                                        PrimaryExpression(
+                                                            Dictionary(
+                                                                Dictionary {
+                                                                    children: [],
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

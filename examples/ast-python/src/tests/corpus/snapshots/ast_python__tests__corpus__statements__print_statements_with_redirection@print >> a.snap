@@ -1,0 +1,29 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            PrintStatement(
+                PrintStatement {
+                    argument: [],
+                    children: Some(
+                        Chevron {
+                            children: PrimaryExpression(
+                                Identifier(
+                                    Identifier {
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                            [RANGE]
+                        },
+                    ),
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

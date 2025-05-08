@@ -1,0 +1,80 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            Lambda(
+                                Lambda {
+                                    body: PrimaryExpression(
+                                        Tuple(
+                                            Tuple {
+                                                children: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    parameters: Some(
+                                        LambdaParameters {
+                                            children: [
+                                                TuplePattern(
+                                                    TuplePattern {
+                                                        children: [
+                                                            Pattern(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            Pattern(
+                                                                Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ],
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                        },
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

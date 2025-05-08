@@ -1,0 +1,73 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Tuple(
+                                    Tuple {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                            Yield(
+                                                Yield {
+                                                    children: Some(
+                                                        ExpressionList(
+                                                            ExpressionList {
+                                                                children: [
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ],
+                                                                [RANGE]
+                                                            },
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

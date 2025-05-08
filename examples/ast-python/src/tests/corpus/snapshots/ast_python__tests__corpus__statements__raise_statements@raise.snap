@@ -1,0 +1,18 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            RaiseStatement(
+                RaiseStatement {
+                    cause: None,
+                    children: None,
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

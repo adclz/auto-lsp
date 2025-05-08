@@ -1,0 +1,73 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExecStatement(
+                ExecStatement {
+                    code: String(
+                        String {
+                            children: [
+                                StringStart(
+                                    StringStart {
+                                        [RANGE]
+                                    },
+                                ),
+                                StringContent(
+                                    StringContent {
+                                        children: [],
+                                        [RANGE]
+                                    },
+                                ),
+                                StringEnd(
+                                    StringEnd {
+                                        [RANGE]
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                        },
+                    ),
+                    children: [
+                        PrimaryExpression(
+                            String(
+                                String {
+                                    children: [
+                                        StringStart(
+                                            StringStart {
+                                                [RANGE]
+                                            },
+                                        ),
+                                        StringContent(
+                                            StringContent {
+                                                children: [],
+                                                [RANGE]
+                                            },
+                                        ),
+                                        StringEnd(
+                                            StringEnd {
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                        PrimaryExpression(
+                            None(
+                                None {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

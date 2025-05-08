@@ -1,0 +1,37 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ImportStatement(
+                ImportStatement {
+                    name: [
+                        AliasedImport(
+                            AliasedImport {
+                                name: DottedName {
+                                    children: [
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ],
+                                    [RANGE]
+                                },
+                                alias: Identifier {
+                                    [RANGE]
+                                },
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

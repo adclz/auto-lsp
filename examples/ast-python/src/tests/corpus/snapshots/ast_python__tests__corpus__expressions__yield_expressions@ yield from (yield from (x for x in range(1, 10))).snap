@@ -1,0 +1,112 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Yield(
+                            Yield {
+                                children: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            ParenthesizedExpression(
+                                                ParenthesizedExpression {
+                                                    children: Yield(
+                                                        Yield {
+                                                            children: Some(
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        GeneratorExpression(
+                                                                            GeneratorExpression {
+                                                                                body: PrimaryExpression(
+                                                                                    Identifier(
+                                                                                        Identifier {
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                                children: [
+                                                                                    ForInClause(
+                                                                                        ForInClause {
+                                                                                            left: Pattern(
+                                                                                                Identifier(
+                                                                                                    Identifier {
+                                                                                                        [RANGE]
+                                                                                                    },
+                                                                                                ),
+                                                                                            ),
+                                                                                            right: [
+                                                                                                Expression(
+                                                                                                    PrimaryExpression(
+                                                                                                        Call(
+                                                                                                            Call {
+                                                                                                                function: Identifier(
+                                                                                                                    Identifier {
+                                                                                                                        [RANGE]
+                                                                                                                    },
+                                                                                                                ),
+                                                                                                                arguments: ArgumentList(
+                                                                                                                    ArgumentList {
+                                                                                                                        children: [
+                                                                                                                            Expression(
+                                                                                                                                PrimaryExpression(
+                                                                                                                                    Integer(
+                                                                                                                                        Integer {
+                                                                                                                                            [RANGE]
+                                                                                                                                        },
+                                                                                                                                    ),
+                                                                                                                                ),
+                                                                                                                            ),
+                                                                                                                            Expression(
+                                                                                                                                PrimaryExpression(
+                                                                                                                                    Integer(
+                                                                                                                                        Integer {
+                                                                                                                                            [RANGE]
+                                                                                                                                        },
+                                                                                                                                    ),
+                                                                                                                                ),
+                                                                                                                            ),
+                                                                                                                        ],
+                                                                                                                        [RANGE]
+                                                                                                                    },
+                                                                                                                ),
+                                                                                                                [RANGE]
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                ),
+                                                                                            ],
+                                                                                            [RANGE]
+                                                                                        },
+                                                                                    ),
+                                                                                ],
+                                                                                [RANGE]
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                [RANGE]
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

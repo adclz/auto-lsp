@@ -1,0 +1,43 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Attribute(
+                                    Attribute {
+                                        attribute: Identifier {
+                                            [RANGE]
+                                        },
+                                        object: Attribute(
+                                            Attribute {
+                                                attribute: Identifier {
+                                                    [RANGE]
+                                                },
+                                                object: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

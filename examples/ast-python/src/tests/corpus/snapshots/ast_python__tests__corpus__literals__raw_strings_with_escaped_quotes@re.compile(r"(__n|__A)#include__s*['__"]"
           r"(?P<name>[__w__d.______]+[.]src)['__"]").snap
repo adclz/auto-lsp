@@ -1,0 +1,100 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Call(
+                                    Call {
+                                        function: Attribute(
+                                            Attribute {
+                                                attribute: Identifier {
+                                                    [RANGE]
+                                                },
+                                                object: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                    },
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                        arguments: ArgumentList(
+                                            ArgumentList {
+                                                children: [
+                                                    Expression(
+                                                        PrimaryExpression(
+                                                            ConcatenatedString(
+                                                                ConcatenatedString {
+                                                                    children: [
+                                                                        String {
+                                                                            children: [
+                                                                                StringStart(
+                                                                                    StringStart {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                StringContent(
+                                                                                    StringContent {
+                                                                                        children: [],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                StringEnd(
+                                                                                    StringEnd {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                        String {
+                                                                            children: [
+                                                                                StringStart(
+                                                                                    StringStart {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                StringContent(
+                                                                                    StringContent {
+                                                                                        children: [],
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                                StringEnd(
+                                                                                    StringEnd {
+                                                                                        [RANGE]
+                                                                                    },
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                        },
+                                                                    ],
+                                                                    [RANGE]
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                            },
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

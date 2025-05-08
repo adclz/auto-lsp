@@ -1,0 +1,38 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExecStatement(
+                ExecStatement {
+                    code: Identifier(
+                        Identifier {
+                            [RANGE]
+                        },
+                    ),
+                    children: [
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                        PrimaryExpression(
+                            Dictionary(
+                                Dictionary {
+                                    children: [],
+                                    [RANGE]
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}

@@ -1,0 +1,84 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    name: Identifier {
+                        [RANGE]
+                    },
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    return_type: None,
+                    type_parameters: None,
+                    parameters: Parameters {
+                        children: [
+                            DefaultParameter(
+                                DefaultParameter {
+                                    name: Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                        },
+                                    ),
+                                    value: PrimaryExpression(
+                                        ParenthesizedExpression(
+                                            ParenthesizedExpression {
+                                                children: Expression(
+                                                    NamedExpression(
+                                                        NamedExpression {
+                                                            value: PrimaryExpression(
+                                                                Integer(
+                                                                    Integer {
+                                                                        [RANGE]
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            name: Identifier {
+                                                                [RANGE]
+                                                            },
+                                                            [RANGE]
+                                                        },
+                                                    ),
+                                                ),
+                                                [RANGE]
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                    },
+                    [RANGE]
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+}
