@@ -20,6 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - run: rustup toolchain install nightly
+      - run: rustup default nightly
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - name: main crate
