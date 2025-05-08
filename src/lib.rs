@@ -15,7 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
 #![allow(rustdoc::private_intra_doc_links)]
 //!<div align="center" style="margin-bottom: 50px">
 //!  <h1>Auto LSP</h1>
@@ -104,26 +103,8 @@ pub mod server;
 
 mod tests;
 
-/// A mock implementation of a python AST
-#[cfg(any(feature = "python", test))]
-pub mod python {
-    pub use crate::tests::python_workspace::*;
-}
-
-/// A mock implementation of a html AST
-#[cfg(any(feature = "html", test))]
-pub mod html {
-    pub use crate::tests::html_workspace::*;
-}
-
 /// Re-export of the [`auto_lsp_core`] crate
 pub mod core {
-    // Not public API. Referenced by macro-generated code.
-    #[doc(hidden)]
-    pub mod build {
-        pub use auto_lsp_core::build::*;
-    }
-
     pub use auto_lsp_core::ast;
     pub use auto_lsp_core::document;
     pub use auto_lsp_core::document_symbols_builder;

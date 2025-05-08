@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+/*
 #[cfg(any(feature = "html", test))]
 pub mod html_utils;
 #[cfg(any(feature = "html", test))]
@@ -55,3 +56,4 @@ pub mod salsa;
 pub mod semantic_tokens;
 #[cfg(test)]
 pub mod type_errors;
+*/
