@@ -15,8 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+#![feature(min_specialization)]
 #![recursion_limit = "256"]
 
-mod generated;
+pub mod capabilities;
+pub mod generated;
 #[cfg(test)]
 mod tests;
+mod db;
