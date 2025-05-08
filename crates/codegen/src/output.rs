@@ -168,7 +168,7 @@ pub(crate) fn generate_struct(
         }
 
         impl auto_lsp::core::ast::AstNode for #struct_name {
-            fn range(&self) -> &auto_lsp::tree_sitter::Range {
+            fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
                 &self._range
             }
         }
@@ -283,9 +283,9 @@ pub(crate) fn generate_enum(
         }
 
         impl auto_lsp::core::ast::AstNode for #variant_name {
-            fn range(&self) -> &auto_lsp::tree_sitter::Range {
+            fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
                 match self {
-                    #(Self::#r_variants(node) => node.range()),*
+                    #(Self::#r_variants(node) => node.get_range()),*
                 }
             }
         }

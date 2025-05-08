@@ -81,6 +81,8 @@ pub static PUNCTUATION: phf::Map<&'static str, &'static str> = phf::phf_map! {
     ":" => "Colon",
     ";" => "Semicolon",
     "." => "Dot",
+    "'" => "Quote",
+    "\"" => "DoubleQuote",
     "@" => "At",
     "!" => "Bang",
     "#" => "Hash",
@@ -146,6 +148,9 @@ pub static PUNCTUATION: phf::Map<&'static str, &'static str> = phf::phf_map! {
     "**=" => "StarStarEqual",
     "<>" => "LessGreater",
     "<=>" => "LessGreaterEqual",
+    "<!" => "LessBang",
+    "</" => "LessSlash",
+
 };
 
 pub static RUST_KEYWORDS: phf::Map<&'static str, &'static str> = phf::phf_map! {

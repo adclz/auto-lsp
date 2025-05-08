@@ -67,10 +67,13 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
     let nodes: Vec<NodeType> = serde_json::from_str(&source).expect("Invalid JSON");
 
     let mut output = quote! {
+        // Auto-generated file. Do not edit manually.
         #![allow(clippy)]
         #![allow(unused)]
+        #![allow(dead_code)]
         #![allow(non_camel_case_types)]
         #![allow(non_snake_case)]
+
     };
     for node in &nodes {
         if node.named {
