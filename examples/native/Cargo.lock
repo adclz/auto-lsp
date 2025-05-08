@@ -84,11 +84,9 @@ dependencies = [
 name = "auto-lsp"
 version = "0.5.1"
 dependencies = [
- "aho-corasick",
  "anyhow",
  "ariadne",
  "auto-lsp-core",
- "constcat",
  "crossbeam-channel",
  "dashmap",
  "downcast-rs",
@@ -126,10 +124,8 @@ dependencies = [
 name = "auto-lsp-core"
 version = "0.5.0"
 dependencies = [
- "aho-corasick",
  "anyhow",
  "ariadne",
- "cfg-if",
  "dashmap",
  "downcast-rs",
  "log",
@@ -236,12 +232,6 @@ checksum = "88d11d52c3d7ca2e6d0040212be9e4dbbcd78b6447f535b6b561f449427944cf"
 dependencies = [
  "windows-sys 0.45.0",
 ]
-
-[[package]]
-name = "constcat"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ffb5df6dd5dadb422897e8132f415d7a054e3cd757e5070b663f75bea1840fb"
 
 [[package]]
 name = "crossbeam-channel"
@@ -470,9 +460,9 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "hermit-abi"
-version = "0.4.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbf6a919d6cf397374f7dfeeea91d974c7c0a7221d0d0f4f20d859d329e53fcc"
+checksum = "f154ce46856750ed433c8649605bf7ed2de3bc35fd9d2a9f30cddd873c80cb08"
 
 [[package]]
 name = "icu_collections"
@@ -625,13 +615,13 @@ dependencies = [
 
 [[package]]
 name = "is-terminal"
-version = "0.4.13"
+version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "261f68e344040fbd0edea105bef17c66edf46f984ddb1115b775ce31be948f4b"
+checksum = "e04d7f318608d35d4b61ddd75cbdaee86b023ebe2bd5a66ee0915f0bf93095a9"
 dependencies = [
  "hermit-abi",
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

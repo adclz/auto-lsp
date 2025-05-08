@@ -62,11 +62,9 @@ dependencies = [
 name = "auto-lsp"
 version = "0.5.1"
 dependencies = [
- "aho-corasick",
  "anyhow",
  "ariadne",
  "auto-lsp-core",
- "constcat",
  "crossbeam-channel",
  "dashmap",
  "downcast-rs",
@@ -104,10 +102,8 @@ dependencies = [
 name = "auto-lsp-core"
 version = "0.5.0"
 dependencies = [
- "aho-corasick",
  "anyhow",
  "ariadne",
- "cfg-if",
  "dashmap",
  "downcast-rs",
  "log",
@@ -202,12 +198,6 @@ checksum = "88d11d52c3d7ca2e6d0040212be9e4dbbcd78b6447f535b6b561f449427944cf"
 dependencies = [
  "windows-sys 0.45.0",
 ]
-
-[[package]]
-name = "constcat"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ffb5df6dd5dadb422897e8132f415d7a054e3cd757e5070b663f75bea1840fb"
 
 [[package]]
 name = "core-foundation-sys"

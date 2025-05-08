@@ -88,9 +88,6 @@ pub mod core {
 pub mod configure;
 
 pub use anyhow;
-pub use ariadne;
-#[doc(hidden)]
-pub use constcat;
 #[cfg(any(feature = "lsp_server", test))]
 pub use lsp_server;
 pub use lsp_types;
