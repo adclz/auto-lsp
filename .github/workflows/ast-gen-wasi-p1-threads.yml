@@ -18,6 +18,7 @@ jobs:
     steps:
       - run: rustup toolchain install nightly
       - run: rustup default nightly
+      - run: cargo install cargo-insta
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - run: rustup target add wasm32-wasip1-threads
