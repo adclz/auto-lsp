@@ -1,5 +1,5 @@
 [package]
-name = "python-html"
+name = "ast-html"
 authors = ["Clauzel Adrien"]
 license = "GPL-3.0"
 repository = "https://github.com/adclz/auto-lsp"
