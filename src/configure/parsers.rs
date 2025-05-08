@@ -15,8 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
+use std::collections::HashMap;
+use std::sync::{Arc, LazyLock};
 use tree_sitter::{Language, Query};
+use auto_lsp_core::document::Document;
+use auto_lsp_core::errors::ParseError;
+use auto_lsp_core::parsers::InvokeParserFn2;
+use auto_lsp_core::salsa::db::BaseDatabase;
+
+
 
 /// Create the parsers with any given language and queries.
 ///
@@ -26,70 +33,59 @@ use tree_sitter::{Language, Query};
 ///
 /// # Example
 /// ```rust
-/// # use auto_lsp::seq;
 /// # use auto_lsp::configure_parsers;
 /// # use auto_lsp::core::ast::*;
-/// static CORE_QUERY: &'static str = "
-/// (module) @module
-/// (function_definition
-///    name: (identifier) @function.name) @function
-/// ";
 ///
-/// #[seq(query = "module")]
 /// struct Module {}
 ///
 /// configure_parsers!(
 ///     PARSER_LIST,
 ///     "python" => {
 ///         language: tree_sitter_python::LANGUAGE,
-///         core: CORE_QUERY,
 ///         ast_root: Module
 ///     }
 /// );
 /// ```
 #[macro_export]
 macro_rules! configure_parsers {
-    ($parser_list_name: ident,
+       ($parser_list_name: ident,
         $($extension: expr => {
             language: $language: path,
-            core: $core: path,
             ast_root: $root: ident
         }),*) => {
-        pub static $parser_list_name: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::parsers::Parsers>> =
-            std::sync::LazyLock::new(|| {
-                let mut map = std::collections::HashMap::new();
-                $(
-                let data = $crate::configure::parsers::create_parser($language, $core);
-                map.insert(
-                    $extension, $crate::core::parsers::Parsers {
-                        parser: data.0,
-                        language: data.1,
-                        core: data.2,
-                        ast_parser: |
+           pub static $parser_list_name: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::parsers::Parsers>> =
+               std::sync::LazyLock::new(|| {
+               let mut map = std::collections::HashMap::new();
+               $(
+                  let data = $crate::configure::parsers::create_parser($language);
+                  map.insert(
+                      $extension,
+                      $crate::core::parsers::Parsers {
+                          parser: data.0,
+                          language: data.1,
+                          ast_parser: |
                             db: &dyn $crate::core::salsa::db::BaseDatabase,
-                            parsers: &'static $crate::core::parsers::Parsers,
                             document: &$crate::core::document::Document | {
-                            use $crate::core::build::InvokeParser;
-
-                            $root::parse_symbol(db, parsers, document)
+                                let mut index = vec![];
+                                let root = $root::try_from((&document.tree.root_node(), &mut index))
+                                    .map_err(|e| $crate::core::errors::ParseError::from((document, e)))?;
+                                index.push(std::sync::Arc::new(root));
+                                Ok(index)
+                            }
                         }
-                    }
-                );
-                ),*
-                map
-            });
-    };
+                   );
+               ),*
+               map
+           });
+       };
 }
 
 #[doc(hidden)]
-pub fn create_parser(
-    language: tree_sitter_language::LanguageFn,
-    core: &'static str,
-) -> (parking_lot::RwLock<tree_sitter::Parser>, Language, Query) {
+pub fn create_parser(language: tree_sitter_language::LanguageFn)
+    -> (parking_lot::RwLock<tree_sitter::Parser>, Language) {
     let mut parser = tree_sitter::Parser::new();
     parser.set_language(&language.into()).unwrap();
     let language = tree_sitter::Language::new(language);
-    let core = tree_sitter::Query::new(&language, core).unwrap();
 
-    (parking_lot::RwLock::new(parser), language, core)
+    (parking_lot::RwLock::new(parser), language)
 }

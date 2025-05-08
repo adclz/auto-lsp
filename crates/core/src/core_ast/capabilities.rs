@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use std::sync::Arc;
 
 use super::core::AstSymbol;
+use crate::ast::AstNode;
 use crate::document_symbols_builder::DocumentSymbolsBuilder;
 use crate::{document::Document, semantic_tokens_builder::SemanticTokensBuilder};
 use lsp_types::{request::GotoDeclarationResponse, CompletionItem, GotoDefinitionResponse};
@@ -56,7 +57,6 @@ pub trait BuildDocumentSymbols {
         Ok(())
     }
 }
-
 /// [LSP Hover specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover)
 pub trait GetHover {
     /// Returns a hover information or `None`
@@ -321,7 +321,7 @@ pub trait Comment {
     }
 }
 
-macro_rules! impl_build {
+/*macro_rules! impl_build {
     ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
         impl<T: AstSymbol> $trait for Option<Arc<T>> {
             fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
@@ -349,4 +349,55 @@ impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut 
 impl_build!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
 impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document,  acc: &mut Vec<CompletionItem>));
 impl_build!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document,  acc: &mut Vec<CompletionItem>));
+impl_build!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>));
+*/
+
+macro_rules! impl_min_spec {
+    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*) -> $($result:tt)*) => {
+        impl<T: AstNode> $trait for T {
+            default fn $fn_name(&self, $($param_name: $param_type),*) -> $($result)* {
+                Ok(None)
+            }
+        }
+    };
+}
+
+impl_min_spec!(GetHover, get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>>);
+impl_min_spec!(GetGoToDefinition, go_to_definition(&self, doc: &Document) -> anyhow::Result<Option<GotoDefinitionResponse>>);
+impl_min_spec!(GetGoToDeclaration, go_to_declaration(&self, doc: &Document) -> anyhow::Result<Option<GotoDeclarationResponse>>);
+
+macro_rules! impl_build {
+    ($trait:ident, $fn_name:ident(&self, $($param_name:ident: $param_type:ty),*)) => {
+        impl<T: AstNode> $trait for T {
+            default fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
+                Ok(())
+            }
+        }
+
+        impl<T: AstNode> $trait for Option<Arc<T>> {
+            fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
+                if let Some(node) = self.as_ref() {
+                    node.$fn_name($($param_name),*)?;
+                }
+                Ok(())
+            }
+        }
+
+        impl<T: AstNode> $trait for Vec<Arc<T>> {
+            fn $fn_name(&self, $($param_name: $param_type),*) -> anyhow::Result<()> {
+                for symbol in self.iter() {
+                    symbol.$fn_name($($param_name),*)?;
+                }
+                Ok(())
+            }
+        }
+    };
+}
+
+impl_build!(BuildDocumentSymbols, build_document_symbols(&self, doc: &Document, builder: &mut DocumentSymbolsBuilder));
+impl_build!(BuildSemanticTokens, build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder));
+impl_build!(BuildInlayHints, build_inlay_hints(&self, doc: &Document, acc: &mut Vec<lsp_types::InlayHint>));
+impl_build!(BuildCodeLenses, build_code_lenses(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeLens>));
+impl_build!(BuildCompletionItems, build_completion_items(&self, doc: &Document, acc: &mut Vec<CompletionItem>));
+impl_build!(BuildTriggeredCompletionItems, build_triggered_completion_items(&self, trigger: &str, doc: &Document, acc: &mut Vec<CompletionItem>));
 impl_build!(BuildCodeActions, build_code_actions(&self, doc: &Document, acc: &mut Vec<lsp_types::CodeActionOrCommand>));

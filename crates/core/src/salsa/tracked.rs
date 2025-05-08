@@ -15,24 +15,21 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
-use salsa::Accumulator;
-
 use super::db::{BaseDatabase, File};
-use crate::ast::AstSymbol;
-use crate::core_build::lexer::get_tree_sitter_errors;
-use crate::errors::ParseErrorAccumulator;
-use std::fmt::Formatter;
+use crate::ast::{AstNode, get_tree_sitter_errors};
+use std::hash::Hash;
 use std::ops::Deref;
 use std::sync::Arc;
+use salsa::Accumulator;
+use crate::errors::ParseErrorAccumulator;
 
 #[salsa::tracked(no_eq, return_ref)]
-pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
+pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst2 {
     let parsers = file.parsers(db);
     let doc = file.document(db).read();
 
     if doc.texter.text.is_empty() {
-        return ParsedAst::default();
+        return ParsedAst2::default();
     }
 
     let node = doc.tree.root_node();
@@ -40,73 +37,79 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 
     get_tree_sitter_errors(db, &node, source_code);
 
-    match (parsers.ast_parser)(db, parsers, &doc) {
-        Ok(nodes) => ParsedAst::new(nodes),
+    match (parsers.ast_parser)(db, &doc) {
+        Ok(mut nodes) => {
+            nodes.sort_unstable();
+            ParsedAst2::new(nodes)
+        },
         Err(e) => {
             ParseErrorAccumulator::accumulate(e.clone().into(), db);
-            ParsedAst::default()
+            ParsedAst2::default()
         }
     }
 }
 
 /// Cheap cloneable wrapper around a parsed AST
-#[derive(Default, Clone)]
-pub struct ParsedAst {
-    nodes: Arc<Vec<Arc<dyn AstSymbol>>>,
+#[derive(Debug, Default, Clone)]
+pub struct ParsedAst2 {
+    pub nodes: Vec<Arc<dyn AstNode>>,
 }
 
-impl std::fmt::Debug for ParsedAst {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ParsedAst")
-            .field("nodes", &self.nodes.len())
-            .finish()
+impl ParsedAst2 {
+    pub(crate) fn new(nodes: Vec<Arc<dyn AstNode>>) -> Self {
+        Self { nodes }
     }
-}
 
-impl PartialEq for ParsedAst {
-    fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.nodes, &other.nodes)
+    pub fn get_root(&self) -> Option<&Arc<dyn AstNode>> {
+        self.nodes.get(0)
     }
+
+    pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
+        let mut best: Option<&Arc<dyn AstNode>> = None;
+
+        for node in self.nodes.iter() {
+            let range = node.get_range();
+
+            if range.start_byte > offset {
+                break;
+            }
+
+            if range.start_byte <= offset && offset <= range.end_byte {
+                match best {
+                    Some(existing) => {
+                        let existing_range = existing.get_range();
+                        let current_span = range.end_byte - range.start_byte;
+                        let existing_span = existing_range.end_byte - existing_range.start_byte;
+
+                        // Prefer narrower (more specific) nodes
+                        if current_span < existing_span {
+                            best = Some(node);
+                        }
+                    }
+                    None => {
+                        best = Some(node);
+                    }
+                }
+            }
+        }
+
+        best
+    }
+
 }
 
-impl Eq for ParsedAst {}
-
-impl Deref for ParsedAst {
-    type Target = Arc<Vec<Arc<dyn AstSymbol>>>;
+impl Deref for ParsedAst2 {
+    type Target = Vec<Arc<dyn AstNode>>;
 
     fn deref(&self) -> &Self::Target {
         &self.nodes
     }
 }
 
-impl ParsedAst {
-    fn new(nodes: Vec<Arc<dyn AstSymbol>>) -> Self {
-        Self {
-            nodes: Arc::new(nodes),
-        }
-    }
-
-    pub fn get_root(&self) -> Option<&Arc<dyn AstSymbol>> {
-        self.nodes.first()
-    }
-
-    /// Returns the first descendant of the root node that matches the given type.
-    pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstSymbol>> {
-        let mut best: Option<&Arc<dyn AstSymbol>> = None;
-
-        for node in self.nodes.iter() {
-            let range = node.get_range();
-
-            if range.start > offset {
-                // No point continuing
-                break;
-            }
-
-            if node.is_inside_offset(offset) {
-                best = Some(node);
-            }
-        }
-
-        best
+impl PartialEq for ParsedAst2 {
+    fn eq(&self, other: &Self) -> bool {
+        todo!()
     }
 }
+
+impl Eq for ParsedAst2 {}
