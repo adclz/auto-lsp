@@ -26,8 +26,10 @@ pub(crate) type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 macro_rules! snap {
     ($input: expr) => {{
         let input = format!("{}", $input);
+        let snap_shot: String = input.chars().filter(|&c| c.is_alphanumeric() || c == ' ').collect();
+
         let mut settings = ::insta::Settings::clone_current();
-        settings.set_snapshot_suffix(&input);
+        settings.set_snapshot_suffix(&snap_shot);
         let _guard = settings.bind_to_scope();
 
         let mut p = ::auto_lsp::tree_sitter::Parser::new();
