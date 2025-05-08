@@ -15,16 +15,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use rstest::{fixture, rstest};
-use auto_lsp::{lsp_types, salsa};
+use crate::db::create_python_db;
+use crate::generated::{
+    CompoundStatement, CompoundStatement_SimpleStatement, Expression, Module, Parameter,
+    PrimaryExpression, TypedDefaultParameter,
+};
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
 use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::lsp_types::Url;
 use auto_lsp::salsa::Accumulator;
-use crate::db::create_python_db;
-use crate::generated::{CompoundStatement, CompoundStatement_SimpleStatement, Expression, Module, Parameter, PrimaryExpression, TypedDefaultParameter};
+use auto_lsp::{lsp_types, salsa};
+use rstest::{fixture, rstest};
 
 #[salsa::accumulator]
 pub struct CheckErrorAccumulator(pub lsp_types::Diagnostic);
@@ -38,7 +41,10 @@ pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file
     let module = module.downcast_ref::<Module>().unwrap();
 
     for node in &module.children {
-        if let CompoundStatement_SimpleStatement::CompoundStatement(CompoundStatement::FunctionDefinition(function)) = node.as_ref() {
+        if let CompoundStatement_SimpleStatement::CompoundStatement(
+            CompoundStatement::FunctionDefinition(function),
+        ) = node.as_ref()
+        {
             function.parameters.children.iter().for_each(|param| {
                 if let Parameter::TypedDefaultParameter(typed_param) = param.as_ref() {
                     typed_param.check(db, &doc);
@@ -148,7 +154,6 @@ impl Expression {
         )
     }
 }
-
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
