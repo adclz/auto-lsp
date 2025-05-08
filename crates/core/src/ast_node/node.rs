@@ -1,8 +1,13 @@
+use crate::errors::PositionError;
 use downcast_rs::{impl_downcast, Downcast, DowncastSync};
 use std::cmp::Ordering;
 use std::sync::Arc;
-use crate::{ast::BuildDocumentSymbols, errors::PositionError};
-use crate::ast::{BuildCodeActions, BuildCodeLenses, BuildCompletionItems, BuildInlayHints, BuildSemanticTokens, BuildTriggeredCompletionItems, GetGoToDeclaration, GetGoToDefinition, GetHover};
+
+use super::capabilities::{
+    BuildCodeActions, BuildCodeLenses, BuildCompletionItems, BuildDocumentSymbols, BuildInlayHints,
+    BuildSemanticTokens, BuildTriggeredCompletionItems, GetGoToDeclaration, GetGoToDefinition,
+    GetHover,
+};
 
 pub trait AstNode:
     std::fmt::Debug
@@ -18,7 +23,8 @@ pub trait AstNode:
     + BuildTriggeredCompletionItems
     + BuildInlayHints
     + BuildSemanticTokens
-    + BuildCodeActions {
+    + BuildCodeActions
+{
     fn get_range(&self) -> &tree_sitter::Range;
 
     fn get_lsp_range(&self) -> lsp_types::Range {
@@ -89,7 +95,6 @@ pub trait AstNode:
 
         result
     }
-
 }
 
 impl_downcast!(AstNode);

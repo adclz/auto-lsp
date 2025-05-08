@@ -41,7 +41,7 @@ tree-sitter-python = { version = "0.23.6", optional = true }
 tree-sitter-html = { version = "0.23.2", optional = true }
 
 [workspace]
-members = ["crates/core", "crates/proc-macros"]
+members = ["crates/core"]
 exclude = [
     "examples/vscode-wasi/server",
     "examples/vscode-native/server",

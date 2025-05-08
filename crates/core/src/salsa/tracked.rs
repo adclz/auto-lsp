@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use super::db::{BaseDatabase, File};
-use crate::ast::{AstNode, get_tree_sitter_errors};
+use super::lexer::get_tree_sitter_errors;
+use crate::ast::AstNode;
+use crate::errors::ParseErrorAccumulator;
+use salsa::Accumulator;
 use std::hash::Hash;
 use std::ops::Deref;
 use std::sync::Arc;
-use salsa::Accumulator;
-use crate::errors::ParseErrorAccumulator;
 
 #[salsa::tracked(no_eq, return_ref)]
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst2 {
@@ -41,7 +42,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst2 {
         Ok(mut nodes) => {
             nodes.sort_unstable();
             ParsedAst2::new(nodes)
-        },
+        }
         Err(e) => {
             ParseErrorAccumulator::accumulate(e.clone().into(), db);
             ParsedAst2::default()
@@ -95,7 +96,6 @@ impl ParsedAst2 {
 
         best
     }
-
 }
 
 impl Deref for ParsedAst2 {

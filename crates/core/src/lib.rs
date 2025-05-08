@@ -20,16 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! # Auto LSP Core
 //! Core crate for auto_lsp
 
-mod core_ast;
+mod ast_node;
 
-/// This module contains everything related to ast symbols already created
 pub mod ast {
-    pub use crate::core_ast::capabilities::*;
-    pub use crate::core_ast::core::*;
-    pub use crate::core_ast::data::*;
-    pub use crate::core_ast::display::*;
-    pub use crate::core_ast::node::*;
-    pub use crate::core_ast::lexer::*;
+    pub use crate::ast_node::capabilities::*;
+    pub use crate::ast_node::node::*;
 }
 
 /// Semantic tokens builder

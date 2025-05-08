@@ -15,13 +15,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use std::sync::Arc;
-use parking_lot::RwLock;
-use tree_sitter::{Language, Parser, Query};
-use crate::ast::{AstNode, AstSymbol};
+use crate::ast::AstNode;
 use crate::document::Document;
 use crate::errors::ParseError;
 use crate::salsa::db::BaseDatabase;
+use parking_lot::RwLock;
+use std::sync::Arc;
+use tree_sitter::{Language, Parser};
 
 pub struct Parsers {
     /// The underlying parser, protected by [`RwLock`] for safe concurrent access.
@@ -40,4 +40,5 @@ impl std::fmt::Debug for Parsers {
     }
 }
 
-pub type InvokeParserFn2 = fn(&dyn BaseDatabase, &Document) -> Result<Vec<Arc<dyn AstNode>>, ParseError>;
+pub type InvokeParserFn2 =
+    fn(&dyn BaseDatabase, &Document) -> Result<Vec<Arc<dyn AstNode>>, ParseError>;
