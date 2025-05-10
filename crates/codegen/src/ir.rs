@@ -33,6 +33,13 @@ impl FieldOrChildren {
         }
     }
 
+    pub(crate) fn generate_field_init(&self) -> TokenStream {
+        match self {
+            FieldOrChildren::Field(field) => field.generate_field_init(),
+            FieldOrChildren::Child(child) => child.generate_field_init(),
+        }
+    }
+
     pub(crate) fn generate_field_collect(&self) -> TokenStream {
         match self {
             FieldOrChildren::Field(field) => field.generate_field_collect(),
@@ -74,6 +81,15 @@ impl Field {
         }
     }
 
+    fn generate_field_init(&self) -> TokenStream {
+        let field_name = format_ident!("{}", sanitize_string(&self.tree_sitter_type));
+        match self.kind {
+            Kind::Base => quote! { let mut #field_name = Ok(None); },
+            Kind::Vec => quote! { let mut #field_name = vec![]; },
+            Kind::Option => quote! { let mut #field_name = Ok(None); },
+        }
+    }
+
     fn generate_field_collect(&self) -> TokenStream {
         let field_name = format_ident!("{}", sanitize_string(&self.tree_sitter_type));
 
@@ -83,43 +99,26 @@ impl Field {
 
         match self.kind {
             Kind::Base => quote! {
-                let #field_name = node
-                    .children_by_field_id(std::num::NonZero::new(#kind).unwrap(), &mut cursor)
-                    .next()
-                    .ok_or_else(|| auto_lsp::core::errors::AstError::UnexpectedSymbol {
-                        range: node.range(),
-                        symbol: node.kind(),
-                        parent_name: stringify!(#field_name),
-                })?;
-                let #field_name = std::sync::Arc::new(#pascal_name::try_from((&#field_name, &mut *index))?);
-                index.push(#field_name.clone() as _);
+                builder.on_field_id::<#pascal_name, #kind>(&mut #field_name)
             },
             Kind::Vec => quote! {
-                let #field_name = node
-                    .children_by_field_id(std::num::NonZero::new(#kind).unwrap(), &mut cursor)
-                    .map(|node| {
-                        let result = std::sync::Arc::new(#pascal_name::try_from((&node, &mut *index))?);
-                        index.push(result.clone() as _);
-                        Ok(result)
-                    })
-                    .collect::<Result<Vec<_>, Self::Error>>()?;
+                builder.on_vec_field_id::<#pascal_name, #kind>(&mut #field_name)
             },
             Kind::Option => quote! {
-                let #field_name = node
-                    .children_by_field_id(std::num::NonZero::new(#kind).unwrap(), &mut cursor)
-                    .next()
-                    .map(|node| {
-                        let #field_name = std::sync::Arc::new(#pascal_name::try_from((&node, &mut *index))?);
-                        index.push(#field_name.clone() as _);
-                        Ok(#field_name)
-                    }).transpose()?;
+                builder.on_field_id::<#pascal_name, #kind>(&mut #field_name)
             },
         }
     }
 
     fn generate_field_finalize(&self) -> TokenStream {
         let field_name = format_ident!("{}", sanitize_string(&self.tree_sitter_type));
-        quote! { #field_name }
+        match self.kind {
+            Kind::Base => quote! {
+                 #field_name:  #field_name?.unwrap()
+            },
+            Kind::Vec => quote! {  #field_name },
+            Kind::Option => quote! {  #field_name:  #field_name? },
+        }
     }
 }
 
@@ -142,50 +141,36 @@ impl Child {
         }
     }
 
-    fn generate_field_collect(&self) -> TokenStream {
+    fn generate_field_init(&self) -> TokenStream {
         let pascal_name = &self.field_name;
+        match self.kind {
+            Kind::Base => quote! { let mut children = Ok(None); },
+            Kind::Vec => quote! { let mut children = vec![]; },
+            Kind::Option => quote! { let mut children = Ok(None); },
+        }
+    }
 
+    fn generate_field_collect(&self) -> TokenStream {
         match self.kind {
             Kind::Base => quote! {
-                let children = node
-                    .named_children(&mut cursor)
-                    .filter(|n| #pascal_name::contains(n))
-                    .next()
-                    .ok_or_else(|| auto_lsp::core::errors::AstError::UnexpectedSymbol {
-                        range: node.range(),
-                        symbol: node.kind(),
-                        parent_name: stringify!(#pascal_name),
-                })?;
-                let children = std::sync::Arc::new(#pascal_name::try_from((&children, &mut *index))?);
-                index.push(children.clone() as _);
+                builder.on_children_id(&mut children);
             },
             Kind::Vec => quote! {
-                let children = node
-                    .named_children(&mut cursor)
-                    .filter(|n| #pascal_name::contains(n))
-                    .map(|node| {
-                        let result = std::sync::Arc::new(#pascal_name::try_from((&node, &mut *index))?);
-                        index.push(result.clone() as _);
-                        Ok(result)
-                    })
-                    .collect::<Result<Vec<_>, Self::Error>>()?;
-
+                builder.on_vec_children_id(&mut children);
             },
             Kind::Option => quote! {
-                let children = node
-                    .named_children(&mut cursor)
-                    .filter(|n| #pascal_name::contains(n))
-                    .next()
-                    .map(|node| {
-                        let result = std::sync::Arc::new(#pascal_name::try_from((&node, &mut *index))?);
-                        index.push(result.clone() as _);
-                        Ok(result)
-                    }).transpose()?;
+                builder.on_children_id(&mut children);
             },
         }
     }
 
     fn generate_field_finalize(&self) -> TokenStream {
-            quote! { children }
+        match self.kind {
+            Kind::Base => quote! {
+                children: children?.unwrap()
+            },
+            Kind::Vec => quote! { children },
+            Kind::Option => quote! { children: children? },
+        }
     }
 }

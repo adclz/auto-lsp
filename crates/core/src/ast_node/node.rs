@@ -2,7 +2,7 @@ use crate::errors::PositionError;
 use downcast_rs::{impl_downcast, DowncastSync};
 use std::cmp::Ordering;
 use std::sync::Arc;
-
+use tree_sitter::Node;
 use super::capabilities::{
     BuildCodeActions, BuildCodeLenses, BuildCompletionItems, BuildDocumentSymbols, BuildInlayHints,
     BuildSemanticTokens, BuildTriggeredCompletionItems, GetGoToDeclaration, GetGoToDefinition,
@@ -25,6 +25,11 @@ pub trait AstNode:
     + BuildSemanticTokens
     + BuildCodeActions
 {
+    fn contains(node: &Node) -> bool where Self: Sized;
+    fn get_id(&self) -> usize;
+
+    fn get_parent_id(&self) -> Option<usize>;
+
     fn get_range(&self) -> &tree_sitter::Range;
 
     fn get_lsp_range(&self) -> lsp_types::Range {
@@ -70,28 +75,7 @@ pub trait AstNode:
     }
 
     fn get_parent<'a>(&'a self, nodes: &'a Vec<Arc<dyn AstNode>>) -> Option<&'a Arc<dyn AstNode>> {
-        let self_range = self.get_range();
-        let mut low = 0;
-        let mut high = nodes.len();
-        let mut result: Option<&'a Arc<dyn AstNode>> = None;
-
-        while low < high {
-            let mid = (low + high) / 2;
-            let node = &nodes[mid];
-            let range = node.get_range();
-
-            if range.start_byte <= self_range.start_byte && range.end_byte >= self_range.end_byte {
-                // Potential parent found — go deeper to find tighter parent
-                result = Some(node);
-                low = mid + 1;
-            } else if range.start_byte > self_range.start_byte {
-                high = mid;
-            } else {
-                low = mid + 1;
-            }
-        }
-
-        result
+        nodes.get(self.get_parent_id()?)
     }
 }
 
@@ -107,16 +91,12 @@ impl Eq for dyn AstNode {}
 
 impl PartialOrd for dyn AstNode {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+        Some(self.get_id().cmp(&other.get_id()))
     }
 }
 
 impl Ord for dyn AstNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        let a = self.get_range();
-        let b = other.get_range();
-
-        (a.start_byte, std::cmp::Reverse(a.end_byte))
-            .cmp(&(b.start_byte, std::cmp::Reverse(b.end_byte)))
+        self.get_id().cmp(&other.get_id())
     }
 }

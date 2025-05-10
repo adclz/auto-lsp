@@ -24,6 +24,7 @@ mod ast_node;
 
 pub mod ast {
     pub use crate::ast_node::capabilities::*;
+    pub use crate::ast_node::builder::*;
     pub use crate::ast_node::node::*;
 }
 

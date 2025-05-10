@@ -157,6 +157,7 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
             &vec![],
             &vec![],
             &vec![],
+            &vec![],
         ));
     }
 

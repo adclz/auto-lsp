@@ -36,11 +36,13 @@ impl ToTokens for NodeType {
                 &vec![],
                 &vec![],
                 &vec![],
+                &vec![],
             )
         } else if !self.is_supertype() {
             generate_struct(
                 &format_ident!("{}", &sanitize_string_to_pascal(&self.kind)),
                 &self.kind,
+                &vec![],
                 &vec![],
                 &vec![],
                 &vec![],
@@ -65,22 +67,24 @@ impl NodeType {
             _fields.push(children.child_code_gen());
         }
 
-        let (struct_fields, struct_fields_collect, struct_fields_finalize) = _fields
+        let (struct_fields, struct_fields_init, struct_fields_collect, struct_fields_finalize) = _fields
             .iter()
             .map(|field| {
                 (
                     field.generate_field(),
+                    field.generate_field_init(),
                     field.generate_field_collect(),
                     field.generate_field_finalize(),
                 )
             })
             .fold(
-                (vec![], vec![], vec![]),
-                |(mut fields, mut collects, mut finalizes), (field, collect, finalize)| {
+                (vec![], vec![], vec![], vec![]),
+                |(mut fields, mut inits, mut collects, mut finalizes), (field, init, collect, finalize)| {
                     fields.push(field);
+                    inits.push(init);
                     collects.push(collect);
                     finalizes.push(finalize);
-                    (fields, collects, finalizes)
+                    (fields, inits, collects, finalizes)
                 },
             );
 
@@ -88,6 +92,7 @@ impl NodeType {
             &format_ident!("{}", sanitize_string_to_pascal(&self.kind)),
             &self.kind,
             &struct_fields,
+            &struct_fields_init,
             &struct_fields_collect,
             &struct_fields_finalize,
         )
@@ -105,59 +110,60 @@ pub(crate) fn generate_struct(
     struct_name: &Ident,
     struct_type: &String,
     struct_fields: &Vec<TokenStream>,
+    struct_fields_init: &Vec<TokenStream>,
     struct_fields_collect: &Vec<TokenStream>,
     struct_fields_finalize: &Vec<TokenStream>,
 ) -> TokenStream {
-    let cursor = if struct_fields_collect.is_empty() {
-        quote! {}
-    } else {
-        quote! { let mut cursor = node.walk(); }
-    };
-
     let of_type = match NODE_ID_FOR_NAMED_NODE.lock().unwrap().get(struct_type) {
         Some(id) => {
             quote! {
-                impl #struct_name {
-                    pub fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
-                        matches!(node.kind_id(), #id)
-                    }
+                fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
+                    matches!(node.kind_id(), #id)
                 }
             }
         }
         None => {
             quote! {
-                impl #struct_name {
-                    pub fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
-                        matches!(node.kind(), #struct_type)
-                    }
+                fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
+                    matches!(node.kind(), #struct_type)
                 }
             }
         }
     };
 
     let struct_fields = if struct_fields.is_empty() {
-        quote! {  _range: auto_lsp::tree_sitter::Range }
+        quote! { _range: auto_lsp::tree_sitter::Range, _id: usize, _parent: Option<usize>, }
     } else {
         quote! {
             #(#struct_fields),*,
-             _range: auto_lsp::tree_sitter::Range
+             _range: auto_lsp::tree_sitter::Range,
+            _id: usize,
+            _parent: Option<usize>
         }
     };
 
-    let struct_fields_collect = if struct_fields_collect.is_empty() {
-        quote! {}
-    } else {
-        quote! { #(#struct_fields_collect);*; }
-    };
-
     let struct_fields_finalize = if struct_fields_finalize.is_empty() {
-        quote! { Ok(Self { _range: node.range() }) }
+        quote! { Ok(Self { _range: node.range(), _id: id, _parent: parent_id }) }
     } else {
         quote! {
            Ok(Self {
                 #(#struct_fields_finalize),*,
                  _range: node.range(),
+                _id: id,
+                _parent: parent_id
             })
+        }
+    };
+
+    let init_builder = if struct_fields_collect.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+          builder
+            .builder(&node, Some(id))
+            .walk(|builder| {
+                #(#struct_fields_collect);*
+            });
         }
     };
 
@@ -168,26 +174,28 @@ pub(crate) fn generate_struct(
         }
 
         impl auto_lsp::core::ast::AstNode for #struct_name {
+            #of_type
+
             fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
                 &self._range
             }
+
+            fn get_id(&self) -> usize {
+                self._id
+            }
+
+            fn get_parent_id(&self) -> Option<usize> {
+                self._parent
+            }
         }
 
-        #of_type
-
-        impl
-            TryFrom<(
-                &auto_lsp::tree_sitter::Node<'_>,
-                &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstNode>>
-            )> for #struct_name {
+        impl<'a>
+            TryFrom<auto_lsp::core::ast::TryFromParams<'a>> for #struct_name {
             type Error = auto_lsp::core::errors::AstError;
 
-            fn try_from((node, index): (
-                    &auto_lsp::tree_sitter::Node<'_>,
-                    &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstNode>>)
-            ) -> Result<Self, Self::Error> {
-                #cursor
-                #struct_fields_collect
+            fn try_from((node, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
+                #(#struct_fields_init);*;
+                #init_builder
                 #struct_fields_finalize
             }
         }
@@ -234,9 +242,9 @@ pub(crate) fn generate_enum(
     let pattern_matching = match (r_types.is_empty(), super_types_types.is_empty()) {
         (false, false) => {
             let k = quote! {
-            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, &mut *index))?))),*,
+            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, builder, id, parent_id))?))),*,
             /// Super types
-            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, &mut *index))?))),*,
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
                 range: node.range(),
                 symbol: node.kind(),
@@ -247,7 +255,7 @@ pub(crate) fn generate_enum(
         (true, false) => {
             let k = quote! {
             /// Super types
-            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, &mut *index))?))),*,
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
                 range: node.range(),
                 symbol: node.kind(),
@@ -257,7 +265,7 @@ pub(crate) fn generate_enum(
             k
         },
         (false, true) => quote! {
-            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, &mut *index))?))),*,
+            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
                 range: node.range(),
                 symbol: node.kind(),
@@ -283,31 +291,34 @@ pub(crate) fn generate_enum(
         }
 
         impl auto_lsp::core::ast::AstNode for #variant_name {
+            fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
+                matches!(node.kind_id(), #(#r_types)|*)
+            }
+
             fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
                 match self {
                     #(Self::#r_variants(node) => node.get_range()),*
                 }
             }
-        }
 
-        impl #variant_name {
-            pub fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
-                matches!(node.kind_id(), #(#r_types)|*)
+            fn get_id(&self) -> usize {
+                match self {
+                    #(Self::#r_variants(node) => node.get_id()),*
+                }
+            }
+
+            fn get_parent_id(&self) -> Option<usize> {
+                match self {
+                    #(Self::#r_variants(node) => node.get_parent_id()),*
+                }
             }
         }
 
-        impl
-            TryFrom<(
-                &auto_lsp::tree_sitter::Node<'_>,
-                &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstNode>>
-            )> for #variant_name {
+       impl<'a>
+            TryFrom<auto_lsp::core::ast::TryFromParams<'a>> for #variant_name {
             type Error = auto_lsp::core::errors::AstError;
 
-            fn try_from(
-                (node, index): (
-                    &auto_lsp::tree_sitter::Node<'_>,
-                    &mut Vec<std::sync::Arc<dyn auto_lsp::core::ast::AstNode>>)
-            ) -> Result<Self, Self::Error> {
+            fn try_from((node, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
                 match node.kind_id() {
                     #pattern_matching
                 }

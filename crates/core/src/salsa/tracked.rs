@@ -81,34 +81,21 @@ impl ParsedAst {
     }
 
     pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
-        let mut best: Option<&Arc<dyn AstNode>> = None;
-
+        let mut result = None;
         for node in self.nodes.iter() {
             let range = node.get_range();
 
             if range.start_byte > offset {
-                break;
+                // If the start byte is greater than the offset, we can stop searching
+                continue;
             }
 
             if range.start_byte <= offset && offset <= range.end_byte {
-                match best {
-                    Some(existing) => {
-                        let existing_range = existing.get_range();
-                        let current_span = range.end_byte - range.start_byte;
-                        let existing_span = existing_range.end_byte - existing_range.start_byte;
-
-                        // Prefer narrower (more specific) nodes
-                        if current_span < existing_span {
-                            best = Some(node);
-                        }
-                    }
-                    None => {
-                        best = Some(node);
-                    }
-                }
+                result = Some(node);
+            } else {
+                continue;
             }
         }
-
-        best
+        result
     }
 }
