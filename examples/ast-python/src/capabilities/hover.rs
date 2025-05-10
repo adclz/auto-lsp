@@ -15,10 +15,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use crate::generated::{
+    Block, CompoundStatement_SimpleStatement, Identifier, PassStatement, SimpleStatement,
+};
 use auto_lsp::core::ast::{AstNode, GetHover};
 use auto_lsp::core::document::Document;
 use auto_lsp::{anyhow, lsp_types};
-use crate::generated::{Identifier, PassStatement};
+
+impl GetHover for CompoundStatement_SimpleStatement {
+    fn get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
+        match self {
+            CompoundStatement_SimpleStatement::SimpleStatement(SimpleStatement::PassStatement(
+                pass,
+            )) => pass.get_hover(doc),
+            _ => Ok(None),
+        }
+    }
+}
 
 impl GetHover for PassStatement {
     fn get_hover(&self, _doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {

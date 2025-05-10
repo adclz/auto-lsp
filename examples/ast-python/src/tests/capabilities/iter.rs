@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::db::create_python_db;
-use crate::generated::{CompoundStatement_SimpleStatement, PassStatement, SimpleStatement};
+use crate::generated::{CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, PassStatement, SimpleStatement};
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::lsp_types::Url;
@@ -76,6 +76,42 @@ fn sort(foo_bar: impl BaseDatabase) {
             "pass"
         ]
     );
+
+    // Nodes should be sorted by their id
+    // ids should be unique
+    assert_eq!(
+        ast.iter()
+            .map(|n| n.get_id())
+            .collect::<Vec<_>>(),
+        vec![
+            // module
+            0,
+            // foo
+            1,
+            2,
+            // parameters
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            // body
+            14,
+            15,
+            // bar
+            16,
+            17,
+            18,
+            19,
+            20
+        ]
+    )
 }
 
 #[rstest]
@@ -106,4 +142,36 @@ fn descendant_at(foo_bar: impl BaseDatabase) {
     }
 
     assert_eq!(pass_statement.get_text(source_code).unwrap(), "pass");
+}
+
+#[rstest]
+fn parents(foo_bar: impl BaseDatabase) {
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+    let ast = get_ast(&foo_bar, file);
+
+    let root = ast.get_root().unwrap();
+    eprintln!("root: {:?}", root.get_id());
+    eprintln!("ast: {:?}", root.get_parent_id());
+
+    // The root node should have no parent
+    assert!(ast.get_root().unwrap().get_parent(ast).is_none());
+
+    // All other nodes should have a parent
+    for node in ast[1..ast.len() - 1].iter() {
+        assert!(node.get_parent(ast).is_some());
+    }
+
+    let pass_statement = ast.descendant_at(88).unwrap();
+    let pass_statement_parent = pass_statement.get_parent(ast).unwrap();
+
+    // Parent id should be different from the child id
+    assert_ne!(
+        pass_statement.get_id(),
+        pass_statement_parent.get_id()
+    );
+
+    // Parent id should be inferior to the child id
+    assert!(pass_statement.get_id() > pass_statement_parent.get_id());
 }
