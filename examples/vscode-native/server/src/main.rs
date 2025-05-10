@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use std::error::Error;
 use std::panic::RefUnwindSafe;
 
+use ast_python::db::PYTHON_PARSERS;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types::notification::{
@@ -31,7 +32,6 @@ use auto_lsp::lsp_types::request::{
     SemanticTokensFullRequest, WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
 };
 use auto_lsp::lsp_types::CompletionOptions;
-use auto_lsp::python::PYTHON_PARSERS;
 use auto_lsp::server::capabilities::{
     changed_watched_files, get_code_actions, get_code_lenses, get_completion_items,
     get_diagnostics, get_document_symbols, get_hover, get_inlay_hints, get_selection_ranges,

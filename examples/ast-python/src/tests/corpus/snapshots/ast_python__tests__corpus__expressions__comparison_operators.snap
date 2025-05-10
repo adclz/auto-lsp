@@ -1,0 +1,538 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_Less(
+                                            Token_Less {
+                                                [RANGE]
+                                                _id: 4,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Token_LessEqual(
+                                            Token_LessEqual {
+                                                [RANGE]
+                                                _id: 6,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Token_EqualEqual(
+                                            Token_EqualEqual {
+                                                [RANGE]
+                                                _id: 8,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Token_GreaterEqual(
+                                            Token_GreaterEqual {
+                                                [RANGE]
+                                                _id: 10,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Token_Greater(
+                                            Token_Greater {
+                                                [RANGE]
+                                                _id: 12,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 3,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 5,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 7,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 9,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 11,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 13,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                    _id: 2,
+                                    _parent: Some(
+                                        1,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    operator: Token_Or(
+                                        Token_Or {
+                                            [RANGE]
+                                            _id: 21,
+                                            _parent: Some(
+                                                15,
+                                            ),
+                                        },
+                                    ),
+                                    right: ComparisonOperator(
+                                        ComparisonOperator {
+                                            operators: [
+                                                Token_EqualEqual(
+                                                    Token_EqualEqual {
+                                                        [RANGE]
+                                                        _id: 24,
+                                                        _parent: Some(
+                                                            22,
+                                                        ),
+                                                    },
+                                                ),
+                                            ],
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 23,
+                                                        _parent: Some(
+                                                            22,
+                                                        ),
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 25,
+                                                        _parent: Some(
+                                                            22,
+                                                        ),
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                            _id: 22,
+                                            _parent: Some(
+                                                15,
+                                            ),
+                                        },
+                                    ),
+                                    left: NotOperator(
+                                        NotOperator {
+                                            argument: ComparisonOperator(
+                                                ComparisonOperator {
+                                                    operators: [
+                                                        Token_EqualEqual(
+                                                            Token_EqualEqual {
+                                                                [RANGE]
+                                                                _id: 19,
+                                                                _parent: Some(
+                                                                    17,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    children: [
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                                _id: 18,
+                                                                _parent: Some(
+                                                                    17,
+                                                                ),
+                                                            },
+                                                        ),
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                                _id: 20,
+                                                                _parent: Some(
+                                                                    17,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 17,
+                                                    _parent: Some(
+                                                        16,
+                                                    ),
+                                                },
+                                            ),
+                                            [RANGE]
+                                            _id: 16,
+                                            _parent: Some(
+                                                15,
+                                            ),
+                                        },
+                                    ),
+                                    [RANGE]
+                                    _id: 15,
+                                    _parent: Some(
+                                        14,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 14,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_NotIn(
+                                            Token_NotIn {
+                                                [RANGE]
+                                                _id: 29,
+                                                _parent: Some(
+                                                    27,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 28,
+                                                _parent: Some(
+                                                    27,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 30,
+                                                _parent: Some(
+                                                    27,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                    _id: 27,
+                                    _parent: Some(
+                                        26,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 26,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_IsNot(
+                                            Token_IsNot {
+                                                [RANGE]
+                                                _id: 34,
+                                                _parent: Some(
+                                                    32,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 33,
+                                                _parent: Some(
+                                                    32,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 35,
+                                                _parent: Some(
+                                                    32,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                    _id: 32,
+                                    _parent: Some(
+                                        31,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 31,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    operator: Token_And(
+                                        Token_And {
+                                            [RANGE]
+                                            _id: 42,
+                                            _parent: Some(
+                                                37,
+                                            ),
+                                        },
+                                    ),
+                                    right: ComparisonOperator(
+                                        ComparisonOperator {
+                                            operators: [
+                                                Token_NotEqual(
+                                                    Token_NotEqual {
+                                                        [RANGE]
+                                                        _id: 45,
+                                                        _parent: Some(
+                                                            43,
+                                                        ),
+                                                    },
+                                                ),
+                                            ],
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 44,
+                                                        _parent: Some(
+                                                            43,
+                                                        ),
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 46,
+                                                        _parent: Some(
+                                                            43,
+                                                        ),
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                            _id: 43,
+                                            _parent: Some(
+                                                37,
+                                            ),
+                                        },
+                                    ),
+                                    left: ComparisonOperator(
+                                        ComparisonOperator {
+                                            operators: [
+                                                Token_Is(
+                                                    Token_Is {
+                                                        [RANGE]
+                                                        _id: 40,
+                                                        _parent: Some(
+                                                            38,
+                                                        ),
+                                                    },
+                                                ),
+                                            ],
+                                            children: [
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 39,
+                                                        _parent: Some(
+                                                            38,
+                                                        ),
+                                                    },
+                                                ),
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 41,
+                                                        _parent: Some(
+                                                            38,
+                                                        ),
+                                                    },
+                                                ),
+                                            ],
+                                            [RANGE]
+                                            _id: 38,
+                                            _parent: Some(
+                                                37,
+                                            ),
+                                        },
+                                    ),
+                                    [RANGE]
+                                    _id: 37,
+                                    _parent: Some(
+                                        36,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 36,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            ComparisonOperator(
+                                ComparisonOperator {
+                                    operators: [
+                                        Token_LessGreater(
+                                            Token_LessGreater {
+                                                [RANGE]
+                                                _id: 50,
+                                                _parent: Some(
+                                                    48,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    children: [
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 49,
+                                                _parent: Some(
+                                                    48,
+                                                ),
+                                            },
+                                        ),
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 51,
+                                                _parent: Some(
+                                                    48,
+                                                ),
+                                            },
+                                        ),
+                                    ],
+                                    [RANGE]
+                                    _id: 48,
+                                    _parent: Some(
+                                        47,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 47,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

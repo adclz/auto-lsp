@@ -107,7 +107,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
         let cb = Arc::clone(callback);
         session.task_pool.spawn(move |sender| {
             let cb = cb.clone();
-            match snapshot.with_db(|db| cb(&db, params)) {
+            match snapshot.with_db(|db| cb(db, params)) {
                 Err(e) => {
                     log::warn!("Cancelled request: {}", e);
                 }
@@ -121,7 +121,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
                         .unwrap(),
                     Err(e) => {
                         sender
-                            .send(Task::Response(Self::response_error(id, e.into())))
+                            .send(Task::Response(Self::response_error(id, e)))
                             .unwrap();
                     }
                 },
@@ -176,7 +176,7 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
             result: None,
             error: Some(lsp_server::ResponseError {
                 code: -32601, // MethodNotFound
-                message: format!("Method mismatch for request '{}'", error),
+                message: format!("Method mismatch for request '{error}'"),
                 data: None,
             }),
         }

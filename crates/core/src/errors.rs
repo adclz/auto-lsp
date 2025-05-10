@@ -22,7 +22,6 @@ use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
 use lsp_types::Url;
 use thiserror::Error;
 
-use crate::document::Document;
 
 /// Error type coming from either tree-sitter or ast parsing.
 ///
@@ -98,40 +97,28 @@ impl ParseError {
 /// Error type for AST parsing.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum AstError {
-    #[error("No root node found with {query:?}")]
-    NoRootNode {
-        range: std::ops::Range<usize>,
-        query: &'static [&'static str],
-    },
-    #[error("Invalid symbol: {query:?}")]
-    InvalidSymbol {
-        range: std::ops::Range<usize>,
-        query: &'static str,
-    },
-    #[error("Unknown symbol {symbol:?} in {parent_name:?}")]
-    UnknownSymbol {
-        range: std::ops::Range<usize>,
-        symbol: &'static str,
-        parent_name: &'static str,
-    },
-    // Happens when a #[seq] field tis empty
-    #[error("Missing symbol {symbol:?} in {parent_name:?}")]
-    MissingSymbol {
-        range: std::ops::Range<usize>,
+    #[error("Unexpected {symbol:?} in {parent_name:?}")]
+    UnexpectedSymbol {
+        range: tree_sitter::Range,
         symbol: &'static str,
         parent_name: &'static str,
     },
 }
 
-impl From<(&Document, AstError)> for ParseError {
-    fn from((document, error): (&Document, AstError)) -> Self {
+impl From<AstError> for ParseError {
+    fn from(error: AstError) -> Self {
         let range = match &error {
-            AstError::NoRootNode { range, .. } => range,
-            AstError::UnknownSymbol { range, .. } => range,
-            AstError::InvalidSymbol { range, .. } => range,
-            AstError::MissingSymbol { range, .. } => range,
+            AstError::UnexpectedSymbol { range, .. } => lsp_types::Range {
+                start: lsp_types::Position {
+                    line: range.start_point.row as u32,
+                    character: range.start_point.column as u32,
+                },
+                end: lsp_types::Position {
+                    line: range.end_point.row as u32,
+                    character: range.end_point.column as u32,
+                },
+            },
         };
-        let range = document.range_at(range.clone()).unwrap_or_default();
         Self::AstError { range, error }
     }
 }
@@ -210,9 +197,9 @@ impl From<LexerError> for ParseErrorAccumulator {
     }
 }
 
-impl From<(&Document, AstError)> for ParseErrorAccumulator {
-    fn from((document, error): (&Document, AstError)) -> Self {
-        Self(ParseError::from((document, error)))
+impl From<AstError> for ParseErrorAccumulator {
+    fn from(error: AstError) -> Self {
+        Self(ParseError::from(error))
     }
 }
 

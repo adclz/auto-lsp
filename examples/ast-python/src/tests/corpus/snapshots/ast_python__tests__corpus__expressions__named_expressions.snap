@@ -1,0 +1,896 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            NamedExpression(
+                                NamedExpression {
+                                    value: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 4,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    name: Identifier {
+                                        [RANGE]
+                                        _id: 3,
+                                        _parent: Some(
+                                            2,
+                                        ),
+                                    },
+                                    [RANGE]
+                                    _id: 2,
+                                    _parent: Some(
+                                        1,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                ParenthesizedExpression(
+                                    ParenthesizedExpression {
+                                        children: Expression(
+                                            NamedExpression(
+                                                NamedExpression {
+                                                    value: PrimaryExpression(
+                                                        Call(
+                                                            Call {
+                                                                function: Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                        _id: 10,
+                                                                        _parent: Some(
+                                                                            9,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                arguments: ArgumentList(
+                                                                    ArgumentList {
+                                                                        children: [
+                                                                            Expression(
+                                                                                PrimaryExpression(
+                                                                                    Identifier(
+                                                                                        Identifier {
+                                                                                            [RANGE]
+                                                                                            _id: 12,
+                                                                                            _parent: Some(
+                                                                                                11,
+                                                                                            ),
+                                                                                        },
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                        ],
+                                                                        [RANGE]
+                                                                        _id: 11,
+                                                                        _parent: Some(
+                                                                            9,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                [RANGE]
+                                                                _id: 9,
+                                                                _parent: Some(
+                                                                    7,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ),
+                                                    name: Identifier {
+                                                        [RANGE]
+                                                        _id: 8,
+                                                        _parent: Some(
+                                                            7,
+                                                        ),
+                                                    },
+                                                    [RANGE]
+                                                    _id: 7,
+                                                    _parent: Some(
+                                                        6,
+                                                    ),
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                        _id: 6,
+                                        _parent: Some(
+                                            5,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 5,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Call(
+                                    Call {
+                                        function: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 15,
+                                                _parent: Some(
+                                                    14,
+                                                ),
+                                            },
+                                        ),
+                                        arguments: ArgumentList(
+                                            ArgumentList {
+                                                children: [
+                                                    KeywordArgument(
+                                                        KeywordArgument {
+                                                            name: Identifier {
+                                                                [RANGE]
+                                                                _id: 18,
+                                                                _parent: Some(
+                                                                    17,
+                                                                ),
+                                                            },
+                                                            value: PrimaryExpression(
+                                                                ParenthesizedExpression(
+                                                                    ParenthesizedExpression {
+                                                                        children: Expression(
+                                                                            NamedExpression(
+                                                                                NamedExpression {
+                                                                                    value: PrimaryExpression(
+                                                                                        Call(
+                                                                                            Call {
+                                                                                                function: Identifier(
+                                                                                                    Identifier {
+                                                                                                        [RANGE]
+                                                                                                        _id: 23,
+                                                                                                        _parent: Some(
+                                                                                                            22,
+                                                                                                        ),
+                                                                                                    },
+                                                                                                ),
+                                                                                                arguments: ArgumentList(
+                                                                                                    ArgumentList {
+                                                                                                        children: [
+                                                                                                            Expression(
+                                                                                                                PrimaryExpression(
+                                                                                                                    Identifier(
+                                                                                                                        Identifier {
+                                                                                                                            [RANGE]
+                                                                                                                            _id: 25,
+                                                                                                                            _parent: Some(
+                                                                                                                                24,
+                                                                                                                            ),
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                ),
+                                                                                                            ),
+                                                                                                        ],
+                                                                                                        [RANGE]
+                                                                                                        _id: 24,
+                                                                                                        _parent: Some(
+                                                                                                            22,
+                                                                                                        ),
+                                                                                                    },
+                                                                                                ),
+                                                                                                [RANGE]
+                                                                                                _id: 22,
+                                                                                                _parent: Some(
+                                                                                                    20,
+                                                                                                ),
+                                                                                            },
+                                                                                        ),
+                                                                                    ),
+                                                                                    name: Identifier {
+                                                                                        [RANGE]
+                                                                                        _id: 21,
+                                                                                        _parent: Some(
+                                                                                            20,
+                                                                                        ),
+                                                                                    },
+                                                                                    [RANGE]
+                                                                                    _id: 20,
+                                                                                    _parent: Some(
+                                                                                        19,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                        [RANGE]
+                                                                        _id: 19,
+                                                                        _parent: Some(
+                                                                            17,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            [RANGE]
+                                                            _id: 17,
+                                                            _parent: Some(
+                                                                16,
+                                                            ),
+                                                        },
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                                _id: 16,
+                                                _parent: Some(
+                                                    14,
+                                                ),
+                                            },
+                                        ),
+                                        [RANGE]
+                                        _id: 14,
+                                        _parent: Some(
+                                            13,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 13,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            ParenthesizedExpression(
+                                                ParenthesizedExpression {
+                                                    children: Expression(
+                                                        NamedExpression(
+                                                            NamedExpression {
+                                                                value: PrimaryExpression(
+                                                                    Call(
+                                                                        Call {
+                                                                            function: Identifier(
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                    _id: 33,
+                                                                                    _parent: Some(
+                                                                                        32,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                            arguments: ArgumentList(
+                                                                                ArgumentList {
+                                                                                    children: [
+                                                                                        Expression(
+                                                                                            PrimaryExpression(
+                                                                                                Identifier(
+                                                                                                    Identifier {
+                                                                                                        [RANGE]
+                                                                                                        _id: 35,
+                                                                                                        _parent: Some(
+                                                                                                            34,
+                                                                                                        ),
+                                                                                                    },
+                                                                                                ),
+                                                                                            ),
+                                                                                        ),
+                                                                                    ],
+                                                                                    [RANGE]
+                                                                                    _id: 34,
+                                                                                    _parent: Some(
+                                                                                        32,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                            [RANGE]
+                                                                            _id: 32,
+                                                                            _parent: Some(
+                                                                                30,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                name: Identifier {
+                                                                    [RANGE]
+                                                                    _id: 31,
+                                                                    _parent: Some(
+                                                                        30,
+                                                                    ),
+                                                                },
+                                                                [RANGE]
+                                                                _id: 30,
+                                                                _parent: Some(
+                                                                    29,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 29,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                Type: None,
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                            _id: 28,
+                                            _parent: Some(
+                                                27,
+                                            ),
+                                        },
+                                    ),
+                                ),
+                                [RANGE]
+                                _id: 27,
+                                _parent: Some(
+                                    26,
+                                ),
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 26,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                            _id: 47,
+                                                            _parent: Some(
+                                                                46,
+                                                            ),
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                        _id: 46,
+                                        _parent: Some(
+                                            45,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 45,
+                        _parent: Some(
+                            36,
+                        ),
+                    },
+                    name: Identifier {
+                        [RANGE]
+                        _id: 37,
+                        _parent: Some(
+                            36,
+                        ),
+                    },
+                    parameters: Parameters {
+                        children: [
+                            DefaultParameter(
+                                DefaultParameter {
+                                    value: PrimaryExpression(
+                                        ParenthesizedExpression(
+                                            ParenthesizedExpression {
+                                                children: Expression(
+                                                    NamedExpression(
+                                                        NamedExpression {
+                                                            value: PrimaryExpression(
+                                                                Integer(
+                                                                    Integer {
+                                                                        [RANGE]
+                                                                        _id: 44,
+                                                                        _parent: Some(
+                                                                            42,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            name: Identifier {
+                                                                [RANGE]
+                                                                _id: 43,
+                                                                _parent: Some(
+                                                                    42,
+                                                                ),
+                                                            },
+                                                            [RANGE]
+                                                            _id: 42,
+                                                            _parent: Some(
+                                                                41,
+                                                            ),
+                                                        },
+                                                    ),
+                                                ),
+                                                [RANGE]
+                                                _id: 41,
+                                                _parent: Some(
+                                                    39,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    name: Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                            _id: 40,
+                                            _parent: Some(
+                                                39,
+                                            ),
+                                        },
+                                    ),
+                                    [RANGE]
+                                    _id: 39,
+                                    _parent: Some(
+                                        38,
+                                    ),
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 38,
+                        _parent: Some(
+                            36,
+                        ),
+                    },
+                    type_parameters: None,
+                    return_type: None,
+                    [RANGE]
+                    _id: 36,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                            _id: 61,
+                                                            _parent: Some(
+                                                                60,
+                                                            ),
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                        _id: 60,
+                                        _parent: Some(
+                                            59,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 59,
+                        _parent: Some(
+                            48,
+                        ),
+                    },
+                    name: Identifier {
+                        [RANGE]
+                        _id: 49,
+                        _parent: Some(
+                            48,
+                        ),
+                    },
+                    parameters: Parameters {
+                        children: [
+                            TypedDefaultParameter(
+                                TypedDefaultParameter {
+                                    Type: Type {
+                                        children: Expression(
+                                            PrimaryExpression(
+                                                ParenthesizedExpression(
+                                                    ParenthesizedExpression {
+                                                        children: Expression(
+                                                            NamedExpression(
+                                                                NamedExpression {
+                                                                    value: PrimaryExpression(
+                                                                        Integer(
+                                                                            Integer {
+                                                                                [RANGE]
+                                                                                _id: 57,
+                                                                                _parent: Some(
+                                                                                    55,
+                                                                                ),
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                    name: Identifier {
+                                                                        [RANGE]
+                                                                        _id: 56,
+                                                                        _parent: Some(
+                                                                            55,
+                                                                        ),
+                                                                    },
+                                                                    [RANGE]
+                                                                    _id: 55,
+                                                                    _parent: Some(
+                                                                        54,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ),
+                                                        [RANGE]
+                                                        _id: 54,
+                                                        _parent: Some(
+                                                            53,
+                                                        ),
+                                                    },
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                        _id: 53,
+                                        _parent: Some(
+                                            51,
+                                        ),
+                                    },
+                                    name: Identifier {
+                                        [RANGE]
+                                        _id: 52,
+                                        _parent: Some(
+                                            51,
+                                        ),
+                                    },
+                                    value: PrimaryExpression(
+                                        Integer(
+                                            Integer {
+                                                [RANGE]
+                                                _id: 58,
+                                                _parent: Some(
+                                                    51,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                    _id: 51,
+                                    _parent: Some(
+                                        50,
+                                    ),
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 50,
+                        _parent: Some(
+                            48,
+                        ),
+                    },
+                    type_parameters: None,
+                    return_type: None,
+                    [RANGE]
+                    _id: 48,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                Call(
+                                    Call {
+                                        function: Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 64,
+                                                _parent: Some(
+                                                    63,
+                                                ),
+                                            },
+                                        ),
+                                        arguments: ArgumentList(
+                                            ArgumentList {
+                                                children: [
+                                                    Expression(
+                                                        NamedExpression(
+                                                            NamedExpression {
+                                                                value: PrimaryExpression(
+                                                                    Integer(
+                                                                        Integer {
+                                                                            [RANGE]
+                                                                            _id: 68,
+                                                                            _parent: Some(
+                                                                                66,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                name: Identifier {
+                                                                    [RANGE]
+                                                                    _id: 67,
+                                                                    _parent: Some(
+                                                                        66,
+                                                                    ),
+                                                                },
+                                                                [RANGE]
+                                                                _id: 66,
+                                                                _parent: Some(
+                                                                    65,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ),
+                                                    KeywordArgument(
+                                                        KeywordArgument {
+                                                            name: Identifier {
+                                                                [RANGE]
+                                                                _id: 70,
+                                                                _parent: Some(
+                                                                    69,
+                                                                ),
+                                                            },
+                                                            value: PrimaryExpression(
+                                                                String(
+                                                                    String {
+                                                                        children: [
+                                                                            StringStart(
+                                                                                StringStart {
+                                                                                    [RANGE]
+                                                                                    _id: 72,
+                                                                                    _parent: Some(
+                                                                                        71,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                            StringContent(
+                                                                                StringContent {
+                                                                                    children: [],
+                                                                                    [RANGE]
+                                                                                    _id: 73,
+                                                                                    _parent: Some(
+                                                                                        71,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                            StringEnd(
+                                                                                StringEnd {
+                                                                                    [RANGE]
+                                                                                    _id: 74,
+                                                                                    _parent: Some(
+                                                                                        71,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                        ],
+                                                                        [RANGE]
+                                                                        _id: 71,
+                                                                        _parent: Some(
+                                                                            69,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            [RANGE]
+                                                            _id: 69,
+                                                            _parent: Some(
+                                                                65,
+                                                            ),
+                                                        },
+                                                    ),
+                                                ],
+                                                [RANGE]
+                                                _id: 65,
+                                                _parent: Some(
+                                                    63,
+                                                ),
+                                            },
+                                        ),
+                                        [RANGE]
+                                        _id: 63,
+                                        _parent: Some(
+                                            62,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 62,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                ParenthesizedExpression(
+                                    ParenthesizedExpression {
+                                        children: Expression(
+                                            NamedExpression(
+                                                NamedExpression {
+                                                    value: PrimaryExpression(
+                                                        ParenthesizedExpression(
+                                                            ParenthesizedExpression {
+                                                                children: Expression(
+                                                                    NamedExpression(
+                                                                        NamedExpression {
+                                                                            value: PrimaryExpression(
+                                                                                ParenthesizedExpression(
+                                                                                    ParenthesizedExpression {
+                                                                                        children: Expression(
+                                                                                            NamedExpression(
+                                                                                                NamedExpression {
+                                                                                                    value: PrimaryExpression(
+                                                                                                        Integer(
+                                                                                                            Integer {
+                                                                                                                [RANGE]
+                                                                                                                _id: 85,
+                                                                                                                _parent: Some(
+                                                                                                                    83,
+                                                                                                                ),
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                    name: Identifier {
+                                                                                                        [RANGE]
+                                                                                                        _id: 84,
+                                                                                                        _parent: Some(
+                                                                                                            83,
+                                                                                                        ),
+                                                                                                    },
+                                                                                                    [RANGE]
+                                                                                                    _id: 83,
+                                                                                                    _parent: Some(
+                                                                                                        82,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                        [RANGE]
+                                                                                        _id: 82,
+                                                                                        _parent: Some(
+                                                                                            80,
+                                                                                        ),
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                            name: Identifier {
+                                                                                [RANGE]
+                                                                                _id: 81,
+                                                                                _parent: Some(
+                                                                                    80,
+                                                                                ),
+                                                                            },
+                                                                            [RANGE]
+                                                                            _id: 80,
+                                                                            _parent: Some(
+                                                                                79,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                                [RANGE]
+                                                                _id: 79,
+                                                                _parent: Some(
+                                                                    77,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ),
+                                                    name: Identifier {
+                                                        [RANGE]
+                                                        _id: 78,
+                                                        _parent: Some(
+                                                            77,
+                                                        ),
+                                                    },
+                                                    [RANGE]
+                                                    _id: 77,
+                                                    _parent: Some(
+                                                        76,
+                                                    ),
+                                                },
+                                            ),
+                                        ),
+                                        [RANGE]
+                                        _id: 76,
+                                        _parent: Some(
+                                            75,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 75,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

@@ -1,0 +1,26 @@
+[package]
+name = "ast-html"
+authors = ["Clauzel Adrien"]
+license = "GPL-3.0"
+repository = "https://github.com/adclz/auto-lsp"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+tree-sitter-html = "0.23.2"
+auto-lsp = { path = "../.." }
+
+[dev-dependencies]
+insta = { version = "1.43.1", features = ["filters"] }
+rstest = "0.25.0"
+regex = "1.11.1"
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
+
+[build-dependencies]
+tree-sitter-html = "0.23.2"
+auto-lsp = { path = "../.." }
+auto-lsp-codegen = { path = "../../crates/codegen" }

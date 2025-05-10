@@ -16,6 +16,9 @@ jobs:
     name: cargo test
     runs-on: ubuntu-latest
     steps:
+      - run: rustup toolchain install nightly
+      - run: rustup default nightly
+      - run: cargo install cargo-insta
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - run: rustup target add wasm32-wasip1-threads
@@ -28,4 +31,16 @@ jobs:
              sudo apt update
              sudo apt install gcc-multilib -y    
       - name: Run tests
-        run: cargo test --features=wasm,python,html --target wasm32-wasip1-threads  
+        run: cargo test --features=wasm --target wasm32-wasip1-threads  
+      - name: main crate
+        run: cargo test --all-features --workspace
+      - name: python ast
+        working-directory: ./examples/ast-python
+        env:
+          INSTA_UPDATE: new
+        run: cargo test --target wasm32-wasip1-threads  
+      - name: html ast
+        env:
+          INSTA_UPDATE: new
+        working-directory: ./examples/ast-html
+        run: cargo test --target wasm32-wasip1-threads

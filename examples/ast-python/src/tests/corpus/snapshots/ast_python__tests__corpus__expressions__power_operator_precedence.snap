@@ -1,0 +1,162 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                BinaryOperator(
+                                    BinaryOperator {
+                                        operator: Token_StarStar(
+                                            Token_StarStar {
+                                                [RANGE]
+                                                _id: 4,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        left: Integer(
+                                            Integer {
+                                                [RANGE]
+                                                _id: 3,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        right: BinaryOperator(
+                                            BinaryOperator {
+                                                operator: Token_StarStar(
+                                                    Token_StarStar {
+                                                        [RANGE]
+                                                        _id: 7,
+                                                        _parent: Some(
+                                                            5,
+                                                        ),
+                                                    },
+                                                ),
+                                                left: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                        _id: 6,
+                                                        _parent: Some(
+                                                            5,
+                                                        ),
+                                                    },
+                                                ),
+                                                right: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                        _id: 8,
+                                                        _parent: Some(
+                                                            5,
+                                                        ),
+                                                    },
+                                                ),
+                                                [RANGE]
+                                                _id: 5,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        [RANGE]
+                                        _id: 2,
+                                        _parent: Some(
+                                            1,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                UnaryOperator(
+                                    UnaryOperator {
+                                        operator: Token_Minus(
+                                            Token_Minus {
+                                                [RANGE]
+                                                _id: 11,
+                                                _parent: Some(
+                                                    10,
+                                                ),
+                                            },
+                                        ),
+                                        argument: BinaryOperator(
+                                            BinaryOperator {
+                                                operator: Token_StarStar(
+                                                    Token_StarStar {
+                                                        [RANGE]
+                                                        _id: 14,
+                                                        _parent: Some(
+                                                            12,
+                                                        ),
+                                                    },
+                                                ),
+                                                left: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                        _id: 13,
+                                                        _parent: Some(
+                                                            12,
+                                                        ),
+                                                    },
+                                                ),
+                                                right: Integer(
+                                                    Integer {
+                                                        [RANGE]
+                                                        _id: 15,
+                                                        _parent: Some(
+                                                            12,
+                                                        ),
+                                                    },
+                                                ),
+                                                [RANGE]
+                                                _id: 12,
+                                                _parent: Some(
+                                                    10,
+                                                ),
+                                            },
+                                        ),
+                                        [RANGE]
+                                        _id: 10,
+                                        _parent: Some(
+                                            9,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 9,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

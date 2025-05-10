@@ -1,3 +1,4 @@
+#![feature(min_specialization)]
 /*
 This file is part of auto-lsp.
 Copyright (C) 2025 CLAUZEL Adrien
@@ -19,23 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! # Auto LSP Core
 //! Core crate for auto_lsp
 
-mod core_ast;
-mod core_build;
+mod ast_node;
 
-/// This module contains everything related to ast symbols already created
 pub mod ast {
-    pub use crate::core_ast::capabilities::*;
-    pub use crate::core_ast::core::*;
-    pub use crate::core_ast::data::*;
-    pub use crate::core_ast::display::*;
-}
-
-/// This module contains everything related to building ast symbols
-pub mod build {
-    pub use crate::core_build::buildable::*;
-    pub use crate::core_build::downcast::*;
-    pub use crate::core_build::parse::*;
-    pub use crate::core_build::symbol::*;
+    pub use crate::ast_node::capabilities::*;
+    pub use crate::ast_node::builder::*;
+    pub use crate::ast_node::node::*;
 }
 
 /// Semantic tokens builder

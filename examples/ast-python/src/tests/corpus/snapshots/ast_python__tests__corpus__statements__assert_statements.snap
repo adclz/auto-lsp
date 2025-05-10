@@ -1,0 +1,70 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            AssertStatement(
+                AssertStatement {
+                    children: [
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                    _id: 2,
+                                    _parent: Some(
+                                        1,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            AssertStatement(
+                AssertStatement {
+                    children: [
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                    _id: 4,
+                                    _parent: Some(
+                                        3,
+                                    ),
+                                },
+                            ),
+                        ),
+                        PrimaryExpression(
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                    _id: 5,
+                                    _parent: Some(
+                                        3,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 3,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

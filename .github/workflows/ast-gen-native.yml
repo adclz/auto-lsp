@@ -19,6 +19,20 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - run: rustup toolchain install nightly
+      - run: rustup default nightly
+      - run: cargo install cargo-insta
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all-features --workspace
+      - name: main crate
+        run: cargo test --all-features --workspace
+      - name: python ast
+        working-directory: ./examples/ast-python
+        env:
+          INSTA_UPDATE: new
+        run: cargo insta test --accept
+      - name: html ast
+        working-directory: ./examples/ast-html
+        env:
+          INSTA_UPDATE: new
+        run: cargo insta test --accept
