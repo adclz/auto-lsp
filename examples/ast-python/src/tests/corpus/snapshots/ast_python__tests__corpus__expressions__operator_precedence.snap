@@ -12,27 +12,52 @@ Module {
                             PrimaryExpression(
                                 BinaryOperator(
                                     BinaryOperator {
+                                        operator: Token_Plus(
+                                            Token_Plus {
+                                                [RANGE]
+                                                _id: 6,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                        left: Call(
+                                            Call {
+                                                function: Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 4,
+                                                        _parent: Some(
+                                                            3,
+                                                        ),
+                                                    },
+                                                ),
+                                                arguments: ArgumentList(
+                                                    ArgumentList {
+                                                        children: [],
+                                                        [RANGE]
+                                                        _id: 5,
+                                                        _parent: Some(
+                                                            3,
+                                                        ),
+                                                    },
+                                                ),
+                                                [RANGE]
+                                                _id: 3,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
                                         right: BinaryOperator(
                                             BinaryOperator {
-                                                right: Attribute(
-                                                    Attribute {
-                                                        attribute: Identifier {
-                                                            [RANGE]
-                                                        },
-                                                        object: Attribute(
-                                                            Attribute {
-                                                                attribute: Identifier {
-                                                                    [RANGE]
-                                                                },
-                                                                object: Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                    },
-                                                                ),
-                                                                [RANGE]
-                                                            },
-                                                        ),
+                                                operator: Token_Star(
+                                                    Token_Star {
                                                         [RANGE]
+                                                        _id: 11,
+                                                        _parent: Some(
+                                                            7,
+                                                        ),
                                                     },
                                                 ),
                                                 left: Subscript(
@@ -43,6 +68,10 @@ Module {
                                                                     Identifier(
                                                                         Identifier {
                                                                             [RANGE]
+                                                                            _id: 10,
+                                                                            _parent: Some(
+                                                                                8,
+                                                                            ),
                                                                         },
                                                                     ),
                                                                 ),
@@ -51,50 +80,87 @@ Module {
                                                         value: Identifier(
                                                             Identifier {
                                                                 [RANGE]
+                                                                _id: 9,
+                                                                _parent: Some(
+                                                                    8,
+                                                                ),
                                                             },
                                                         ),
                                                         [RANGE]
+                                                        _id: 8,
+                                                        _parent: Some(
+                                                            7,
+                                                        ),
                                                     },
                                                 ),
-                                                operator: Token_Star(
-                                                    Token_Star {
+                                                right: Attribute(
+                                                    Attribute {
+                                                        object: Attribute(
+                                                            Attribute {
+                                                                object: Identifier(
+                                                                    Identifier {
+                                                                        [RANGE]
+                                                                        _id: 14,
+                                                                        _parent: Some(
+                                                                            13,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                attribute: Identifier {
+                                                                    [RANGE]
+                                                                    _id: 15,
+                                                                    _parent: Some(
+                                                                        13,
+                                                                    ),
+                                                                },
+                                                                [RANGE]
+                                                                _id: 13,
+                                                                _parent: Some(
+                                                                    12,
+                                                                ),
+                                                            },
+                                                        ),
+                                                        attribute: Identifier {
+                                                            [RANGE]
+                                                            _id: 16,
+                                                            _parent: Some(
+                                                                12,
+                                                            ),
+                                                        },
                                                         [RANGE]
+                                                        _id: 12,
+                                                        _parent: Some(
+                                                            7,
+                                                        ),
                                                     },
                                                 ),
                                                 [RANGE]
-                                            },
-                                        ),
-                                        left: Call(
-                                            Call {
-                                                function: Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                    },
+                                                _id: 7,
+                                                _parent: Some(
+                                                    2,
                                                 ),
-                                                arguments: ArgumentList(
-                                                    ArgumentList {
-                                                        children: [],
-                                                        [RANGE]
-                                                    },
-                                                ),
-                                                [RANGE]
-                                            },
-                                        ),
-                                        operator: Token_Plus(
-                                            Token_Plus {
-                                                [RANGE]
                                             },
                                         ),
                                         [RANGE]
+                                        _id: 2,
+                                        _parent: Some(
+                                            1,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

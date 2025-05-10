@@ -13,12 +13,20 @@ Module {
                                 Float(
                                     Float {
                                         [RANGE]
+                                        _id: 2,
+                                        _parent: Some(
+                                            1,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -31,12 +39,20 @@ Module {
                                 Float(
                                     Float {
                                         [RANGE]
+                                        _id: 4,
+                                        _parent: Some(
+                                            3,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 3,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -49,12 +65,20 @@ Module {
                                 Float(
                                     Float {
                                         [RANGE]
+                                        _id: 6,
+                                        _parent: Some(
+                                            5,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 5,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -67,12 +91,20 @@ Module {
                                 Float(
                                     Float {
                                         [RANGE]
+                                        _id: 8,
+                                        _parent: Some(
+                                            7,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 7,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -85,12 +117,20 @@ Module {
                                 Float(
                                     Float {
                                         [RANGE]
+                                        _id: 10,
+                                        _parent: Some(
+                                            9,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 9,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -102,26 +142,44 @@ Module {
                             PrimaryExpression(
                                 UnaryOperator(
                                     UnaryOperator {
-                                        argument: Float(
-                                            Float {
-                                                [RANGE]
-                                            },
-                                        ),
                                         operator: Token_Minus(
                                             Token_Minus {
                                                 [RANGE]
+                                                _id: 13,
+                                                _parent: Some(
+                                                    12,
+                                                ),
+                                            },
+                                        ),
+                                        argument: Float(
+                                            Float {
+                                                [RANGE]
+                                                _id: 14,
+                                                _parent: Some(
+                                                    12,
+                                                ),
                                             },
                                         ),
                                         [RANGE]
+                                        _id: 12,
+                                        _parent: Some(
+                                            11,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 11,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

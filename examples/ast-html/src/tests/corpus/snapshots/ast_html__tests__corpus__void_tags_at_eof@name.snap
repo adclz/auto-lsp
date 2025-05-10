@@ -13,6 +13,10 @@ Document {
                                 TagName(
                                     TagName {
                                         [RANGE]
+                                        _id: 3,
+                                        _parent: Some(
+                                            2,
+                                        ),
                                     },
                                 ),
                                 Attribute(
@@ -21,6 +25,10 @@ Document {
                                             AttributeName(
                                                 AttributeName {
                                                     [RANGE]
+                                                    _id: 5,
+                                                    _parent: Some(
+                                                        4,
+                                                    ),
                                                 },
                                             ),
                                             QuotedAttributeValue(
@@ -28,23 +36,45 @@ Document {
                                                     children: Some(
                                                         AttributeValue {
                                                             [RANGE]
+                                                            _id: 7,
+                                                            _parent: Some(
+                                                                6,
+                                                            ),
                                                         },
                                                     ),
                                                     [RANGE]
+                                                    _id: 6,
+                                                    _parent: Some(
+                                                        4,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 4,
+                                        _parent: Some(
+                                            2,
+                                        ),
                                     },
                                 ),
                             ],
                             [RANGE]
+                            _id: 2,
+                            _parent: Some(
+                                1,
+                            ),
                         },
                     ),
                 ],
                 [RANGE]
+                _id: 1,
+                _parent: Some(
+                    0,
+                ),
             },
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

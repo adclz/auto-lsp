@@ -9,6 +9,10 @@ Module {
                 ReturnStatement {
                     children: None,
                     [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -22,22 +26,38 @@ Module {
                                     PrimaryExpression(
                                         BinaryOperator(
                                             BinaryOperator {
-                                                right: Identifier(
-                                                    Identifier {
+                                                operator: Token_Plus(
+                                                    Token_Plus {
                                                         [RANGE]
+                                                        _id: 6,
+                                                        _parent: Some(
+                                                            4,
+                                                        ),
                                                     },
                                                 ),
                                                 left: Identifier(
                                                     Identifier {
                                                         [RANGE]
+                                                        _id: 5,
+                                                        _parent: Some(
+                                                            4,
+                                                        ),
                                                     },
                                                 ),
-                                                operator: Token_Plus(
-                                                    Token_Plus {
+                                                right: Identifier(
+                                                    Identifier {
                                                         [RANGE]
+                                                        _id: 7,
+                                                        _parent: Some(
+                                                            4,
+                                                        ),
                                                     },
                                                 ),
                                                 [RANGE]
+                                                _id: 4,
+                                                _parent: Some(
+                                                    3,
+                                                ),
                                             },
                                         ),
                                     ),
@@ -45,15 +65,27 @@ Module {
                                         Identifier(
                                             Identifier {
                                                 [RANGE]
+                                                _id: 8,
+                                                _parent: Some(
+                                                    3,
+                                                ),
                                             },
                                         ),
                                     ),
                                 ],
                                 [RANGE]
+                                _id: 3,
+                                _parent: Some(
+                                    2,
+                                ),
                             },
                         ),
                     ),
                     [RANGE]
+                    _id: 2,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -68,18 +100,32 @@ Module {
                                         Identifier(
                                             Identifier {
                                                 [RANGE]
+                                                _id: 11,
+                                                _parent: Some(
+                                                    10,
+                                                ),
                                             },
                                         ),
                                     ),
                                     [RANGE]
+                                    _id: 10,
+                                    _parent: Some(
+                                        9,
+                                    ),
                                 },
                             ),
                         ),
                     ),
                     [RANGE]
+                    _id: 9,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

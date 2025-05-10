@@ -7,6 +7,17 @@ Module {
         CompoundStatement(
             WhileStatement(
                 WhileStatement {
+                    condition: PrimaryExpression(
+                        Identifier(
+                            Identifier {
+                                [RANGE]
+                                _id: 2,
+                                _parent: Some(
+                                    1,
+                                ),
+                            },
+                        ),
+                    ),
                     body: Block {
                         alternative: [],
                         children: [
@@ -14,6 +25,10 @@ Module {
                                 PassStatement(
                                     PassStatement {
                                         [RANGE]
+                                        _id: 4,
+                                        _parent: Some(
+                                            3,
+                                        ),
                                     },
                                 ),
                             ),
@@ -21,6 +36,10 @@ Module {
                                 BreakStatement(
                                     BreakStatement {
                                         [RANGE]
+                                        _id: 5,
+                                        _parent: Some(
+                                            3,
+                                        ),
                                     },
                                 ),
                             ),
@@ -28,24 +47,31 @@ Module {
                                 ContinueStatement(
                                     ContinueStatement {
                                         [RANGE]
+                                        _id: 6,
+                                        _parent: Some(
+                                            3,
+                                        ),
                                     },
                                 ),
                             ),
                         ],
                         [RANGE]
+                        _id: 3,
+                        _parent: Some(
+                            1,
+                        ),
                     },
                     alternative: None,
-                    condition: PrimaryExpression(
-                        Identifier(
-                            Identifier {
-                                [RANGE]
-                            },
-                        ),
-                    ),
                     [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

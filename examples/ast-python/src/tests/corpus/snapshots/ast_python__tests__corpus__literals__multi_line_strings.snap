@@ -16,27 +16,47 @@ Module {
                                             StringStart(
                                                 StringStart {
                                                     [RANGE]
+                                                    _id: 3,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
                                                 },
                                             ),
                                             StringContent(
                                                 StringContent {
                                                     children: [],
                                                     [RANGE]
+                                                    _id: 4,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
                                                 },
                                             ),
                                             StringEnd(
                                                 StringEnd {
                                                     [RANGE]
+                                                    _id: 5,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 2,
+                                        _parent: Some(
+                                            1,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -52,27 +72,47 @@ Module {
                                             StringStart(
                                                 StringStart {
                                                     [RANGE]
+                                                    _id: 8,
+                                                    _parent: Some(
+                                                        7,
+                                                    ),
                                                 },
                                             ),
                                             StringContent(
                                                 StringContent {
                                                     children: [],
                                                     [RANGE]
+                                                    _id: 9,
+                                                    _parent: Some(
+                                                        7,
+                                                    ),
                                                 },
                                             ),
                                             StringEnd(
                                                 StringEnd {
                                                     [RANGE]
+                                                    _id: 10,
+                                                    _parent: Some(
+                                                        7,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 7,
+                                        _parent: Some(
+                                            6,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 6,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -88,27 +128,47 @@ Module {
                                             StringStart(
                                                 StringStart {
                                                     [RANGE]
+                                                    _id: 13,
+                                                    _parent: Some(
+                                                        12,
+                                                    ),
                                                 },
                                             ),
                                             StringContent(
                                                 StringContent {
                                                     children: [],
                                                     [RANGE]
+                                                    _id: 14,
+                                                    _parent: Some(
+                                                        12,
+                                                    ),
                                                 },
                                             ),
                                             StringEnd(
                                                 StringEnd {
                                                     [RANGE]
+                                                    _id: 15,
+                                                    _parent: Some(
+                                                        12,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 12,
+                                        _parent: Some(
+                                            11,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 11,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -124,27 +184,47 @@ Module {
                                             StringStart(
                                                 StringStart {
                                                     [RANGE]
+                                                    _id: 18,
+                                                    _parent: Some(
+                                                        17,
+                                                    ),
                                                 },
                                             ),
                                             StringContent(
                                                 StringContent {
                                                     children: [],
                                                     [RANGE]
+                                                    _id: 19,
+                                                    _parent: Some(
+                                                        17,
+                                                    ),
                                                 },
                                             ),
                                             StringEnd(
                                                 StringEnd {
                                                     [RANGE]
+                                                    _id: 20,
+                                                    _parent: Some(
+                                                        17,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 17,
+                                        _parent: Some(
+                                            16,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 16,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -160,27 +240,47 @@ Module {
                                             StringStart(
                                                 StringStart {
                                                     [RANGE]
+                                                    _id: 23,
+                                                    _parent: Some(
+                                                        22,
+                                                    ),
                                                 },
                                             ),
                                             StringContent(
                                                 StringContent {
                                                     children: [],
                                                     [RANGE]
+                                                    _id: 24,
+                                                    _parent: Some(
+                                                        22,
+                                                    ),
                                                 },
                                             ),
                                             StringEnd(
                                                 StringEnd {
                                                     [RANGE]
+                                                    _id: 25,
+                                                    _parent: Some(
+                                                        22,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 22,
+                                        _parent: Some(
+                                            21,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 21,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -196,27 +296,47 @@ Module {
                                             StringStart(
                                                 StringStart {
                                                     [RANGE]
+                                                    _id: 28,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
                                                 },
                                             ),
                                             StringContent(
                                                 StringContent {
                                                     children: [],
                                                     [RANGE]
+                                                    _id: 29,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
                                                 },
                                             ),
                                             StringEnd(
                                                 StringEnd {
                                                     [RANGE]
+                                                    _id: 30,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 27,
+                                        _parent: Some(
+                                            26,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 26,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -232,6 +352,10 @@ Module {
                                             StringStart(
                                                 StringStart {
                                                     [RANGE]
+                                                    _id: 33,
+                                                    _parent: Some(
+                                                        32,
+                                                    ),
                                                 },
                                             ),
                                             StringContent(
@@ -240,53 +364,95 @@ Module {
                                                         EscapeSequence(
                                                             EscapeSequence {
                                                                 [RANGE]
+                                                                _id: 35,
+                                                                _parent: Some(
+                                                                    34,
+                                                                ),
                                                             },
                                                         ),
                                                         EscapeSequence(
                                                             EscapeSequence {
                                                                 [RANGE]
+                                                                _id: 36,
+                                                                _parent: Some(
+                                                                    34,
+                                                                ),
                                                             },
                                                         ),
                                                         EscapeSequence(
                                                             EscapeSequence {
                                                                 [RANGE]
+                                                                _id: 37,
+                                                                _parent: Some(
+                                                                    34,
+                                                                ),
                                                             },
                                                         ),
                                                         EscapeSequence(
                                                             EscapeSequence {
                                                                 [RANGE]
+                                                                _id: 38,
+                                                                _parent: Some(
+                                                                    34,
+                                                                ),
                                                             },
                                                         ),
                                                         EscapeSequence(
                                                             EscapeSequence {
                                                                 [RANGE]
+                                                                _id: 39,
+                                                                _parent: Some(
+                                                                    34,
+                                                                ),
                                                             },
                                                         ),
                                                         EscapeSequence(
                                                             EscapeSequence {
                                                                 [RANGE]
+                                                                _id: 40,
+                                                                _parent: Some(
+                                                                    34,
+                                                                ),
                                                             },
                                                         ),
                                                     ],
                                                     [RANGE]
+                                                    _id: 34,
+                                                    _parent: Some(
+                                                        32,
+                                                    ),
                                                 },
                                             ),
                                             StringEnd(
                                                 StringEnd {
                                                     [RANGE]
+                                                    _id: 41,
+                                                    _parent: Some(
+                                                        32,
+                                                    ),
                                                 },
                                             ),
                                         ],
                                         [RANGE]
+                                        _id: 32,
+                                        _parent: Some(
+                                            31,
+                                        ),
                                     },
                                 ),
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 31,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

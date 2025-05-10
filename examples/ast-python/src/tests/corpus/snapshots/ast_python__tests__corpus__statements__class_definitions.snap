@@ -8,9 +8,7 @@ Module {
             ClassDefinition(
                 ClassDefinition {
                     type_parameters: None,
-                    name: Identifier {
-                        [RANGE]
-                    },
+                    superclasses: None,
                     body: Block {
                         alternative: [],
                         children: [
@@ -29,42 +27,84 @@ Module {
                                                                         Identifier(
                                                                             Identifier {
                                                                                 [RANGE]
+                                                                                _id: 10,
+                                                                                _parent: Some(
+                                                                                    9,
+                                                                                ),
                                                                             },
                                                                         ),
                                                                     ),
                                                                 ),
                                                             ),
                                                             [RANGE]
+                                                            _id: 9,
+                                                            _parent: Some(
+                                                                8,
+                                                            ),
                                                         },
                                                     ),
                                                 ),
                                             ],
                                             [RANGE]
+                                            _id: 8,
+                                            _parent: Some(
+                                                4,
+                                            ),
+                                        },
+                                        name: Identifier {
+                                            [RANGE]
+                                            _id: 5,
+                                            _parent: Some(
+                                                4,
+                                            ),
                                         },
                                         parameters: Parameters {
                                             children: [
                                                 Identifier(
                                                     Identifier {
                                                         [RANGE]
+                                                        _id: 7,
+                                                        _parent: Some(
+                                                            6,
+                                                        ),
                                                     },
                                                 ),
                                             ],
                                             [RANGE]
+                                            _id: 6,
+                                            _parent: Some(
+                                                4,
+                                            ),
                                         },
-                                        return_type: None,
                                         type_parameters: None,
-                                        name: Identifier {
-                                            [RANGE]
-                                        },
+                                        return_type: None,
                                         [RANGE]
+                                        _id: 4,
+                                        _parent: Some(
+                                            3,
+                                        ),
                                     },
                                 ),
                             ),
                         ],
                         [RANGE]
+                        _id: 3,
+                        _parent: Some(
+                            1,
+                        ),
                     },
-                    superclasses: None,
+                    name: Identifier {
+                        [RANGE]
+                        _id: 2,
+                        _parent: Some(
+                            1,
+                        ),
+                    },
                     [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -72,9 +112,16 @@ Module {
             ClassDefinition(
                 ClassDefinition {
                     type_parameters: None,
-                    name: Identifier {
-                        [RANGE]
-                    },
+                    superclasses: Some(
+                        ArgumentList {
+                            children: [],
+                            [RANGE]
+                            _id: 13,
+                            _parent: Some(
+                                11,
+                            ),
+                        },
+                    ),
                     body: Block {
                         alternative: [],
                         children: [
@@ -82,19 +129,32 @@ Module {
                                 PassStatement(
                                     PassStatement {
                                         [RANGE]
+                                        _id: 15,
+                                        _parent: Some(
+                                            14,
+                                        ),
                                     },
                                 ),
                             ),
                         ],
                         [RANGE]
+                        _id: 14,
+                        _parent: Some(
+                            11,
+                        ),
                     },
-                    superclasses: Some(
-                        ArgumentList {
-                            children: [],
-                            [RANGE]
-                        },
-                    ),
+                    name: Identifier {
+                        [RANGE]
+                        _id: 12,
+                        _parent: Some(
+                            11,
+                        ),
+                    },
                     [RANGE]
+                    _id: 11,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -102,9 +162,30 @@ Module {
             ClassDefinition(
                 ClassDefinition {
                     type_parameters: None,
-                    name: Identifier {
-                        [RANGE]
-                    },
+                    superclasses: Some(
+                        ArgumentList {
+                            children: [
+                                Expression(
+                                    PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 19,
+                                                _parent: Some(
+                                                    18,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 18,
+                            _parent: Some(
+                                16,
+                            ),
+                        },
+                    ),
                     body: Block {
                         alternative: [],
                         children: [
@@ -119,51 +200,74 @@ Module {
                                                         ReturnStatement {
                                                             children: None,
                                                             [RANGE]
+                                                            _id: 26,
+                                                            _parent: Some(
+                                                                25,
+                                                            ),
                                                         },
                                                     ),
                                                 ),
                                             ],
                                             [RANGE]
+                                            _id: 25,
+                                            _parent: Some(
+                                                21,
+                                            ),
+                                        },
+                                        name: Identifier {
+                                            [RANGE]
+                                            _id: 22,
+                                            _parent: Some(
+                                                21,
+                                            ),
                                         },
                                         parameters: Parameters {
                                             children: [
                                                 Identifier(
                                                     Identifier {
                                                         [RANGE]
+                                                        _id: 24,
+                                                        _parent: Some(
+                                                            23,
+                                                        ),
                                                     },
                                                 ),
                                             ],
                                             [RANGE]
+                                            _id: 23,
+                                            _parent: Some(
+                                                21,
+                                            ),
                                         },
-                                        return_type: None,
                                         type_parameters: None,
-                                        name: Identifier {
-                                            [RANGE]
-                                        },
+                                        return_type: None,
                                         [RANGE]
+                                        _id: 21,
+                                        _parent: Some(
+                                            20,
+                                        ),
                                     },
                                 ),
                             ),
                         ],
                         [RANGE]
+                        _id: 20,
+                        _parent: Some(
+                            16,
+                        ),
                     },
-                    superclasses: Some(
-                        ArgumentList {
-                            children: [
-                                Expression(
-                                    PrimaryExpression(
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                            },
-                                        ),
-                                    ),
-                                ),
-                            ],
-                            [RANGE]
-                        },
-                    ),
+                    name: Identifier {
+                        [RANGE]
+                        _id: 17,
+                        _parent: Some(
+                            16,
+                        ),
+                    },
                     [RANGE]
+                    _id: 16,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
@@ -171,22 +275,6 @@ Module {
             ClassDefinition(
                 ClassDefinition {
                     type_parameters: None,
-                    name: Identifier {
-                        [RANGE]
-                    },
-                    body: Block {
-                        alternative: [],
-                        children: [
-                            SimpleStatement(
-                                PassStatement(
-                                    PassStatement {
-                                        [RANGE]
-                                    },
-                                ),
-                            ),
-                        ],
-                        [RANGE]
-                    },
                     superclasses: Some(
                         ArgumentList {
                             children: [
@@ -195,6 +283,10 @@ Module {
                                         Identifier(
                                             Identifier {
                                                 [RANGE]
+                                                _id: 30,
+                                                _parent: Some(
+                                                    29,
+                                                ),
                                             },
                                         ),
                                     ),
@@ -209,6 +301,10 @@ Module {
                                                             Identifier(
                                                                 Identifier {
                                                                     [RANGE]
+                                                                    _id: 33,
+                                                                    _parent: Some(
+                                                                        31,
+                                                                    ),
                                                                 },
                                                             ),
                                                         ),
@@ -217,28 +313,29 @@ Module {
                                                 value: Identifier(
                                                     Identifier {
                                                         [RANGE]
+                                                        _id: 32,
+                                                        _parent: Some(
+                                                            31,
+                                                        ),
                                                     },
                                                 ),
                                                 [RANGE]
+                                                _id: 31,
+                                                _parent: Some(
+                                                    29,
+                                                ),
                                             },
                                         ),
                                     ),
                                 ),
                             ],
                             [RANGE]
+                            _id: 29,
+                            _parent: Some(
+                                27,
+                            ),
                         },
                     ),
-                    [RANGE]
-                },
-            ),
-        ),
-        CompoundStatement(
-            ClassDefinition(
-                ClassDefinition {
-                    type_parameters: None,
-                    name: Identifier {
-                        [RANGE]
-                    },
                     body: Block {
                         alternative: [],
                         children: [
@@ -246,12 +343,39 @@ Module {
                                 PassStatement(
                                     PassStatement {
                                         [RANGE]
+                                        _id: 35,
+                                        _parent: Some(
+                                            34,
+                                        ),
                                     },
                                 ),
                             ),
                         ],
                         [RANGE]
+                        _id: 34,
+                        _parent: Some(
+                            27,
+                        ),
                     },
+                    name: Identifier {
+                        [RANGE]
+                        _id: 28,
+                        _parent: Some(
+                            27,
+                        ),
+                    },
+                    [RANGE]
+                    _id: 27,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        CompoundStatement(
+            ClassDefinition(
+                ClassDefinition {
+                    type_parameters: None,
                     superclasses: Some(
                         ArgumentList {
                             children: [
@@ -265,6 +389,10 @@ Module {
                                                             Identifier(
                                                                 Identifier {
                                                                     [RANGE]
+                                                                    _id: 41,
+                                                                    _parent: Some(
+                                                                        39,
+                                                                    ),
                                                                 },
                                                             ),
                                                         ),
@@ -274,6 +402,10 @@ Module {
                                                             Identifier(
                                                                 Identifier {
                                                                     [RANGE]
+                                                                    _id: 42,
+                                                                    _parent: Some(
+                                                                        39,
+                                                                    ),
                                                                 },
                                                             ),
                                                         ),
@@ -282,21 +414,67 @@ Module {
                                                 value: Identifier(
                                                     Identifier {
                                                         [RANGE]
+                                                        _id: 40,
+                                                        _parent: Some(
+                                                            39,
+                                                        ),
                                                     },
                                                 ),
                                                 [RANGE]
+                                                _id: 39,
+                                                _parent: Some(
+                                                    38,
+                                                ),
                                             },
                                         ),
                                     ),
                                 ),
                             ],
                             [RANGE]
+                            _id: 38,
+                            _parent: Some(
+                                36,
+                            ),
                         },
                     ),
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                PassStatement(
+                                    PassStatement {
+                                        [RANGE]
+                                        _id: 44,
+                                        _parent: Some(
+                                            43,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 43,
+                        _parent: Some(
+                            36,
+                        ),
+                    },
+                    name: Identifier {
+                        [RANGE]
+                        _id: 37,
+                        _parent: Some(
+                            36,
+                        ),
+                    },
                     [RANGE]
+                    _id: 36,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

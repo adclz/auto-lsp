@@ -7,8 +7,14 @@ Document {
         Doctype(
             Doctype {
                 [RANGE]
+                _id: 1,
+                _parent: Some(
+                    0,
+                ),
             },
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }

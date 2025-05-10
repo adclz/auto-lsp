@@ -10,7 +10,6 @@ Module {
                     body: Block {
                         alternative: [
                             CaseClause {
-                                guard: None,
                                 consequence: Block {
                                     alternative: [],
                                     children: [
@@ -26,30 +25,51 @@ Module {
                                                                             Integer(
                                                                                 Integer {
                                                                                     [RANGE]
+                                                                                    _id: 12,
+                                                                                    _parent: Some(
+                                                                                        10,
+                                                                                    ),
                                                                                 },
                                                                             ),
                                                                         ),
                                                                     ),
                                                                 ),
+                                                                Type: None,
                                                                 left: Pattern(
                                                                     Identifier(
                                                                         Identifier {
                                                                             [RANGE]
+                                                                            _id: 11,
+                                                                            _parent: Some(
+                                                                                10,
+                                                                            ),
                                                                         },
                                                                     ),
                                                                 ),
-                                                                Type: None,
                                                                 [RANGE]
+                                                                _id: 10,
+                                                                _parent: Some(
+                                                                    9,
+                                                                ),
                                                             },
                                                         ),
                                                     ],
                                                     [RANGE]
+                                                    _id: 9,
+                                                    _parent: Some(
+                                                        8,
+                                                    ),
                                                 },
                                             ),
                                         ),
                                     ],
                                     [RANGE]
+                                    _id: 8,
+                                    _parent: Some(
+                                        4,
+                                    ),
                                 },
+                                guard: None,
                                 children: [
                                     CasePattern {
                                         children: Some(
@@ -58,34 +78,64 @@ Module {
                                                     children: Some(
                                                         Identifier {
                                                             [RANGE]
+                                                            _id: 7,
+                                                            _parent: Some(
+                                                                6,
+                                                            ),
                                                         },
                                                     ),
                                                     [RANGE]
+                                                    _id: 6,
+                                                    _parent: Some(
+                                                        5,
+                                                    ),
                                                 },
                                             ),
                                         ),
                                         [RANGE]
+                                        _id: 5,
+                                        _parent: Some(
+                                            4,
+                                        ),
                                     },
                                 ],
                                 [RANGE]
+                                _id: 4,
+                                _parent: Some(
+                                    3,
+                                ),
                             },
                         ],
                         children: [],
                         [RANGE]
+                        _id: 3,
+                        _parent: Some(
+                            1,
+                        ),
                     },
                     subject: [
                         PrimaryExpression(
                             Identifier(
                                 Identifier {
                                     [RANGE]
+                                    _id: 2,
+                                    _parent: Some(
+                                        1,
+                                    ),
                                 },
                             ),
                         ),
                     ],
                     [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
                 },
             ),
         ),
     ],
     [RANGE]
+    _id: 0,
+    _parent: None,
 }
