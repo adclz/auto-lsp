@@ -29,8 +29,8 @@ macro_rules! snap {
             .unwrap();
 
         let tree = p.parse(input, None).unwrap();
-        let mut index = vec![];
-        let module = $crate::generated::Module::try_from((&tree.root_node(), &mut index))?;
+        let mut builder = ::auto_lsp::core::ast::Builder::default();
+        let module = $crate::generated::Module::try_from((&tree.root_node(), &mut builder, 0, None))?;
         ::insta::with_settings!({filters => vec![
             (r"_range: Range \{\s+start_byte: \d+,\s+end_byte: \d+,\s+start_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+end_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+\},", "[RANGE]"),
         ]}, {

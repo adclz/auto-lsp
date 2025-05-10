@@ -55,11 +55,12 @@ macro_rules! configure_parsers {
                           ast_parser: |
                             db: &dyn $crate::core::salsa::db::BaseDatabase,
                             document: &$crate::core::document::Document | {
-                                let mut index = vec![];
-                                let root = $root::try_from((&document.tree.root_node(), &mut index))
+                                let mut builder = $crate::core::ast::Builder::default();
+                                let root = $root::try_from((&document.tree.root_node(), &mut builder, 0, None))
                                     .map_err(|e| $crate::core::errors::ParseError::from(e))?;
-                                index.push(std::sync::Arc::new(root));
-                                Ok(index)
+                                let mut nodes = builder.take_nodes();
+                                nodes.push(std::sync::Arc::new(root));
+                                Ok(nodes)
                             }
                         }
                    );
