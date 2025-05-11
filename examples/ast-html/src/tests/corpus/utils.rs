@@ -39,6 +39,10 @@ macro_rules! snap {
         ]}, {
             insta::assert_debug_snapshot!(document);
         });
+        let errors = get_ast::accumulated::<auto_lsp::core::errors::ParseErrorAccumulator>(&db, file);
+        if !errors.is_empty() {
+            panic!("Errors found: {:#?}", errors);
+        }
         Ok(())
     }};
 }

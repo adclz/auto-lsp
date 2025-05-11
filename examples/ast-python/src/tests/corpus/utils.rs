@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-
 pub(crate) type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 
 #[macro_export]
@@ -37,6 +36,11 @@ macro_rules! snap {
         ]}, {
             insta::assert_debug_snapshot!(module);
         });
+
+        let errors = get_ast::accumulated::<auto_lsp::core::errors::ParseErrorAccumulator>(&db, file);
+        if !errors.is_empty() {
+            panic!("Errors found: {:#?}", errors);
+        }
         Ok(())
     }};
 }
