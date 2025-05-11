@@ -23,8 +23,7 @@ pub struct GetWorkspaceFiles {}
 impl GetWorkspaceFiles {
     pub fn request(id: u32) -> String {
         format!(
-            r#"{{"jsonrpc":"2.0","id":{},"method":"custom/getWorkspaceFiles"}}"#,
-            id
+            r#"{{"jsonrpc":"2.0","id":{id},"method":"custom/getWorkspaceFiles"}}"#
         )
     }
 }

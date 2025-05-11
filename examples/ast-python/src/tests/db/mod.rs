@@ -1,2 +1,2 @@
-mod db;
+mod salsa;
 mod type_errors;

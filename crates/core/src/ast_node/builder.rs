@@ -49,6 +49,10 @@ impl Builder {
         self.nodes.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.nodes.is_empty()
+    }
+
     pub fn take_nodes(self) -> Vec<Arc<dyn AstNode>> {
         self.nodes
     }
@@ -124,14 +128,12 @@ impl<'cursor> TreeWalk<'cursor> {
     where
         F: FnMut(&mut Self) -> ControlFlow<(), &mut Self>,
     {
-        while self.cursor.goto_first_child() {
+        if self.cursor.goto_first_child() {
             let _ = f(self);
 
             while self.cursor.goto_next_sibling() {
                 let _ = f(self);
             }
-
-            break;
         }
     }
     /// Attempts to create an AST node of type `T` if the current cursor points to a field with the given ID.
