@@ -17,11 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::json::{NodeType, TypeInfo};
+use crate::supertypes::SUPER_TYPES;
 use crate::utils::sanitize_string_to_pascal;
 use crate::{NODE_ID_FOR_NAMED_NODE, NODE_ID_FOR_UNNAMED_NODE};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use crate::supertypes::SUPER_TYPES;
 
 impl ToTokens for NodeType {
     fn to_tokens(&self, tokens: &mut TokenStream) {
@@ -67,26 +67,28 @@ impl NodeType {
             _fields.push(children.child_code_gen());
         }
 
-        let (struct_fields, struct_fields_init, struct_fields_collect, struct_fields_finalize) = _fields
-            .iter()
-            .map(|field| {
-                (
-                    field.generate_field(),
-                    field.generate_field_init(),
-                    field.generate_field_collect(),
-                    field.generate_field_finalize(),
-                )
-            })
-            .fold(
-                (vec![], vec![], vec![], vec![]),
-                |(mut fields, mut inits, mut collects, mut finalizes), (field, init, collect, finalize)| {
-                    fields.push(field);
-                    inits.push(init);
-                    collects.push(collect);
-                    finalizes.push(finalize);
-                    (fields, inits, collects, finalizes)
-                },
-            );
+        let (struct_fields, struct_fields_init, struct_fields_collect, struct_fields_finalize) =
+            _fields
+                .iter()
+                .map(|field| {
+                    (
+                        field.generate_field(),
+                        field.generate_field_init(),
+                        field.generate_field_collect(),
+                        field.generate_field_finalize(),
+                    )
+                })
+                .fold(
+                    (vec![], vec![], vec![], vec![]),
+                    |(mut fields, mut inits, mut collects, mut finalizes),
+                     (field, init, collect, finalize)| {
+                        fields.push(field);
+                        inits.push(init);
+                        collects.push(collect);
+                        finalizes.push(finalize);
+                        (fields, inits, collects, finalizes)
+                    },
+                );
 
         generate_struct(
             &format_ident!("{}", sanitize_string_to_pascal(&self.kind)),
@@ -175,6 +177,10 @@ pub(crate) fn generate_struct(
         impl auto_lsp::core::ast::AstNode for #struct_name {
             #of_type
 
+            fn lower(&self) -> &dyn auto_lsp::core::ast::AstNode {
+                self
+            }
+
             fn get_id(&self) -> usize {
                 self._id
             }
@@ -201,10 +207,7 @@ pub(crate) fn generate_struct(
     }
 }
 
-pub(crate) fn generate_enum(
-    variant_name: &Ident,
-    variants: &Vec<TypeInfo>,
-) -> TokenStream {
+pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> TokenStream {
     let mut r_variants = vec![];
     let mut r_types = vec![];
 
@@ -217,9 +220,17 @@ pub(crate) fn generate_enum(
             r_variants.push(format_ident!("Token_{}", variant_name.clone()).to_token_stream());
 
             let type_name = if value.named {
-                *NODE_ID_FOR_NAMED_NODE.lock().unwrap().get(&value.kind).unwrap()
+                *NODE_ID_FOR_NAMED_NODE
+                    .lock()
+                    .unwrap()
+                    .get(&value.kind)
+                    .unwrap()
             } else {
-                *NODE_ID_FOR_UNNAMED_NODE.lock().unwrap().get(&value.kind).unwrap()
+                *NODE_ID_FOR_UNNAMED_NODE
+                    .lock()
+                    .unwrap()
+                    .get(&value.kind)
+                    .unwrap()
             };
 
             r_types.push(type_name);
@@ -228,41 +239,56 @@ pub(crate) fn generate_enum(
                 SUPER_TYPES.with(|s| s.lock().unwrap().get(&value.kind).unwrap().clone());
             super_types_variants.push(variant_name.to_token_stream());
             super_types_types.push(
-                supertype.types.iter().map(|t| {
-                    *NODE_ID_FOR_NAMED_NODE.lock().unwrap().get::<String>(&t.clone()).unwrap()
-                }).collect()
+                supertype
+                    .types
+                    .iter()
+                    .map(|t| {
+                        *NODE_ID_FOR_NAMED_NODE
+                            .lock()
+                            .unwrap()
+                            .get::<String>(&t.clone())
+                            .unwrap()
+                    })
+                    .collect(),
             );
         } else {
             r_variants.push(variant_name.to_token_stream());
-            r_types.push(*NODE_ID_FOR_NAMED_NODE.lock().unwrap().get(&value.kind).unwrap());
+            r_types.push(
+                *NODE_ID_FOR_NAMED_NODE
+                    .lock()
+                    .unwrap()
+                    .get(&value.kind)
+                    .unwrap(),
+            );
         }
     }
 
     let pattern_matching = match (r_types.is_empty(), super_types_types.is_empty()) {
         (false, false) => {
             let k = quote! {
-            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
-            /// Super types
-            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
-            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
-                range: node.range(),
-                symbol: node.kind(),
-                parent_name: stringify!(#variant_name),
-            })
-        };
-        k},
+                #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
+                /// Super types
+                #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
+                _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                    range: node.range(),
+                    symbol: node.kind(),
+                    parent_name: stringify!(#variant_name),
+                })
+            };
+            k
+        }
         (true, false) => {
             let k = quote! {
-            /// Super types
-            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
-            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
-                range: node.range(),
-                symbol: node.kind(),
-                parent_name: stringify!(#variant_name),
-            })
-        };
+                /// Super types
+                #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
+                _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                    range: node.range(),
+                    symbol: node.kind(),
+                    parent_name: stringify!(#variant_name),
+                })
+            };
             k
-        },
+        }
         (false, true) => quote! {
             #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
@@ -292,6 +318,12 @@ pub(crate) fn generate_enum(
         impl auto_lsp::core::ast::AstNode for #variant_name {
             fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
                 matches!(node.kind_id(), #(#r_types)|*)
+            }
+
+            fn lower(&self) -> &dyn auto_lsp::core::ast::AstNode {
+                match self {
+                    #(Self::#r_variants(node) => node.lower()),*
+                }
             }
 
             fn get_id(&self) -> usize {

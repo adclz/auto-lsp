@@ -1,13 +1,13 @@
-use crate::errors::PositionError;
-use downcast_rs::{impl_downcast, DowncastSync};
-use std::cmp::Ordering;
-use std::sync::Arc;
-use tree_sitter::Node;
 use super::capabilities::{
     BuildCodeActions, BuildCodeLenses, BuildCompletionItems, BuildDocumentSymbols, BuildInlayHints,
     BuildSemanticTokens, BuildTriggeredCompletionItems, GetGoToDeclaration, GetGoToDefinition,
     GetHover,
 };
+use crate::errors::PositionError;
+use downcast_rs::{impl_downcast, DowncastSync};
+use std::cmp::Ordering;
+use std::sync::Arc;
+use tree_sitter::Node;
 
 pub trait AstNode:
     std::fmt::Debug
@@ -25,7 +25,12 @@ pub trait AstNode:
     + BuildSemanticTokens
     + BuildCodeActions
 {
-    fn contains(node: &Node) -> bool where Self: Sized;
+    fn contains(node: &Node) -> bool
+    where
+        Self: Sized;
+
+    fn lower(&self) -> &dyn AstNode;
+
     fn get_id(&self) -> usize;
 
     fn get_parent_id(&self) -> Option<usize>;
