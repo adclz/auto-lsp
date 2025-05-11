@@ -17,18 +17,14 @@ auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
 tree-sitter = "0.24.7"
 tree-sitter-language = "0.1.5"
 lsp-types = "0.94.1"
-downcast-rs = "2.0.1"
 streaming-iterator = "0.1.9"
 regex = "1.11.1"
 anyhow = "1.0.97"
 parking_lot = "0.12.3"
 log = "0.4.26"
 salsa = "0.19.0"
-dashmap = "6.1.0"
-thiserror = "2.0.12"
 rayon = "1.10"
 rayon-par-bridge = "0.1.0"
-ariadne = "0.5.1"
 texter = { version = "0.1.5", default-features = false }
 lsp-server = { version = "0.7.8", optional = true }
 serde = { version = "1.0.219", optional = true }
@@ -86,13 +82,6 @@ pprof = { version = "0.14.0", features = ["criterion", "flamegraph"] }
 criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [dev-dependencies]
-lsp-server = "0.7.8"
-serde = "1.0.219"
-serde_json = "1.0.140"
-walkdir = "2.5.0"
-crossbeam-channel = "0.5.14"
-rayon = "1.10"
-rstest = "0.25.0"
 tempfile = "3.19.0"
 
 [[bench]]

@@ -68,19 +68,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! - [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache
 
 // LSP server (enabled with feature `lsp_server`)
-#[cfg(any(feature = "lsp_server", test))]
+#[cfg(feature = "lsp_server")]
 pub mod server;
 
 /// Re-export of the [`auto_lsp_core`] crate
 pub mod core {
-    pub use auto_lsp_core::ast;
-    pub use auto_lsp_core::document;
-    pub use auto_lsp_core::document_symbols_builder;
-    pub use auto_lsp_core::errors;
-    pub use auto_lsp_core::parsers;
-    pub use auto_lsp_core::regex;
-    pub use auto_lsp_core::salsa;
-    pub use auto_lsp_core::semantic_tokens_builder;
+    pub use auto_lsp_core::*;
 }
 
 /// Configuration utilities
@@ -88,7 +81,7 @@ pub mod core {
 pub mod configure;
 
 pub use anyhow;
-#[cfg(any(feature = "lsp_server", test))]
+#[cfg(feature = "lsp_server")]
 pub use lsp_server;
 pub use lsp_types;
 pub use salsa;

@@ -63,11 +63,8 @@ name = "auto-lsp"
 version = "0.5.1"
 dependencies = [
  "anyhow",
- "ariadne",
  "auto-lsp-core",
  "crossbeam-channel",
- "dashmap",
- "downcast-rs",
  "log",
  "lsp-server",
  "lsp-types",
@@ -80,7 +77,6 @@ dependencies = [
  "serde_json",
  "streaming-iterator",
  "texter",
- "thiserror",
  "tree-sitter",
  "tree-sitter-language",
  "walkdir",
