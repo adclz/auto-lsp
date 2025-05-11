@@ -30,7 +30,7 @@ macro_rules! snap {
 
         let db = $crate::db::create_html_db(&[$input]);
         let file = db
-            .get_file(&::auto_lsp::lsp_types::Url::parse("file:///test0.py").unwrap())
+            .get_file(&::auto_lsp::lsp_types::Url::parse("file:///test0.html").unwrap())
             .unwrap();
         let root = get_ast(&db, file).get_root();
 
