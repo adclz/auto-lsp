@@ -21,19 +21,20 @@ pub(crate) type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 #[macro_export]
 macro_rules! snap {
     ($input: expr, $name: expr) => {{
-        let input = format!("{}", $input);
         let mut settings = ::insta::Settings::clone_current();
         settings.set_snapshot_suffix(&format!("{}", stringify!(name)));
         let _guard = settings.bind_to_scope();
 
-        let mut p = ::auto_lsp::tree_sitter::Parser::new();
-        p.set_language(&tree_sitter_html::LANGUAGE.into())
-            .unwrap();
+       use ::auto_lsp::core::salsa::db::BaseDatabase;
+        use ::auto_lsp::core::salsa::tracked::get_ast;
 
-        let tree = p.parse(input, None).unwrap();
-        let mut builder = ::auto_lsp::core::ast::Builder::default();
-        let document = $crate::generated::Document::try_from((&tree.root_node(), &mut builder, 0, None))?;
-        ::insta::with_settings!({filters => vec![
+        let db = $crate::db::create_html_db(&[$input]);
+        let file = db
+            .get_file(&::auto_lsp::lsp_types::Url::parse("file:///test0.py").unwrap())
+            .unwrap();
+        let root = get_ast(&db, file).get_root();
+
+        let document = root.as_ref().unwrap(); ::insta::with_settings!({filters => vec![
             (r"_range: Range \{\s+start_byte: \d+,\s+end_byte: \d+,\s+start_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+end_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+\},", "[RANGE]"),
         ]}, {
             insta::assert_debug_snapshot!(document);

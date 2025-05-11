@@ -99,13 +99,13 @@ impl Field {
 
         match self.kind {
             Kind::Base => quote! {
-                builder.on_field_id::<#pascal_name, #kind>(&mut #field_name)
+                on_field_id::<#pascal_name, #kind>(&mut #field_name)
             },
             Kind::Vec => quote! {
-                builder.on_vec_field_id::<#pascal_name, #kind>(&mut #field_name)
+                on_vec_field_id::<#pascal_name, #kind>(&mut #field_name)
             },
             Kind::Option => quote! {
-                builder.on_field_id::<#pascal_name, #kind>(&mut #field_name)
+                on_field_id::<#pascal_name, #kind>(&mut #field_name)
             },
         }
     }
@@ -114,10 +114,16 @@ impl Field {
         let field_name = format_ident!("{}", sanitize_string(&self.tree_sitter_type));
         match self.kind {
             Kind::Base => quote! {
-                 #field_name:  #field_name?.unwrap()
+                 #field_name:  #field_name?.ok_or_else(|| {
+                    auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                        range: node.range(),
+                        symbol: node.kind(),
+                        parent_name: stringify!(#field_name),
+                    }
+                })?
             },
             Kind::Vec => quote! {  #field_name },
-            Kind::Option => quote! {  #field_name:  #field_name? },
+            Kind::Option => quote! {  #field_name: #field_name? },
         }
     }
 }
@@ -142,7 +148,6 @@ impl Child {
     }
 
     fn generate_field_init(&self) -> TokenStream {
-        let pascal_name = &self.field_name;
         match self.kind {
             Kind::Base => quote! { let mut children = Ok(None); },
             Kind::Vec => quote! { let mut children = vec![]; },
@@ -153,21 +158,28 @@ impl Child {
     fn generate_field_collect(&self) -> TokenStream {
         match self.kind {
             Kind::Base => quote! {
-                builder.on_children_id(&mut children);
+                on_children_id(&mut children)
             },
             Kind::Vec => quote! {
-                builder.on_vec_children_id(&mut children);
+                on_vec_children_id(&mut children)
             },
             Kind::Option => quote! {
-                builder.on_children_id(&mut children);
+                on_children_id(&mut children)
             },
         }
     }
 
     fn generate_field_finalize(&self) -> TokenStream {
+        let name = &self.field_name;
         match self.kind {
             Kind::Base => quote! {
-                children: children?.unwrap()
+                children: children?.ok_or_else(|| {
+                    auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                        range: node.range(),
+                        symbol: node.kind(),
+                        parent_name: stringify!(#name),
+                    }
+                })?
             },
             Kind::Vec => quote! { children },
             Kind::Option => quote! { children: children? },

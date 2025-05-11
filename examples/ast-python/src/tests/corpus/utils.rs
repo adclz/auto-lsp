@@ -22,16 +22,17 @@ pub(crate) type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 #[macro_export]
 macro_rules! snap {
     ($input: expr) => {{
-        let input = format!("{}", $input);
+        use ::auto_lsp::core::salsa::db::BaseDatabase;
+        use ::auto_lsp::core::salsa::tracked::get_ast;
 
-        let mut p = ::auto_lsp::tree_sitter::Parser::new();
-        p.set_language(&tree_sitter_python::LANGUAGE.into())
+        let db = $crate::db::create_python_db(&[$input]);
+        let file = db
+            .get_file(&::auto_lsp::lsp_types::Url::parse("file:///test0.py").unwrap())
             .unwrap();
+        let root = get_ast(&db, file).get_root();
+        let module = root.as_ref().unwrap();
 
-        let tree = p.parse(input, None).unwrap();
-        let mut builder = ::auto_lsp::core::ast::Builder::default();
-        let module = $crate::generated::Module::try_from((&tree.root_node(), &mut builder, 0, None))?;
-        ::insta::with_settings!({filters => vec![
+         ::insta::with_settings!({filters => vec![
             (r"_range: Range \{\s+start_byte: \d+,\s+end_byte: \d+,\s+start_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+end_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+\},", "[RANGE]"),
         ]}, {
             insta::assert_debug_snapshot!(module);

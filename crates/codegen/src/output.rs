@@ -160,9 +160,8 @@ pub(crate) fn generate_struct(
     } else {
         quote! {
           builder
-            .builder(&node, Some(id))
-            .walk(|builder| {
-                #(#struct_fields_collect);*
+            .builder(db, &node, Some(id), |b| {
+                b #(.#struct_fields_collect)?*
             });
         }
     };
@@ -176,10 +175,6 @@ pub(crate) fn generate_struct(
         impl auto_lsp::core::ast::AstNode for #struct_name {
             #of_type
 
-            fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
-                &self._range
-            }
-
             fn get_id(&self) -> usize {
                 self._id
             }
@@ -187,13 +182,17 @@ pub(crate) fn generate_struct(
             fn get_parent_id(&self) -> Option<usize> {
                 self._parent
             }
+
+            fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
+                &self._range
+            }
         }
 
         impl<'a>
             TryFrom<auto_lsp::core::ast::TryFromParams<'a>> for #struct_name {
             type Error = auto_lsp::core::errors::AstError;
 
-            fn try_from((node, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
+            fn try_from((node, db, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
                 #(#struct_fields_init);*;
                 #init_builder
                 #struct_fields_finalize
@@ -242,9 +241,9 @@ pub(crate) fn generate_enum(
     let pattern_matching = match (r_types.is_empty(), super_types_types.is_empty()) {
         (false, false) => {
             let k = quote! {
-            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, builder, id, parent_id))?))),*,
+            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
             /// Super types
-            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, builder, id, parent_id))?))),*,
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
                 range: node.range(),
                 symbol: node.kind(),
@@ -255,7 +254,7 @@ pub(crate) fn generate_enum(
         (true, false) => {
             let k = quote! {
             /// Super types
-            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, builder, id, parent_id))?))),*,
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
                 range: node.range(),
                 symbol: node.kind(),
@@ -265,7 +264,7 @@ pub(crate) fn generate_enum(
             k
         },
         (false, true) => quote! {
-            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, builder, id, parent_id))?))),*,
+            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
                 range: node.range(),
                 symbol: node.kind(),
@@ -295,12 +294,6 @@ pub(crate) fn generate_enum(
                 matches!(node.kind_id(), #(#r_types)|*)
             }
 
-            fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
-                match self {
-                    #(Self::#r_variants(node) => node.get_range()),*
-                }
-            }
-
             fn get_id(&self) -> usize {
                 match self {
                     #(Self::#r_variants(node) => node.get_id()),*
@@ -312,13 +305,19 @@ pub(crate) fn generate_enum(
                     #(Self::#r_variants(node) => node.get_parent_id()),*
                 }
             }
+
+            fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
+                match self {
+                    #(Self::#r_variants(node) => node.get_range()),*
+                }
+            }
         }
 
        impl<'a>
             TryFrom<auto_lsp::core::ast::TryFromParams<'a>> for #variant_name {
             type Error = auto_lsp::core::errors::AstError;
 
-            fn try_from((node, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
+            fn try_from((node, db, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
                 match node.kind_id() {
                     #pattern_matching
                 }

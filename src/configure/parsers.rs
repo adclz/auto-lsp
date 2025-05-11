@@ -56,7 +56,7 @@ macro_rules! configure_parsers {
                             db: &dyn $crate::core::salsa::db::BaseDatabase,
                             document: &$crate::core::document::Document | {
                                 let mut builder = $crate::core::ast::Builder::default();
-                                let root = $root::try_from((&document.tree.root_node(), &mut builder, 0, None))
+                                let root = $root::try_from((&document.tree.root_node(), db, &mut builder, 0, None))
                                     .map_err(|e| $crate::core::errors::ParseError::from(e))?;
                                 let mut nodes = builder.take_nodes();
                                 nodes.push(std::sync::Arc::new(root));
