@@ -17,8 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::json::{NodeType, TypeInfo};
-use crate::supertypes::SUPER_TYPES;
 use crate::utils::sanitize_string_to_pascal;
+use crate::SUPER_TYPES;
 use crate::{NODE_ID_FOR_NAMED_NODE, NODE_ID_FOR_UNNAMED_NODE};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
@@ -208,6 +208,7 @@ pub(crate) fn generate_struct(
 }
 
 pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> TokenStream {
+    let super_types = SUPER_TYPES.read().unwrap();
     let mut r_variants = vec![];
     let mut r_types = vec![];
 
@@ -234,9 +235,7 @@ pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> T
             };
 
             r_types.push(type_name);
-        } else if SUPER_TYPES.with(|s| s.lock().unwrap().contains_key(&value.kind)) {
-            let supertype =
-                SUPER_TYPES.with(|s| s.lock().unwrap().get(&value.kind).unwrap().clone());
+        } else if let Some(supertype) = super_types.get(&value.kind) {
             super_types_variants.push(variant_name.to_token_stream());
             super_types_types.push(
                 supertype
@@ -264,31 +263,25 @@ pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> T
     }
 
     let pattern_matching = match (r_types.is_empty(), super_types_types.is_empty()) {
-        (false, false) => {
-            let k = quote! {
-                #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
-                /// Super types
-                #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
-                _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
-                    range: node.range(),
-                    symbol: node.kind(),
-                    parent_name: stringify!(#variant_name),
-                })
-            };
-            k
-        }
-        (true, false) => {
-            let k = quote! {
-                /// Super types
-                #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
-                _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
-                    range: node.range(),
-                    symbol: node.kind(),
-                    parent_name: stringify!(#variant_name),
-                })
-            };
-            k
-        }
+        (false, false) => quote! {
+            #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
+            /// Super types
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
+            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                range: node.range(),
+                symbol: node.kind(),
+                parent_name: stringify!(#variant_name),
+            })
+        },
+        (true, false) => quote! {
+            /// Super types
+            #(#(#super_types_types)|* => Ok(Self::#super_types_variants(#super_types_variants::try_from((node, db, builder, id, parent_id))?))),*,
+            _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {
+                range: node.range(),
+                symbol: node.kind(),
+                parent_name: stringify!(#variant_name),
+            })
+        },
         (false, true) => quote! {
             #(#r_types => Ok(Self::#r_variants(#r_variants::try_from((node, db, builder, id, parent_id))?))),*,
             _ => Err(auto_lsp::core::errors::AstError::UnexpectedSymbol {

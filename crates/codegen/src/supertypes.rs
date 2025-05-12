@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::collections::HashMap;
-use std::sync::{LazyLock, Mutex};
 use crate::json::TypeInfo;
 use crate::NodeType;
 
@@ -27,19 +25,12 @@ pub(crate) struct SuperType {
     pub(crate) types: Vec<String>,
 }
 
-thread_local! {
-        pub(crate) static SUPER_TYPES: LazyLock<Mutex<HashMap<String, SuperType>>> =
-            LazyLock::new(Default::default);
-}
-
 pub(crate) fn generate_super_type(node: &NodeType) -> SuperType {
     // Get enum variants
     let variants = node
         .subtypes
         .as_ref()
-        .map(|subtypes| {
-            subtypes.to_vec()
-        })
+        .map(|subtypes| subtypes.to_vec())
         .unwrap_or_default();
 
     // Get enum types
