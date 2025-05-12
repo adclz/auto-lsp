@@ -75,21 +75,5 @@ crossbeam-channel = { version = "0.5.14", optional = true }
 [package.metadata.docs.rs]
 features = ["lsp_server"]
 
-[target.'cfg(unix)'.dev-dependencies]
-pprof = { version = "0.14.0", features = ["criterion", "flamegraph"] }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-criterion = { version = "0.5.1", features = ["html_reports"] }
-
 [dev-dependencies]
 tempfile = "3.19.0"
-
-[[bench]]
-name = "flame_graph"
-harness = false
-required-features = ["python"]
-
-[[bench]]
-name = "django"
-harness = false
-required-features = ["python"]
