@@ -34,9 +34,9 @@ lsp_server = [
 wasm = ["parking_lot/nightly", "auto-lsp-core/wasm"]
 
 [workspace.dependencies]
-texter = { version = "0.1.5", default-features = false }
+texter = { version = "0.2.0", default-features = false }
 lsp-types = "0.94.1"
-tree-sitter = "0.24.7"
+tree-sitter = "0.25.4"
 downcast-rs = "2.0.1"
 streaming-iterator = "0.1.9"
 parking_lot = "0.12.3"

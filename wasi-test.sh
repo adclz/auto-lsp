@@ -1,1 +1,1 @@
-cargo test --features=python,html,wasm --target wasm32-wasip1-threads
+CFLAGS="-DHAVE_ENDIAN_H" cargo test --features=wasm --target wasm32-wasip1-threads
