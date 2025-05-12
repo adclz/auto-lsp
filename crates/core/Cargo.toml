@@ -24,6 +24,7 @@ log = { workspace = true }
 rayon = { workspace = true, optional = true }
 thiserror = { workspace = true }
 ariadne = { workspace = true, features = ["auto-color"] }
+fastrace = { workspace = true }
 
 [dev-dependencies]
 tree-sitter-html = "0.23.2"

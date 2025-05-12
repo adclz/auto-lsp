@@ -49,12 +49,14 @@ salsa = "0.19.0"
 dashmap = "6.1.0"
 thiserror = "2.0.12"
 ariadne = "0.5.1"
+fastrace = "0.7"
 
 [dependencies]
 auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
 rayon-par-bridge = "0.1.0"
 tree-sitter-language = "0.1.5"
 regex = "1.11.1"
+fastrace = { workspace = true }
 tree-sitter = { workspace = true }
 lsp-types = { workspace = true }
 streaming-iterator = { workspace = true }

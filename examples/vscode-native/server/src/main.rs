@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use fastrace::collector::Config;
+use fastrace::collector::ConsoleReporter;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
 
@@ -48,6 +50,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         .verbosity(4)
         .init()
         .unwrap();
+
+    fastrace::set_reporter(ConsoleReporter, Config::default());
 
     let mut session = Session::create(
         InitOptions {

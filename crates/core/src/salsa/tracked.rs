@@ -19,6 +19,7 @@ use super::db::{BaseDatabase, File};
 use super::lexer::get_tree_sitter_errors;
 use crate::ast::AstNode;
 use crate::errors::ParseErrorAccumulator;
+use fastrace::prelude::*;
 use salsa::Accumulator;
 use std::ops::Deref;
 use std::sync::Arc;
@@ -27,10 +28,15 @@ use std::sync::Arc;
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
     let doc = file.document(db).read();
+    let url = file.url(db);
 
     if doc.texter.text.is_empty() {
         return ParsedAst::default();
     }
+
+    let root =
+        Span::root("build ast", SpanContext::random()).with_property(|| ("file", url.to_string()));
+    let _guard = root.set_local_parent();
 
     let node = doc.tree.root_node();
     let source_code = doc.texter.text.as_bytes();
@@ -39,7 +45,12 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 
     match (parsers.ast_parser)(db, &doc) {
         Ok(mut nodes) => {
-            nodes.sort_unstable();
+            {
+                let _ = Span::enter_with_parent("sort unstable", &root);
+                nodes.sort_unstable();
+            }
+            root.add_event(Event::new(format!("total nodes: {}", nodes.len())));
+            fastrace::flush();
             ParsedAst::new(nodes)
         }
         Err(e) => {
