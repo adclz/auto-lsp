@@ -12,26 +12,6 @@ version = "0.5.1"
 edition = "2021"
 readme = "README.MD"
 
-[dependencies]
-auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
-tree-sitter = "0.24.7"
-tree-sitter-language = "0.1.5"
-lsp-types = "0.94.1"
-streaming-iterator = "0.1.9"
-regex = "1.11.1"
-anyhow = "1.0.97"
-parking_lot = "0.12.3"
-log = "0.4.26"
-salsa = "0.19.0"
-rayon = "1.10"
-rayon-par-bridge = "0.1.0"
-texter = { version = "0.1.5", default-features = false }
-lsp-server = { version = "0.7.8", optional = true }
-serde = { version = "1.0.219", optional = true }
-serde_json = { version = "1.0.140", optional = true }
-walkdir = { version = "2.5.0", optional = true }
-crossbeam-channel = { version = "0.5.14", optional = true }
-
 [workspace]
 members = ["crates/core", "crates/codegen"]
 exclude = [
@@ -41,6 +21,17 @@ exclude = [
     "examples/ast-python",
     "examples/ast-html",
 ]
+
+[features]
+default = []
+lsp_server = [
+    "dep:serde",
+    "dep:serde_json",
+    "dep:walkdir",
+    "dep:lsp-server",
+    "dep:crossbeam-channel",
+]
+wasm = ["parking_lot/nightly", "auto-lsp-core/wasm"]
 
 [workspace.dependencies]
 texter = { version = "0.1.5", default-features = false }
@@ -53,23 +44,31 @@ log = "0.4.22"
 rayon = "1.10"
 anyhow = "1.0.97"
 regex = "1.11.1"
-tree-sitter-html = "0.23.2"
 rstest = "0.25.0"
 salsa = "0.19.0"
 dashmap = "6.1.0"
 thiserror = "2.0.12"
 ariadne = "0.5.1"
 
-[features]
-default = []
-lsp_server = [
-    "dep:serde",
-    "dep:serde_json",
-    "dep:walkdir",
-    "dep:lsp-server",
-    "dep:crossbeam-channel",
-]
-wasm = ["parking_lot/nightly", "auto-lsp-core/wasm"]
+[dependencies]
+auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
+rayon-par-bridge = "0.1.0"
+tree-sitter-language = "0.1.5"
+regex = "1.11.1"
+tree-sitter = { workspace = true }
+lsp-types = { workspace = true }
+streaming-iterator = { workspace = true }
+anyhow = { workspace = true }
+parking_lot = { workspace = true }
+log = { workspace = true }
+salsa = { workspace = true }
+rayon = { workspace = true }
+texter = { workspace = true, default-features = false }
+lsp-server = { version = "0.7.8", optional = true }
+serde = { version = "1.0.219", optional = true }
+serde_json = { version = "1.0.140", optional = true }
+walkdir = { version = "2.5.0", optional = true }
+crossbeam-channel = { version = "0.5.14", optional = true }
 
 [package.metadata.docs.rs]
 features = ["lsp_server"]

@@ -26,7 +26,7 @@ thiserror = { workspace = true }
 ariadne = { workspace = true, features = ["auto-color"] }
 
 [dev-dependencies]
-tree-sitter-html = { workspace = true }
+tree-sitter-html = "0.23.2"
 rstest = { workspace = true }
 
 [features]

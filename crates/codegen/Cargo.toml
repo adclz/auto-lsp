@@ -15,7 +15,7 @@ serde_json = { version = "1.0.140", features = ["preserve_order"] }
 phf = { version = "0.11", features = ["macros"] }
 quote = "1.0"
 proc-macro2 = "1.0"
-tree-sitter = "0.24.7"
+tree-sitter = { workspace = true }
 
 [dev-dependencies]
 tree-sitter-python = "0.23.6"
