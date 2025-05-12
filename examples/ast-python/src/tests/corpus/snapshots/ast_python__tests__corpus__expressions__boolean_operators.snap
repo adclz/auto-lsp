@@ -1,0 +1,316 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    operator: Token_Or(
+                                        Token_Or {
+                                            [RANGE]
+                                            _id: 4,
+                                            _parent: Some(
+                                                2,
+                                            ),
+                                        },
+                                    ),
+                                    right: BooleanOperator(
+                                        BooleanOperator {
+                                            operator: Token_And(
+                                                Token_And {
+                                                    [RANGE]
+                                                    _id: 7,
+                                                    _parent: Some(
+                                                        5,
+                                                    ),
+                                                },
+                                            ),
+                                            right: PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 8,
+                                                        _parent: Some(
+                                                            5,
+                                                        ),
+                                                    },
+                                                ),
+                                            ),
+                                            left: PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 6,
+                                                        _parent: Some(
+                                                            5,
+                                                        ),
+                                                    },
+                                                ),
+                                            ),
+                                            [RANGE]
+                                            _id: 5,
+                                            _parent: Some(
+                                                2,
+                                            ),
+                                        },
+                                    ),
+                                    left: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 3,
+                                                _parent: Some(
+                                                    2,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                    _id: 2,
+                                    _parent: Some(
+                                        1,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            NotOperator(
+                                NotOperator {
+                                    argument: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 11,
+                                                _parent: Some(
+                                                    10,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    [RANGE]
+                                    _id: 10,
+                                    _parent: Some(
+                                        9,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 9,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    operator: Token_Or(
+                                        Token_Or {
+                                            [RANGE]
+                                            _id: 19,
+                                            _parent: Some(
+                                                13,
+                                            ),
+                                        },
+                                    ),
+                                    right: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 20,
+                                                _parent: Some(
+                                                    13,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    left: BooleanOperator(
+                                        BooleanOperator {
+                                            operator: Token_And(
+                                                Token_And {
+                                                    [RANGE]
+                                                    _id: 17,
+                                                    _parent: Some(
+                                                        14,
+                                                    ),
+                                                },
+                                            ),
+                                            right: PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 18,
+                                                        _parent: Some(
+                                                            14,
+                                                        ),
+                                                    },
+                                                ),
+                                            ),
+                                            left: NotOperator(
+                                                NotOperator {
+                                                    argument: PrimaryExpression(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                                _id: 16,
+                                                                _parent: Some(
+                                                                    15,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 15,
+                                                    _parent: Some(
+                                                        14,
+                                                    ),
+                                                },
+                                            ),
+                                            [RANGE]
+                                            _id: 14,
+                                            _parent: Some(
+                                                13,
+                                            ),
+                                        },
+                                    ),
+                                    [RANGE]
+                                    _id: 13,
+                                    _parent: Some(
+                                        12,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 12,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            BooleanOperator(
+                                BooleanOperator {
+                                    operator: Token_And(
+                                        Token_And {
+                                            [RANGE]
+                                            _id: 28,
+                                            _parent: Some(
+                                                22,
+                                            ),
+                                        },
+                                    ),
+                                    right: PrimaryExpression(
+                                        Identifier(
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 29,
+                                                _parent: Some(
+                                                    22,
+                                                ),
+                                            },
+                                        ),
+                                    ),
+                                    left: BooleanOperator(
+                                        BooleanOperator {
+                                            operator: Token_And(
+                                                Token_And {
+                                                    [RANGE]
+                                                    _id: 25,
+                                                    _parent: Some(
+                                                        23,
+                                                    ),
+                                                },
+                                            ),
+                                            right: NotOperator(
+                                                NotOperator {
+                                                    argument: PrimaryExpression(
+                                                        Identifier(
+                                                            Identifier {
+                                                                [RANGE]
+                                                                _id: 27,
+                                                                _parent: Some(
+                                                                    26,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 26,
+                                                    _parent: Some(
+                                                        23,
+                                                    ),
+                                                },
+                                            ),
+                                            left: PrimaryExpression(
+                                                Identifier(
+                                                    Identifier {
+                                                        [RANGE]
+                                                        _id: 24,
+                                                        _parent: Some(
+                                                            23,
+                                                        ),
+                                                    },
+                                                ),
+                                            ),
+                                            [RANGE]
+                                            _id: 23,
+                                            _parent: Some(
+                                                22,
+                                            ),
+                                        },
+                                    ),
+                                    [RANGE]
+                                    _id: 22,
+                                    _parent: Some(
+                                        21,
+                                    ),
+                                },
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 21,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

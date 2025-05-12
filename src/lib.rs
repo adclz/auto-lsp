@@ -15,7 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
 #![allow(rustdoc::private_intra_doc_links)]
 //!<div align="center" style="margin-bottom: 50px">
 //!  <h1>Auto LSP</h1>
@@ -37,36 +36,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! Defining a simple AST involves two steps: writing the queries and then defining the corresponding AST structures in Rust.
 //!
 //! ## Quick example
-//!
-//! Let's say you have a toy language with a root node named **document** containing a list of **function** nodes,
-//! each containing a unique **name**.
-//!
-//! A simple query file to capture the root document and function names:
-//!
-//! ```lisp
-//! (document) @document
-//! (function
-//!     (name) @name) @function
-//! ```
-//!
-//! The corresponding AST definition in Rust:
-//!
-//! ```rust
-//! # use auto_lsp::core::ast::*;
-//! # use auto_lsp::seq;
-//! #[seq(query = "document")]
-//! struct Document {
-//!    functions: Vec<Function>
-//! }
-//!
-//! #[seq(query = "function")]
-//! struct Function {
-//!    name: Name
-//! }
-//!
-//! #[seq(query = "name")]
-//! struct Name {}
-//! ```
 //!
 //! Now that you have your AST defined, you can:
 //!  - Implement the [AST traits](https://adclz.github.io/auto-lsp/ast-and-queries/seq.html#seq-attributes) and create a LSP server (with the `lsp_server` feature).
@@ -99,53 +68,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! - [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache
 
 // LSP server (enabled with feature `lsp_server`)
-#[cfg(any(feature = "lsp_server", test))]
+#[cfg(feature = "lsp_server")]
 pub mod server;
-
-mod tests;
-
-/// A mock implementation of a python AST
-#[cfg(any(feature = "python", test))]
-pub mod python {
-    pub use crate::tests::python_workspace::*;
-}
-
-/// A mock implementation of a html AST
-#[cfg(any(feature = "html", test))]
-pub mod html {
-    pub use crate::tests::html_workspace::*;
-}
 
 /// Re-export of the [`auto_lsp_core`] crate
 pub mod core {
-    // Not public API. Referenced by macro-generated code.
-    #[doc(hidden)]
-    pub mod build {
-        pub use auto_lsp_core::build::*;
-    }
-
-    pub use auto_lsp_core::ast;
-    pub use auto_lsp_core::document;
-    pub use auto_lsp_core::document_symbols_builder;
-    pub use auto_lsp_core::errors;
-    pub use auto_lsp_core::parsers;
-    pub use auto_lsp_core::regex;
-    pub use auto_lsp_core::salsa;
-    pub use auto_lsp_core::semantic_tokens_builder;
+    pub use auto_lsp_core::*;
 }
 
 /// Configuration utilities
 #[doc(hidden)]
 pub mod configure;
 
-// Re-export of [`seq`] and [`choice`] macros
-pub use auto_lsp_macros::*;
-
 pub use anyhow;
-pub use ariadne;
-#[doc(hidden)]
-pub use constcat;
-#[cfg(any(feature = "lsp_server", test))]
+#[cfg(feature = "lsp_server")]
 pub use lsp_server;
 pub use lsp_types;
 pub use salsa;

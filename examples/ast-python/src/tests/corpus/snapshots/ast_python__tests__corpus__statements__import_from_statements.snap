@@ -1,0 +1,469 @@
+---
+source: src/tests/corpus/statements.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 5,
+                                        _parent: Some(
+                                            4,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 4,
+                                _parent: Some(
+                                    1,
+                                ),
+                            },
+                        ),
+                    ],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                    _id: 3,
+                                    _parent: Some(
+                                        2,
+                                    ),
+                                },
+                            ],
+                            [RANGE]
+                            _id: 2,
+                            _parent: Some(
+                                1,
+                            ),
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                    _id: 8,
+                                    _parent: Some(
+                                        7,
+                                    ),
+                                },
+                            ],
+                            [RANGE]
+                            _id: 7,
+                            _parent: Some(
+                                6,
+                            ),
+                        },
+                    ),
+                    children: Some(
+                        WildcardImport {
+                            [RANGE]
+                            _id: 9,
+                            _parent: Some(
+                                6,
+                            ),
+                        },
+                    ),
+                    [RANGE]
+                    _id: 6,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 14,
+                                        _parent: Some(
+                                            13,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 13,
+                                _parent: Some(
+                                    10,
+                                ),
+                            },
+                        ),
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 16,
+                                        _parent: Some(
+                                            15,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 15,
+                                _parent: Some(
+                                    10,
+                                ),
+                            },
+                        ),
+                    ],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                    _id: 12,
+                                    _parent: Some(
+                                        11,
+                                    ),
+                                },
+                            ],
+                            [RANGE]
+                            _id: 11,
+                            _parent: Some(
+                                10,
+                            ),
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                    _id: 10,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 22,
+                                        _parent: Some(
+                                            21,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 21,
+                                _parent: Some(
+                                    17,
+                                ),
+                            },
+                        ),
+                    ],
+                    module_name: DottedName(
+                        DottedName {
+                            children: [
+                                Identifier {
+                                    [RANGE]
+                                    _id: 19,
+                                    _parent: Some(
+                                        18,
+                                    ),
+                                },
+                                Identifier {
+                                    [RANGE]
+                                    _id: 20,
+                                    _parent: Some(
+                                        18,
+                                    ),
+                                },
+                            ],
+                            [RANGE]
+                            _id: 18,
+                            _parent: Some(
+                                17,
+                            ),
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                    _id: 17,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 27,
+                                        _parent: Some(
+                                            26,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 26,
+                                _parent: Some(
+                                    23,
+                                ),
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                        _id: 25,
+                                        _parent: Some(
+                                            24,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 24,
+                            _parent: Some(
+                                23,
+                            ),
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                    _id: 23,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 32,
+                                        _parent: Some(
+                                            31,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 31,
+                                _parent: Some(
+                                    28,
+                                ),
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                        _id: 30,
+                                        _parent: Some(
+                                            29,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 29,
+                            _parent: Some(
+                                28,
+                            ),
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                    _id: 28,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 39,
+                                        _parent: Some(
+                                            38,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 38,
+                                _parent: Some(
+                                    33,
+                                ),
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                        _id: 35,
+                                        _parent: Some(
+                                            34,
+                                        ),
+                                    },
+                                ),
+                                DottedName(
+                                    DottedName {
+                                        children: [
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 37,
+                                                _parent: Some(
+                                                    36,
+                                                ),
+                                            },
+                                        ],
+                                        [RANGE]
+                                        _id: 36,
+                                        _parent: Some(
+                                            34,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 34,
+                            _parent: Some(
+                                33,
+                            ),
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                    _id: 33,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ImportFromStatement(
+                ImportFromStatement {
+                    name: [
+                        DottedName(
+                            DottedName {
+                                children: [
+                                    Identifier {
+                                        [RANGE]
+                                        _id: 46,
+                                        _parent: Some(
+                                            45,
+                                        ),
+                                    },
+                                ],
+                                [RANGE]
+                                _id: 45,
+                                _parent: Some(
+                                    40,
+                                ),
+                            },
+                        ),
+                    ],
+                    module_name: RelativeImport(
+                        RelativeImport {
+                            children: [
+                                ImportPrefix(
+                                    ImportPrefix {
+                                        [RANGE]
+                                        _id: 42,
+                                        _parent: Some(
+                                            41,
+                                        ),
+                                    },
+                                ),
+                                DottedName(
+                                    DottedName {
+                                        children: [
+                                            Identifier {
+                                                [RANGE]
+                                                _id: 44,
+                                                _parent: Some(
+                                                    43,
+                                                ),
+                                            },
+                                        ],
+                                        [RANGE]
+                                        _id: 43,
+                                        _parent: Some(
+                                            41,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 41,
+                            _parent: Some(
+                                40,
+                            ),
+                        },
+                    ),
+                    children: None,
+                    [RANGE]
+                    _id: 40,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

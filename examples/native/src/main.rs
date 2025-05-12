@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use ast_python::db::PYTHON_PARSERS;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
@@ -23,7 +24,6 @@ use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
-use auto_lsp::python::PYTHON_PARSERS;
 use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
 use auto_lsp::server::RequestRegistry;
 use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, Session};

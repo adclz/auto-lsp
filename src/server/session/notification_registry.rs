@@ -100,11 +100,11 @@ impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
         let cb = Arc::clone(callback);
         session
             .task_pool
-            .spawn(move |sender| match snapshot.with_db(|db| cb(&db, params)) {
+            .spawn(move |sender| match snapshot.with_db(|db| cb(db, params)) {
                 Err(e) => log::warn!("Cancelled notification: {}", e),
                 Ok(result) => {
                     if let Err(e) = result {
-                        sender.send(Task::NotificationError(e.into())).unwrap();
+                        sender.send(Task::NotificationError(e)).unwrap();
                     }
                 }
             });

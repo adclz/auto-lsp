@@ -10,7 +10,7 @@ name = "auto-lsp"
 name = "auto-lsp-core"
 
 [[package]]
-name = "auto-lsp-macros"
+name = "auto-lsp-codegen"
 
 [changelog]
 protect_breaking_commits = true

@@ -1,0 +1,89 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                True(
+                                    True {
+                                        [RANGE]
+                                        _id: 2,
+                                        _parent: Some(
+                                            1,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                False(
+                                    False {
+                                        [RANGE]
+                                        _id: 4,
+                                        _parent: Some(
+                                            3,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 3,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                None(
+                                    None {
+                                        [RANGE]
+                                        _id: 6,
+                                        _parent: Some(
+                                            5,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 5,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

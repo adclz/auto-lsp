@@ -73,7 +73,7 @@ impl salsa::Database for BaseDb {
         {
             let event = _event();
             if let salsa::EventKind::WillExecute { .. } = event.kind {
-                self.logs.lock().push(format!("{:?}", event));
+                self.logs.lock().push(format!("{event:?}"));
             }
         }
     }

@@ -15,14 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
-use salsa::Accumulator;
-
 use super::db::{BaseDatabase, File};
-use crate::ast::AstSymbol;
-use crate::core_build::lexer::get_tree_sitter_errors;
+use super::lexer::get_tree_sitter_errors;
+use crate::ast::AstNode;
 use crate::errors::ParseErrorAccumulator;
-use std::fmt::Formatter;
+use salsa::Accumulator;
 use std::ops::Deref;
 use std::sync::Arc;
 
@@ -40,8 +37,11 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 
     get_tree_sitter_errors(db, &node, source_code);
 
-    match (parsers.ast_parser)(db, parsers, &doc) {
-        Ok(nodes) => ParsedAst::new(nodes),
+    match (parsers.ast_parser)(db, &doc) {
+        Ok(mut nodes) => {
+            nodes.sort_unstable();
+            ParsedAst::new(nodes)
+        }
         Err(e) => {
             ParseErrorAccumulator::accumulate(e.clone().into(), db);
             ParsedAst::default()
@@ -50,17 +50,9 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 }
 
 /// Cheap cloneable wrapper around a parsed AST
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone, Eq)]
 pub struct ParsedAst {
-    nodes: Arc<Vec<Arc<dyn AstSymbol>>>,
-}
-
-impl std::fmt::Debug for ParsedAst {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ParsedAst")
-            .field("nodes", &self.nodes.len())
-            .finish()
-    }
+    pub nodes: Arc<Vec<Arc<dyn AstNode>>>,
 }
 
 impl PartialEq for ParsedAst {
@@ -69,10 +61,8 @@ impl PartialEq for ParsedAst {
     }
 }
 
-impl Eq for ParsedAst {}
-
 impl Deref for ParsedAst {
-    type Target = Arc<Vec<Arc<dyn AstSymbol>>>;
+    type Target = Vec<Arc<dyn AstNode>>;
 
     fn deref(&self) -> &Self::Target {
         &self.nodes
@@ -80,33 +70,32 @@ impl Deref for ParsedAst {
 }
 
 impl ParsedAst {
-    fn new(nodes: Vec<Arc<dyn AstSymbol>>) -> Self {
+    pub(crate) fn new(nodes: Vec<Arc<dyn AstNode>>) -> Self {
         Self {
             nodes: Arc::new(nodes),
         }
     }
 
-    pub fn get_root(&self) -> Option<&Arc<dyn AstSymbol>> {
+    pub fn get_root(&self) -> Option<&Arc<dyn AstNode>> {
         self.nodes.first()
     }
 
-    /// Returns the first descendant of the root node that matches the given type.
-    pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstSymbol>> {
-        let mut best: Option<&Arc<dyn AstSymbol>> = None;
-
+    pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
+        let mut result = None;
         for node in self.nodes.iter() {
             let range = node.get_range();
 
-            if range.start > offset {
-                // No point continuing
-                break;
+            if range.start_byte > offset {
+                // If the start byte is greater than the offset, we can stop searching
+                continue;
             }
 
-            if node.is_inside_offset(offset) {
-                best = Some(node);
+            if range.start_byte <= offset && offset <= range.end_byte {
+                result = Some(node);
+            } else {
+                continue;
             }
         }
-
-        best
+        result
     }
 }

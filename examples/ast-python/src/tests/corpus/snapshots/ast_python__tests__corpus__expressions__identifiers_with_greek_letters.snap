@@ -1,0 +1,87 @@
+---
+source: src/tests/corpus/expressions.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Assignment(
+                            Assignment {
+                                right: Some(
+                                    Expression(
+                                        PrimaryExpression(
+                                            BinaryOperator(
+                                                BinaryOperator {
+                                                    operator: Token_Plus(
+                                                        Token_Plus {
+                                                            [RANGE]
+                                                            _id: 6,
+                                                            _parent: Some(
+                                                                4,
+                                                            ),
+                                                        },
+                                                    ),
+                                                    left: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                            _id: 5,
+                                                            _parent: Some(
+                                                                4,
+                                                            ),
+                                                        },
+                                                    ),
+                                                    right: Identifier(
+                                                        Identifier {
+                                                            [RANGE]
+                                                            _id: 7,
+                                                            _parent: Some(
+                                                                4,
+                                                            ),
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 4,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
+                                                },
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                Type: None,
+                                left: Pattern(
+                                    Identifier(
+                                        Identifier {
+                                            [RANGE]
+                                            _id: 3,
+                                            _parent: Some(
+                                                2,
+                                            ),
+                                        },
+                                    ),
+                                ),
+                                [RANGE]
+                                _id: 2,
+                                _parent: Some(
+                                    1,
+                                ),
+                            },
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

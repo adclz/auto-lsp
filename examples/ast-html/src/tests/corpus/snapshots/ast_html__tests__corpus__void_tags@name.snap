@@ -1,0 +1,247 @@
+---
+source: src/tests/corpus/mod.rs
+expression: document
+---
+Document {
+    children: [
+        Element(
+            Element {
+                children: [
+                    StartTag(
+                        StartTag {
+                            children: [
+                                TagName(
+                                    TagName {
+                                        [RANGE]
+                                        _id: 3,
+                                        _parent: Some(
+                                            2,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 2,
+                            _parent: Some(
+                                1,
+                            ),
+                        },
+                    ),
+                    Element(
+                        Element {
+                            children: [
+                                StartTag(
+                                    StartTag {
+                                        children: [
+                                            TagName(
+                                                TagName {
+                                                    [RANGE]
+                                                    _id: 6,
+                                                    _parent: Some(
+                                                        5,
+                                                    ),
+                                                },
+                                            ),
+                                            Attribute(
+                                                Attribute {
+                                                    children: [
+                                                        AttributeName(
+                                                            AttributeName {
+                                                                [RANGE]
+                                                                _id: 8,
+                                                                _parent: Some(
+                                                                    7,
+                                                                ),
+                                                            },
+                                                        ),
+                                                        QuotedAttributeValue(
+                                                            QuotedAttributeValue {
+                                                                children: Some(
+                                                                    AttributeValue {
+                                                                        [RANGE]
+                                                                        _id: 10,
+                                                                        _parent: Some(
+                                                                            9,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                [RANGE]
+                                                                _id: 9,
+                                                                _parent: Some(
+                                                                    7,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 7,
+                                                    _parent: Some(
+                                                        5,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 5,
+                                        _parent: Some(
+                                            4,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 4,
+                            _parent: Some(
+                                1,
+                            ),
+                        },
+                    ),
+                    Element(
+                        Element {
+                            children: [
+                                StartTag(
+                                    StartTag {
+                                        children: [
+                                            TagName(
+                                                TagName {
+                                                    [RANGE]
+                                                    _id: 13,
+                                                    _parent: Some(
+                                                        12,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 12,
+                                        _parent: Some(
+                                            11,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 11,
+                            _parent: Some(
+                                1,
+                            ),
+                        },
+                    ),
+                    Element(
+                        Element {
+                            children: [
+                                SelfClosingTag(
+                                    SelfClosingTag {
+                                        children: [
+                                            TagName(
+                                                TagName {
+                                                    [RANGE]
+                                                    _id: 16,
+                                                    _parent: Some(
+                                                        15,
+                                                    ),
+                                                },
+                                            ),
+                                            Attribute(
+                                                Attribute {
+                                                    children: [
+                                                        AttributeName(
+                                                            AttributeName {
+                                                                [RANGE]
+                                                                _id: 18,
+                                                                _parent: Some(
+                                                                    17,
+                                                                ),
+                                                            },
+                                                        ),
+                                                        AttributeValue(
+                                                            AttributeValue {
+                                                                [RANGE]
+                                                                _id: 19,
+                                                                _parent: Some(
+                                                                    17,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 17,
+                                                    _parent: Some(
+                                                        15,
+                                                    ),
+                                                },
+                                            ),
+                                            Attribute(
+                                                Attribute {
+                                                    children: [
+                                                        AttributeName(
+                                                            AttributeName {
+                                                                [RANGE]
+                                                                _id: 21,
+                                                                _parent: Some(
+                                                                    20,
+                                                                ),
+                                                            },
+                                                        ),
+                                                        AttributeValue(
+                                                            AttributeValue {
+                                                                [RANGE]
+                                                                _id: 22,
+                                                                _parent: Some(
+                                                                    20,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 20,
+                                                    _parent: Some(
+                                                        15,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 15,
+                                        _parent: Some(
+                                            14,
+                                        ),
+                                    },
+                                ),
+                            ],
+                            [RANGE]
+                            _id: 14,
+                            _parent: Some(
+                                1,
+                            ),
+                        },
+                    ),
+                    EndTag(
+                        EndTag {
+                            children: TagName {
+                                [RANGE]
+                                _id: 24,
+                                _parent: Some(
+                                    23,
+                                ),
+                            },
+                            [RANGE]
+                            _id: 23,
+                            _parent: Some(
+                                1,
+                            ),
+                        },
+                    ),
+                ],
+                [RANGE]
+                _id: 1,
+                _parent: Some(
+                    0,
+                ),
+            },
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}

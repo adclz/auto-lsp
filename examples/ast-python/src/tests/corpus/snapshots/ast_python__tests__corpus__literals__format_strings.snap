@@ -1,0 +1,1507 @@
+---
+source: src/tests/corpus/literals.rs
+expression: module
+---
+Module {
+    children: [
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 3,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                    _id: 4,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Call(
+                                                                Call {
+                                                                    function: Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                            _id: 7,
+                                                                            _parent: Some(
+                                                                                6,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                    arguments: ArgumentList(
+                                                                        ArgumentList {
+                                                                            children: [
+                                                                                Expression(
+                                                                                    PrimaryExpression(
+                                                                                        String(
+                                                                                            String {
+                                                                                                children: [
+                                                                                                    StringStart(
+                                                                                                        StringStart {
+                                                                                                            [RANGE]
+                                                                                                            _id: 10,
+                                                                                                            _parent: Some(
+                                                                                                                9,
+                                                                                                            ),
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    StringContent(
+                                                                                                        StringContent {
+                                                                                                            children: [],
+                                                                                                            [RANGE]
+                                                                                                            _id: 11,
+                                                                                                            _parent: Some(
+                                                                                                                9,
+                                                                                                            ),
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    Interpolation(
+                                                                                                        Interpolation {
+                                                                                                            format_specifier: None,
+                                                                                                            type_conversion: None,
+                                                                                                            expression: Expression(
+                                                                                                                PrimaryExpression(
+                                                                                                                    Identifier(
+                                                                                                                        Identifier {
+                                                                                                                            [RANGE]
+                                                                                                                            _id: 13,
+                                                                                                                            _parent: Some(
+                                                                                                                                12,
+                                                                                                                            ),
+                                                                                                                        },
+                                                                                                                    ),
+                                                                                                                ),
+                                                                                                            ),
+                                                                                                            [RANGE]
+                                                                                                            _id: 12,
+                                                                                                            _parent: Some(
+                                                                                                                9,
+                                                                                                            ),
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    StringContent(
+                                                                                                        StringContent {
+                                                                                                            children: [],
+                                                                                                            [RANGE]
+                                                                                                            _id: 14,
+                                                                                                            _parent: Some(
+                                                                                                                9,
+                                                                                                            ),
+                                                                                                        },
+                                                                                                    ),
+                                                                                                    StringEnd(
+                                                                                                        StringEnd {
+                                                                                                            [RANGE]
+                                                                                                            _id: 15,
+                                                                                                            _parent: Some(
+                                                                                                                9,
+                                                                                                            ),
+                                                                                                        },
+                                                                                                    ),
+                                                                                                ],
+                                                                                                [RANGE]
+                                                                                                _id: 9,
+                                                                                                _parent: Some(
+                                                                                                    8,
+                                                                                                ),
+                                                                                            },
+                                                                                        ),
+                                                                                    ),
+                                                                                ),
+                                                                            ],
+                                                                            [RANGE]
+                                                                            _id: 8,
+                                                                            _parent: Some(
+                                                                                6,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                    [RANGE]
+                                                                    _id: 6,
+                                                                    _parent: Some(
+                                                                        5,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 5,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                    _id: 16,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 17,
+                                                    _parent: Some(
+                                                        2,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 2,
+                                        _parent: Some(
+                                            1,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 1,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 20,
+                                                    _parent: Some(
+                                                        19,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                    _id: 21,
+                                                    _parent: Some(
+                                                        19,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                    _id: 23,
+                                                                    _parent: Some(
+                                                                        22,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 22,
+                                                    _parent: Some(
+                                                        19,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                    _id: 24,
+                                                    _parent: Some(
+                                                        19,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 25,
+                                                    _parent: Some(
+                                                        19,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 19,
+                                        _parent: Some(
+                                            18,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 18,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 28,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                    _id: 29,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                    _id: 31,
+                                                                    _parent: Some(
+                                                                        30,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 30,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                    _id: 32,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 33,
+                                                    _parent: Some(
+                                                        27,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 27,
+                                        _parent: Some(
+                                            26,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 26,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 36,
+                                                    _parent: Some(
+                                                        35,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 38,
+                                                                _parent: Some(
+                                                                    37,
+                                                                ),
+                                                            },
+                                                        ),
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 39,
+                                                                _parent: Some(
+                                                                    37,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 37,
+                                                    _parent: Some(
+                                                        35,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 40,
+                                                    _parent: Some(
+                                                        35,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 35,
+                                        _parent: Some(
+                                            34,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 34,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 43,
+                                                    _parent: Some(
+                                                        42,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [],
+                                                    [RANGE]
+                                                    _id: 44,
+                                                    _parent: Some(
+                                                        42,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                    _id: 46,
+                                                                    _parent: Some(
+                                                                        45,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 45,
+                                                    _parent: Some(
+                                                        42,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 48,
+                                                                _parent: Some(
+                                                                    47,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 47,
+                                                    _parent: Some(
+                                                        42,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 49,
+                                                    _parent: Some(
+                                                        42,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 42,
+                                        _parent: Some(
+                                            41,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 41,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 52,
+                                                    _parent: Some(
+                                                        51,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 54,
+                                                                _parent: Some(
+                                                                    53,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 53,
+                                                    _parent: Some(
+                                                        51,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                    _id: 56,
+                                                                    _parent: Some(
+                                                                        55,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 55,
+                                                    _parent: Some(
+                                                        51,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 57,
+                                                    _parent: Some(
+                                                        51,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 51,
+                                        _parent: Some(
+                                            50,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 50,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 60,
+                                                    _parent: Some(
+                                                        59,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 62,
+                                                                _parent: Some(
+                                                                    61,
+                                                                ),
+                                                            },
+                                                        ),
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 63,
+                                                                _parent: Some(
+                                                                    61,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 61,
+                                                    _parent: Some(
+                                                        59,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 64,
+                                                    _parent: Some(
+                                                        59,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 59,
+                                        _parent: Some(
+                                            58,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 58,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 67,
+                                                    _parent: Some(
+                                                        66,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 69,
+                                                                _parent: Some(
+                                                                    68,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 68,
+                                                    _parent: Some(
+                                                        66,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: Expression(
+                                                        PrimaryExpression(
+                                                            Identifier(
+                                                                Identifier {
+                                                                    [RANGE]
+                                                                    _id: 71,
+                                                                    _parent: Some(
+                                                                        70,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 70,
+                                                    _parent: Some(
+                                                        66,
+                                                    ),
+                                                },
+                                            ),
+                                            StringContent(
+                                                StringContent {
+                                                    children: [
+                                                        EscapeInterpolation(
+                                                            EscapeInterpolation {
+                                                                [RANGE]
+                                                                _id: 73,
+                                                                _parent: Some(
+                                                                    72,
+                                                                ),
+                                                            },
+                                                        ),
+                                                    ],
+                                                    [RANGE]
+                                                    _id: 72,
+                                                    _parent: Some(
+                                                        66,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 74,
+                                                    _parent: Some(
+                                                        66,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 66,
+                                        _parent: Some(
+                                            65,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 65,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 77,
+                                                    _parent: Some(
+                                                        76,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: ExpressionList(
+                                                        ExpressionList {
+                                                            children: [
+                                                                PrimaryExpression(
+                                                                    Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                            _id: 80,
+                                                                            _parent: Some(
+                                                                                79,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                            _id: 79,
+                                                            _parent: Some(
+                                                                78,
+                                                            ),
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 78,
+                                                    _parent: Some(
+                                                        76,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 81,
+                                                    _parent: Some(
+                                                        76,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 76,
+                                        _parent: Some(
+                                            75,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 75,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 84,
+                                                    _parent: Some(
+                                                        83,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: Yield(
+                                                        Yield {
+                                                            children: Some(
+                                                                Expression(
+                                                                    PrimaryExpression(
+                                                                        Identifier(
+                                                                            Identifier {
+                                                                                [RANGE]
+                                                                                _id: 87,
+                                                                                _parent: Some(
+                                                                                    86,
+                                                                                ),
+                                                                            },
+                                                                        ),
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            [RANGE]
+                                                            _id: 86,
+                                                            _parent: Some(
+                                                                85,
+                                                            ),
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 85,
+                                                    _parent: Some(
+                                                        83,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 88,
+                                                    _parent: Some(
+                                                        83,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 83,
+                                        _parent: Some(
+                                            82,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 82,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ExpressionStatement(
+                ExpressionStatement {
+                    children: [
+                        Expression(
+                            PrimaryExpression(
+                                String(
+                                    String {
+                                        children: [
+                                            StringStart(
+                                                StringStart {
+                                                    [RANGE]
+                                                    _id: 91,
+                                                    _parent: Some(
+                                                        90,
+                                                    ),
+                                                },
+                                            ),
+                                            Interpolation(
+                                                Interpolation {
+                                                    format_specifier: None,
+                                                    type_conversion: None,
+                                                    expression: ExpressionList(
+                                                        ExpressionList {
+                                                            children: [
+                                                                PrimaryExpression(
+                                                                    ListSplat(
+                                                                        ListSplat {
+                                                                            children: Identifier(
+                                                                                Identifier {
+                                                                                    [RANGE]
+                                                                                    _id: 95,
+                                                                                    _parent: Some(
+                                                                                        94,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                            [RANGE]
+                                                                            _id: 94,
+                                                                            _parent: Some(
+                                                                                93,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                            _id: 93,
+                                                            _parent: Some(
+                                                                92,
+                                                            ),
+                                                        },
+                                                    ),
+                                                    [RANGE]
+                                                    _id: 92,
+                                                    _parent: Some(
+                                                        90,
+                                                    ),
+                                                },
+                                            ),
+                                            StringEnd(
+                                                StringEnd {
+                                                    [RANGE]
+                                                    _id: 96,
+                                                    _parent: Some(
+                                                        90,
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 90,
+                                        _parent: Some(
+                                            89,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ),
+                    ],
+                    [RANGE]
+                    _id: 89,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ReturnStatement(
+                                    ReturnStatement {
+                                        children: Some(
+                                            Expression(
+                                                PrimaryExpression(
+                                                    String(
+                                                        String {
+                                                            children: [
+                                                                StringStart(
+                                                                    StringStart {
+                                                                        [RANGE]
+                                                                        _id: 103,
+                                                                        _parent: Some(
+                                                                            102,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                StringContent(
+                                                                    StringContent {
+                                                                        children: [],
+                                                                        [RANGE]
+                                                                        _id: 104,
+                                                                        _parent: Some(
+                                                                            102,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                Interpolation(
+                                                                    Interpolation {
+                                                                        format_specifier: None,
+                                                                        type_conversion: None,
+                                                                        expression: Expression(
+                                                                            ConditionalExpression(
+                                                                                ConditionalExpression {
+                                                                                    children: [
+                                                                                        PrimaryExpression(
+                                                                                            String(
+                                                                                                String {
+                                                                                                    children: [
+                                                                                                        StringStart(
+                                                                                                            StringStart {
+                                                                                                                [RANGE]
+                                                                                                                _id: 108,
+                                                                                                                _parent: Some(
+                                                                                                                    107,
+                                                                                                                ),
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringContent(
+                                                                                                            StringContent {
+                                                                                                                children: [],
+                                                                                                                [RANGE]
+                                                                                                                _id: 109,
+                                                                                                                _parent: Some(
+                                                                                                                    107,
+                                                                                                                ),
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringEnd(
+                                                                                                            StringEnd {
+                                                                                                                [RANGE]
+                                                                                                                _id: 110,
+                                                                                                                _parent: Some(
+                                                                                                                    107,
+                                                                                                                ),
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [RANGE]
+                                                                                                    _id: 107,
+                                                                                                    _parent: Some(
+                                                                                                        106,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                        PrimaryExpression(
+                                                                                            True(
+                                                                                                True {
+                                                                                                    [RANGE]
+                                                                                                    _id: 111,
+                                                                                                    _parent: Some(
+                                                                                                        106,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                        PrimaryExpression(
+                                                                                            String(
+                                                                                                String {
+                                                                                                    children: [
+                                                                                                        StringStart(
+                                                                                                            StringStart {
+                                                                                                                [RANGE]
+                                                                                                                _id: 113,
+                                                                                                                _parent: Some(
+                                                                                                                    112,
+                                                                                                                ),
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringContent(
+                                                                                                            StringContent {
+                                                                                                                children: [],
+                                                                                                                [RANGE]
+                                                                                                                _id: 114,
+                                                                                                                _parent: Some(
+                                                                                                                    112,
+                                                                                                                ),
+                                                                                                            },
+                                                                                                        ),
+                                                                                                        StringEnd(
+                                                                                                            StringEnd {
+                                                                                                                [RANGE]
+                                                                                                                _id: 115,
+                                                                                                                _parent: Some(
+                                                                                                                    112,
+                                                                                                                ),
+                                                                                                            },
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [RANGE]
+                                                                                                    _id: 112,
+                                                                                                    _parent: Some(
+                                                                                                        106,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                        ),
+                                                                                    ],
+                                                                                    [RANGE]
+                                                                                    _id: 106,
+                                                                                    _parent: Some(
+                                                                                        105,
+                                                                                    ),
+                                                                                },
+                                                                            ),
+                                                                        ),
+                                                                        [RANGE]
+                                                                        _id: 105,
+                                                                        _parent: Some(
+                                                                            102,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                                StringEnd(
+                                                                    StringEnd {
+                                                                        [RANGE]
+                                                                        _id: 116,
+                                                                        _parent: Some(
+                                                                            102,
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            [RANGE]
+                                                            _id: 102,
+                                                            _parent: Some(
+                                                                101,
+                                                            ),
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                        [RANGE]
+                                        _id: 101,
+                                        _parent: Some(
+                                            100,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 100,
+                        _parent: Some(
+                            97,
+                        ),
+                    },
+                    name: Identifier {
+                        [RANGE]
+                        _id: 98,
+                        _parent: Some(
+                            97,
+                        ),
+                    },
+                    parameters: Parameters {
+                        children: [],
+                        [RANGE]
+                        _id: 99,
+                        _parent: Some(
+                            97,
+                        ),
+                    },
+                    type_parameters: None,
+                    return_type: None,
+                    [RANGE]
+                    _id: 97,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+        CompoundStatement(
+            FunctionDefinition(
+                FunctionDefinition {
+                    body: Block {
+                        alternative: [],
+                        children: [
+                            SimpleStatement(
+                                ExpressionStatement(
+                                    ExpressionStatement {
+                                        children: [
+                                            Expression(
+                                                PrimaryExpression(
+                                                    Call(
+                                                        Call {
+                                                            function: Attribute(
+                                                                Attribute {
+                                                                    object: Identifier(
+                                                                        Identifier {
+                                                                            [RANGE]
+                                                                            _id: 125,
+                                                                            _parent: Some(
+                                                                                124,
+                                                                            ),
+                                                                        },
+                                                                    ),
+                                                                    attribute: Identifier {
+                                                                        [RANGE]
+                                                                        _id: 126,
+                                                                        _parent: Some(
+                                                                            124,
+                                                                        ),
+                                                                    },
+                                                                    [RANGE]
+                                                                    _id: 124,
+                                                                    _parent: Some(
+                                                                        123,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                            arguments: ArgumentList(
+                                                                ArgumentList {
+                                                                    children: [
+                                                                        Expression(
+                                                                            PrimaryExpression(
+                                                                                String(
+                                                                                    String {
+                                                                                        children: [
+                                                                                            StringStart(
+                                                                                                StringStart {
+                                                                                                    [RANGE]
+                                                                                                    _id: 129,
+                                                                                                    _parent: Some(
+                                                                                                        128,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                            StringContent(
+                                                                                                StringContent {
+                                                                                                    children: [],
+                                                                                                    [RANGE]
+                                                                                                    _id: 130,
+                                                                                                    _parent: Some(
+                                                                                                        128,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                            Interpolation(
+                                                                                                Interpolation {
+                                                                                                    format_specifier: None,
+                                                                                                    type_conversion: None,
+                                                                                                    expression: Expression(
+                                                                                                        PrimaryExpression(
+                                                                                                            Integer(
+                                                                                                                Integer {
+                                                                                                                    [RANGE]
+                                                                                                                    _id: 132,
+                                                                                                                    _parent: Some(
+                                                                                                                        131,
+                                                                                                                    ),
+                                                                                                                },
+                                                                                                            ),
+                                                                                                        ),
+                                                                                                    ),
+                                                                                                    [RANGE]
+                                                                                                    _id: 131,
+                                                                                                    _parent: Some(
+                                                                                                        128,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                            StringEnd(
+                                                                                                StringEnd {
+                                                                                                    [RANGE]
+                                                                                                    _id: 133,
+                                                                                                    _parent: Some(
+                                                                                                        128,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                        [RANGE]
+                                                                                        _id: 128,
+                                                                                        _parent: Some(
+                                                                                            127,
+                                                                                        ),
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                        ),
+                                                                        Expression(
+                                                                            PrimaryExpression(
+                                                                                String(
+                                                                                    String {
+                                                                                        children: [
+                                                                                            StringStart(
+                                                                                                StringStart {
+                                                                                                    [RANGE]
+                                                                                                    _id: 135,
+                                                                                                    _parent: Some(
+                                                                                                        134,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                            StringContent(
+                                                                                                StringContent {
+                                                                                                    children: [],
+                                                                                                    [RANGE]
+                                                                                                    _id: 136,
+                                                                                                    _parent: Some(
+                                                                                                        134,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                            StringEnd(
+                                                                                                StringEnd {
+                                                                                                    [RANGE]
+                                                                                                    _id: 137,
+                                                                                                    _parent: Some(
+                                                                                                        134,
+                                                                                                    ),
+                                                                                                },
+                                                                                            ),
+                                                                                        ],
+                                                                                        [RANGE]
+                                                                                        _id: 134,
+                                                                                        _parent: Some(
+                                                                                            127,
+                                                                                        ),
+                                                                                    },
+                                                                                ),
+                                                                            ),
+                                                                        ),
+                                                                    ],
+                                                                    [RANGE]
+                                                                    _id: 127,
+                                                                    _parent: Some(
+                                                                        123,
+                                                                    ),
+                                                                },
+                                                            ),
+                                                            [RANGE]
+                                                            _id: 123,
+                                                            _parent: Some(
+                                                                122,
+                                                            ),
+                                                        },
+                                                    ),
+                                                ),
+                                            ),
+                                        ],
+                                        [RANGE]
+                                        _id: 122,
+                                        _parent: Some(
+                                            121,
+                                        ),
+                                    },
+                                ),
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 121,
+                        _parent: Some(
+                            117,
+                        ),
+                    },
+                    name: Identifier {
+                        [RANGE]
+                        _id: 118,
+                        _parent: Some(
+                            117,
+                        ),
+                    },
+                    parameters: Parameters {
+                        children: [
+                            Identifier(
+                                Identifier {
+                                    [RANGE]
+                                    _id: 120,
+                                    _parent: Some(
+                                        119,
+                                    ),
+                                },
+                            ),
+                        ],
+                        [RANGE]
+                        _id: 119,
+                        _parent: Some(
+                            117,
+                        ),
+                    },
+                    type_parameters: None,
+                    return_type: None,
+                    [RANGE]
+                    _id: 117,
+                    _parent: Some(
+                        0,
+                    ),
+                },
+            ),
+        ),
+    ],
+    [RANGE]
+    _id: 0,
+    _parent: None,
+}
