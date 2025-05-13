@@ -117,7 +117,7 @@ pub trait AstNode:
     }
 
     /// Retrieves the parent node, if present, from the node list.
-    fn get_parent<'a>(&'a self, nodes: &'a Vec<Arc<dyn AstNode>>) -> Option<&'a Arc<dyn AstNode>> {
+    fn get_parent<'a>(&'a self, nodes: &'a [Arc<dyn AstNode>]) -> Option<&'a Arc<dyn AstNode>> {
         nodes.get(self.get_parent_id()?)
     }
 }
@@ -126,7 +126,7 @@ impl_downcast!(AstNode);
 
 impl PartialEq for dyn AstNode {
     fn eq(&self, other: &Self) -> bool {
-        self.get_range().eq(other.get_range())
+        self.get_range().eq(other.get_range()) && self.get_id().eq(&other.get_id())
     }
 }
 
