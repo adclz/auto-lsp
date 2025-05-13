@@ -1,4 +1,3 @@
-#![feature(min_specialization)]
 /*
 This file is part of auto-lsp.
 Copyright (C) 2025 CLAUZEL Adrien
@@ -23,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 mod ast_node;
 
 pub mod ast {
-    pub use crate::ast_node::capabilities::*;
     pub use crate::ast_node::builder::*;
+    pub use crate::ast_node::capabilities::*;
     pub use crate::ast_node::node::*;
 }
 
