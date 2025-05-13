@@ -11,6 +11,7 @@ fn main() {
         generate(
             tree_sitter_html::NODE_TYPES,
             &tree_sitter_html::LANGUAGE.into(),
+            None,
         )
         .to_string(),
     )

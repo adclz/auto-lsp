@@ -31,6 +31,7 @@ use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use std::collections::{HashMap, HashSet};
 use std::sync::{LazyLock, Mutex, RwLock};
+use utils::TOKENS;
 
 /// List of all named rules
 pub(crate) static NAMED_RULES: LazyLock<Mutex<Vec<String>>> = LazyLock::new(Default::default);
@@ -68,7 +69,38 @@ pub(crate) static FIELD_ID_FOR_NAME: LazyLock<Mutex<HashMap<String, u16>>> =
 pub(crate) static SUPER_TYPES: LazyLock<RwLock<HashMap<String, SuperType>>> =
     LazyLock::new(Default::default);
 
-pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
+/// Generate the RUst code for a given tree-sitter grammar
+///
+/// # Arguments
+///
+/// * `source` - node-types.json
+/// * `language` - tree-sitter language fn
+/// * `tokens` - optional map of tokens to enum names (since tokens can't be valid rust identifiers)
+///
+/// # Returns
+/// A TokenStream containing the generated code
+///
+/// # Example
+///
+/// ```rust
+/// use auto_lsp_codegen::generate;
+///
+/// let _result = generate(
+///        &tree_sitter_python::NODE_TYPES,
+///        &tree_sitter_python::LANGUAGE.into(),
+///        None,
+///    );
+/// ```
+///
+pub fn generate(
+    source: &str,
+    language: &tree_sitter::Language,
+    tokens: Option<HashMap<&'static str, &'static str>>,
+) -> TokenStream {
+    if let Some(tokens) = tokens {
+        TOKENS.write().unwrap().extend(tokens);
+    }
+
     let nodes: Vec<NodeType> = serde_json::from_str(source).expect("Invalid JSON");
 
     let mut output = quote! {
@@ -128,8 +160,7 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
 
         // Iterate over the types of this super type
         super_type.types.iter().enumerate().for_each(|(i, key)| {
-            if let Some(nested_super_type) = super_types_lock
-    .get(key) {
+            if let Some(nested_super_type) = super_types_lock.get(key) {
                 // Some types are super types
                 new_super_type.types.extend(nested_super_type.types.clone());
             } else {
@@ -143,8 +174,7 @@ pub fn generate(source: &str, language: &tree_sitter::Language) -> TokenStream {
 
     // Now we need to merge the new super types with the existing ones
     new_super_types.into_iter().for_each(|(name, s)| {
-        super_types_lock
-.insert(name.clone(), s.clone());
+        super_types_lock.insert(name.clone(), s.clone());
     });
 
     drop(super_types_lock);

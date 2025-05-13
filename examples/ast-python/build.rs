@@ -11,6 +11,7 @@ fn main() {
         generate(
             tree_sitter_python::NODE_TYPES,
             &tree_sitter_python::LANGUAGE.into(),
+            None,
         )
         .to_string(),
     )
