@@ -16,11 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use crate::generated::{CompoundStatement, CompoundStatement_SimpleStatement};
 use auto_lsp::core::ast::{AstNode, BuildDocumentSymbols};
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
 use auto_lsp::{anyhow, lsp_types};
-use crate::generated::{Block, CompoundStatement, CompoundStatement_SimpleStatement};
 
 impl BuildDocumentSymbols for crate::generated::Module {
     fn build_document_symbols(
@@ -28,7 +28,9 @@ impl BuildDocumentSymbols for crate::generated::Module {
         doc: &Document,
         builder: &mut DocumentSymbolsBuilder,
     ) -> anyhow::Result<()> {
-        self.children.build_document_symbols(doc, builder)
+        self.children
+            .iter()
+            .try_for_each(|f| f.build_document_symbols(doc, builder))
     }
 }
 
@@ -47,16 +49,6 @@ impl BuildDocumentSymbols for CompoundStatement_SimpleStatement {
     }
 }
 
-impl BuildDocumentSymbols for Block {
-    fn build_document_symbols(
-        &self,
-        doc: &Document,
-        acc: &mut DocumentSymbolsBuilder,
-    ) -> anyhow::Result<()> {
-        self.children.build_document_symbols(doc, acc)
-    }
-}
-
 impl BuildDocumentSymbols for crate::generated::FunctionDefinition {
     fn build_document_symbols(
         &self,
@@ -65,7 +57,10 @@ impl BuildDocumentSymbols for crate::generated::FunctionDefinition {
     ) -> anyhow::Result<()> {
         let mut nested_builder = DocumentSymbolsBuilder::default();
 
-        self.body.build_document_symbols(doc, &mut nested_builder)?;
+        self.body
+            .children
+            .iter()
+            .try_for_each(|f| f.build_document_symbols(doc, &mut nested_builder))?;
 
         builder.push_symbol(lsp_types::DocumentSymbol {
             name: self.name.get_text(doc.texter.text.as_bytes())?.to_string(),

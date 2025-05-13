@@ -29,7 +29,9 @@ impl BuildCodeActions for Module {
         doc: &auto_lsp::core::document::Document,
         acc: &mut Vec<lsp_types::CodeActionOrCommand>,
     ) -> anyhow::Result<()> {
-        self.children.build_code_actions(doc, acc)
+        self.children
+            .iter()
+            .try_for_each(|f| f.build_code_actions(doc, acc))
     }
 }
 

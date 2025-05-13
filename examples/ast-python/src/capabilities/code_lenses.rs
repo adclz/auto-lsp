@@ -28,7 +28,9 @@ impl BuildCodeLenses for Module {
         doc: &Document,
         acc: &mut Vec<lsp_types::CodeLens>,
     ) -> anyhow::Result<()> {
-        self.children.build_code_lenses(doc, acc)
+        self.children
+            .iter()
+            .try_for_each(|f| f.build_code_lenses(doc, acc))
     }
 }
 

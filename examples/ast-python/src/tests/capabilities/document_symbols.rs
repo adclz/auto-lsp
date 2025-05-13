@@ -16,13 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use rstest::{fixture, rstest};
-use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
+use crate::{db::create_python_db, generated::Module};
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::{ast::BuildDocumentSymbols, document_symbols_builder::DocumentSymbolsBuilder};
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::Url;
-use crate::db::create_python_db;
+use rstest::{fixture, rstest};
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -43,10 +43,12 @@ fn foo_bar_document_symbols(foo_bar: impl BaseDatabase) {
     let document = file.document(&foo_bar).read();
     let root = get_ast(&foo_bar, file).get_root();
 
-    let ast = root.as_ref().unwrap();
+    let module = root.as_ref().unwrap().downcast_ref::<Module>().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder).unwrap();
+    module
+        .build_document_symbols(&document, &mut builder)
+        .unwrap();
     let symbols = builder.finalize();
 
     assert_eq!(symbols.len(), 2);
@@ -78,10 +80,12 @@ fn nested_document_symbols(foo_bar_nested_baz: impl BaseDatabase) {
     let document = file.document(&foo_bar_nested_baz).read();
     let root = get_ast(&foo_bar_nested_baz, file).get_root();
 
-    let ast = root.as_ref().unwrap();
+    let module = root.as_ref().unwrap().downcast_ref::<Module>().unwrap();
 
     let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder).unwrap();
+    module
+        .build_document_symbols(&document, &mut builder)
+        .unwrap();
     let symbols = builder.finalize();
 
     assert_eq!(symbols.len(), 2);

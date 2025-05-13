@@ -46,7 +46,9 @@ impl BuildSemanticTokens for Module {
         doc: &Document,
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
-        self.children.build_semantic_tokens(doc, builder)
+        self.children
+            .iter()
+            .try_for_each(|f| f.build_semantic_tokens(doc, builder))
     }
 }
 

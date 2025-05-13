@@ -15,11 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use rstest::{fixture, rstest};
-use auto_lsp::core::salsa::db::BaseDatabase;
+use crate::{db::create_python_db, generated::Module};
 use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::{ast::BuildCodeLenses, salsa::db::BaseDatabase};
 use auto_lsp::lsp_types::Url;
-use crate::db::create_python_db;
+use rstest::{fixture, rstest};
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -40,10 +40,10 @@ fn foo_bar_code_lens(foo_bar: impl BaseDatabase) {
     let document = file.document(&foo_bar).read();
     let root = get_ast(&foo_bar, file).get_root();
 
-    let ast = root.as_ref().unwrap();
+    let module = root.as_ref().unwrap().downcast_ref::<Module>().unwrap();
 
     let mut code_lens = vec![];
-    ast.build_code_lenses(&document, &mut code_lens).unwrap();
+    module.build_code_lenses(&document, &mut code_lens).unwrap();
 
     assert_eq!(code_lens.len(), 2);
 

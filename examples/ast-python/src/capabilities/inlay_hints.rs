@@ -15,10 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use crate::generated::{
+    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
+};
 use auto_lsp::anyhow;
 use auto_lsp::core::ast::{AstNode, BuildInlayHints};
 use auto_lsp::core::document::Document;
-use crate::generated::{CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module};
 
 impl BuildInlayHints for Module {
     fn build_inlay_hints(
@@ -26,7 +28,9 @@ impl BuildInlayHints for Module {
         doc: &Document,
         acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
     ) -> anyhow::Result<()> {
-        self.children.build_inlay_hints(doc, acc)
+        self.children
+            .iter()
+            .try_for_each(|f| f.build_inlay_hints(doc, acc))
     }
 }
 
