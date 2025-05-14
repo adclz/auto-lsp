@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 mod code_actions;
 mod code_lens;
 mod completion_items;
+mod dispatch;
 mod document_diagnostics;
 mod document_link;
 mod document_symbols;
