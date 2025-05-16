@@ -24,7 +24,7 @@ use ast_python::capabilities::completion_items::dispatch_completion_items;
 use ast_python::capabilities::document_symbols::dispatch_document_symbols;
 use ast_python::capabilities::hover::dispatch_hover;
 use ast_python::capabilities::inlay_hints::dispatch_inlay_hints;
-use ast_python::capabilities::semantic_tokens::dispatch_semantic_tokens;
+use ast_python::capabilities::semantic_tokens::{dispatch_semantic_tokens, SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
 use ast_python::db::PYTHON_PARSERS;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
 use auto_lsp::lsp_server::{self, Connection};
@@ -37,35 +37,45 @@ use auto_lsp::lsp_types::request::{
     DocumentSymbolRequest, HoverRequest, InlayHintRequest, SelectionRangeRequest,
     SemanticTokensFullRequest, WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
 };
-use auto_lsp::lsp_types::{self, CompletionOptions};
+use auto_lsp::lsp_types::{self, CodeActionProviderCapability, CodeLensOptions, CompletionOptions, DiagnosticOptions, DiagnosticServerCapabilities, HoverProviderCapability, OneOf, ServerCapabilities};
 use auto_lsp::server::capabilities::{
     changed_watched_files, get_code_actions, get_code_lenses, get_completion_items,
     get_diagnostics, get_document_symbols, get_hover, get_inlay_hints, get_selection_ranges,
     get_semantic_tokens_full, get_workspace_diagnostics, get_workspace_symbols, open_text_document,
     TraversalKind,
 };
-use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, RequestRegistry, Session};
+use auto_lsp::server::{semantic_tokens_provider, InitOptions, NotificationRegistry, RequestRegistry, Session, WORKSPACE_PROVIDER};
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
     let db = BaseDb::default();
 
     let mut session = Session::create(
-        InitOptions {
+        &mut InitOptions {
             parsers: &PYTHON_PARSERS,
-            lsp_options: LspOptions {
-                workspace_symbols: true,
-                document_symbols: true,
-                diagnostics: true,
-                inlay_hints: true,
-                hover_info: true,
-                code_lens: true,
-                completions: Some(CompletionOptions {
+            capabilities: ServerCapabilities {
+                workspace: WORKSPACE_PROVIDER.clone(),
+                diagnostic_provider: Some(DiagnosticServerCapabilities::Options(DiagnosticOptions {
+                    workspace_diagnostics: true,
+                    ..Default::default()
+                })),
+                code_action_provider: Some(CodeActionProviderCapability::Simple(true)),
+                code_lens_provider: Some(CodeLensOptions {
+                    resolve_provider: Some(false),
+                }),
+                inlay_hint_provider: Some(OneOf::Left(true)),
+                semantic_tokens_provider: semantic_tokens_provider(true, Some(SUPPORTED_TYPES), Some(SUPPORTED_MODIFIERS)),
+                document_symbol_provider: Some(OneOf::Left(true)),
+                workspace_symbol_provider: Some(OneOf::Left(true)),
+                hover_provider: Some(HoverProviderCapability::Simple(true)),
+                completion_provider: Some(CompletionOptions {
+                    resolve_provider: Some(false),
                     trigger_characters: Some(vec![".".to_string()]),
                     ..Default::default()
                 }),
                 ..Default::default()
             },
+            server_info: None
         },
         connection,
         db,

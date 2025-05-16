@@ -25,11 +25,12 @@ use auto_lsp::lsp_types::notification::{
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
 use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
-use auto_lsp::server::RequestRegistry;
-use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, Session};
+use auto_lsp::server::{RequestRegistry, WORKSPACE_PROVIDER};
+use auto_lsp::server::{InitOptions, NotificationRegistry, Session};
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
+use auto_lsp::lsp_types::ServerCapabilities;
 
 pub trait ExtendDb: BaseDatabase {
     fn get_urls(&self) -> Vec<String> {
@@ -49,9 +50,11 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut session = Session::create(
         InitOptions {
             parsers: &PYTHON_PARSERS,
-            lsp_options: LspOptions {
+            capabilities: ServerCapabilities {
+                workspace: WORKSPACE_PROVIDER.clone(),
                 ..Default::default()
             },
+            server_info: None
         },
         connection,
         db,
