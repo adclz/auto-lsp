@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let db = BaseDb::default();
 
     let mut session = Session::create(
-        &mut InitOptions {
+        InitOptions {
             parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
                 workspace: WORKSPACE_PROVIDER.clone(),
