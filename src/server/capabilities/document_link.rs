@@ -32,10 +32,11 @@ use regex::Match;
 /// # Example
 ///
 /// ```rust
-/// # use auto_lsp::server::{RegexToDocumentLink, Session};
+/// # use auto_lsp::server::{Session};
 /// # use auto_lsp_core::document::Document;
 /// # use lsp_types::{DocumentLink, Url};
 /// # use regex::Regex;
+/// use auto_lsp::server::capabilities::RegexToDocumentLink;
 /// let regex = Regex::new(r"(\w+):(\d+)").unwrap();
 ///
 /// fn to_document_link(m: regex::Match, line: usize, document: &Document, acc: &mut Vec<DocumentLink>) -> lsp_types::DocumentLink {
