@@ -15,11 +15,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use std::ops::Deref;
 use crate::{db::create_python_db, generated::Module};
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::{ast::BuildCodeLenses, salsa::db::BaseDatabase};
+use auto_lsp::core::{salsa::db::BaseDatabase};
 use auto_lsp::lsp_types::Url;
 use rstest::{fixture, rstest};
+use crate::capabilities::code_lenses::dispatch_code_lenses;
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -37,23 +39,24 @@ fn foo_bar_code_lens(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).get_root();
 
-    let module = root.as_ref().unwrap().downcast_ref::<Module>().unwrap();
+    let mut code_lenses = vec![];
+    get_ast(&foo_bar, file)
+        .iter()
+        .for_each(|n| {
+            dispatch_code_lenses(&foo_bar, file, n.deref(), &mut code_lenses)
+                .expect("Failed to dispatch code lenses");
+        });
 
-    let mut code_lens = vec![];
-    module.build_code_lenses(&document, &mut code_lens).unwrap();
+    assert_eq!(code_lenses.len(), 2);
 
-    assert_eq!(code_lens.len(), 2);
+    assert_eq!(code_lenses[0].range.start.line, 1);
+    assert_eq!(code_lenses[0].range.start.character, 4);
+    assert_eq!(code_lenses[0].range.end.line, 1);
+    assert_eq!(code_lenses[0].range.end.character, 7);
 
-    assert_eq!(code_lens[0].range.start.line, 1);
-    assert_eq!(code_lens[0].range.start.character, 4);
-    assert_eq!(code_lens[0].range.end.line, 1);
-    assert_eq!(code_lens[0].range.end.character, 7);
-
-    assert_eq!(code_lens[1].range.start.line, 4);
-    assert_eq!(code_lens[1].range.start.character, 4);
-    assert_eq!(code_lens[1].range.end.line, 4);
-    assert_eq!(code_lens[1].range.end.character, 7);
+    assert_eq!(code_lenses[1].range.start.line, 4);
+    assert_eq!(code_lenses[1].range.start.character, 4);
+    assert_eq!(code_lenses[1].range.end.line, 4);
+    assert_eq!(code_lenses[1].range.end.character, 7);
 }

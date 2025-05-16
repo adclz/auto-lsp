@@ -15,45 +15,35 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use auto_lsp::core::dispatch;
 use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
-use auto_lsp::core::ast::BuildCodeActions;
-use auto_lsp::core::document::Document;
+use auto_lsp::core::ast::{AstNode};
 use auto_lsp::lsp_types::CodeActionOrCommand;
 use auto_lsp::{anyhow, lsp_types};
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
 
-impl BuildCodeActions for Module {
-    fn build_code_actions(
-        &self,
-        doc: &auto_lsp::core::document::Document,
-        acc: &mut Vec<lsp_types::CodeActionOrCommand>,
-    ) -> anyhow::Result<()> {
-        self.children
-            .iter()
-            .try_for_each(|f| f.build_code_actions(doc, acc))
-    }
+pub fn dispatch_code_actions(
+    db: &impl BaseDatabase,
+    file: File,
+    node: &dyn AstNode,
+    builder: &mut Vec<CodeActionOrCommand>,
+) -> anyhow::Result<()> {
+    dispatch!(
+        node,
+        [
+            FunctionDefinition => build_code_actions(db, file, builder)
+        ]
+    );
+    Ok(())
 }
 
-impl BuildCodeActions for CompoundStatement_SimpleStatement {
+impl FunctionDefinition {
     fn build_code_actions(
         &self,
-        doc: &auto_lsp::core::document::Document,
-        acc: &mut Vec<lsp_types::CodeActionOrCommand>,
-    ) -> anyhow::Result<()> {
-        match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(
-                CompoundStatement::FunctionDefinition(f),
-            ) => f.build_code_actions(doc, acc),
-            _ => Ok(()),
-        }
-    }
-}
-
-impl BuildCodeActions for FunctionDefinition {
-    fn build_code_actions(
-        &self,
-        _doc: &Document,
+        db: &impl BaseDatabase,
+        file: File,
         acc: &mut Vec<CodeActionOrCommand>,
     ) -> anyhow::Result<()> {
         acc.push(lsp_types::CodeActionOrCommand::CodeAction(

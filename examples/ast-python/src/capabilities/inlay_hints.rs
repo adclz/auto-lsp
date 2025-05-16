@@ -19,42 +19,37 @@ use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
 use auto_lsp::anyhow;
-use auto_lsp::core::ast::{AstNode, BuildInlayHints};
+use auto_lsp::core::ast::{AstNode};
+use auto_lsp::core::dispatch;
 use auto_lsp::core::document::Document;
+use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::lsp_types::{CodeLens, InlayHint};
 
-impl BuildInlayHints for Module {
-    fn build_inlay_hints(
-        &self,
-        doc: &Document,
-        acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
-    ) -> anyhow::Result<()> {
-        self.children
-            .iter()
-            .try_for_each(|f| f.build_inlay_hints(doc, acc))
-    }
+pub fn dispatch_inlay_hints(
+    db: &impl BaseDatabase,
+    file: File,
+    node: &dyn AstNode,
+    acc: &mut Vec<InlayHint>,
+) -> anyhow::Result<()> {
+    dispatch!(
+        node,
+        [
+            FunctionDefinition => build_inlay_hints(db, file, acc)
+        ]
+    );
+    Ok(())
 }
 
-impl BuildInlayHints for CompoundStatement_SimpleStatement {
+impl  FunctionDefinition {
     fn build_inlay_hints(
         &self,
-        doc: &Document,
+        db: &impl BaseDatabase,
+        file: File,
         acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
     ) -> anyhow::Result<()> {
-        match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(
-                CompoundStatement::FunctionDefinition(f),
-            ) => f.build_inlay_hints(doc, acc),
-            _ => Ok(()),
-        }
-    }
-}
+        let doc = file.document(db).read();
 
-impl BuildInlayHints for FunctionDefinition {
-    fn build_inlay_hints(
-        &self,
-        doc: &Document,
-        acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
-    ) -> anyhow::Result<()> {
         let range = self.get_range();
         let name = format!(
             "[{} {}] - {}",

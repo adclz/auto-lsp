@@ -15,13 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use std::ops::Deref;
 use crate::db::create_python_db;
 use crate::generated::Module;
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::{ast::BuildCodeActions, salsa::db::BaseDatabase};
+use auto_lsp::core::{salsa::db::BaseDatabase};
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::Url;
 use rstest::{fixture, rstest};
+use crate::capabilities::code_actions::dispatch_code_actions;
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -39,15 +41,14 @@ fn foo_bar_code_actions(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).get_root();
-
-    let module = root.as_ref().unwrap().downcast_ref::<Module>().unwrap();
-
+    
     let mut code_actions = vec![];
-    module
-        .build_code_actions(&document, &mut code_actions)
-        .unwrap();
+    get_ast(&foo_bar, file)
+        .iter()
+        .for_each(|n| {
+            dispatch_code_actions(&foo_bar, file, n.deref(), &mut code_actions)
+                .expect("Failed to dispatch code actions");
+        });
 
     assert_eq!(code_actions.len(), 2);
 

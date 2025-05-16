@@ -16,13 +16,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{CompoundStatement, CompoundStatement_SimpleStatement};
-use auto_lsp::core::ast::{AstNode, BuildDocumentSymbols};
+use crate::generated::{
+    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
+};
+use auto_lsp::core::ast::{AstNode};
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
 use auto_lsp::{anyhow, lsp_types};
+use auto_lsp::core::dispatch;
 
-impl BuildDocumentSymbols for crate::generated::Module {
+pub fn dispatch_document_symbols(
+    db: &impl BaseDatabase,
+    file: File,
+    node: &dyn AstNode,
+    builder: &mut DocumentSymbolsBuilder,
+) -> anyhow::Result<()> {
+    let doc = file.document(db).read();
+    dispatch!(
+        node,
+        [
+            Module => build_document_symbols(&*doc, builder)
+        ]
+    );
+    Ok(())
+}
+
+impl Module {
     fn build_document_symbols(
         &self,
         doc: &Document,
@@ -34,7 +54,7 @@ impl BuildDocumentSymbols for crate::generated::Module {
     }
 }
 
-impl BuildDocumentSymbols for CompoundStatement_SimpleStatement {
+impl CompoundStatement_SimpleStatement {
     fn build_document_symbols(
         &self,
         doc: &Document,
@@ -49,7 +69,7 @@ impl BuildDocumentSymbols for CompoundStatement_SimpleStatement {
     }
 }
 
-impl BuildDocumentSymbols for crate::generated::FunctionDefinition {
+impl FunctionDefinition {
     fn build_document_symbols(
         &self,
         doc: &Document,

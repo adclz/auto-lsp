@@ -19,10 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
-use auto_lsp::core::ast::{AstNode, BuildSemanticTokens};
+use auto_lsp::core::ast::{AstNode};
 use auto_lsp::core::document::Document;
 use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
-use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
+use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types, lsp_types};
+use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
 
 define_semantic_token_types![
     standard {
@@ -40,37 +42,18 @@ define_semantic_token_modifiers![
     custom {}
 ];
 
-impl BuildSemanticTokens for Module {
-    fn build_semantic_tokens(
-        &self,
-        doc: &Document,
-        builder: &mut SemanticTokensBuilder,
-    ) -> anyhow::Result<()> {
-        self.children
-            .iter()
-            .try_for_each(|f| f.build_semantic_tokens(doc, builder))
-    }
+pub fn dispatch_semantic_tokens(db: &impl BaseDatabase, file: File, node: &dyn AstNode, builder: &mut SemanticTokensBuilder) -> anyhow::Result<()> {
+    dispatch!(node, [
+        FunctionDefinition => build_semantic_tokens(db, file, builder)
+    ]);
+    Ok(())
 }
 
-impl BuildSemanticTokens for CompoundStatement_SimpleStatement {
+impl  FunctionDefinition {
     fn build_semantic_tokens(
         &self,
-        doc: &Document,
-        acc: &mut SemanticTokensBuilder,
-    ) -> anyhow::Result<()> {
-        match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(
-                CompoundStatement::FunctionDefinition(f),
-            ) => f.build_semantic_tokens(doc, acc),
-            _ => Ok(()),
-        }
-    }
-}
-
-impl BuildSemanticTokens for FunctionDefinition {
-    fn build_semantic_tokens(
-        &self,
-        _doc: &Document,
+        db: &impl BaseDatabase,
+        file: File,
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
         builder.push(

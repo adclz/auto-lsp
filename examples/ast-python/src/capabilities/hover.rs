@@ -18,23 +18,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::{
     CompoundStatement_SimpleStatement, Identifier, PassStatement, SimpleStatement,
 };
-use auto_lsp::core::ast::{AstNode, GetHover};
+use auto_lsp::core::ast::{AstNode};
 use auto_lsp::core::document::Document;
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
 use auto_lsp::{anyhow, lsp_types};
+use auto_lsp::core::dispatch;
 
-impl GetHover for CompoundStatement_SimpleStatement {
-    fn get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
-        match self {
-            CompoundStatement_SimpleStatement::SimpleStatement(SimpleStatement::PassStatement(
-                pass,
-            )) => pass.get_hover(doc),
-            _ => Ok(None),
-        }
-    }
+pub fn dispatch_hover(db: &impl BaseDatabase, file: File, node: &dyn AstNode) -> anyhow::Result<Option<lsp_types::Hover>> {
+    dispatch!(node, [
+        PassStatement => get_hover(db, file),
+        Identifier => get_hover(db, file)
+    ]);
+    Ok(None)
 }
 
-impl GetHover for PassStatement {
-    fn get_hover(&self, _doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
+impl PassStatement {
+    fn get_hover(&self, db: &impl BaseDatabase, file: File) -> anyhow::Result<Option<lsp_types::Hover>> {
         Ok(Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::Markdown,
@@ -48,8 +47,9 @@ impl GetHover for PassStatement {
     }
 }
 
-impl GetHover for Identifier {
-    fn get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
+impl Identifier {
+    fn get_hover(&self, db: &impl BaseDatabase, file: File) -> anyhow::Result<Option<lsp_types::Hover>> {
+        let doc = file.document(db).read();
         Ok(Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
