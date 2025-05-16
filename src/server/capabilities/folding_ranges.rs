@@ -21,8 +21,6 @@ use lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 use streaming_iterator::StreamingIterator;
 
 /// Request for folding ranges
-///
-/// Uses the folding_range [`tree_sitter::Query`] if orovided in the initilization options.
 pub fn get_folding_ranges<Db: BaseDatabase>(
     db: &Db,
     params: FoldingRangeParams,

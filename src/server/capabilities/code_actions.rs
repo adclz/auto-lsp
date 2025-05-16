@@ -16,13 +16,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::salsa::db::BaseDatabase;
+use std::ops::Deref;
+
+use crate::server::capabilities::common::TraversalKind;
 use auto_lsp_core::salsa::tracked::get_ast;
+use auto_lsp_core::{ast::AstNode, salsa::db::BaseDatabase};
 use lsp_types::{CodeActionOrCommand, CodeActionParams};
+use auto_lsp_core::salsa::db::File;
 
 pub fn get_code_actions<Db: BaseDatabase>(
     db: &Db,
     params: CodeActionParams,
+    traversal: TraversalKind,
+    callback: fn(
+        db: &Db,
+        file: File,
+        node: &dyn AstNode,
+        acc: &mut Vec<CodeActionOrCommand>,
+    ) -> anyhow::Result<()>,
 ) -> anyhow::Result<Option<Vec<CodeActionOrCommand>>> {
     let mut results = vec![];
 
@@ -32,12 +43,16 @@ pub fn get_code_actions<Db: BaseDatabase>(
         .get_file(&uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
-    let root = get_ast(db, file).get_root();
-
-    if let Some(root) = root {
-        root.build_code_actions(&document, &mut results)?
-    }
-
+    match traversal {
+        TraversalKind::Iter => {
+            get_ast(db, file)
+                .iter()
+                .try_for_each(|n| callback(db, file, n.lower(), &mut results))?;
+        }
+        TraversalKind::Single => match get_ast(db, file).get_root() {
+            Some(f) => callback(db, file, f.lower(), &mut results)?,
+            None => return Ok(None),
+        },
+    };
     Ok(Some(results))
 }

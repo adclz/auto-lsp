@@ -16,13 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use auto_lsp_core::{
+    ast::AstNode,
+    salsa::{db::BaseDatabase, tracked::get_ast},
+};
 use lsp_types::{InlayHint, InlayHintParams};
+use std::ops::Deref;
+use auto_lsp_core::salsa::db::File;
+use crate::server::capabilities::TraversalKind;
 
 /// Get inlay hints for a document.
 pub fn get_inlay_hints<Db: BaseDatabase>(
     db: &Db,
     params: InlayHintParams,
+    traversal: TraversalKind,
+    callback: fn(db: &Db, file: File, node: &dyn AstNode, acc: &mut Vec<InlayHint>) -> anyhow::Result<()>,
 ) -> anyhow::Result<Option<Vec<InlayHint>>> {
     let mut results = vec![];
 
@@ -32,12 +40,16 @@ pub fn get_inlay_hints<Db: BaseDatabase>(
         .get_file(&uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
-    let root = get_ast(db, file).get_root();
-
-    if let Some(root) = root {
-        root.build_inlay_hints(&document, &mut results)?
-    }
-
+    match traversal {
+        TraversalKind::Iter => {
+            get_ast(db, file)
+                .iter() 
+                .try_for_each(|n| callback(db, file, n.lower(), &mut results))?;
+        }
+        TraversalKind::Single => match get_ast(db, file).get_root() {
+            Some(f) => callback(db, file, f.lower(), &mut results)?,
+            None => return Ok(None),
+        },
+    };
     Ok(Some(results))
 }

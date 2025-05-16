@@ -16,9 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::salsa::db::BaseDatabase;
+use std::ops::Deref;
+
+use auto_lsp_core::ast::AstNode;
+use auto_lsp_core::salsa::db::{BaseDatabase, File};
 use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
 use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
+use crate::server::capabilities::common::TraversalKind;
 
 /// Request to get document symbols for a file
 ///
@@ -26,6 +30,13 @@ use lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 pub fn get_document_symbols<Db: BaseDatabase>(
     db: &Db,
     params: DocumentSymbolParams,
+    traversal: TraversalKind,
+    callback: fn(
+        db: &Db,
+        file: File,
+        node: &dyn AstNode,
+        &mut DocumentSymbolsBuilder,
+    ) -> anyhow::Result<()>,
 ) -> anyhow::Result<Option<DocumentSymbolResponse>> {
     let uri = params.text_document.uri;
 
@@ -33,14 +44,21 @@ pub fn get_document_symbols<Db: BaseDatabase>(
         .get_file(&uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
-    let root = get_ast(db, file).get_root();
-
     let mut builder = DocumentSymbolsBuilder::default();
 
-    if let Some(p) = root {
-        p.build_document_symbols(&document, &mut builder)?
-    }
-
+    match traversal {
+        TraversalKind::Iter => {
+            get_ast(db, file)
+                .iter()
+                .try_for_each(|n| callback(db, file, n.lower(), &mut builder))?;
+        }
+        TraversalKind::Single => {
+            match get_ast(db, file).get_root() {
+                Some(f) => callback(db, file, f.lower(), &mut builder)?,
+                None => return Ok(Some(DocumentSymbolResponse::Nested(builder.finalize()))),
+            };
+        }
+    };
+    
     Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
 }

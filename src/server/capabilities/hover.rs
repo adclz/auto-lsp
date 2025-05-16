@@ -16,11 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use std::ops::Deref;
+
+use auto_lsp_core::{
+    ast::AstNode,
+    salsa::{db::BaseDatabase, tracked::get_ast},
+};
 use lsp_types::{Hover, HoverParams};
+use auto_lsp_core::salsa::db::File;
 
 /// Request to get hover information for a symbol at a position
-pub fn get_hover<Db: BaseDatabase>(db: &Db, params: HoverParams) -> anyhow::Result<Option<Hover>> {
+pub fn get_hover<Db: BaseDatabase>(
+    db: &Db,
+    params: HoverParams,
+    callback: fn(db: &Db, file: File, node: &dyn AstNode) -> anyhow::Result<Option<Hover>>,
+) -> anyhow::Result<Option<Hover>> {
     let uri = &params.text_document_position_params.text_document.uri;
 
     let file = db
@@ -28,14 +38,14 @@ pub fn get_hover<Db: BaseDatabase>(db: &Db, params: HoverParams) -> anyhow::Resu
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let ast = get_ast(db, file);
-    let position = params.text_document_position_params.position;
 
-    let offset = document.offset_at(position).unwrap();
-    let item = ast.descendant_at(offset);
-
-    match item {
-        Some(item) => item.get_hover(&document),
-        None => Ok(None),
-    }
+    get_ast(db, file)
+        .descendant_at(
+            document
+                .offset_at(params.text_document_position_params.position)
+                .unwrap(),
+        )
+        .map(|n| callback(db, file, n.lower()))
+        .transpose()
+        .map(|r| r.and_then(|o| o))
 }

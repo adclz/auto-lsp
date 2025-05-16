@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 mod code_actions;
 mod code_lens;
 mod completion_items;
-mod dispatch;
+mod common;
 mod document_diagnostics;
 mod document_link;
 mod document_symbols;
@@ -36,6 +36,7 @@ mod workspace_diagnostics;
 mod workspace_symbols;
 
 pub use code_actions::*;
+pub use common::*;
 pub use code_lens::*;
 pub use completion_items::*;
 pub use document_diagnostics::*;

@@ -16,9 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::salsa::db::BaseDatabase;
+use std::ops::Deref;
+
+use auto_lsp_core::ast::AstNode;
+use auto_lsp_core::salsa::db::{BaseDatabase, File};
 use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
-use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
+use lsp_types::{
+    DocumentSymbolResponse, Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams,
+    WorkspaceSymbolResponse,
+};
+use crate::server::capabilities::TraversalKind;
 
 /// Request to get root symbols
 ///
@@ -26,6 +33,13 @@ use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, Workspa
 pub fn get_workspace_symbols<Db: BaseDatabase>(
     db: &Db,
     params: WorkspaceSymbolParams,
+    traversal: TraversalKind,
+    callback: fn(
+        db: &Db,
+        file: File,
+        node: &dyn AstNode,
+        builder: &mut DocumentSymbolsBuilder,
+    ) -> anyhow::Result<()>,
 ) -> anyhow::Result<Option<WorkspaceSymbolResponse>> {
     if params.query.is_empty() {
         return Ok(None);
@@ -36,14 +50,22 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
     db.get_files().iter().try_for_each(|file| {
         let file = *file;
         let url = file.url(db);
-        let document = file.document(db).read();
-        let ast = get_ast(db, file).get_root();
 
         let mut builder = DocumentSymbolsBuilder::default();
 
-        if let Some(root) = ast {
-            root.build_document_symbols(&document, &mut builder)?;
-        }
+        match traversal {
+            TraversalKind::Iter => {
+                get_ast(db, file)
+                    .iter()
+                    .try_for_each(|n| callback(db, file, n.lower(), &mut builder))?;
+            }
+            TraversalKind::Single => {
+                match get_ast(db, file).get_root() {
+                    Some(f) => callback(db, file, f.lower(), &mut builder)?,
+                    None => (),
+                };
+            }
+        };
 
         symbols.extend(
             builder

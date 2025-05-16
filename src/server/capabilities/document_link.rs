@@ -27,7 +27,7 @@ use lsp_types::{DocumentLink, DocumentLinkParams};
 ///
 /// To find a document link, we need the comment [`tree_sitter::Query`] to find all comments,
 /// then we use the regex from the [`crate::server::RegexToDocumentLink`] to find the links,
-/// and finally we pass matches to the **to_document_link** function.
+/// and finally, we pass matches to the **to_document_link** function.
 pub fn get_document_links<Db: BaseDatabase>(
     db: &Db,
     query: &tree_sitter::Query,

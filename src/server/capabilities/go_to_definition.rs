@@ -16,9 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use anyhow::Ok;
-use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
+use std::ops::Deref;
+
+use auto_lsp_core::{
+    ast::AstNode,
+    salsa::{db::BaseDatabase, tracked::get_ast},
+};
 use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
+use auto_lsp_core::salsa::db::File;
 
 /// Request to go to the definition of a symbol
 ///
@@ -26,6 +31,7 @@ use lsp_types::{GotoDefinitionParams, GotoDefinitionResponse};
 pub fn go_to_definition<Db: BaseDatabase>(
     db: &Db,
     params: GotoDefinitionParams,
+    callback: fn(db: &Db, file: File, node: &dyn AstNode) -> anyhow::Result<Option<GotoDefinitionResponse>>,
 ) -> anyhow::Result<Option<GotoDefinitionResponse>> {
     let uri = &params.text_document_position_params.text_document.uri;
 
@@ -34,15 +40,14 @@ pub fn go_to_definition<Db: BaseDatabase>(
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
-    let ast = get_ast(db, file);
 
-    let position = params.text_document_position_params.position;
-
-    let offset = document.offset_at(position).unwrap();
-    let item = ast.descendant_at(offset);
-
-    match item {
-        Some(item) => item.go_to_definition(&document),
-        None => Ok(None),
-    }
+    get_ast(db, file)
+        .descendant_at(
+            document
+                .offset_at(params.text_document_position_params.position)
+                .unwrap(),
+        )
+        .map(|n| callback(db, file, n.lower()))
+        .transpose()
+        .map(|r| r.and_then(|o| o))
 }

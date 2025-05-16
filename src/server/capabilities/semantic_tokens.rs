@@ -16,17 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use std::ops::Deref;
+
+use auto_lsp_core::ast::AstNode;
 use auto_lsp_core::salsa::{db::BaseDatabase, tracked::get_ast};
 use auto_lsp_core::semantic_tokens_builder::SemanticTokensBuilder;
-use lsp_types::{
-    SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
-    SemanticTokensResult,
-};
+use lsp_types::{DocumentSymbolResponse, SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult};
+use auto_lsp_core::salsa::db::File;
+use crate::server::capabilities::TraversalKind;
 
 /// Get all semantic tokens for a document.
 pub fn get_semantic_tokens_full<Db: BaseDatabase>(
     db: &Db,
     params: SemanticTokensParams,
+    traversal: TraversalKind,
+    callback: fn(db: &Db, file: File, node: &dyn AstNode, builder: &mut SemanticTokensBuilder) -> anyhow::Result<()>,
 ) -> anyhow::Result<Option<SemanticTokensResult>> {
     let uri = &params.text_document.uri;
 
@@ -34,15 +38,21 @@ pub fn get_semantic_tokens_full<Db: BaseDatabase>(
         .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
-    let ast = get_ast(db, file).get_root();
-
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 
-    if let Some(root) = ast {
-        root.build_semantic_tokens(&document, &mut builder)?
-    }
-
+    match traversal {
+        TraversalKind::Iter => {
+            get_ast(db, file)
+                .iter()
+                .try_for_each(|n| callback(db, file, n.lower(), &mut builder))?;
+        }
+        TraversalKind::Single => {
+            match get_ast(db, file).get_root() {
+                Some(f) => callback(db, file, f.lower(), &mut builder)?,
+                None => return Ok(Some(SemanticTokensResult::Tokens(builder.build()))),
+            };
+        }
+    };
     Ok(Some(SemanticTokensResult::Tokens(builder.build())))
 }
 
@@ -50,6 +60,7 @@ pub fn get_semantic_tokens_full<Db: BaseDatabase>(
 pub fn get_semantic_tokens_range<Db: BaseDatabase>(
     db: &Db,
     params: SemanticTokensRangeParams,
+    callback: fn(db: &Db, file: File, node: &dyn AstNode, builder: &mut SemanticTokensBuilder) -> anyhow::Result<()>,
 ) -> anyhow::Result<Option<SemanticTokensRangeResult>> {
     let uri = &params.text_document.uri;
 
@@ -57,14 +68,21 @@ pub fn get_semantic_tokens_range<Db: BaseDatabase>(
         .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
-    let ast = get_ast(db, file).get_root();
-
     let mut builder = SemanticTokensBuilder::new(0.to_string());
 
-    if let Some(root) = ast {
-        root.build_semantic_tokens(&document, &mut builder)?
-    }
+    get_ast(db, file)
+        .iter()
+        .filter(|f| {
+            let range = f.get_lsp_range();
+            let start = range.start;
+            let end = range.end;
+
+            start.line >= params.range.start.line
+                && start.character >= params.range.start.character
+                && end.line <= params.range.end.line
+                && end.character <= params.range.end.character
+        })
+        .try_for_each(|f| callback(db, file, f.lower(), &mut builder))?;
 
     Ok(Some(SemanticTokensRangeResult::Tokens(builder.build())))
 }
