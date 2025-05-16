@@ -18,7 +18,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::error::Error;
 use std::panic::RefUnwindSafe;
-
+use ast_python::capabilities::code_actions::dispatch_code_actions;
+use ast_python::capabilities::code_lenses::dispatch_code_lenses;
+use ast_python::capabilities::completion_items::dispatch_completion_items;
+use ast_python::capabilities::document_symbols::dispatch_document_symbols;
+use ast_python::capabilities::hover::dispatch_hover;
+use ast_python::capabilities::inlay_hints::dispatch_inlay_hints;
+use ast_python::capabilities::semantic_tokens::dispatch_semantic_tokens;
 use ast_python::db::PYTHON_PARSERS;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
 use auto_lsp::lsp_server::{self, Connection};
@@ -36,6 +42,7 @@ use auto_lsp::server::capabilities::{
     changed_watched_files, get_code_actions, get_code_lenses, get_completion_items,
     get_diagnostics, get_document_symbols, get_hover, get_inlay_hints, get_selection_ranges,
     get_semantic_tokens_full, get_workspace_diagnostics, get_workspace_symbols, open_text_document,
+    TraversalKind,
 };
 use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, RequestRegistry, Session};
 
@@ -84,16 +91,16 @@ fn on_requests<Db: BaseDatabase + Clone + RefUnwindSafe>(
 ) -> &mut RequestRegistry<Db> {
     registry
         .on::<DocumentDiagnosticRequest, _>(|s, p| get_diagnostics(s, p))
-        .on::<DocumentSymbolRequest, _>(|s, p| get_document_symbols(s, p))
-        .on::<HoverRequest, _>(|s, p| get_hover(s, p))
-        .on::<SemanticTokensFullRequest, _>(|s, p| get_semantic_tokens_full(s, p))
+        .on::<DocumentSymbolRequest, _>(|s, p| get_document_symbols(s, p, TraversalKind::Single, dispatch_document_symbols))
+        .on::<HoverRequest, _>(|s, p| get_hover(s, p, dispatch_hover))
+        .on::<SemanticTokensFullRequest, _>(|s, p| get_semantic_tokens_full(s, p, TraversalKind::Iter, dispatch_semantic_tokens))
         .on::<SelectionRangeRequest, _>(|s, p| get_selection_ranges(s, p))
-        .on::<WorkspaceSymbolRequest, _>(|s, p| get_workspace_symbols(s, p))
+        .on::<WorkspaceSymbolRequest, _>(|s, p| get_workspace_symbols(s, p, TraversalKind::Single, dispatch_document_symbols))
         .on::<WorkspaceDiagnosticRequest, _>(|s, p| get_workspace_diagnostics(s, p))
-        .on::<InlayHintRequest, _>(|s, p| get_inlay_hints(s, p))
-        .on::<CodeActionRequest, _>(|s, p| get_code_actions(s, p))
-        .on::<CodeLensRequest, _>(|s, p| get_code_lenses(s, p))
-        .on::<Completion, _>(|s, p| get_completion_items(s, p))
+        .on::<InlayHintRequest, _>(|s, p| get_inlay_hints(s, p, TraversalKind::Iter, dispatch_inlay_hints))
+        .on::<CodeActionRequest, _>(|s, p| get_code_actions(s, p, TraversalKind::Iter, dispatch_code_actions))
+        .on::<CodeLensRequest, _>(|s, p| get_code_lenses(s, p, TraversalKind::Iter, dispatch_code_lenses))
+        .on::<Completion, _>(|s, p| get_completion_items(s, p, TraversalKind::Iter, dispatch_completion_items))
 }
 
 fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
