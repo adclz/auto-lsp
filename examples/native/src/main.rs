@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::notification::{

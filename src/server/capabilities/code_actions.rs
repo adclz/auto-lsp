@@ -22,7 +22,7 @@ use crate::server::capabilities::common::TraversalKind;
 use auto_lsp_core::salsa::tracked::get_ast;
 use auto_lsp_core::{ast::AstNode, salsa::db::BaseDatabase};
 use lsp_types::{CodeActionOrCommand, CodeActionParams};
-use auto_lsp_core::salsa::db::File;
+use auto_lsp_core::salsa::db::{File, FileManager};
 
 pub fn get_code_actions<Db: BaseDatabase>(
     db: &Db,

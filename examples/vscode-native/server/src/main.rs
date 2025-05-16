@@ -24,7 +24,7 @@ use ast_python::capabilities::hover::dispatch_hover;
 use ast_python::capabilities::inlay_hints::dispatch_inlay_hints;
 use ast_python::capabilities::semantic_tokens::{dispatch_semantic_tokens, SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,

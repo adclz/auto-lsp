@@ -24,6 +24,7 @@ use auto_lsp_core::{
     salsa::db::BaseDatabase,
 };
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
+use auto_lsp_core::salsa::db::FileManager;
 
 /// Handle the watched files change notification.
 ///

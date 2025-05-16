@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use auto_lsp::configure_parsers;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_types::Url;
 use auto_lsp::texter::core::text::Text;
 use crate::generated::Module;
