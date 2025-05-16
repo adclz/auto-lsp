@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use std::ops::Deref;
+
 use rstest::{fixture, rstest};
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
@@ -47,7 +47,7 @@ fn foo_bar_inlay_hints(foo_bar: impl BaseDatabase) {
     get_ast(&foo_bar, file)
         .iter()
         .for_each(|n| {
-            dispatch_inlay_hints(&foo_bar, file, n.deref(), &mut hints)
+            dispatch_inlay_hints(&foo_bar, file, n.lower(), &mut hints)
                 .expect("Failed to dispatch inlay hints");
         });
     assert_eq!(hints.len(), 2);

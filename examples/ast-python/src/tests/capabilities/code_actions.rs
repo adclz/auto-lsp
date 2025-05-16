@@ -46,7 +46,7 @@ fn foo_bar_code_actions(foo_bar: impl BaseDatabase) {
     get_ast(&foo_bar, file)
         .iter()
         .for_each(|n| {
-            dispatch_code_actions(&foo_bar, file, n.deref(), &mut code_actions)
+            dispatch_code_actions(&foo_bar, file, n.lower(), &mut code_actions)
                 .expect("Failed to dispatch code actions");
         });
 

@@ -15,7 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use std::ops::Deref;
 use crate::{db::create_python_db, generated::Module};
 use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::core::{salsa::db::BaseDatabase};
@@ -44,7 +43,7 @@ fn foo_bar_code_lens(foo_bar: impl BaseDatabase) {
     get_ast(&foo_bar, file)
         .iter()
         .for_each(|n| {
-            dispatch_code_lenses(&foo_bar, file, n.deref(), &mut code_lenses)
+            dispatch_code_lenses(&foo_bar, file, n.lower(), &mut code_lenses)
                 .expect("Failed to dispatch code lenses");
         });
 

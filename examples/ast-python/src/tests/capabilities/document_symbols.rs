@@ -15,7 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use std::ops::Deref;
 use crate::{db::create_python_db, generated::Module};
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
@@ -45,7 +44,7 @@ fn foo_bar_document_symbols(foo_bar: impl BaseDatabase) {
 
     let mut builder = DocumentSymbolsBuilder::default();
 
-    dispatch_document_symbols(&foo_bar, file, root.deref(), &mut builder)
+    dispatch_document_symbols(&foo_bar, file, root.lower(), &mut builder)
         .expect("Failed to dispatch document symbols");
     
     let symbols = builder.finalize();
@@ -81,7 +80,7 @@ fn nested_document_symbols(foo_bar_nested_baz: impl BaseDatabase) {
 
     let mut builder = DocumentSymbolsBuilder::default();
 
-    dispatch_document_symbols(&foo_bar_nested_baz, file, root.deref(), &mut builder)
+    dispatch_document_symbols(&foo_bar_nested_baz, file, root.lower(), &mut builder)
         .expect("Failed to dispatch document symbols");
     
     let symbols = builder.finalize();

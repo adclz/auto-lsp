@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use auto_lsp::core::ast::AstNode;
 use std::ops::Deref;
 use auto_lsp::{
     core::{
@@ -78,7 +79,7 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
     {
         let bar_name = &foo.name;
         
-        let bar_hover = dispatch_hover(&foo_bar, file, bar_name.deref())
+        let bar_hover = dispatch_hover(&foo_bar, file, bar_name.lower())
             .expect("Failed to dispatch hover");
         
         assert_eq!(
