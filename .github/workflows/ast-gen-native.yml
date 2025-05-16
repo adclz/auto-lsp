@@ -28,9 +28,11 @@ jobs:
         working-directory: ./examples/ast-python
         env:
           INSTA_UPDATE: new
-        run: AST_GEN=1 cargo insta test --accept 
+          AST_GEN: 1 
+        run: cargo insta test --accept 
       - name: html ast
         working-directory: ./examples/ast-html
         env:
           INSTA_UPDATE: new
-        run: AST_GEN=1 cargo insta test --accept
+          AST_GEN: 1 
+        run: cargo insta test --accept
