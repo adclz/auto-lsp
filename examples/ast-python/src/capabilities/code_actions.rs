@@ -15,28 +15,38 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use auto_lsp::core::dispatch;
 use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
-use auto_lsp::core::ast::{AstNode};
-use auto_lsp::lsp_types::CodeActionOrCommand;
-use auto_lsp::{anyhow, lsp_types};
+use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::{dispatch, dispatch_once};
+use auto_lsp::lsp_types::{CodeActionOrCommand, CodeActionParams};
+use auto_lsp::{anyhow, lsp_types};
 
-pub fn dispatch_code_actions(
+pub fn code_actions(
     db: &impl BaseDatabase,
-    file: File,
-    node: &dyn AstNode,
-    builder: &mut Vec<CodeActionOrCommand>,
-) -> anyhow::Result<()> {
-    dispatch!(
-        node,
-        [
-            FunctionDefinition => build_code_actions(db, file, builder)
-        ]
-    );
-    Ok(())
+    params: CodeActionParams,
+) -> anyhow::Result<Option<Vec<CodeActionOrCommand>>> {
+    let mut acc = vec![];
+
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_code_actions(db, file, &mut acc)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(acc))
 }
 
 impl FunctionDefinition {

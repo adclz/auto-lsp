@@ -18,26 +18,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
-use auto_lsp::core::ast::{AstNode};
+use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
-use auto_lsp::{anyhow, lsp_types};
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
-use auto_lsp::lsp_types::{CodeActionOrCommand, CodeLens};
-use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::{dispatch, dispatch_once};
+use auto_lsp::lsp_types::{CodeActionOrCommand, CodeActionParams, CodeLens, CodeLensParams};
+use auto_lsp::{anyhow, lsp_types};
 
-pub fn dispatch_code_lenses(
+pub fn code_lenses(
     db: &impl BaseDatabase,
-    file: File,
-    node: &dyn AstNode,
-    builder: &mut Vec<CodeLens>,
-) -> anyhow::Result<()> {
-    dispatch!(
-        node,
-        [
-            FunctionDefinition => build_code_lenses(db, file, builder)
-        ]
-    );
-    Ok(())
+    params: CodeLensParams,
+) -> anyhow::Result<Option<Vec<CodeLens>>> {
+    let mut acc = vec![];
+
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_code_lenses(db, file, &mut acc)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(acc))
 }
 
 impl FunctionDefinition {

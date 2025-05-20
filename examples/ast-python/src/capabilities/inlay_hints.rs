@@ -19,29 +19,40 @@ use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
 use auto_lsp::anyhow;
-use auto_lsp::core::ast::{AstNode};
-use auto_lsp::core::dispatch;
+use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
-use auto_lsp::lsp_types::{CodeLens, InlayHint};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::{dispatch, dispatch_once};
+use auto_lsp::lsp_types::{
+    CodeLens, DocumentSymbolParams, DocumentSymbolResponse, InlayHint, InlayHintParams,
+};
 
-pub fn dispatch_inlay_hints(
+pub fn inlay_hints(
     db: &impl BaseDatabase,
-    file: File,
-    node: &dyn AstNode,
-    acc: &mut Vec<InlayHint>,
-) -> anyhow::Result<()> {
-    dispatch!(
-        node,
-        [
-            FunctionDefinition => build_inlay_hints(db, file, acc)
-        ]
-    );
-    Ok(())
-}
+    params: InlayHintParams,
+) -> anyhow::Result<Option<Vec<InlayHint>>> {
+    let uri = params.text_document.uri;
 
-impl  FunctionDefinition {
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let mut acc = vec![];
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_inlay_hints(db, file, &mut acc)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(acc))
+}
+impl FunctionDefinition {
     fn build_inlay_hints(
         &self,
         db: &impl BaseDatabase,

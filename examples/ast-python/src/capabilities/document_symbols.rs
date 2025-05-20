@@ -19,31 +19,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
-use auto_lsp::core::ast::{AstNode};
+use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::{dispatch, dispatch_once};
+use auto_lsp::lsp_types::{
+    CodeActionOrCommand, CodeActionParams, DocumentSymbolParams, DocumentSymbolResponse,
+};
 use auto_lsp::{anyhow, lsp_types};
-use auto_lsp::core::dispatch;
 
-pub fn dispatch_document_symbols(
+pub fn document_symbols(
     db: &impl BaseDatabase,
-    file: File,
-    node: &dyn AstNode,
-    builder: &mut DocumentSymbolsBuilder,
-) -> anyhow::Result<()> {
+    params: DocumentSymbolParams,
+) -> anyhow::Result<Option<DocumentSymbolResponse>> {
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
     let doc = file.document(db).read();
-    dispatch!(
-        node,
-        [
-            Module => build_document_symbols(&*doc, builder)
-        ]
-    );
-    Ok(())
+    let mut builder = DocumentSymbolsBuilder::default();
+
+    if let Some(node) = get_ast(db, file).get_root() {
+        dispatch!(node.lower(),
+            [
+                Module => build_document_symbols(&doc, &mut builder)
+            ]
+        );
+    }
+    Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
 }
 
 impl Module {
-    fn build_document_symbols(
+    pub(crate) fn build_document_symbols(
         &self,
         doc: &Document,
         builder: &mut DocumentSymbolsBuilder,

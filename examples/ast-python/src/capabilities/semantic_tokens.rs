@@ -15,16 +15,21 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
 use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
-use auto_lsp::core::ast::{AstNode};
+use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
-use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
-use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types, lsp_types};
-use auto_lsp::core::dispatch;
 use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
+use auto_lsp::core::{dispatch, dispatch_once};
+use auto_lsp::lsp_types::{
+    InlayHint, InlayHintParams, SemanticTokensParams, SemanticTokensRangeParams,
+    SemanticTokensResult,
+};
+use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types, lsp_types};
+use std::io::Error;
 
 define_semantic_token_types![
     standard {
@@ -42,14 +47,66 @@ define_semantic_token_modifiers![
     custom {}
 ];
 
-pub fn dispatch_semantic_tokens(db: &impl BaseDatabase, file: File, node: &dyn AstNode, builder: &mut SemanticTokensBuilder) -> anyhow::Result<()> {
-    dispatch!(node, [
-        FunctionDefinition => build_semantic_tokens(db, file, builder)
-    ]);
-    Ok(())
+pub fn semantic_tokens_full(
+    db: &impl BaseDatabase,
+    params: SemanticTokensParams,
+) -> anyhow::Result<Option<SemanticTokensResult>> {
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let mut builder = SemanticTokensBuilder::new("".into());
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(SemanticTokensResult::Tokens(builder.build())))
 }
 
-impl  FunctionDefinition {
+pub fn semantic_tokens_range(
+    db: &impl BaseDatabase,
+    params: SemanticTokensRangeParams,
+) -> anyhow::Result<Option<SemanticTokensResult>> {
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let mut builder = SemanticTokensBuilder::new("".into());
+
+    get_ast(db, file)
+        .iter()
+        .filter(|node| {
+            let range = node.get_lsp_range();
+            let start = range.start;
+            let end = range.end;
+            start.line >= params.range.start.line
+                && start.character >= params.range.start.character
+                && end.line <= params.range.end.line
+                && end.character <= params.range.end.character
+        })
+        .try_for_each(|node| {
+            dispatch!(
+                node,
+                [
+                    FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
+                ]
+            );
+            anyhow::Ok(())
+        })?;
+    Ok(Some(SemanticTokensResult::Tokens(builder.build())))
+}
+
+impl FunctionDefinition {
     fn build_semantic_tokens(
         &self,
         db: &impl BaseDatabase,

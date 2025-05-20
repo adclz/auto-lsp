@@ -1,7 +1,12 @@
-pub mod document_symbols;
 pub mod code_actions;
 pub mod code_lenses;
-pub mod inlay_hints;
-pub mod hover;
 pub mod completion_items;
+pub mod diagnostics;
+pub mod document_symbols;
+pub mod folding_ranges;
+pub mod hover;
+pub mod inlay_hints;
+pub mod selection_ranges;
 pub mod semantic_tokens;
+pub mod workspace_diagnostics;
+pub mod workspace_symbols;
