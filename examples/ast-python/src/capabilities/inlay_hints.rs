@@ -15,18 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{
-    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
-};
+use crate::generated::FunctionDefinition;
 use auto_lsp::anyhow;
 use auto_lsp::core::ast::AstNode;
-use auto_lsp::core::document::Document;
-use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::{dispatch, dispatch_once};
+use auto_lsp::core::dispatch;
 use auto_lsp::lsp_types::{
-    CodeLens, DocumentSymbolParams, DocumentSymbolResponse, InlayHint, InlayHintParams,
+    InlayHint, InlayHintParams,
 };
 
 pub fn inlay_hints(

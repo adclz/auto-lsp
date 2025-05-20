@@ -20,10 +20,7 @@ use crate::capabilities::semantic_tokens::{
     semantic_tokens_full, DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES,
 };
 use crate::db::create_python_db;
-use crate::generated::Module;
 use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
 use auto_lsp::lsp_types::{
     SemanticTokensParams, SemanticTokensResult, TextDocumentIdentifier, Url,
 };
@@ -45,8 +42,6 @@ fn foo_bar_semantic_tokens(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-
-    let mut builder = SemanticTokensBuilder::new("".into());
 
     let tokens = semantic_tokens_full(
         &foo_bar,

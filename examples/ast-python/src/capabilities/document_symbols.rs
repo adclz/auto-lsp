@@ -22,11 +22,11 @@ use crate::generated::{
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::{dispatch, dispatch_once};
+use auto_lsp::core::dispatch;
 use auto_lsp::lsp_types::{
-    CodeActionOrCommand, CodeActionParams, DocumentSymbolParams, DocumentSymbolResponse,
+    DocumentSymbolParams, DocumentSymbolResponse,
 };
 use auto_lsp::{anyhow, lsp_types};
 

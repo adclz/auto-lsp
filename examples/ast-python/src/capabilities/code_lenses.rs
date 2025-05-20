@@ -15,15 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{
-    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
-};
+use crate::generated::FunctionDefinition;
 use auto_lsp::core::ast::AstNode;
-use auto_lsp::core::document::Document;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::{dispatch, dispatch_once};
-use auto_lsp::lsp_types::{CodeActionOrCommand, CodeActionParams, CodeLens, CodeLensParams};
+use auto_lsp::lsp_types::{CodeLens, CodeLensParams};
 use auto_lsp::{anyhow, lsp_types};
 
 pub fn code_lenses(
@@ -53,8 +50,8 @@ pub fn code_lenses(
 impl FunctionDefinition {
     fn build_code_lenses(
         &self,
-        db: &impl BaseDatabase,
-        file: File,
+        _db: &impl BaseDatabase,
+        _file: File,
         acc: &mut Vec<lsp_types::CodeLens>,
     ) -> anyhow::Result<()> {
         acc.push(lsp_types::CodeLens {

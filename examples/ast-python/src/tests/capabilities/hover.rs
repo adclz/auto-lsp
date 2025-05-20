@@ -22,7 +22,6 @@ use auto_lsp::{
     lsp_types::{self, Url},
 };
 use rstest::{fixture, rstest};
-use std::ops::Deref;
 
 use crate::capabilities::hover::hover;
 use crate::{

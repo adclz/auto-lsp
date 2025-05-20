@@ -16,11 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::capabilities::document_symbols::document_symbols;
-use crate::{db::create_python_db, generated::Module};
-use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
+use crate::db::create_python_db;
 use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::lsp_types::request::DocumentSymbolRequest;
 use auto_lsp::lsp_types::{
     self, DocumentSymbolParams, DocumentSymbolResponse, PartialResultParams,
 };

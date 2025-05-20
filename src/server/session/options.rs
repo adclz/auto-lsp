@@ -18,9 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::collections::HashMap;
 
-use auto_lsp_core::{document::Document, parsers::Parsers};
-use lsp_types::{OneOf, SemanticTokenModifier, SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions, ServerCapabilities, ServerInfo, WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities};
-use regex::{Match, Regex};
+use auto_lsp_core::parsers::Parsers;
+use lsp_types::{
+    OneOf, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    ServerCapabilities, ServerInfo, WorkspaceFoldersServerCapabilities,
+    WorkspaceServerCapabilities,
+};
 
 /// Initialization options for the LSP server
 pub struct InitOptions {
@@ -29,10 +32,9 @@ pub struct InitOptions {
     pub server_info: Option<ServerInfo>,
 }
 
-pub static TEXT_DOCUMENT_SYNC: Option<lsp_types::TextDocumentSyncCapability> =
-    Some(lsp_types::TextDocumentSyncCapability::Kind(
-            lsp_types::TextDocumentSyncKind::INCREMENTAL,
-    ));
+pub static TEXT_DOCUMENT_SYNC: Option<lsp_types::TextDocumentSyncCapability> = Some(
+    lsp_types::TextDocumentSyncCapability::Kind(lsp_types::TextDocumentSyncKind::INCREMENTAL),
+);
 
 pub static WORKSPACE_PROVIDER: Option<WorkspaceServerCapabilities> =
     Some(WorkspaceServerCapabilities {
@@ -48,15 +50,17 @@ pub fn semantic_tokens_provider(
     token_types: Option<&'static [lsp_types::SemanticTokenType]>,
     token_modifiers: Option<&'static [lsp_types::SemanticTokenModifier]>,
 ) -> Option<lsp_types::SemanticTokensServerCapabilities> {
-    Some(lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(SemanticTokensOptions {
-        legend: SemanticTokensLegend {
-            token_types: token_types.map(|types| types.to_vec()).unwrap_or_default(),
-            token_modifiers: token_modifiers
-                .map(|modifiers| modifiers.to_vec())
-                .unwrap_or_default(),
-        },
-        range: Some(range),
-        full: Some(SemanticTokensFullOptions::Bool(true)),
-        ..Default::default()
-    }))
+    Some(
+        lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(SemanticTokensOptions {
+            legend: SemanticTokensLegend {
+                token_types: token_types.map(|types| types.to_vec()).unwrap_or_default(),
+                token_modifiers: token_modifiers
+                    .map(|modifiers| modifiers.to_vec())
+                    .unwrap_or_default(),
+            },
+            range: Some(range),
+            full: Some(SemanticTokensFullOptions::Bool(true)),
+            ..Default::default()
+        }),
+    )
 }

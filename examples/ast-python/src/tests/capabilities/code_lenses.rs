@@ -16,9 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::capabilities::code_lenses::code_lenses;
-use crate::{db::create_python_db, generated::Module};
+use crate::db::create_python_db;
 use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::lsp_types::{
     CodeLensParams, PartialResultParams, TextDocumentIdentifier, Url, WorkDoneProgressParams,
 };

@@ -15,21 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{
-    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
-};
+use crate::generated::FunctionDefinition;
 use auto_lsp::core::ast::AstNode;
-use auto_lsp::core::document::Document;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
 use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
-use auto_lsp::core::{dispatch, dispatch_once};
-use auto_lsp::lsp_types::{
-    InlayHint, InlayHintParams, SemanticTokensParams, SemanticTokensRangeParams,
-    SemanticTokensResult,
-};
-use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types, lsp_types};
-use std::io::Error;
+use auto_lsp::lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
+use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
 
 define_semantic_token_types![
     standard {
@@ -109,8 +102,8 @@ pub fn semantic_tokens_range(
 impl FunctionDefinition {
     fn build_semantic_tokens(
         &self,
-        db: &impl BaseDatabase,
-        file: File,
+        _db: &impl BaseDatabase,
+        _file: File,
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
         builder.push(

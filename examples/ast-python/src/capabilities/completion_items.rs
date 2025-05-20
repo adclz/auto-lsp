@@ -16,15 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::generated::{FunctionDefinition, Identifier, Module};
-use auto_lsp::core::ast::AstNode;
-use auto_lsp::core::document::Document;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
-use auto_lsp::core::{dispatch, dispatch_once};
 use auto_lsp::lsp_types::{
-    CompletionContext, CompletionItem, CompletionParams, CompletionResponse, SemanticTokensParams,
-    SemanticTokensResult,
+    CompletionContext, CompletionItem, CompletionParams, CompletionResponse,
 };
 use auto_lsp::{anyhow, lsp_types};
 use std::sync::LazyLock;
@@ -36,7 +32,7 @@ pub fn completion_items(
     let uri = &params.text_document_position.text_document.uri;
 
     let file = db
-        .get_file(&uri)
+        .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let mut acc = vec![];
@@ -65,9 +61,9 @@ static GLOBAL_COMPLETION_ITEMS: LazyLock<Vec<lsp_types::CompletionItem>> = LazyL
 impl Module {
     fn build_completion_items(
         &self,
-        db: &impl BaseDatabase,
-        file: File,
-        params: &Option<CompletionContext>,
+        _db: &impl BaseDatabase,
+        _file: File,
+        _params: &Option<CompletionContext>,
         acc: &mut Vec<CompletionItem>,
     ) -> auto_lsp::anyhow::Result<()> {
         acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
@@ -78,9 +74,9 @@ impl Module {
 impl FunctionDefinition {
     fn build_completion_items(
         &self,
-        db: &impl BaseDatabase,
-        file: File,
-        params: &Option<CompletionContext>,
+        _db: &impl BaseDatabase,
+        _file: File,
+        _params: &Option<CompletionContext>,
         acc: &mut Vec<CompletionItem>,
     ) -> auto_lsp::anyhow::Result<()> {
         acc.extend(GLOBAL_COMPLETION_ITEMS.iter().cloned());
@@ -91,8 +87,8 @@ impl FunctionDefinition {
 impl Identifier {
     fn build_completion_items(
         &self,
-        db: &impl BaseDatabase,
-        file: File,
+        _db: &impl BaseDatabase,
+        _file: File,
         params: &Option<CompletionContext>,
         acc: &mut Vec<CompletionItem>,
     ) -> auto_lsp::anyhow::Result<()> {

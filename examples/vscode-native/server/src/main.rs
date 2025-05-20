@@ -26,7 +26,7 @@ use ast_python::capabilities::hover::hover;
 use ast_python::capabilities::inlay_hints::inlay_hints;
 use ast_python::capabilities::selection_ranges::selection_ranges;
 use ast_python::capabilities::semantic_tokens::{
-    semantic_tokens_full, semantic_tokens_range, SUPPORTED_MODIFIERS, SUPPORTED_TYPES,
+    semantic_tokens_full, SUPPORTED_MODIFIERS, SUPPORTED_TYPES,
 };
 use ast_python::capabilities::workspace_diagnostics::workspace_diagnostics;
 use ast_python::capabilities::workspace_symbols::workspace_symbols;

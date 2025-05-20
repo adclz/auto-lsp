@@ -17,15 +17,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::capabilities::code_actions::code_actions;
 use crate::db::create_python_db;
-use crate::generated::Module;
 use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::lsp_types::{self, WorkDoneProgressParams};
 use auto_lsp::lsp_types::{
     CodeActionContext, CodeActionParams, PartialResultParams, TextDocumentIdentifier, Url,
 };
 use rstest::{fixture, rstest};
-use std::ops::Deref;
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {

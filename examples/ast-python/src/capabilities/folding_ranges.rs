@@ -77,13 +77,13 @@ pub fn folding_ranges(
     let source = document.texter.text.as_str();
 
     let mut query_cursor = tree_sitter::QueryCursor::new();
-    let mut captures = query_cursor.captures(&*FOLD_QUERY, root_node, source.as_bytes());
+    let mut captures = query_cursor.captures(&FOLD_QUERY, root_node, source.as_bytes());
 
     let mut ranges = vec![];
 
     while let Some((m, capture_index)) = captures.next() {
         let capture = m.captures[*capture_index];
-        let kind = match &*FOLD_QUERY.capture_names()[capture.index as usize] {
+        let kind = match FOLD_QUERY.capture_names()[capture.index as usize] {
             "fold.comment" => FoldingRangeKind::Comment,
             _ => FoldingRangeKind::Region,
         };

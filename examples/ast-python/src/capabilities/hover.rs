@@ -15,33 +15,31 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{
-    CompoundStatement_SimpleStatement, Identifier, PassStatement, SimpleStatement,
-};
+use crate::generated::{Identifier, PassStatement};
 use auto_lsp::core::ast::AstNode;
-use auto_lsp::core::document::Document;
-use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, File};
+use auto_lsp::core::dispatch_once;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::{dispatch, dispatch_once};
-use auto_lsp::lsp_types::{DocumentSymbolParams, DocumentSymbolResponse, Hover, HoverParams};
+use auto_lsp::lsp_types::{Hover, HoverParams};
 use auto_lsp::{anyhow, lsp_types};
 
 pub fn hover(db: &impl BaseDatabase, params: HoverParams) -> anyhow::Result<Option<Hover>> {
     let uri = &params.text_document_position_params.text_document.uri;
 
     let file = db
-        .get_file(&uri)
+        .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
     let document = file.document(db).read();
 
     let position = document
         .offset_at(params.text_document_position_params.position)
-        .expect(&format!(
-            "Invalid position, {:?}",
-            params.text_document_position_params.position,
-        ));
+        .unwrap_or_else(|| {
+            panic!(
+                "Invalid position, {:?}",
+                params.text_document_position_params.position
+            )
+        });
 
     if let Some(node) = get_ast(db, file).descendant_at(position) {
         dispatch_once!(node.lower(), [
@@ -55,8 +53,8 @@ pub fn hover(db: &impl BaseDatabase, params: HoverParams) -> anyhow::Result<Opti
 impl PassStatement {
     fn get_hover(
         &self,
-        db: &impl BaseDatabase,
-        file: File,
+        _db: &impl BaseDatabase,
+        _file: File,
     ) -> anyhow::Result<Option<lsp_types::Hover>> {
         Ok(Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {

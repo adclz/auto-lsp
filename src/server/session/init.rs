@@ -23,13 +23,7 @@ use super::InitOptions;
 use super::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Connection, ReqQueue};
-use lsp_types::WorkspaceServerCapabilities;
-use lsp_types::{
-    CodeLensOptions, DiagnosticOptions, DiagnosticServerCapabilities, DocumentLinkOptions,
-    InitializeParams, InitializeResult, OneOf, PositionEncodingKind,
-    SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
-    SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
-};
+use lsp_types::{InitializeParams, InitializeResult, PositionEncodingKind};
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 use texter::core::text::Text;
@@ -56,7 +50,7 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
 
 impl<Db: BaseDatabase + Default> Session<Db> {
     pub(crate) fn new(
-        mut init_options: InitOptions,
+        init_options: InitOptions,
         connection: Connection,
         text_fn: TextFn,
         db: Db,
