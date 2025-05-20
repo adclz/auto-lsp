@@ -16,20 +16,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use auto_lsp::core::ast::AstNode;
-use std::ops::Deref;
+use auto_lsp::lsp_types::HoverParams;
 use auto_lsp::{
-    core::{
-        salsa::{db::BaseDatabase, tracked::get_ast},
-    },
+    core::salsa::{db::BaseDatabase, tracked::get_ast},
     lsp_types::{self, Url},
 };
 use rstest::{fixture, rstest};
+use std::ops::Deref;
 
+use crate::capabilities::hover::hover;
 use crate::{
     db::create_python_db,
     generated::{CompoundStatement, CompoundStatement_SimpleStatement, Module},
 };
-use crate::capabilities::hover::dispatch_hover;
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -57,9 +56,20 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
     {
         let foo_name = &foo.name;
 
-        let foo_hover = dispatch_hover(&foo_bar, file, foo_name.deref())
-            .expect("Failed to dispatch hover");
-        
+        let foo_hover = hover(
+            &foo_bar,
+            HoverParams {
+                text_document_position_params: lsp_types::TextDocumentPositionParams {
+                    text_document: lsp_types::TextDocumentIdentifier {
+                        uri: file.url(&foo_bar).clone(),
+                    },
+                    position: foo_name.get_start_position(),
+                },
+                work_done_progress_params: Default::default(),
+            },
+        )
+        .expect("Failed to dispatch hover");
+
         assert_eq!(
             foo_hover.unwrap().contents,
             lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
@@ -78,10 +88,21 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
     ) = bar.as_ref()
     {
         let bar_name = &foo.name;
-        
-        let bar_hover = dispatch_hover(&foo_bar, file, bar_name.lower())
-            .expect("Failed to dispatch hover");
-        
+
+        let bar_hover = hover(
+            &foo_bar,
+            HoverParams {
+                text_document_position_params: lsp_types::TextDocumentPositionParams {
+                    text_document: lsp_types::TextDocumentIdentifier {
+                        uri: file.url(&foo_bar).clone(),
+                    },
+                    position: bar_name.get_start_position(),
+                },
+                work_done_progress_params: Default::default(),
+            },
+        )
+        .expect("Failed to dispatch hover");
+
         assert_eq!(
             bar_hover.unwrap().contents,
             lsp_types::HoverContents::Markup(lsp_types::MarkupContent {

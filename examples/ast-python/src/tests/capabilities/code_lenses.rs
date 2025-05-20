@@ -15,12 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use crate::capabilities::code_lenses::code_lenses;
 use crate::{db::create_python_db, generated::Module};
+use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::{salsa::db::BaseDatabase};
-use auto_lsp::lsp_types::Url;
+use auto_lsp::lsp_types::{
+    CodeLensParams, PartialResultParams, TextDocumentIdentifier, Url, WorkDoneProgressParams,
+};
 use rstest::{fixture, rstest};
-use crate::capabilities::code_lenses::dispatch_code_lenses;
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -39,23 +41,32 @@ fn foo_bar_code_lens(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
 
-    let mut code_lenses = vec![];
-    get_ast(&foo_bar, file)
-        .iter()
-        .for_each(|n| {
-            dispatch_code_lenses(&foo_bar, file, n.lower(), &mut code_lenses)
-                .expect("Failed to dispatch code lenses");
-        });
+    let results = code_lenses(
+        &foo_bar,
+        CodeLensParams {
+            text_document: TextDocumentIdentifier {
+                uri: file.url(&foo_bar).clone(),
+            },
+            partial_result_params: PartialResultParams {
+                partial_result_token: None,
+            },
+            work_done_progress_params: WorkDoneProgressParams {
+                work_done_token: None,
+            },
+        },
+    )
+    .expect("Failed to build code actions")
+    .unwrap();
 
-    assert_eq!(code_lenses.len(), 2);
+    assert_eq!(results.len(), 2);
 
-    assert_eq!(code_lenses[0].range.start.line, 1);
-    assert_eq!(code_lenses[0].range.start.character, 4);
-    assert_eq!(code_lenses[0].range.end.line, 1);
-    assert_eq!(code_lenses[0].range.end.character, 7);
+    assert_eq!(results[0].range.start.line, 1);
+    assert_eq!(results[0].range.start.character, 4);
+    assert_eq!(results[0].range.end.line, 1);
+    assert_eq!(results[0].range.end.character, 7);
 
-    assert_eq!(code_lenses[1].range.start.line, 4);
-    assert_eq!(code_lenses[1].range.start.character, 4);
-    assert_eq!(code_lenses[1].range.end.line, 4);
-    assert_eq!(code_lenses[1].range.end.character, 7);
+    assert_eq!(results[1].range.start.line, 4);
+    assert_eq!(results[1].range.start.character, 4);
+    assert_eq!(results[1].range.end.line, 4);
+    assert_eq!(results[1].range.end.character, 7);
 }
