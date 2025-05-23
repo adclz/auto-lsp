@@ -15,18 +15,55 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use std::sync::LazyLock;
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
+use auto_lsp::{anyhow, tree_sitter};
+use auto_lsp::tree_sitter::StreamingIterator;
 
-use auto_lsp_core::salsa::db::BaseDatabase;
-use lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
-use streaming_iterator::StreamingIterator;
+// from: https://github.com/nvim-treesitter/nvim-treesitter/blob/master/queries/python/folds.scm
+static FOLD: &str = r#"
+[
+  (function_definition)
+  (class_definition)
+  (while_statement)
+  (for_statement)
+  (if_statement)
+  (with_statement)
+  (try_statement)
+  (match_statement)
+  (import_from_statement)
+  (parameters)
+  (argument_list)
+  (parenthesized_expression)
+  (generator_expression)
+  (list_comprehension)
+  (set_comprehension)
+  (dictionary_comprehension)
+  (tuple)
+  (list)
+  (set)
+  (dictionary)
+  (string)
+] @fold
+
+[
+  (import_statement)
+  (import_from_statement)
+]+ @fold"#;
+
+pub static FOLD_QUERY: LazyLock<tree_sitter::Query> = LazyLock::new(|| {
+    tree_sitter::Query::new(
+        &tree_sitter_python::LANGUAGE.into(),
+        FOLD,
+    )
+    .expect("Failed to create fold query")
+});
 
 /// Request for folding ranges
-///
-/// Uses the folding_range [`tree_sitter::Query`] if orovided in the initilization options.
-pub fn get_folding_ranges<Db: BaseDatabase>(
-    db: &Db,
+pub fn folding_ranges(
+    db: &impl BaseDatabase,
     params: FoldingRangeParams,
-    query: &tree_sitter::Query,
 ) -> anyhow::Result<Option<Vec<FoldingRange>>> {
     let uri = params.text_document.uri;
 
@@ -40,13 +77,13 @@ pub fn get_folding_ranges<Db: BaseDatabase>(
     let source = document.texter.text.as_str();
 
     let mut query_cursor = tree_sitter::QueryCursor::new();
-    let mut captures = query_cursor.captures(query, root_node, source.as_bytes());
+    let mut captures = query_cursor.captures(&FOLD_QUERY, root_node, source.as_bytes());
 
     let mut ranges = vec![];
 
     while let Some((m, capture_index)) = captures.next() {
         let capture = m.captures[*capture_index];
-        let kind = match query.capture_names()[capture.index as usize] {
+        let kind = match FOLD_QUERY.capture_names()[capture.index as usize] {
             "fold.comment" => FoldingRangeKind::Comment,
             _ => FoldingRangeKind::Region,
         };

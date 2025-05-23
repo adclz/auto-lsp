@@ -16,15 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use rstest::{fixture, rstest};
-use auto_lsp::core::ast::BuildSemanticTokens;
-use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
-use auto_lsp::lsp_types::Url;
-use crate::capabilities::semantic_tokens::{DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES};
+use crate::capabilities::semantic_tokens::{
+    semantic_tokens_full, DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES,
+};
 use crate::db::create_python_db;
-use crate::generated::Module;
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::lsp_types::{
+    SemanticTokensParams, SemanticTokensResult, TextDocumentIdentifier, Url,
+};
+use rstest::{fixture, rstest};
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -42,19 +42,25 @@ fn foo_bar_semantic_tokens(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).get_root();
 
-    let ast = root.unwrap();
+    let tokens = semantic_tokens_full(
+        &foo_bar,
+        SemanticTokensParams {
+            text_document: TextDocumentIdentifier {
+                uri: file.url(&foo_bar).clone(),
+            },
+            work_done_progress_params: Default::default(),
+            partial_result_params: Default::default(),
+        },
+    )
+    .unwrap()
+    .unwrap();
 
-    let mut builder = SemanticTokensBuilder::new("".into());
-    let module = ast.downcast_ref::<Module>().unwrap();
-
-    module
-        .build_semantic_tokens(&document, &mut builder)
-        .unwrap();
-
-    let tokens = builder.build().data;
+    let tokens = if let SemanticTokensResult::Tokens(tokens) = tokens {
+        tokens.data
+    } else {
+        panic!("Expected tokens");
+    };
 
     // Tokens should be a Vec (boo and far)
     assert_eq!(tokens.len(), 2);

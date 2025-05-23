@@ -15,14 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
-use rstest::{fixture, rstest};
-use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::lsp_types;
-use auto_lsp::lsp_types::Url;
+use crate::capabilities::document_symbols::document_symbols;
 use crate::db::create_python_db;
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::lsp_types::{
+    self, DocumentSymbolParams, DocumentSymbolResponse, PartialResultParams,
+};
+use auto_lsp::lsp_types::{Url, WorkDoneProgressParams};
+use rstest::{fixture, rstest};
 
 #[fixture]
 fn foo_bar() -> impl BaseDatabase {
@@ -35,19 +35,32 @@ def bar():
 "#])
 }
 
+#[fixture]
+fn params() -> DocumentSymbolParams {
+    DocumentSymbolParams {
+        text_document: lsp_types::TextDocumentIdentifier {
+            uri: Url::parse("file:///test0.py").unwrap(),
+        },
+        work_done_progress_params: WorkDoneProgressParams {
+            work_done_token: None,
+        },
+        partial_result_params: PartialResultParams {
+            partial_result_token: None,
+        },
+    }
+}
+
 #[rstest]
-fn foo_bar_document_symbols(foo_bar: impl BaseDatabase) {
-    let file = foo_bar
-        .get_file(&Url::parse("file:///test0.py").unwrap())
+fn foo_bar_document_symbols(foo_bar: impl BaseDatabase, params: DocumentSymbolParams) {
+    let symbols = document_symbols(&foo_bar, params)
+        .expect("Failed to build document symbols")
         .unwrap();
-    let document = file.document(&foo_bar).read();
-    let root = get_ast(&foo_bar, file).get_root();
 
-    let ast = root.as_ref().unwrap();
-
-    let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder).unwrap();
-    let symbols = builder.finalize();
+    let symbols = if let DocumentSymbolResponse::Nested(symbols) = symbols {
+        symbols
+    } else {
+        panic!("Expected nested document symbols");
+    };
 
     assert_eq!(symbols.len(), 2);
 
@@ -71,18 +84,16 @@ def bar():
 }
 
 #[rstest]
-fn nested_document_symbols(foo_bar_nested_baz: impl BaseDatabase) {
-    let file = foo_bar_nested_baz
-        .get_file(&Url::parse("file:///test0.py").unwrap())
+fn nested_document_symbols(foo_bar_nested_baz: impl BaseDatabase, params: DocumentSymbolParams) {
+    let symbols = document_symbols(&foo_bar_nested_baz, params)
+        .expect("Failed to build document symbols")
         .unwrap();
-    let document = file.document(&foo_bar_nested_baz).read();
-    let root = get_ast(&foo_bar_nested_baz, file).get_root();
 
-    let ast = root.as_ref().unwrap();
-
-    let mut builder = DocumentSymbolsBuilder::default();
-    ast.build_document_symbols(&document, &mut builder).unwrap();
-    let symbols = builder.finalize();
+    let symbols = if let DocumentSymbolResponse::Nested(symbols) = symbols {
+        symbols
+    } else {
+        panic!("Expected nested document symbols");
+    };
 
     assert_eq!(symbols.len(), 2);
 

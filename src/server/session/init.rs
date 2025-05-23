@@ -23,13 +23,7 @@ use super::InitOptions;
 use super::Session;
 use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Connection, ReqQueue};
-use lsp_types::WorkspaceServerCapabilities;
-use lsp_types::{
-    CodeLensOptions, DiagnosticOptions, DiagnosticServerCapabilities, DocumentLinkOptions,
-    InitializeParams, InitializeResult, OneOf, PositionEncodingKind,
-    SelectionRangeProviderCapability, SemanticTokensFullOptions, SemanticTokensLegend,
-    SemanticTokensOptions, ServerCapabilities, WorkspaceFoldersServerCapabilities,
-};
+use lsp_types::{InitializeParams, InitializeResult, PositionEncodingKind};
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 use texter::core::text::Text;
@@ -83,7 +77,7 @@ impl<Db: BaseDatabase + Default> Session<Db> {
     ///
     /// This will establish the connection with the client and send the server capabilities.
     pub fn create(
-        init_options: InitOptions,
+        mut init_options: InitOptions,
         connection: Connection,
         db: Db,
     ) -> anyhow::Result<Session<Db>> {
@@ -107,102 +101,11 @@ impl<Db: BaseDatabase + Default> Session<Db> {
             .and_then(|g| g.position_encodings.as_deref());
 
         let (t_fn, enc) = decide_encoding(pos_encoding);
+        init_options.capabilities.position_encoding = Some(enc);
 
         let server_capabilities = serde_json::to_value(&InitializeResult {
-            capabilities: ServerCapabilities {
-                position_encoding: Some(enc),
-                text_document_sync: Some(lsp_types::TextDocumentSyncCapability::Kind(
-                    lsp_types::TextDocumentSyncKind::INCREMENTAL,
-                )),
-                diagnostic_provider: match init_options.lsp_options.diagnostics {
-                    true => Some(DiagnosticServerCapabilities::Options(DiagnosticOptions {
-                        inter_file_dependencies: true,
-                        workspace_diagnostics: true,
-                        ..Default::default()
-                    })),
-                    false => None,
-                },
-                document_symbol_provider: match init_options.lsp_options.document_symbols {
-                    true => Some(OneOf::Left(true)),
-                    false => None,
-                },
-                folding_range_provider: match init_options.lsp_options.folding_ranges {
-                    true => Some(lsp_types::FoldingRangeProviderCapability::Simple(true)),
-                    false => None,
-                },
-                semantic_tokens_provider: init_options.lsp_options.semantic_tokens.as_ref().map(
-                    |options| {
-                        lsp_types::SemanticTokensServerCapabilities::SemanticTokensOptions(
-                            SemanticTokensOptions {
-                                legend: SemanticTokensLegend {
-                                    token_types: options
-                                        .semantic_token_types
-                                        .map(|types| types.to_vec())
-                                        .unwrap_or_default(),
-                                    token_modifiers: options
-                                        .semantic_token_modifiers
-                                        .map(|types| types.to_vec())
-                                        .unwrap_or_default(),
-                                },
-                                range: Some(true),
-                                full: Some(SemanticTokensFullOptions::Bool(true)),
-                                ..Default::default()
-                            },
-                        )
-                    },
-                ),
-                hover_provider: match init_options.lsp_options.hover_info {
-                    true => Some(lsp_types::HoverProviderCapability::Simple(true)),
-                    false => None,
-                },
-                workspace_symbol_provider: match init_options.lsp_options.workspace_symbols {
-                    true => Some(OneOf::Left(true)),
-                    false => None,
-                },
-                document_link_provider: match init_options.lsp_options.document_links.is_some() {
-                    true => Some(DocumentLinkOptions {
-                        resolve_provider: Some(false),
-                        work_done_progress_options: Default::default(),
-                    }),
-                    false => None,
-                },
-                selection_range_provider: match init_options.lsp_options.selection_ranges {
-                    true => Some(SelectionRangeProviderCapability::Simple(true)),
-                    false => None,
-                },
-                workspace: Some(WorkspaceServerCapabilities {
-                    workspace_folders: Some(WorkspaceFoldersServerCapabilities {
-                        supported: Some(true),
-                        change_notifications: Some(OneOf::Left(true)),
-                    }),
-                    ..Default::default()
-                }),
-                inlay_hint_provider: match init_options.lsp_options.inlay_hints {
-                    true => Some(OneOf::Left(true)),
-                    false => None,
-                },
-                code_lens_provider: match init_options.lsp_options.code_lens {
-                    true => Some(CodeLensOptions {
-                        resolve_provider: Some(false),
-                    }),
-                    false => None,
-                },
-                completion_provider: init_options.lsp_options.completions.clone(),
-                definition_provider: match init_options.lsp_options.definition_provider {
-                    true => Some(OneOf::Left(true)),
-                    false => None,
-                },
-                declaration_provider: match init_options.lsp_options.declaration_provider {
-                    true => Some(lsp_types::DeclarationCapability::Simple(true)),
-                    false => None,
-                },
-                references_provider: match init_options.lsp_options.references {
-                    true => Some(OneOf::Left(true)),
-                    false => None,
-                },
-                ..Default::default()
-            },
-            server_info: None,
+            capabilities: init_options.capabilities.clone(),
+            server_info: init_options.server_info.clone(),
         })
         .unwrap();
 

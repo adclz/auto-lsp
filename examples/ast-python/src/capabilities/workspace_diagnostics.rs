@@ -15,20 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
-use auto_lsp_core::{
-    errors::ParseErrorAccumulator,
-    salsa::{db::BaseDatabase, tracked::get_ast},
-};
-use lsp_types::{
-    FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport,
-    WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport,
-    WorkspaceFullDocumentDiagnosticReport,
-};
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::{anyhow, lsp_types};
+use auto_lsp::core::errors::ParseErrorAccumulator;
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::lsp_types::{FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport, WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport, WorkspaceFullDocumentDiagnosticReport};
 
 /// Get diagnostics for all documents.
-pub fn get_workspace_diagnostics<Db: BaseDatabase>(
-    db: &Db,
+pub fn workspace_diagnostics(
+    db: &impl BaseDatabase,
     _params: WorkspaceDiagnosticParams,
 ) -> anyhow::Result<WorkspaceDiagnosticReportResult> {
     let result: Vec<lsp_types::WorkspaceDocumentDiagnosticReport> = db

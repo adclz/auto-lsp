@@ -16,8 +16,6 @@ jobs:
     name: cargo test
     runs-on: ubuntu-latest
     steps:
-      - run: rustup toolchain install nightly
-      - run: rustup default nightly
       - run: cargo install cargo-insta
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
@@ -36,9 +34,11 @@ jobs:
         working-directory: ./examples/ast-python
         env:
           INSTA_UPDATE: new
+          AST_GEN: 1
         run: CFLAGS="-DHAVE_ENDIAN_H" cargo test --target wasm32-wasip1-threads  
       - name: html ast
         env:
           INSTA_UPDATE: new
+          AST_GEN: 1 
         working-directory: ./examples/ast-html
         run: CFLAGS="-DHAVE_ENDIAN_H" cargo test --target wasm32-wasip1-threads

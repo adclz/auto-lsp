@@ -22,7 +22,7 @@ use crate::generated::{
 };
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
-use auto_lsp::core::salsa::db::{BaseDatabase, File};
+use auto_lsp::core::salsa::db::{BaseDatabase, File, FileManager};
 use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::lsp_types::Url;
 use auto_lsp::salsa::Accumulator;

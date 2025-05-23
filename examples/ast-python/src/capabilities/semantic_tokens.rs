@@ -15,13 +15,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
-use crate::generated::{
-    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
-};
-use auto_lsp::core::ast::{AstNode, BuildSemanticTokens};
-use auto_lsp::core::document::Document;
+use crate::generated::FunctionDefinition;
+use auto_lsp::core::ast::AstNode;
+use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
+use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
+use auto_lsp::lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
 
 define_semantic_token_types![
@@ -40,35 +40,70 @@ define_semantic_token_modifiers![
     custom {}
 ];
 
-impl BuildSemanticTokens for Module {
-    fn build_semantic_tokens(
-        &self,
-        doc: &Document,
-        builder: &mut SemanticTokensBuilder,
-    ) -> anyhow::Result<()> {
-        self.children.build_semantic_tokens(doc, builder)
-    }
+pub fn semantic_tokens_full(
+    db: &impl BaseDatabase,
+    params: SemanticTokensParams,
+) -> anyhow::Result<Option<SemanticTokensResult>> {
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let mut builder = SemanticTokensBuilder::new("".into());
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(SemanticTokensResult::Tokens(builder.build())))
 }
 
-impl BuildSemanticTokens for CompoundStatement_SimpleStatement {
-    fn build_semantic_tokens(
-        &self,
-        doc: &Document,
-        acc: &mut SemanticTokensBuilder,
-    ) -> anyhow::Result<()> {
-        match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(
-                CompoundStatement::FunctionDefinition(f),
-            ) => f.build_semantic_tokens(doc, acc),
-            _ => Ok(()),
-        }
-    }
+pub fn semantic_tokens_range(
+    db: &impl BaseDatabase,
+    params: SemanticTokensRangeParams,
+) -> anyhow::Result<Option<SemanticTokensResult>> {
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let mut builder = SemanticTokensBuilder::new("".into());
+
+    get_ast(db, file)
+        .iter()
+        .filter(|node| {
+            let range = node.get_lsp_range();
+            let start = range.start;
+            let end = range.end;
+            start.line >= params.range.start.line
+                && start.character >= params.range.start.character
+                && end.line <= params.range.end.line
+                && end.character <= params.range.end.character
+        })
+        .try_for_each(|node| {
+            dispatch!(
+                node,
+                [
+                    FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
+                ]
+            );
+            anyhow::Ok(())
+        })?;
+    Ok(Some(SemanticTokensResult::Tokens(builder.build())))
 }
 
-impl BuildSemanticTokens for FunctionDefinition {
+impl FunctionDefinition {
     fn build_semantic_tokens(
         &self,
-        _doc: &Document,
+        _db: &impl BaseDatabase,
+        _file: File,
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
         builder.push(

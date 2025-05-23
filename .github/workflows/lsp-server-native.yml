@@ -15,8 +15,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: rustup toolchain install nightly
-      - run: rustup default nightly
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - name: cargo test

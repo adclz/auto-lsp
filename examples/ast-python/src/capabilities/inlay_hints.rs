@@ -15,42 +15,48 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use crate::generated::FunctionDefinition;
 use auto_lsp::anyhow;
-use auto_lsp::core::ast::{AstNode, BuildInlayHints};
-use auto_lsp::core::document::Document;
-use crate::generated::{CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module};
+use auto_lsp::core::ast::AstNode;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::dispatch;
+use auto_lsp::lsp_types::{
+    InlayHint, InlayHintParams,
+};
 
-impl BuildInlayHints for Module {
-    fn build_inlay_hints(
-        &self,
-        doc: &Document,
-        acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
-    ) -> anyhow::Result<()> {
-        self.children.build_inlay_hints(doc, acc)
-    }
+pub fn inlay_hints(
+    db: &impl BaseDatabase,
+    params: InlayHintParams,
+) -> anyhow::Result<Option<Vec<InlayHint>>> {
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let mut acc = vec![];
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_inlay_hints(db, file, &mut acc)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(acc))
 }
-
-impl BuildInlayHints for CompoundStatement_SimpleStatement {
+impl FunctionDefinition {
     fn build_inlay_hints(
         &self,
-        doc: &Document,
+        db: &impl BaseDatabase,
+        file: File,
         acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
     ) -> anyhow::Result<()> {
-        match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(
-                CompoundStatement::FunctionDefinition(f),
-            ) => f.build_inlay_hints(doc, acc),
-            _ => Ok(()),
-        }
-    }
-}
+        let doc = file.document(db).read();
 
-impl BuildInlayHints for FunctionDefinition {
-    fn build_inlay_hints(
-        &self,
-        doc: &Document,
-        acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
-    ) -> anyhow::Result<()> {
         let range = self.get_range();
         let name = format!(
             "[{} {}] - {}",

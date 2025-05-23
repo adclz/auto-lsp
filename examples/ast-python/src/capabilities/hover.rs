@@ -15,26 +15,47 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{
-    CompoundStatement_SimpleStatement, Identifier, PassStatement, SimpleStatement,
-};
-use auto_lsp::core::ast::{AstNode, GetHover};
-use auto_lsp::core::document::Document;
+use crate::generated::{Identifier, PassStatement};
+use auto_lsp::core::ast::AstNode;
+use auto_lsp::core::dispatch_once;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::lsp_types::{Hover, HoverParams};
 use auto_lsp::{anyhow, lsp_types};
 
-impl GetHover for CompoundStatement_SimpleStatement {
-    fn get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
-        match self {
-            CompoundStatement_SimpleStatement::SimpleStatement(SimpleStatement::PassStatement(
-                pass,
-            )) => pass.get_hover(doc),
-            _ => Ok(None),
-        }
+pub fn hover(db: &impl BaseDatabase, params: HoverParams) -> anyhow::Result<Option<Hover>> {
+    let uri = &params.text_document_position_params.text_document.uri;
+
+    let file = db
+        .get_file(uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let document = file.document(db).read();
+
+    let position = document
+        .offset_at(params.text_document_position_params.position)
+        .unwrap_or_else(|| {
+            panic!(
+                "Invalid position, {:?}",
+                params.text_document_position_params.position
+            )
+        });
+
+    if let Some(node) = get_ast(db, file).descendant_at(position) {
+        dispatch_once!(node.lower(), [
+            PassStatement => get_hover(db, file),
+            Identifier => get_hover(db, file)
+        ]);
     }
+    Ok(None)
 }
 
-impl GetHover for PassStatement {
-    fn get_hover(&self, _doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
+impl PassStatement {
+    fn get_hover(
+        &self,
+        _db: &impl BaseDatabase,
+        _file: File,
+    ) -> anyhow::Result<Option<lsp_types::Hover>> {
         Ok(Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::Markdown,
@@ -48,8 +69,13 @@ impl GetHover for PassStatement {
     }
 }
 
-impl GetHover for Identifier {
-    fn get_hover(&self, doc: &Document) -> anyhow::Result<Option<lsp_types::Hover>> {
+impl Identifier {
+    fn get_hover(
+        &self,
+        db: &impl BaseDatabase,
+        file: File,
+    ) -> anyhow::Result<Option<lsp_types::Hover>> {
+        let doc = file.document(db).read();
         Ok(Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,

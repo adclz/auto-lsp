@@ -15,42 +15,43 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{
-    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
-};
-use auto_lsp::core::ast::{AstNode, BuildCodeLenses};
-use auto_lsp::core::document::Document;
+use crate::generated::FunctionDefinition;
+use auto_lsp::core::ast::AstNode;
+use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::lsp_types::{CodeLens, CodeLensParams};
 use auto_lsp::{anyhow, lsp_types};
 
-impl BuildCodeLenses for Module {
-    fn build_code_lenses(
-        &self,
-        doc: &Document,
-        acc: &mut Vec<lsp_types::CodeLens>,
-    ) -> anyhow::Result<()> {
-        self.children.build_code_lenses(doc, acc)
-    }
+pub fn code_lenses(
+    db: &impl BaseDatabase,
+    params: CodeLensParams,
+) -> anyhow::Result<Option<Vec<CodeLens>>> {
+    let mut acc = vec![];
+
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_code_lenses(db, file, &mut acc)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(acc))
 }
 
-impl BuildCodeLenses for CompoundStatement_SimpleStatement {
+impl FunctionDefinition {
     fn build_code_lenses(
         &self,
-        doc: &Document,
-        acc: &mut Vec<lsp_types::CodeLens>,
-    ) -> anyhow::Result<()> {
-        match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(
-                CompoundStatement::FunctionDefinition(f),
-            ) => f.build_code_lenses(doc, acc),
-            _ => Ok(()),
-        }
-    }
-}
-
-impl BuildCodeLenses for FunctionDefinition {
-    fn build_code_lenses(
-        &self,
-        _doc: &Document,
+        _db: &impl BaseDatabase,
+        _file: File,
         acc: &mut Vec<lsp_types::CodeLens>,
     ) -> anyhow::Result<()> {
         acc.push(lsp_types::CodeLens {

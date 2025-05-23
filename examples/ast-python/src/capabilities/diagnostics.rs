@@ -15,18 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use auto_lsp::anyhow;
+use auto_lsp::core::errors::ParseErrorAccumulator;
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::lsp_types::{DocumentDiagnosticParams, DocumentDiagnosticReport, DocumentDiagnosticReportResult, FullDocumentDiagnosticReport, RelatedFullDocumentDiagnosticReport};
 
-use auto_lsp_core::{
-    errors::ParseErrorAccumulator,
-    salsa::{db::BaseDatabase, tracked::get_ast},
-};
-use lsp_types::{
-    DocumentDiagnosticParams, DocumentDiagnosticReport, DocumentDiagnosticReportResult,
-    FullDocumentDiagnosticReport, RelatedFullDocumentDiagnosticReport,
-};
-
-pub fn get_diagnostics<Db: BaseDatabase>(
-    db: &Db,
+pub fn diagnostics(
+    db: &impl BaseDatabase,
     params: DocumentDiagnosticParams,
 ) -> anyhow::Result<DocumentDiagnosticReportResult> {
     let uri = params.text_document.uri;

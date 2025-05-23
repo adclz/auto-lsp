@@ -67,7 +67,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! - [StackGraphs](https://github.com/github/stack-graphs)
 //! - [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache
 
-// LSP server (enabled with feature `lsp_server`)
+// LSP server (enabled with the feature `lsp_server`)
 #[cfg(feature = "lsp_server")]
 pub mod server;
 

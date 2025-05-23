@@ -15,43 +15,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use crate::generated::{
-    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
-};
-use auto_lsp::core::ast::BuildCodeActions;
-use auto_lsp::core::document::Document;
-use auto_lsp::lsp_types::CodeActionOrCommand;
+use crate::generated::FunctionDefinition;
+use auto_lsp::core::dispatch;
+use auto_lsp::core::salsa::db::{BaseDatabase, File};
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::lsp_types::{CodeActionOrCommand, CodeActionParams};
 use auto_lsp::{anyhow, lsp_types};
 
-impl BuildCodeActions for Module {
-    fn build_code_actions(
-        &self,
-        doc: &auto_lsp::core::document::Document,
-        acc: &mut Vec<lsp_types::CodeActionOrCommand>,
-    ) -> anyhow::Result<()> {
-        self.children.build_code_actions(doc, acc)
-    }
+pub fn code_actions(
+    db: &impl BaseDatabase,
+    params: CodeActionParams,
+) -> anyhow::Result<Option<Vec<CodeActionOrCommand>>> {
+    let mut acc = vec![];
+
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    get_ast(db, file).iter().try_for_each(|node| {
+        dispatch!(
+            node.lower(),
+            [
+                FunctionDefinition => build_code_actions(db, file, &mut acc)
+            ]
+        );
+        anyhow::Ok(())
+    })?;
+    Ok(Some(acc))
 }
 
-impl BuildCodeActions for CompoundStatement_SimpleStatement {
+impl FunctionDefinition {
     fn build_code_actions(
         &self,
-        doc: &auto_lsp::core::document::Document,
-        acc: &mut Vec<lsp_types::CodeActionOrCommand>,
-    ) -> anyhow::Result<()> {
-        match self {
-            CompoundStatement_SimpleStatement::CompoundStatement(
-                CompoundStatement::FunctionDefinition(f),
-            ) => f.build_code_actions(doc, acc),
-            _ => Ok(()),
-        }
-    }
-}
-
-impl BuildCodeActions for FunctionDefinition {
-    fn build_code_actions(
-        &self,
-        _doc: &Document,
+        _db: &impl BaseDatabase,
+        _file: File,
         acc: &mut Vec<CodeActionOrCommand>,
     ) -> anyhow::Result<()> {
         acc.push(lsp_types::CodeActionOrCommand::CodeAction(

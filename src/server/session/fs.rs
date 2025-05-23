@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use super::Session;
 use auto_lsp_core::errors::{ExtensionError, FileSystemError, RuntimeError};
 use auto_lsp_core::parsers::Parsers;
-use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::salsa::db::{BaseDatabase, FileManager};
 use lsp_types::{InitializeParams, Url};
 use rayon::prelude::*;
 use serde::Deserialize;

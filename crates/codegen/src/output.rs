@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use crate::json::{NodeType, TypeInfo};
 use crate::utils::sanitize_string_to_pascal;
-use crate::SUPER_TYPES;
+use crate::{sanitize_string, SUPER_TYPES};
 use crate::{NODE_ID_FOR_NAMED_NODE, NODE_ID_FOR_UNNAMED_NODE};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
@@ -31,7 +31,7 @@ impl ToTokens for NodeType {
             self.create_enum().to_token_stream()
         } else if self.is_token() {
             generate_struct(
-                &format_ident!("Token_{}", &sanitize_string_to_pascal(&self.kind)),
+                &format_ident!("Token_{}", &sanitize_string(&self.kind)),
                 &self.kind,
                 &vec![],
                 &vec![],
@@ -218,7 +218,8 @@ pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> T
     for value in variants {
         let variant_name = format_ident!("{}", &sanitize_string_to_pascal(&value.kind));
         if !value.named {
-            r_variants.push(format_ident!("Token_{}", variant_name.clone()).to_token_stream());
+            r_variants
+                .push(format_ident!("Token_{}", sanitize_string(&value.kind)).to_token_stream());
 
             let type_name = if value.named {
                 *NODE_ID_FOR_NAMED_NODE

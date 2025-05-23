@@ -16,23 +16,56 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use auto_lsp::core::ast::{AstNode, BuildDocumentSymbols};
+use crate::generated::{
+    CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
+};
+use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::core::dispatch;
+use auto_lsp::lsp_types::{
+    DocumentSymbolParams, DocumentSymbolResponse,
+};
 use auto_lsp::{anyhow, lsp_types};
-use crate::generated::{Block, CompoundStatement, CompoundStatement_SimpleStatement};
 
-impl BuildDocumentSymbols for crate::generated::Module {
-    fn build_document_symbols(
+pub fn document_symbols(
+    db: &impl BaseDatabase,
+    params: DocumentSymbolParams,
+) -> anyhow::Result<Option<DocumentSymbolResponse>> {
+    let uri = params.text_document.uri;
+
+    let file = db
+        .get_file(&uri)
+        .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+
+    let doc = file.document(db).read();
+    let mut builder = DocumentSymbolsBuilder::default();
+
+    if let Some(node) = get_ast(db, file).get_root() {
+        dispatch!(node.lower(),
+            [
+                Module => build_document_symbols(&doc, &mut builder)
+            ]
+        );
+    }
+    Ok(Some(DocumentSymbolResponse::Nested(builder.finalize())))
+}
+
+impl Module {
+    pub(crate) fn build_document_symbols(
         &self,
         doc: &Document,
         builder: &mut DocumentSymbolsBuilder,
     ) -> anyhow::Result<()> {
-        self.children.build_document_symbols(doc, builder)
+        self.children
+            .iter()
+            .try_for_each(|f| f.build_document_symbols(doc, builder))
     }
 }
 
-impl BuildDocumentSymbols for CompoundStatement_SimpleStatement {
+impl CompoundStatement_SimpleStatement {
     fn build_document_symbols(
         &self,
         doc: &Document,
@@ -47,17 +80,7 @@ impl BuildDocumentSymbols for CompoundStatement_SimpleStatement {
     }
 }
 
-impl BuildDocumentSymbols for Block {
-    fn build_document_symbols(
-        &self,
-        doc: &Document,
-        acc: &mut DocumentSymbolsBuilder,
-    ) -> anyhow::Result<()> {
-        self.children.build_document_symbols(doc, acc)
-    }
-}
-
-impl BuildDocumentSymbols for crate::generated::FunctionDefinition {
+impl FunctionDefinition {
     fn build_document_symbols(
         &self,
         doc: &Document,
@@ -65,7 +88,10 @@ impl BuildDocumentSymbols for crate::generated::FunctionDefinition {
     ) -> anyhow::Result<()> {
         let mut nested_builder = DocumentSymbolsBuilder::default();
 
-        self.body.build_document_symbols(doc, &mut nested_builder)?;
+        self.body
+            .children
+            .iter()
+            .try_for_each(|f| f.build_document_symbols(doc, &mut nested_builder))?;
 
         builder.push_symbol(lsp_types::DocumentSymbol {
             name: self.name.get_text(doc.texter.text.as_bytes())?.to_string(),

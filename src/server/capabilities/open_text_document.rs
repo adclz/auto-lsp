@@ -22,6 +22,7 @@ use auto_lsp_core::{
     salsa::db::BaseDatabase,
 };
 use lsp_types::DidOpenTextDocumentParams;
+use auto_lsp_core::salsa::db::FileManager;
 
 pub fn open_text_document<Db: BaseDatabase>(
     session: &mut Session<Db>,

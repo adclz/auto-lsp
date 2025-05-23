@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 /*
 This file is part of auto-lsp.
 Copyright (C) 2025 CLAUZEL Adrien
@@ -15,16 +16,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+use crate::generated::Module;
+use auto_lsp::anyhow;
+use auto_lsp::core::dispatch;
+use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::lsp_types::{
+    Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse,
+};
 
-use auto_lsp_core::salsa::db::BaseDatabase;
-use auto_lsp_core::{document_symbols_builder::DocumentSymbolsBuilder, salsa::tracked::get_ast};
-use lsp_types::{Location, OneOf, WorkspaceSymbol, WorkspaceSymbolParams, WorkspaceSymbolResponse};
-
-/// Request to get root symbols
-///
-/// This function will return all symbols found in the root recursively
-pub fn get_workspace_symbols<Db: BaseDatabase>(
-    db: &Db,
+pub fn workspace_symbols(
+    db: &impl BaseDatabase,
     params: WorkspaceSymbolParams,
 ) -> anyhow::Result<Option<WorkspaceSymbolResponse>> {
     if params.query.is_empty() {
@@ -36,14 +39,17 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
     db.get_files().iter().try_for_each(|file| {
         let file = *file;
         let url = file.url(db);
-        let document = file.document(db).read();
-        let ast = get_ast(db, file).get_root();
+        let doc = file.document(db).read();
 
         let mut builder = DocumentSymbolsBuilder::default();
 
-        if let Some(root) = ast {
-            root.build_document_symbols(&document, &mut builder)?;
-        }
+        if let Some(node) = get_ast(db, file).get_root() {
+            dispatch!(node.lower(),
+                [
+                    Module => build_document_symbols(&doc, &mut builder)
+                ]
+            );
+        };
 
         symbols.extend(
             builder
@@ -64,6 +70,5 @@ pub fn get_workspace_symbols<Db: BaseDatabase>(
         );
         Ok::<(), anyhow::Error>(())
     })?;
-
     Ok(Some(WorkspaceSymbolResponse::Nested(symbols)))
 }

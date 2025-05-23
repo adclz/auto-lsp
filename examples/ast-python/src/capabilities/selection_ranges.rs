@@ -15,15 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
-use auto_lsp_core::salsa::db::BaseDatabase;
-use lsp_types::{SelectionRange, SelectionRangeParams};
+use auto_lsp::{anyhow, tree_sitter};
+use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::lsp_types::{SelectionRange, SelectionRangeParams};
 
 /// Request for selection ranges
 ///
 /// This is a port of [vscode anycode](https://github.com/microsoft/vscode-anycode/blob/main/anycode/server/src/common/features/selectionRanges.ts)
-pub fn get_selection_ranges<Db: BaseDatabase>(
-    db: &Db,
+pub fn selection_ranges(
+    db: &impl BaseDatabase,
     params: SelectionRangeParams,
 ) -> anyhow::Result<Option<Vec<SelectionRange>>> {
     let uri = &params.text_document.uri;

@@ -16,11 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use super::capabilities::{
-    BuildCodeActions, BuildCodeLenses, BuildCompletionItems, BuildDocumentSymbols, BuildInlayHints,
-    BuildSemanticTokens, BuildTriggeredCompletionItems, GetGoToDeclaration, GetGoToDefinition,
-    GetHover,
-};
 use crate::errors::PositionError;
 use downcast_rs::{impl_downcast, DowncastSync};
 use std::cmp::Ordering;
@@ -28,22 +23,7 @@ use std::sync::Arc;
 use tree_sitter::Node;
 
 /// Trait representing an AST node.
-pub trait AstNode:
-    std::fmt::Debug
-    + Send
-    + Sync
-    + DowncastSync
-    + GetGoToDeclaration
-    + GetGoToDefinition
-    + GetHover
-    + BuildDocumentSymbols
-    + BuildCodeLenses
-    + BuildCompletionItems
-    + BuildTriggeredCompletionItems
-    + BuildInlayHints
-    + BuildSemanticTokens
-    + BuildCodeActions
-{
+pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
     /// Returns `true` if a given [`tree_sitter::Node`] matches this node type.
     fn contains(node: &Node) -> bool
     where

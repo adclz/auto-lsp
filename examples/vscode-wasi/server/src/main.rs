@@ -16,11 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::error::Error;
-use std::panic::RefUnwindSafe;
-
+use ast_python::capabilities::code_actions::code_actions;
+use ast_python::capabilities::code_lenses::code_lenses;
+use ast_python::capabilities::completion_items::completion_items;
+use ast_python::capabilities::diagnostics::diagnostics;
+use ast_python::capabilities::document_symbols::document_symbols;
+use ast_python::capabilities::folding_ranges::folding_ranges;
+use ast_python::capabilities::hover::hover;
+use ast_python::capabilities::inlay_hints::inlay_hints;
+use ast_python::capabilities::selection_ranges::selection_ranges;
+use ast_python::capabilities::semantic_tokens::{
+    semantic_tokens_full, SUPPORTED_MODIFIERS, SUPPORTED_TYPES,
+};
+use ast_python::capabilities::workspace_diagnostics::workspace_diagnostics;
+use ast_python::capabilities::workspace_symbols::workspace_symbols;
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb};
+use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
@@ -28,16 +39,21 @@ use auto_lsp::lsp_types::notification::{
 };
 use auto_lsp::lsp_types::request::{
     CodeActionRequest, CodeLensRequest, Completion, DocumentDiagnosticRequest,
-    DocumentSymbolRequest, HoverRequest, InlayHintRequest, SelectionRangeRequest,
-    SemanticTokensFullRequest, WorkspaceDiagnosticRequest, WorkspaceSymbolRequest,
+    DocumentSymbolRequest, FoldingRangeRequest, HoverRequest, InlayHintRequest,
+    SelectionRangeRequest, SemanticTokensFullRequest, WorkspaceDiagnosticRequest,
+    WorkspaceSymbolRequest,
 };
-use auto_lsp::lsp_types::{self, CompletionOptions};
-use auto_lsp::server::capabilities::{
-    changed_watched_files, get_code_actions, get_code_lenses, get_completion_items,
-    get_diagnostics, get_document_symbols, get_hover, get_inlay_hints, get_selection_ranges,
-    get_semantic_tokens_full, get_workspace_diagnostics, get_workspace_symbols, open_text_document,
+use auto_lsp::lsp_types::{
+    self, CodeActionProviderCapability, CodeLensOptions, CompletionOptions, DiagnosticOptions,
+    DiagnosticServerCapabilities, HoverProviderCapability, OneOf, ServerCapabilities,
 };
-use auto_lsp::server::{InitOptions, LspOptions, NotificationRegistry, RequestRegistry, Session};
+use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
+use auto_lsp::server::{
+    semantic_tokens_provider, InitOptions, NotificationRegistry, RequestRegistry, Session,
+    TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER,
+};
+use std::error::Error;
+use std::panic::RefUnwindSafe;
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
@@ -46,19 +62,36 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut session = Session::create(
         InitOptions {
             parsers: &PYTHON_PARSERS,
-            lsp_options: LspOptions {
-                workspace_symbols: true,
-                document_symbols: true,
-                diagnostics: true,
-                inlay_hints: true,
-                hover_info: true,
-                code_lens: true,
-                completions: Some(CompletionOptions {
+            capabilities: ServerCapabilities {
+                text_document_sync: TEXT_DOCUMENT_SYNC.clone(),
+                workspace: WORKSPACE_PROVIDER.clone(),
+                diagnostic_provider: Some(DiagnosticServerCapabilities::Options(
+                    DiagnosticOptions {
+                        workspace_diagnostics: true,
+                        ..Default::default()
+                    },
+                )),
+                code_action_provider: Some(CodeActionProviderCapability::Simple(true)),
+                code_lens_provider: Some(CodeLensOptions {
+                    resolve_provider: Some(false),
+                }),
+                inlay_hint_provider: Some(OneOf::Left(true)),
+                semantic_tokens_provider: semantic_tokens_provider(
+                    false,
+                    Some(SUPPORTED_TYPES),
+                    Some(SUPPORTED_MODIFIERS),
+                ),
+                document_symbol_provider: Some(OneOf::Left(true)),
+                workspace_symbol_provider: Some(OneOf::Left(true)),
+                hover_provider: Some(HoverProviderCapability::Simple(true)),
+                completion_provider: Some(CompletionOptions {
+                    resolve_provider: Some(false),
                     trigger_characters: Some(vec![".".to_string()]),
                     ..Default::default()
                 }),
                 ..Default::default()
             },
+            server_info: None,
         },
         connection,
         db,
@@ -83,17 +116,18 @@ fn on_requests<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut RequestRegistry<Db>,
 ) -> &mut RequestRegistry<Db> {
     registry
-        .on::<DocumentDiagnosticRequest, _>(|s, p| get_diagnostics(s, p))
-        .on::<DocumentSymbolRequest, _>(|s, p| get_document_symbols(s, p))
-        .on::<HoverRequest, _>(|s, p| get_hover(s, p))
-        .on::<SemanticTokensFullRequest, _>(|s, p| get_semantic_tokens_full(s, p))
-        .on::<SelectionRangeRequest, _>(|s, p| get_selection_ranges(s, p))
-        .on::<WorkspaceSymbolRequest, _>(|s, p| get_workspace_symbols(s, p))
-        .on::<WorkspaceDiagnosticRequest, _>(|s, p| get_workspace_diagnostics(s, p))
-        .on::<InlayHintRequest, _>(|s, p| get_inlay_hints(s, p))
-        .on::<CodeActionRequest, _>(|s, p| get_code_actions(s, p))
-        .on::<CodeLensRequest, _>(|s, p| get_code_lenses(s, p))
-        .on::<Completion, _>(|s, p| get_completion_items(s, p))
+        .on::<DocumentDiagnosticRequest, _>(diagnostics)
+        .on::<DocumentSymbolRequest, _>(document_symbols)
+        .on::<FoldingRangeRequest, _>(folding_ranges)
+        .on::<HoverRequest, _>(hover)
+        .on::<SemanticTokensFullRequest, _>(semantic_tokens_full)
+        .on::<SelectionRangeRequest, _>(selection_ranges)
+        .on::<WorkspaceSymbolRequest, _>(workspace_symbols)
+        .on::<WorkspaceDiagnosticRequest, _>(workspace_diagnostics)
+        .on::<InlayHintRequest, _>(inlay_hints)
+        .on::<CodeActionRequest, _>(code_actions)
+        .on::<CodeLensRequest, _>(code_lenses)
+        .on::<Completion, _>(completion_items)
 }
 
 fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(

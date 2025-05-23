@@ -47,21 +47,12 @@ pub struct BaseDb {
 
 #[salsa::db]
 pub trait BaseDatabase: Database {
-    fn add_file_from_texter(
-        &mut self,
-        parsers: &'static Parsers,
-        url: &Url,
-        text: Text,
-    ) -> Result<(), DataBaseError>;
-    fn update(
-        &mut self,
-        url: &Url,
-        edits: &[lsp_types::TextDocumentContentChangeEvent],
-    ) -> Result<(), DataBaseError>;
-
-    fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError>;
-    fn get_file(&self, file: &Url) -> Option<File>;
     fn get_files(&self) -> &DashMap<Url, File>;
+
+    fn get_file(&self, url: &Url) -> Option<File> {
+        self.get_files().get(url).map(|file| *file)
+    }
+
     #[cfg(debug_assertions)]
     fn take_logs(&self) -> Vec<String>;
 }
@@ -83,6 +74,17 @@ impl std::panic::RefUnwindSafe for BaseDb {}
 
 #[salsa::db]
 impl BaseDatabase for BaseDb {
+    fn get_files(&self) -> &DashMap<Url, File> {
+        &self.files
+    }
+
+    #[cfg(debug_assertions)]
+    fn take_logs(&self) -> Vec<String> {
+        std::mem::take(&mut self.logs.lock())
+    }
+}
+
+pub trait FileManager: BaseDatabase + salsa::Database {
     fn add_file_from_texter(
         &mut self,
         parsers: &'static Parsers,
@@ -95,11 +97,10 @@ impl BaseDatabase for BaseDb {
             .parse(texter.text.as_bytes(), None)
             .ok_or_else(|| DataBaseError::from((url, TreeSitterError::TreeSitterParser)))?;
 
-        // Initialize the document with the source code and syntax tree.
         let document = Document { texter, tree };
-
         let file = File::new(self, url.clone(), parsers, Arc::new(RwLock::new(document)));
-        match self.files.entry(url.clone()) {
+
+        match self.get_files().entry(url.clone()) {
             Entry::Occupied(_) => Err(DataBaseError::FileAlreadyExists { uri: url.clone() }),
             Entry::Vacant(entry) => {
                 entry.insert(file);
@@ -114,7 +115,7 @@ impl BaseDatabase for BaseDb {
         changes: &[lsp_types::TextDocumentContentChangeEvent],
     ) -> Result<(), DataBaseError> {
         let file = *self
-            .files
+            .get_files()
             .get_mut(url)
             .ok_or_else(|| DataBaseError::FileNotFound { uri: url.clone() })?;
 
@@ -123,33 +124,20 @@ impl BaseDatabase for BaseDb {
 
         let mut doc = data_lock.write();
 
-        // Apply updates
         doc.update(&mut file.parsers(self).parser.write(), changes)
             .map_err(|e| DataBaseError::from((url, e)))?;
 
-        // Update Salsa data
         drop(doc);
         file.set_document(self).to(ptr);
         Ok(())
     }
 
     fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError> {
-        match self.files.remove(url) {
+        match self.get_files().remove(url) {
             None => Err(DataBaseError::FileNotFound { uri: url.clone() }),
             Some(_) => Ok(()),
         }
     }
-
-    fn get_file(&self, url: &Url) -> Option<File> {
-        self.files.get(url).map(|file| *file)
-    }
-
-    fn get_files(&self) -> &DashMap<Url, File> {
-        &self.files
-    }
-
-    #[cfg(debug_assertions)]
-    fn take_logs(&self) -> Vec<String> {
-        std::mem::take(&mut self.logs.lock())
-    }
 }
+
+impl<T> FileManager for T where T: BaseDatabase + salsa::Database {}
