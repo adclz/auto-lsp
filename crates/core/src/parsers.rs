@@ -29,7 +29,7 @@ pub struct Parsers {
     /// The language configuration for this parser.
     pub language: Language,
     /// Function to invoke the AST parser.
-    pub ast_parser: InvokeParserFn2,
+    pub ast_parser: InvokeParserFn,
 }
 
 impl std::fmt::Debug for Parsers {
@@ -40,5 +40,5 @@ impl std::fmt::Debug for Parsers {
     }
 }
 
-pub type InvokeParserFn2 =
+pub type InvokeParserFn =
     fn(&dyn BaseDatabase, &Document) -> Result<Vec<Arc<dyn AstNode>>, ParseError>;
