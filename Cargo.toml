@@ -8,7 +8,7 @@ A rust crate for creating AST and LSP servers powered by tree-sitter queries.
 """
 categories = ["parsing"]
 keywords = ["parser", "tree-sitter", "lsp"]
-version = "0.5.1"
+version = "0.5.2"
 edition = "2021"
 readme = "README.MD"
 
@@ -52,7 +52,7 @@ ariadne = "0.5.1"
 fastrace = "0.7"
 
 [dependencies]
-auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
+auto-lsp-core = { path = "./crates/core", version = "0.5.1" }
 rayon-par-bridge = "0.1.0"
 tree-sitter-language = "0.1.5"
 regex = "1.11.1"
