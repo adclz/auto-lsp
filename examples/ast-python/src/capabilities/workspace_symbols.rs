@@ -39,7 +39,7 @@ pub fn workspace_symbols(
     db.get_files().iter().try_for_each(|file| {
         let file = *file;
         let url = file.url(db);
-        let doc = file.document(db).read();
+        let doc = file.document(db);
 
         let mut builder = DocumentSymbolsBuilder::default();
 

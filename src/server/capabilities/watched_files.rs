@@ -19,12 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use std::{fs::File, io::Read};
 
 use crate::server::session::Session;
+use auto_lsp_core::salsa::db::FileManager;
 use auto_lsp_core::{
     errors::{FileSystemError, RuntimeError},
     salsa::db::BaseDatabase,
 };
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
-use auto_lsp_core::salsa::db::FileManager;
 
 /// Handle the watched files change notification.
 ///
@@ -48,9 +48,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                 RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
             })?;
 
-            let (parsers, url, text) = session
-                .read_file(&file_path)
-                .map_err(RuntimeError::from)?;
+            let (parsers, url, text) = session.read_file(&file_path).map_err(RuntimeError::from)?;
             log::info!("Watched Files: Created - {}", uri.to_string());
             session
                 .db
@@ -74,23 +72,19 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                 Some(file) => {
                     if is_file_content_different(
                         &open_file,
-                        &file.document(&session.db).read().texter.text,
+                        &file.document(&session.db).texter.text,
                     )
                     .unwrap()
                     {
-                        session
-                            .db
-                            .remove_file(uri)
-                            .map_err(RuntimeError::from)?;
+                        session.db.remove_file(uri).map_err(RuntimeError::from)?;
                         let file_path = uri.to_file_path().map_err(|_| {
                             RuntimeError::from(FileSystemError::FileUrlToFilePath {
                                 path: uri.clone(),
                             })
                         })?;
                         log::info!("Watched Files: Changed - {}", uri.to_string());
-                        let (parsers, url, text) = session
-                            .read_file(&file_path)
-                            .map_err(RuntimeError::from)?;
+                        let (parsers, url, text) =
+                            session.read_file(&file_path).map_err(RuntimeError::from)?;
                         session
                             .db
                             .add_file_from_texter(parsers, &url, text)

@@ -27,7 +27,7 @@ use std::sync::Arc;
 #[salsa::tracked(no_eq, return_ref)]
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
-    let doc = file.document(db).read();
+    let doc = file.document(db);
     let url = file.url(db);
 
     if doc.texter.text.is_empty() {

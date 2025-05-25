@@ -38,7 +38,7 @@ fn sort(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let document = file.document(&foo_bar).read();
+    let document = file.document(&foo_bar);
     let source_code = document.texter.text.as_bytes();
     let ast = get_ast(&foo_bar, file);
 
@@ -97,7 +97,7 @@ fn descendant_at(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let document = file.document(&foo_bar).read();
+    let document = file.document(&foo_bar);
     let source_code = document.texter.text.as_bytes();
     let ast = get_ast(&foo_bar, file);
 

@@ -20,14 +20,12 @@ use crate::generated::{
     CompoundStatement, CompoundStatement_SimpleStatement, FunctionDefinition, Module,
 };
 use auto_lsp::core::ast::AstNode;
+use auto_lsp::core::dispatch;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::dispatch;
-use auto_lsp::lsp_types::{
-    DocumentSymbolParams, DocumentSymbolResponse,
-};
+use auto_lsp::lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 use auto_lsp::{anyhow, lsp_types};
 
 pub fn document_symbols(
@@ -40,7 +38,7 @@ pub fn document_symbols(
         .get_file(&uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let doc = file.document(db).read();
+    let doc = file.document(db);
     let mut builder = DocumentSymbolsBuilder::default();
 
     if let Some(node) = get_ast(db, file).get_root() {

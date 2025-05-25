@@ -15,11 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use std::sync::LazyLock;
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
-use auto_lsp::{anyhow, tree_sitter};
 use auto_lsp::tree_sitter::StreamingIterator;
+use auto_lsp::{anyhow, tree_sitter};
+use std::sync::LazyLock;
 
 // from: https://github.com/nvim-treesitter/nvim-treesitter/blob/master/queries/python/folds.scm
 static FOLD: &str = r#"
@@ -53,11 +53,8 @@ static FOLD: &str = r#"
 ]+ @fold"#;
 
 pub static FOLD_QUERY: LazyLock<tree_sitter::Query> = LazyLock::new(|| {
-    tree_sitter::Query::new(
-        &tree_sitter_python::LANGUAGE.into(),
-        FOLD,
-    )
-    .expect("Failed to create fold query")
+    tree_sitter::Query::new(&tree_sitter_python::LANGUAGE.into(), FOLD)
+        .expect("Failed to create fold query")
 });
 
 /// Request for folding ranges
@@ -71,7 +68,7 @@ pub fn folding_ranges(
         .get_file(&uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
+    let document = file.document(db);
 
     let root_node = document.tree.root_node();
     let source = document.texter.text.as_str();

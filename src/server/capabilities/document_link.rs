@@ -16,14 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::{
-    regex::find_all_with_regex,
-    salsa::db::BaseDatabase,
-};
-use lsp_types::{DocumentLink, DocumentLinkParams};
 use auto_lsp_core::document::Document;
-use regex::Regex;
+use auto_lsp_core::{regex::find_all_with_regex, salsa::db::BaseDatabase};
+use lsp_types::{DocumentLink, DocumentLinkParams};
 use regex::Match;
+use regex::Regex;
 
 /// Regex used when the server is asked to provide document links
 ///
@@ -90,7 +87,7 @@ pub fn get_document_links<Db: BaseDatabase>(
         .get_file(&uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
+    let document = file.document(db);
 
     let mut results = vec![];
     let matches = find_all_with_regex(query, &document, re);

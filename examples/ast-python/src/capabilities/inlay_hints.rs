@@ -18,12 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::FunctionDefinition;
 use auto_lsp::anyhow;
 use auto_lsp::core::ast::AstNode;
+use auto_lsp::core::dispatch;
 use auto_lsp::core::salsa::db::{BaseDatabase, File};
 use auto_lsp::core::salsa::tracked::get_ast;
-use auto_lsp::core::dispatch;
-use auto_lsp::lsp_types::{
-    InlayHint, InlayHintParams,
-};
+use auto_lsp::lsp_types::{InlayHint, InlayHintParams};
 
 pub fn inlay_hints(
     db: &impl BaseDatabase,
@@ -55,7 +53,7 @@ impl FunctionDefinition {
         file: File,
         acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
     ) -> anyhow::Result<()> {
-        let doc = file.document(db).read();
+        let doc = file.document(db);
 
         let range = self.get_range();
         let name = format!(

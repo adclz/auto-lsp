@@ -21,7 +21,6 @@ use crate::errors::{DataBaseError, TreeSitterError};
 use crate::parsers::Parsers;
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
-use parking_lot::RwLock;
 use salsa::Setter;
 use salsa::{Database, Storage};
 use std::{hash::Hash, sync::Arc};
@@ -33,7 +32,7 @@ pub struct File {
     pub url: Url,
     pub parsers: &'static Parsers,
     #[return_ref]
-    pub document: Arc<RwLock<Document>>,
+    pub document: Arc<Document>,
 }
 
 #[salsa::db]
@@ -98,7 +97,7 @@ pub trait FileManager: BaseDatabase + salsa::Database {
             .ok_or_else(|| DataBaseError::from((url, TreeSitterError::TreeSitterParser)))?;
 
         let document = Document { texter, tree };
-        let file = File::new(self, url.clone(), parsers, Arc::new(RwLock::new(document)));
+        let file = File::new(self, url.clone(), parsers, Arc::new(document));
 
         match self.get_files().entry(url.clone()) {
             Entry::Occupied(_) => Err(DataBaseError::FileAlreadyExists { uri: url.clone() }),
@@ -119,16 +118,12 @@ pub trait FileManager: BaseDatabase + salsa::Database {
             .get_mut(url)
             .ok_or_else(|| DataBaseError::FileNotFound { uri: url.clone() })?;
 
-        let data_lock = file.document(self);
-        let ptr = data_lock.clone();
-
-        let mut doc = data_lock.write();
+        let mut doc = (**file.document(self)).clone();
 
         doc.update(&mut file.parsers(self).parser.write(), changes)
             .map_err(|e| DataBaseError::from((url, e)))?;
 
-        drop(doc);
-        file.set_document(self).to(ptr);
+        file.set_document(self).to(Arc::new(doc));
         Ok(())
     }
 

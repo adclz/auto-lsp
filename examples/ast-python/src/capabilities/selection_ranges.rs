@@ -15,9 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use auto_lsp::{anyhow, tree_sitter};
 use auto_lsp::core::salsa::db::BaseDatabase;
 use auto_lsp::lsp_types::{SelectionRange, SelectionRangeParams};
+use auto_lsp::{anyhow, tree_sitter};
 
 /// Request for selection ranges
 ///
@@ -32,7 +32,7 @@ pub fn selection_ranges(
         .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
+    let document = file.document(db);
     let root_node = document.tree.root_node();
 
     let mut query_cursor = document.tree.walk();

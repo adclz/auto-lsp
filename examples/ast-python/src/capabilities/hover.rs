@@ -30,7 +30,7 @@ pub fn hover(db: &impl BaseDatabase, params: HoverParams) -> anyhow::Result<Opti
         .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db).read();
+    let document = file.document(db);
 
     let position = document
         .offset_at(params.text_document_position_params.position)
@@ -75,7 +75,7 @@ impl Identifier {
         db: &impl BaseDatabase,
         file: File,
     ) -> anyhow::Result<Option<lsp_types::Hover>> {
-        let doc = file.document(db).read();
+        let doc = file.document(db);
         Ok(Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
