@@ -12,8 +12,6 @@
   ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
 </div>
 
----
-
 `auto_lsp` is a generic library for creating Abstract Syntax Trees (AST) and Language Server Protocol (LSP) servers.
 
 It leverages crates such as [lsp_types](https://docs.rs/lsp-types/0.97/lsp_types/), [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/), [salsa](https://docs.rs/salsa/latest/salsa/), and [texter](https://docs.rs/texter/latest/texter/), and generates the AST of a Tree-sitter language to simplify building LSP servers.
@@ -30,14 +28,10 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for more information on the architecture.
 - Supports downcasting of AST nodes to concrete types.
 - Integrates with a Salsa database and parallelize LSP requests and notifications.
 
----
-
 ## 📚 Documentation
 
 - [Book](https://adclz.github.io/auto-lsp/)
 - [docs.rs](https://docs.rs/auto-lsp)
-
----
 
 ## Examples
 
@@ -47,14 +41,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for more information on the architecture.
 - [VSCode extension](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-native)
 - [VSCode extension with WASI](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
 
-
----
-
 ## Cargo Features
 
 - `wasm`: Enables WASM support (compatible only with `wasi-p1-threads`).
-
----
 
 ## Inspirations / Similar Projects
 
