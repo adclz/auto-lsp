@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::server::session::init::TextFn;
-use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::Connection;
 use main_loop::Task;
 use options::InitOptions;
@@ -35,7 +34,7 @@ pub(crate) type ReqHandler<Db> = fn(&mut Session<Db>, lsp_server::Response);
 type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
 
 /// Main session object that holds both lsp server connection and initialization options.
-pub struct Session<Db: BaseDatabase> {
+pub struct Session<Db: salsa::Database> {
     /// Initialization options provided by the library user.
     pub(crate) init_options: InitOptions,
     /// Text `fn` used to parse text files with the correct encoding.
@@ -52,7 +51,7 @@ pub struct Session<Db: BaseDatabase> {
     pub db: Db,
 }
 
-impl<Db: BaseDatabase + Clone> Session<Db> {
+impl<Db: salsa::Database + Clone> Session<Db> {
     pub(crate) fn snapshot(&self) -> DbSnapShot<Db> {
         DbSnapShot {
             db: self.db.clone(),
@@ -60,14 +59,14 @@ impl<Db: BaseDatabase + Clone> Session<Db> {
     }
 }
 
-pub struct DbSnapShot<Db: BaseDatabase + Send> {
+pub struct DbSnapShot<Db: salsa::Database + Send> {
     db: Db,
 }
 
 /// Perform an operation on the database that may be cancelled.
 ///
 /// From: https://github.com/rust-lang/rust-analyzer/blob/4e4aee41c969e86adefdb8c687e2e91bb101329a/crates/ide/src/lib.rs#L862
-impl<Db: BaseDatabase + Clone + RefUnwindSafe> DbSnapShot<Db> {
+impl<Db: salsa::Database + Clone + RefUnwindSafe> DbSnapShot<Db> {
     pub fn with_db<F, T>(&self, f: F) -> Result<T, salsa::Cancelled>
     where
         F: FnOnce(&Db) -> T + std::panic::UnwindSafe,

@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use super::{main_loop::Task, Session};
-use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Message, Request, RequestId, Response};
 use serde::{de::DeserializeOwned, Serialize};
 use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
@@ -43,12 +42,12 @@ type SyncMutCallback<Db> =
 ///
 /// The handlers are registered using the `on` and `on_mut` methods.
 #[derive(Default)]
-pub struct RequestRegistry<Db: BaseDatabase> {
+pub struct RequestRegistry<Db: salsa::Database> {
     handlers: HashMap<String, Callback<Db>>,
     sync_mut_handlers: HashMap<String, SyncMutCallback<Db>>,
 }
 
-impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
+impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
     pub fn on<R, F>(&mut self, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,

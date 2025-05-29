@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use super::{main_loop::Task, Session};
-use auto_lsp_core::salsa::db::BaseDatabase;
 use lsp_server::{Message, Notification};
 use serde::de::DeserializeOwned;
 use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
@@ -38,12 +37,12 @@ type SyncMutCallback<Db> = Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> an
 ///
 /// The handlers are registered using the `on` and `on_mut` methods.
 #[derive(Default)]
-pub struct NotificationRegistry<Db: BaseDatabase> {
+pub struct NotificationRegistry<Db: salsa::Database> {
     handlers: HashMap<String, Callback<Db>>,
     sync_mut_handlers: HashMap<String, SyncMutCallback<Db>>,
 }
 
-impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
+impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db> {
     /// Register a notification handler that will be pushed to the task pool.
     ///
     /// This handler is Cancelable and will be executed in a separate thread.

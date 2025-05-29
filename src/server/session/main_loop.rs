@@ -22,7 +22,6 @@ use super::Session;
 use crate::server::session::notification_registry::NotificationRegistry;
 use crate::server::session::request_registry::RequestRegistry;
 use anyhow::Error;
-use auto_lsp_core::salsa::db::BaseDatabase;
 use crossbeam_channel::select;
 use lsp_server::Message;
 
@@ -32,7 +31,7 @@ pub(crate) enum Task {
     NotificationError(Error),
 }
 
-impl<Db: BaseDatabase + Clone + Send + RefUnwindSafe> Session<Db> {
+impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> Session<Db> {
     /// Main loop of the LSP server, backed by [`lsp-server`] and [`crossbeam-channel`] crates.
     pub fn main_loop<'a>(
         &'a mut self,
