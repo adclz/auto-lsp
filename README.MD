@@ -20,7 +20,7 @@ It leverages crates such as [lsp_types](https://docs.rs/lsp-types/0.97/lsp_types
 
 It is designed to be as language-agnostic as possible, allowing any Tree-sitter grammar to be used.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for more information on the architecture.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for more information.
 
 ## ✨ Features
 

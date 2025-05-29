@@ -14,12 +14,12 @@ It was originally created as a way to quickly ship LSP servers without reinventi
 
 ## Crates
 
-- [auto_lsp](https://github.com/adclz/auto-lsp/tree/main/src)
+### [auto_lsp](https://github.com/adclz/auto-lsp/tree/main/src)
 
 The main crate reexports **auto_lsp_core** and contains the logic for starting an LSP server.
-Since the LSP server is optional, it is only enabled if the `lsp_server` feature is enabled.
+Since the LSP server is optional, it is only available if the `lsp_server` feature is enabled.
 
-- [auto_lsp_core](https://github.com/adclz/auto-lsp/tree/main/crates/core)
+### [auto_lsp_core](https://github.com/adclz/auto-lsp/tree/main/crates/core)
 
 **auto_lsp_core** is the most important crate, it exports:
 
@@ -36,8 +36,7 @@ Additional features:
 - `regex` A method that applies regex captures over the results of a Tree-sitter query and returns the captures.
 - `dispatch!` and `dispatch_once!` Macros that make it more convenient to call a method on one or all nodes that match a given concrete type without having to write redundant downcasting code.
 
-
-- [auto_lsp_codegen](https://github.com/adclz/auto-lsp/tree/main/crates/codegen)
+### [auto_lsp_codegen](https://github.com/adclz/auto-lsp/tree/main/crates/codegen)
 
 **auto_lsp_codegen** contains the code generation logic.
 Unlike **auto_lsp_core**, codegen is not reexported by the main crate.
@@ -68,8 +67,7 @@ Runs the `ast-python` example in a native binary with a client mock.
 
 ## Testing
 
-Most tests are located in the [examples](https://github.com/adclz/auto-lsp/tree/main/examples) folder
-The most complete one being the `ast-python` example.
+Most tests are located in the [examples](https://github.com/adclz/auto-lsp/tree/main/examples) folder.
 
 Alongside testing the behavior of the AST, database, and LSP server,
 we also test whether the generated ASTs are correct in the `corpus` folder using [insta](https://insta.rs/).
