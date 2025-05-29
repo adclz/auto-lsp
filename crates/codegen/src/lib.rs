@@ -98,7 +98,12 @@ pub fn generate(
     tokens: Option<HashMap<&'static str, &'static str>>,
 ) -> TokenStream {
     if let Some(tokens) = tokens {
-        TOKENS.write().unwrap().extend(tokens);
+        // extend or overwrite the default tokens
+
+        let mut lock = TOKENS.write().unwrap();
+        for (k, v) in tokens {
+            lock.insert(k, v);
+        }
     }
 
     let nodes: Vec<NodeType> = serde_json::from_str(source).expect("Invalid JSON");
