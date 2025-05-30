@@ -1,4 +1,4 @@
-# Generating an AST
+# Auto LSP Codegen
 
 To generate an AST, simply provide a Tree-sitter [node-types.json](https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types.html#static-node-types) and [LanguageFn](https://docs.rs/tree-sitter/latest/tree_sitter/struct.Language.html) of any language to the `generate` function of the `auto_lsp_codegen` crate.
 
