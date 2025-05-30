@@ -47,7 +47,7 @@ use auto_lsp::lsp_types::{
     self, CodeActionProviderCapability, CodeLensOptions, CompletionOptions, DiagnosticOptions,
     DiagnosticServerCapabilities, HoverProviderCapability, OneOf, ServerCapabilities,
 };
-use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
+use auto_lsp::server::default::{changed_watched_files, open_text_document};
 use auto_lsp::server::{
     semantic_tokens_provider, InitOptions, NotificationRegistry, RequestRegistry, Session,
     TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER,
@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
     let db = BaseDb::default();
 
-    let mut session = Session::create(
+    let (mut session, params) = Session::create(
         InitOptions {
             parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
@@ -96,6 +96,17 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         connection,
         db,
     )?;
+
+    // Initialize the session with the client's initialization options.
+    // This will also add all documents, parse and send diagnostics.
+    let init_results = session.init_workspace(params)?;
+    if !init_results.is_empty() {
+        init_results.into_iter().for_each(|result| {
+            if let Err(err) = result {
+                eprintln!("{}", err);
+            }
+        });
+    };
 
     let mut request_registry = RequestRegistry::<BaseDb>::default();
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();

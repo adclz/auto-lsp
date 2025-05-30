@@ -21,8 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! This module is available when the `lsp_server` feature is enabled.
 //!
 
-/// LSP server capabilities (executed when receiving requests or notifications from client)
-pub mod capabilities;
+pub mod default;
 /// Session handling
 mod session;
 

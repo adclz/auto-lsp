@@ -22,7 +22,6 @@ use main_loop::Task;
 use options::InitOptions;
 use std::{collections::HashMap, panic::RefUnwindSafe};
 
-pub mod fs;
 pub mod init;
 pub mod main_loop;
 pub mod notification_registry;

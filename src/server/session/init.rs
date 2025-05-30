@@ -21,12 +21,23 @@ use std::collections::HashMap;
 use super::task_pool::TaskPool;
 use super::InitOptions;
 use super::Session;
-use auto_lsp_core::salsa::db::BaseDatabase;
+use auto_lsp_core::errors::{ExtensionError, RuntimeError};
 use lsp_server::{Connection, ReqQueue};
 use lsp_types::{InitializeParams, InitializeResult, PositionEncodingKind};
+use serde::Deserialize;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
 use texter::core::text::Text;
+
+#[allow(non_snake_case, reason = "JSON")]
+#[derive(Debug, Deserialize)]
+struct InitializationOptions {
+    /// Maps file extensions to parser names.
+    ///
+    /// Example: { "rs": "rust", "py": "python" }
+    /// This option is provided by the client to define how different file types should be parsed.
+    perFileParser: HashMap<String, String>,
+}
 
 /// Function to create a new [`Text`] from a [`String`]
 pub(crate) type TextFn = fn(String) -> Text;
@@ -48,7 +59,7 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
     DEFAULT
 }
 
-impl<Db: BaseDatabase + Default> Session<Db> {
+impl<Db: salsa::Database + Default> Session<Db> {
     pub(crate) fn new(
         init_options: InitOptions,
         connection: Connection,
@@ -80,7 +91,7 @@ impl<Db: BaseDatabase + Default> Session<Db> {
         mut init_options: InitOptions,
         connection: Connection,
         db: Db,
-    ) -> anyhow::Result<Session<Db>> {
+    ) -> anyhow::Result<(Session<Db>, InitializeParams)> {
         // This is a workaround for a deadlock issue in WASI libc.
         // See https://github.com/WebAssembly/wasi-libc/pull/491
         #[cfg(target_arch = "wasm32")]
@@ -113,14 +124,28 @@ impl<Db: BaseDatabase + Default> Session<Db> {
 
         let mut session = Session::new(init_options, connection, t_fn, db);
 
-        // Initialize the session with the client's initialization options.
-        // This will also add all documents, parse and send diagnostics.
-        let init_results = session.init_workspace(params)?;
-        if !init_results.is_empty() {
-            //todo: What to do with workspace initilization errors ?
-            //There might be a lot of errors and sending them back to the client may not be the best decision.
-        };
+        let options = InitializationOptions::deserialize(
+            params
+                .clone()
+                .initialization_options
+                .ok_or(RuntimeError::MissingPerFileParser)?,
+        )
+        .unwrap();
 
-        Ok(session)
+        // Validate that the parsers provided by the client exist
+        for (file_extension, parser) in &options.perFileParser {
+            if !session.init_options.parsers.contains_key(parser.as_str()) {
+                return Err(RuntimeError::from(ExtensionError::UnknownParser {
+                    extension: file_extension.clone(),
+                    available: session.init_options.parsers.keys().cloned().collect(),
+                })
+                .into());
+            }
+        }
+
+        // Store the client's per file parser options
+        session.extensions = options.perFileParser;
+
+        Ok((session, params))
     }
 }

@@ -17,12 +17,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::server::session::Session;
+use auto_lsp_core::salsa::db::FileManager;
 use auto_lsp_core::{
     errors::{ExtensionError, RuntimeError},
     salsa::db::BaseDatabase,
 };
 use lsp_types::DidOpenTextDocumentParams;
-use auto_lsp_core::salsa::db::FileManager;
 
 pub fn open_text_document<Db: BaseDatabase>(
     session: &mut Session<Db>,

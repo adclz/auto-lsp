@@ -16,53 +16,23 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use super::Session;
+use crate::server::session::Session;
 use auto_lsp_core::errors::{ExtensionError, FileSystemError, RuntimeError};
 use auto_lsp_core::parsers::Parsers;
 use auto_lsp_core::salsa::db::{BaseDatabase, FileManager};
 use lsp_types::{InitializeParams, Url};
 use rayon::prelude::*;
-use serde::Deserialize;
 use std::path::PathBuf;
-use std::{collections::HashMap, fs::File, io::Read};
+use std::{fs::File, io::Read};
 use texter::core::text::Text;
 use walkdir::WalkDir;
 
-#[allow(non_snake_case, reason = "JSON")]
-#[derive(Debug, Deserialize)]
-struct InitializationOptions {
-    /// Maps file extensions to parser names.
-    ///
-    /// Example: { "rs": "rust", "py": "python" }
-    /// This option is provided by the client to define how different file types should be parsed.
-    perFileParser: HashMap<String, String>,
-}
-
 impl<Db: BaseDatabase> Session<Db> {
     /// Initializes the workspace by loading files and associating them with parsers.
-    pub(crate) fn init_workspace(
+    pub fn init_workspace(
         &mut self,
         params: InitializeParams,
     ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError> {
-        let options = InitializationOptions::deserialize(
-            params
-                .initialization_options
-                .ok_or(RuntimeError::MissingPerFileParser)?,
-        )
-        .unwrap();
-
-        // Validate that the parsers provided by the client exist
-        for (file_extension, parser) in &options.perFileParser {
-            if !self.init_options.parsers.contains_key(parser.as_str()) {
-                return Err(RuntimeError::from(ExtensionError::UnknownParser {
-                    extension: file_extension.clone(),
-                    available: self.init_options.parsers.keys().cloned().collect(),
-                }));
-            }
-        }
-
-        self.extensions = options.perFileParser;
-
         let mut errors: Vec<Result<(), RuntimeError>> = vec![];
 
         if let Some(folders) = params.workspace_folders {
