@@ -22,7 +22,6 @@ use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
 use lsp_types::Url;
 use thiserror::Error;
 
-
 /// Error type coming from either tree-sitter or ast parsing.
 ///
 /// This error is only produced by auto-lsp.
@@ -205,7 +204,7 @@ impl From<AstError> for ParseErrorAccumulator {
 
 /// Error type for position errors.
 ///
-/// Only emitted by methods of the [`Document`] struct.
+/// Only emitted by methods of the [`crate::document::Document`] struct.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum PositionError {
     #[error("Failed to find position of offset {offset:?}, max line length is {length:?}")]

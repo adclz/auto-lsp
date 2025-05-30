@@ -4,7 +4,7 @@ authors = ["Clauzel Adrien"]
 license = "GPL-3.0"
 repository = "https://github.com/adclz/auto-lsp"
 description = """
-A rust crate for creating AST and LSP servers powered by tree-sitter queries.
+A rust crate for creating AST and LSP servers powered by tree-sitter.
 """
 categories = ["parsing"]
 keywords = ["parser", "tree-sitter", "lsp"]
