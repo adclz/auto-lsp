@@ -16,7 +16,7 @@
 
 It leverages crates such as [lsp_types](https://docs.rs/lsp-types/0.97/lsp_types/), [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/), [salsa](https://docs.rs/salsa/latest/salsa/), and [texter](https://docs.rs/texter/latest/texter/), and generates the AST of a Tree-sitter language to simplify building LSP servers.
 
-`auto_lsp` is not a one-size-fits-all solution, but it provides useful abstractions while remaining flexible. You can override the default database as well as all LSP request and notification handlers.
+`auto_lsp` provides useful abstractions while remaining flexible. You can override the default database as well as all LSP request and notification handlers.
 
 It is designed to be as language-agnostic as possible, allowing any Tree-sitter grammar to be used.
 
@@ -43,6 +43,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for more information.
 
 ## Cargo Features
 
+- `lsp_server`: Enable the LSP server (uses [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/)).
 - `wasm`: Enables WASM support (compatible only with `wasi-p1-threads`).
 
 ## Inspirations / Similar Projects
