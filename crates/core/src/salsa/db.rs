@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+/// All structs and traits present in this module serve a minimal database implementation with basic file management.
+///
+/// Depending on your needs, you might want to create your own database and inputs.
 use crate::document::Document;
 use crate::errors::{DataBaseError, TreeSitterError};
 use crate::parsers::Parsers;
@@ -26,6 +29,9 @@ use salsa::{Database, Storage};
 use std::{hash::Hash, sync::Arc};
 use texter::core::text::Text;
 
+/// Input that represents a file in the database.
+///
+/// An [`lsp_types::Url`] is used as the unique identifier of the file.
 #[salsa::input]
 pub struct File {
     #[id]
@@ -35,6 +41,13 @@ pub struct File {
     pub document: Arc<Document>,
 }
 
+/// Base database that stores files.
+///
+/// Files are stored in a [`DashMap`] for concurrent access.
+///
+/// This also allows to lazily compute the AST of a file when it is first queried.
+///
+/// Logs are also stored when running in debug mode.
 #[salsa::db]
 #[derive(Default, Clone)]
 pub struct BaseDb {
@@ -44,6 +57,9 @@ pub struct BaseDb {
     logs: Arc<parking_lot::Mutex<Vec<String>>>,
 }
 
+/// Base trait for a database that stores files.
+///
+/// This trait is implemented for [`BaseDb`] and can be implemented for your own database.
 #[salsa::db]
 pub trait BaseDatabase: Database {
     fn get_files(&self) -> &DashMap<Url, File>;
@@ -56,6 +72,7 @@ pub trait BaseDatabase: Database {
     fn take_logs(&self) -> Vec<String>;
 }
 
+/// Implementation of [`salsa::Database`] for [`BaseDb`].
 #[salsa::db]
 impl salsa::Database for BaseDb {
     fn salsa_event(&self, _event: &dyn Fn() -> salsa::Event) {
@@ -71,6 +88,7 @@ impl salsa::Database for BaseDb {
 
 impl std::panic::RefUnwindSafe for BaseDb {}
 
+/// Implementation of [`BaseDatabase`] for [`BaseDb`].
 #[salsa::db]
 impl BaseDatabase for BaseDb {
     fn get_files(&self) -> &DashMap<Url, File> {
@@ -83,6 +101,9 @@ impl BaseDatabase for BaseDb {
     }
 }
 
+/// Trait for managing files in the database.
+///
+/// This trait is implemented for any database that implements [`BaseDatabase`].
 pub trait FileManager: BaseDatabase + salsa::Database {
     fn add_file_from_texter(
         &mut self,

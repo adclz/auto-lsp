@@ -24,6 +24,9 @@ use salsa::Accumulator;
 use std::ops::Deref;
 use std::sync::Arc;
 
+/// Query that returns the AST of a file.
+///
+/// This query will also sort the nodes by their id.
 #[salsa::tracked(no_eq, return_ref)]
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
@@ -60,7 +63,9 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     }
 }
 
-/// Cheap cloneable wrapper around a parsed AST
+/// Cheap cloneable wrapper around a parsed AST.
+///
+/// The first node of the list is always the root node.
 #[derive(Debug, Default, Clone, Eq)]
 pub struct ParsedAst {
     pub nodes: Arc<Vec<Arc<dyn AstNode>>>,
@@ -87,10 +92,12 @@ impl ParsedAst {
         }
     }
 
+    /// Returns the root node of the AST.
     pub fn get_root(&self) -> Option<&Arc<dyn AstNode>> {
         self.nodes.first()
     }
 
+    /// Returns the first node that contains the given offset.
     pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
         let mut result = None;
         for node in self.nodes.iter() {
