@@ -11,7 +11,7 @@ cargo add auto_lsp_codegen
 ## Usage
 
 The `auto_lsp_codegen` crate exposes a single `generate` function, which takes:
- - A [`node-types.json`](https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types.html), 
+ - A [`node-types.json`](https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types.html),
  - A [`LanguageFn`](https://docs.rs/tree-sitter-language/0.1.5/tree_sitter_language/struct.LanguageFn.html)
  - A `HashMap<&str, &str>` to rename tokens (see [Custom Tokens](#custom-tokens))
  - And returns a **TokenStream**.
@@ -132,7 +132,7 @@ pub enum SimpleStatement_CompoundStatement {
 ```
 
 > [!NOTE]
->If the generated enum name becomes too long, consider using a Tree-sitter [supertype](https://tree-sitter.github.io/ tree-sitter/using-parsers/6-static-node-types.html#supertype-nodes) to group nodes together.
+>If the generated enum name becomes too long, consider using a Tree-sitter <a href="https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types.html#supertype-nodes">supertype</a> to group nodes together.
 
 The `kind_id()` method is used to determine child kinds during traversal.
 
@@ -141,7 +141,7 @@ The `AstNode::contains` method relies on this to check whether a node kind belon
 ### Vec and Option Fields
 
 `repeat` and `repeat1` in the grammar will generate a `Vec` field.
-`optional(...)` will generate an `Option<T>` field. 
+`optional(...)` will generate an `Option<T>` field.
 
 ### Token Naming
 
