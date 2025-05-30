@@ -16,12 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-mod document_link;
 mod open_text_document;
 mod watched_files;
 mod workspace_init;
 
-pub use document_link::*;
 pub use open_text_document::*;
 pub use watched_files::*;
-pub use workspace_init::*;
