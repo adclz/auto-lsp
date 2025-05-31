@@ -59,7 +59,7 @@ fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEn
     DEFAULT
 }
 
-impl<Db: salsa::Database + Default> Session<Db> {
+impl<Db: salsa::Database> Session<Db> {
     pub(crate) fn new(
         init_options: InitOptions,
         connection: Connection,

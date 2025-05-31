@@ -39,7 +39,7 @@ pub static TEXT_DOCUMENT_SYNC: Option<lsp_types::TextDocumentSyncCapability> = S
 pub static WORKSPACE_PROVIDER: Option<WorkspaceServerCapabilities> =
     Some(WorkspaceServerCapabilities {
         workspace_folders: Some(WorkspaceFoldersServerCapabilities {
-            supported: Some(true),
+            supported: Some(false),
             change_notifications: Some(OneOf::Left(true)),
         }),
         file_operations: None,
