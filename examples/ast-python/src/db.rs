@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+
 /*
 This file is part of auto-lsp.
 Copyright (C) 2025 CLAUZEL Adrien
@@ -45,4 +47,31 @@ pub fn create_python_db(source_code: &'static [&str]) -> impl BaseDatabase {
     });
 
     db
+}
+
+pub fn create_python_db_with_logger(
+    source_code: &'static [&str],
+) -> (impl BaseDatabase, Arc<Mutex<Vec<String>>>) {
+    let logs = Arc::new(Mutex::new(Vec::new()));
+    let logs_clone = logs.clone();
+    let mut db = BaseDb::with_logger(Some(Box::new(move |event| {
+        if let salsa::EventKind::WillExecute { .. } = event.kind {
+            logs_clone.lock().unwrap().push(format!("{event:?}"));
+        }
+    })));
+
+    source_code.iter().enumerate().for_each(|(i, source_code)| {
+        let url = Url::parse(&format!("file:///test{i}.py")).expect("Failed to parse URL");
+
+        db.add_file_from_texter(
+            PYTHON_PARSERS
+                .get("python")
+                .expect("Python parser not found"),
+            &url,
+            Text::new(source_code.to_string()),
+        )
+        .expect("Failed to add file");
+    });
+
+    (db, logs)
 }

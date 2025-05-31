@@ -56,8 +56,18 @@ pub struct File {
 pub struct BaseDb {
     storage: Storage<Self>,
     pub(crate) files: DashMap<Url, File>,
-    #[cfg(debug_assertions)]
-    logs: Arc<parking_lot::Mutex<Vec<String>>>,
+}
+
+impl BaseDb {
+    /// Create a new database with a logger.
+    pub fn with_logger(
+        event_callback: Option<Box<dyn Fn(salsa::Event) + Send + Sync + 'static>>,
+    ) -> Self {
+        Self {
+            storage: Storage::new(event_callback),
+            files: DashMap::default(),
+        }
+    }
 }
 
 /// Base trait for a database that stores files.
@@ -70,25 +80,11 @@ pub trait BaseDatabase: Database {
     fn get_file(&self, url: &Url) -> Option<File> {
         self.get_files().get(url).map(|file| *file)
     }
-
-    #[cfg(debug_assertions)]
-    fn take_logs(&self) -> Vec<String>;
 }
 
 /// Implementation of [`salsa::Database`] for [`BaseDb`].
 #[salsa::db]
-impl salsa::Database for BaseDb {
-    fn salsa_event(&self, _event: &dyn Fn() -> salsa::Event) {
-        #[cfg(debug_assertions)]
-        {
-            let event = _event();
-            if let salsa::EventKind::WillExecute { .. } = event.kind {
-                self.logs.lock().push(format!("{event:?}"));
-            }
-        }
-    }
-}
-
+impl salsa::Database for BaseDb {}
 impl std::panic::RefUnwindSafe for BaseDb {}
 
 /// Implementation of [`BaseDatabase`] for [`BaseDb`].
@@ -96,11 +92,6 @@ impl std::panic::RefUnwindSafe for BaseDb {}
 impl BaseDatabase for BaseDb {
     fn get_files(&self) -> &DashMap<Url, File> {
         &self.files
-    }
-
-    #[cfg(debug_assertions)]
-    fn take_logs(&self) -> Vec<String> {
-        std::mem::take(&mut self.logs.lock())
     }
 }
 
@@ -142,7 +133,7 @@ pub trait FileManager: BaseDatabase + salsa::Database {
             .get_mut(url)
             .ok_or_else(|| DataBaseError::FileNotFound { uri: url.clone() })?;
 
-        let mut doc = (**file.document(self)).clone();
+        let mut doc = (*file.document(self)).clone();
 
         doc.update(&mut file.parsers(self).parser.write(), changes)
             .map_err(|e| DataBaseError::from((url, e)))?;

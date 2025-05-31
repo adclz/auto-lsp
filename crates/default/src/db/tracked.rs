@@ -27,7 +27,7 @@ use std::sync::Arc;
 /// Query that returns the AST of a file.
 ///
 /// This query will also sort the nodes by their id.
-#[salsa::tracked(no_eq, return_ref)]
+#[salsa::tracked(returns(ref))]
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
     let doc = file.document(db);
@@ -37,6 +37,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
         return ParsedAst::default();
     }
 
+    // fastrace
     let root =
         Span::root("build ast", SpanContext::random()).with_property(|| ("file", url.to_string()));
     let _guard = root.set_local_parent();
@@ -44,6 +45,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let node = doc.tree.root_node();
     let source_code = doc.texter.text.as_bytes();
 
+    // Find tree-sitter errors and accumulate them
     get_tree_sitter_errors(db, &node, source_code);
 
     match (parsers.ast_parser)(db, &doc) {

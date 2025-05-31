@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::db::create_python_db;
+use std::sync::{Arc, Mutex};
+
+use crate::db::create_python_db_with_logger;
 use auto_lsp::default::db::tracked::get_ast;
 use auto_lsp::default::db::{BaseDatabase, FileManager};
 use auto_lsp::lsp_types;
@@ -24,8 +26,8 @@ use auto_lsp::lsp_types::Url;
 use rstest::{fixture, rstest};
 
 #[fixture]
-fn foo_bar() -> impl BaseDatabase {
-    create_python_db(&[
+fn foo_bar() -> (impl BaseDatabase, Arc<Mutex<Vec<String>>>) {
+    create_python_db_with_logger(&[
         r#"def foo():
     pass
 
@@ -43,7 +45,9 @@ def bar2():
 }
 
 #[rstest]
-fn query_ast(foo_bar: impl BaseDatabase) {
+fn query_ast(foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
+    let (foo_bar, logs) = foo_bar;
+
     let file0 = foo_bar
         .get_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
         .expect("Expected file0 to exist");
@@ -58,7 +62,7 @@ fn query_ast(foo_bar: impl BaseDatabase) {
     let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
-    let logs = foo_bar.take_logs();
+    let logs = logs.lock().unwrap();
 
     assert_eq!(logs.len(), 2);
     assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
@@ -66,7 +70,9 @@ fn query_ast(foo_bar: impl BaseDatabase) {
 }
 
 #[rstest]
-fn update_file(mut foo_bar: impl BaseDatabase) {
+fn update_file(mut foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
+    let (mut foo_bar, logs) = foo_bar;
+
     let file0 = foo_bar
         .get_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
         .expect("Expected file0 to exist");
@@ -81,11 +87,13 @@ fn update_file(mut foo_bar: impl BaseDatabase) {
     let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
-    let logs = foo_bar.take_logs();
+    let mut logs_guard = logs.lock().unwrap();
+    let current_logs = std::mem::take(&mut *logs_guard);
+    drop(logs_guard);
 
-    assert_eq!(logs.len(), 2);
-    assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
-    assert!(logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
+    assert_eq!(current_logs.len(), 2);
+    assert!(current_logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
+    assert!(current_logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
 
     let change = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
@@ -115,12 +123,17 @@ fn update_file(mut foo_bar: impl BaseDatabase) {
     let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
-    let logs = foo_bar.take_logs();
-    assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
+    let mut logs_guard = logs.lock().unwrap();
+    let current_logs = std::mem::take(&mut *logs_guard);
+    drop(logs_guard);
+
+    assert!(current_logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
 }
 
 #[rstest]
-fn remove_file(mut foo_bar: impl BaseDatabase) {
+fn remove_file(foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
+    let (mut foo_bar, logs) = foo_bar;
+
     let file0 = foo_bar
         .get_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
         .expect("Expected file0 to exist");
@@ -135,11 +148,13 @@ fn remove_file(mut foo_bar: impl BaseDatabase) {
     let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
-    let logs = foo_bar.take_logs();
+    let mut logs_guard = logs.lock().unwrap();
+    let current_logs = std::mem::take(&mut *logs_guard);
+    drop(logs_guard);
 
-    assert_eq!(logs.len(), 2);
-    assert!(logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
-    assert!(logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
+    assert_eq!(current_logs.len(), 2);
+    assert!(current_logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
+    assert!(current_logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
 
     foo_bar
         .remove_file(&Url::parse("file:///test0.py").expect("Invalid URL"))
@@ -157,5 +172,9 @@ fn remove_file(mut foo_bar: impl BaseDatabase) {
     let file1_ast = get_ast(&foo_bar, file1).get_root();
     assert!(file1_ast.is_some());
 
-    assert!(foo_bar.take_logs().is_empty());
+    let mut logs_guard = logs.lock().unwrap();
+    let current_logs = std::mem::take(&mut *logs_guard);
+    drop(logs_guard);
+
+    assert!(current_logs.is_empty());
 }
