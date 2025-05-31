@@ -72,7 +72,7 @@ pub fn open_text_document<Db: BaseDatabase>(
             })
         })?;
 
-    log::info!("Did Open Text Document: Created - {}", url.to_string());
+    log::info!("Did Open Text Document: Created - {url}");
     session
         .db
         .add_file_from_texter(parsers, url, text)
@@ -102,7 +102,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
             })?;
 
             let (parsers, url, text) = session.read_file(&file_path).map_err(RuntimeError::from)?;
-            log::info!("Watched Files: Created - {}", uri.to_string());
+            log::info!("Watched Files: Created - {uri}");
             session
                 .db
                 .add_file_from_texter(parsers, &url, text)
@@ -135,7 +135,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                                 path: uri.clone(),
                             })
                         })?;
-                        log::info!("Watched Files: Changed - {}", uri.to_string());
+                        log::info!("Watched Files: Changed - {uri}");
                         let (parsers, url, text) =
                             session.read_file(&file_path).map_err(RuntimeError::from)?;
                         session
@@ -152,7 +152,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
             }
         }
         FileChangeType::DELETED => {
-            log::info!("Watched Files: Deleted - {}", file.uri.to_string());
+            log::info!("Watched Files: Deleted - {}", file.uri);
             session
                 .db
                 .remove_file(&file.uri)

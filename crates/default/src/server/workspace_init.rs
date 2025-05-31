@@ -21,7 +21,7 @@ use auto_lsp_core::parsers::Parsers;
 use auto_lsp_server::Session;
 use lsp_types::{InitializeParams, Url};
 use rayon::prelude::*;
-use std::path::PathBuf;
+use std::path::Path;
 use std::{fs::File, io::Read};
 use texter::core::text::Text;
 use walkdir::WalkDir;
@@ -35,7 +35,7 @@ pub trait WorkspaceInit {
         params: InitializeParams,
     ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError>;
 
-    fn read_file(&self, file: &PathBuf) -> Result<(&'static Parsers, Url, Text), FileSystemError>;
+    fn read_file(&self, file: &Path) -> Result<(&'static Parsers, Url, Text), FileSystemError>;
 }
 
 impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
@@ -82,9 +82,10 @@ impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
         Ok(errors)
     }
 
-    fn read_file(&self, file: &PathBuf) -> Result<(&'static Parsers, Url, Text), FileSystemError> {
-        let url = Url::from_file_path(file)
-            .map_err(|_| FileSystemError::FilePathToUrl { path: file.clone() })?;
+    fn read_file(&self, file: &Path) -> Result<(&'static Parsers, Url, Text), FileSystemError> {
+        let url = Url::from_file_path(file).map_err(|_| FileSystemError::FilePathToUrl {
+            path: file.to_path_buf(),
+        })?;
 
         let mut open_file = File::open(file).map_err(|e| FileSystemError::FileOpen {
             path: url.clone(),

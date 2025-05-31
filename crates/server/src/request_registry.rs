@@ -108,7 +108,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
             let cb = cb.clone();
             match snapshot.with_db(|db| cb(db, params)) {
                 Err(e) => {
-                    log::warn!("Cancelled request: {}", e);
+                    log::warn!("Cancelled request: {e}");
                 }
                 Ok(result) => match result {
                     Ok(result) => sender

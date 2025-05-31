@@ -20,9 +20,7 @@ use std::collections::HashMap;
 
 use auto_lsp_core::parsers::Parsers;
 use lsp_types::{
-    OneOf, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
-    ServerCapabilities, ServerInfo, WorkspaceFoldersServerCapabilities,
-    WorkspaceServerCapabilities,
+    ServerCapabilities, ServerInfo,
 };
 
 /// Initialization options for the LSP server

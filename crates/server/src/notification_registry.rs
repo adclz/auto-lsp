@@ -100,7 +100,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db
         session
             .task_pool
             .spawn(move |sender| match snapshot.with_db(|db| cb(db, params)) {
-                Err(e) => log::warn!("Cancelled notification: {}", e),
+                Err(e) => log::warn!("Cancelled notification: {e}"),
                 Ok(result) => {
                     if let Err(e) = result {
                         sender.send(Task::NotificationError(e)).unwrap();

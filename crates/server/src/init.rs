@@ -70,7 +70,7 @@ impl<Db: salsa::Database> Session<Db> {
 
         let max_threads = std::thread::available_parallelism().unwrap().get();
 
-        log::info!("Max threads: {}", max_threads);
+        log::info!("Max threads: {max_threads}");
 
         Self {
             init_options,
