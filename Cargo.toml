@@ -36,42 +36,36 @@ auto-lsp-default = { path = "./crates/default", version = "0.1.0" }
 texter = { version = "0.2.0", default-features = false }
 lsp-types = "0.94.1"
 lsp-server = "0.7.8"
-crossbeam-channel = "0.5.14"
-tree-sitter = "0.25.4"
+crossbeam-channel = "0.5.15"
+tree-sitter = "0.25.5"
 downcast-rs = "2.0.1"
 streaming-iterator = "0.1.9"
-parking_lot = "0.12.3"
-log = "0.4.22"
+parking_lot = "0.12.4"
+log = "0.4.27"
 rayon = "1.10"
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 regex = "1.11.1"
 rstest = "0.25.0"
-salsa = "0.19.0"
+salsa = "0.22.0"
 dashmap = "6.1.0"
 thiserror = "2.0.12"
 ariadne = "0.5.1"
-fastrace = "0.7"
+fastrace = "0.7.9"
 walkdir = "2.5.0"
 rayon-par-bridge = "0.1.0"
 
 [dependencies]
 tree-sitter-language = "0.1.5"
-regex = "1.11.1"
-fastrace = { workspace = true }
 tree-sitter = { workspace = true }
 lsp-types = { workspace = true }
-streaming-iterator = { workspace = true }
 anyhow = { workspace = true }
 parking_lot = { workspace = true }
-log = { workspace = true }
 salsa = { workspace = true }
-rayon = { workspace = true }
 auto-lsp-core = { workspace = true }
 texter = { workspace = true, default-features = false }
 auto-lsp-server = { workspace = true, optional = true }
 auto-lsp-default = { workspace = true, optional = true }
 lsp-server = { workspace = true, optional = true }
-walkdir = { workspace = true, optional = true }
 
 [package.metadata.docs.rs]
 features = ["default", "lsp_server"]
