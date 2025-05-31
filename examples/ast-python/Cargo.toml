@@ -10,6 +10,7 @@ publish = false
 [dependencies]
 tree-sitter-python = "0.23.6"
 auto-lsp = { path = "../.." }
+salsa = "0.22.0"
 
 [dev-dependencies]
 insta = { version = "1.43.1", features = ["filters"] }

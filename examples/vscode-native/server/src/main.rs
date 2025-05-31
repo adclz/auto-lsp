@@ -31,7 +31,12 @@ use ast_python::capabilities::semantic_tokens::{
 use ast_python::capabilities::workspace_diagnostics::workspace_diagnostics;
 use ast_python::capabilities::workspace_symbols::workspace_symbols;
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::server::capabilities::{
+    semantic_tokens_provider, TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER,
+};
+use auto_lsp::default::server::file_events::{changed_watched_files, open_text_document};
+use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
@@ -47,11 +52,10 @@ use auto_lsp::lsp_types::{
     CodeActionProviderCapability, CodeLensOptions, CompletionOptions, DiagnosticOptions,
     DiagnosticServerCapabilities, HoverProviderCapability, OneOf, ServerCapabilities,
 };
-use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
-use auto_lsp::server::{
-    semantic_tokens_provider, InitOptions, NotificationRegistry, RequestRegistry, Session,
-    TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER,
-};
+use auto_lsp::server::notification_registry::NotificationRegistry;
+use auto_lsp::server::options::InitOptions;
+use auto_lsp::server::request_registry::RequestRegistry;
+use auto_lsp::server::Session;
 use fastrace::collector::Config;
 use fastrace::collector::ConsoleReporter;
 use std::error::Error;
@@ -69,7 +73,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     fastrace::set_reporter(ConsoleReporter, Config::default());
 
-    let mut session = Session::create(
+    let (mut session, params) = Session::create(
         InitOptions {
             parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
@@ -106,6 +110,17 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         connection,
         db,
     )?;
+
+    // Initialize the session with the client's initialization options.
+    // This will also add all documents, parse and send diagnostics.
+    let init_results = session.init_workspace(params)?;
+    if !init_results.is_empty() {
+        init_results.into_iter().for_each(|result| {
+            if let Err(err) = result {
+                eprintln!("{}", err);
+            }
+        });
+    };
 
     let mut request_registry = RequestRegistry::<BaseDb>::default();
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();

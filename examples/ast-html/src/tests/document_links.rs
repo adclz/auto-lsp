@@ -18,7 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use crate::db::{create_html_db, HTML_PARSERS};
 use auto_lsp::core::regex::find_all_with_regex;
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::Url;
 use auto_lsp::tree_sitter;
 use regex::Regex;

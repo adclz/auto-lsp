@@ -16,10 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-mod document_link;
-mod open_text_document;
-mod watched_files;
+use std::collections::HashMap;
 
-pub use document_link::*;
-pub use open_text_document::*;
-pub use watched_files::*;
+use auto_lsp_core::parsers::Parsers;
+use lsp_types::{
+    ServerCapabilities, ServerInfo,
+};
+
+/// Initialization options for the LSP server
+pub struct InitOptions {
+    pub parsers: &'static HashMap<&'static str, Parsers>,
+    pub capabilities: ServerCapabilities,
+    pub server_info: Option<ServerInfo>,
+}

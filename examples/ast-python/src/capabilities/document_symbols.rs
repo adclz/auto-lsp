@@ -23,8 +23,8 @@ use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::{BaseDatabase, File};
 use auto_lsp::lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 use auto_lsp::{anyhow, lsp_types};
 

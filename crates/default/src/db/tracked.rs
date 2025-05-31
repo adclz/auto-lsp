@@ -15,16 +15,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use super::db::{BaseDatabase, File};
 use super::lexer::get_tree_sitter_errors;
-use crate::ast::AstNode;
-use crate::errors::ParseErrorAccumulator;
+use super::{BaseDatabase, File};
+use auto_lsp_core::ast::AstNode;
+use auto_lsp_core::errors::ParseErrorAccumulator;
 use fastrace::prelude::*;
 use salsa::Accumulator;
 use std::ops::Deref;
 use std::sync::Arc;
 
-#[salsa::tracked(no_eq, return_ref)]
+/// Query that returns the AST of a file.
+///
+/// This query will also sort the nodes by their id.
+#[salsa::tracked(returns(ref))]
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
     let doc = file.document(db);
@@ -34,6 +37,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
         return ParsedAst::default();
     }
 
+    // fastrace
     let root =
         Span::root("build ast", SpanContext::random()).with_property(|| ("file", url.to_string()));
     let _guard = root.set_local_parent();
@@ -41,6 +45,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let node = doc.tree.root_node();
     let source_code = doc.texter.text.as_bytes();
 
+    // Find tree-sitter errors and accumulate them
     get_tree_sitter_errors(db, &node, source_code);
 
     match (parsers.ast_parser)(db, &doc) {
@@ -60,7 +65,9 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     }
 }
 
-/// Cheap cloneable wrapper around a parsed AST
+/// Cheap cloneable wrapper around a parsed AST.
+///
+/// The first node of the list is always the root node.
 #[derive(Debug, Default, Clone, Eq)]
 pub struct ParsedAst {
     pub nodes: Arc<Vec<Arc<dyn AstNode>>>,
@@ -87,10 +94,12 @@ impl ParsedAst {
         }
     }
 
+    /// Returns the root node of the AST.
     pub fn get_root(&self) -> Option<&Arc<dyn AstNode>> {
         self.nodes.first()
     }
 
+    /// Returns the first node that contains the given offset.
     pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
         let mut result = None;
         for node in self.nodes.iter() {

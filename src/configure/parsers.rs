@@ -53,7 +53,7 @@ macro_rules! configure_parsers {
                           parser: data.0,
                           language: data.1,
                           ast_parser: |
-                            db: &dyn $crate::core::salsa::db::BaseDatabase,
+                            db: &dyn ::auto_lsp::salsa::Database,
                             document: &$crate::core::document::Document | {
                                 let mut builder = $crate::core::ast::Builder::default();
                                 let root = $root::try_from((&document.tree.root_node(), db, &mut builder, 0, None))

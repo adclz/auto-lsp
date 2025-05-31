@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::capabilities::code_actions::code_actions;
 use crate::db::create_python_db;
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{self, WorkDoneProgressParams};
 use auto_lsp::lsp_types::{
     CodeActionContext, CodeActionParams, PartialResultParams, TextDocumentIdentifier, Url,

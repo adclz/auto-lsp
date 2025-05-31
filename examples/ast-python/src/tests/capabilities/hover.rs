@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::lsp_types::HoverParams;
 use auto_lsp::{
-    core::salsa::{db::BaseDatabase, tracked::get_ast},
+    default::{db::tracked::get_ast, db::BaseDatabase},
     lsp_types::{self, Url},
 };
 use rstest::{fixture, rstest};

@@ -7,10 +7,16 @@ semver_check = true
 name = "auto-lsp"
 
 [[package]]
+name = "auto-lsp-codegen"
+
+[[package]]
 name = "auto-lsp-core"
 
 [[package]]
-name = "auto-lsp-codegen"
+name = "auto-lsp-server"
+
+[[package]]
+name = "auto-lsp-default"
 
 [changelog]
 protect_breaking_commits = true

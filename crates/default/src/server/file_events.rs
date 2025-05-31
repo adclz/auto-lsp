@@ -16,15 +16,68 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::{fs::File, io::Read};
+use std::fs::File;
+use std::io::Read;
 
-use crate::server::session::Session;
-use auto_lsp_core::salsa::db::FileManager;
-use auto_lsp_core::{
-    errors::{FileSystemError, RuntimeError},
-    salsa::db::BaseDatabase,
-};
-use lsp_types::{DidChangeWatchedFilesParams, FileChangeType};
+use auto_lsp_core::errors::FileSystemError;
+use auto_lsp_core::errors::{ExtensionError, RuntimeError};
+use auto_lsp_server::Session;
+use lsp_types::DidChangeWatchedFilesParams;
+use lsp_types::DidOpenTextDocumentParams;
+use lsp_types::FileChangeType;
+
+use crate::db::BaseDatabase;
+use crate::db::FileManager;
+use crate::server::workspace_init::WorkspaceInit;
+
+pub fn open_text_document<Db: BaseDatabase>(
+    session: &mut Session<Db>,
+    params: DidOpenTextDocumentParams,
+) -> Result<(), RuntimeError> {
+    let url = &params.text_document.uri;
+
+    if session.db.get_file(url).is_some() {
+        // The file is already in db
+        // We can ignore this change
+        return Ok(());
+    };
+
+    let extension = &params.text_document.language_id;
+
+    let extension = match session.extensions.get(extension) {
+        Some(extension) => extension,
+        None => {
+            if session.extensions.values().any(|x| x == extension) {
+                extension
+            } else {
+                return Err(ExtensionError::UnknownExtension {
+                    extension: extension.clone(),
+                    available: session.extensions.clone(),
+                }
+                .into());
+            }
+        }
+    };
+
+    let text = (session.text_fn)(params.text_document.text.clone());
+
+    let parsers = session
+        .init_options
+        .parsers
+        .get(extension.as_str())
+        .ok_or_else(|| {
+            RuntimeError::from(ExtensionError::UnknownParser {
+                extension: extension.clone(),
+                available: session.init_options.parsers.keys().cloned().collect(),
+            })
+        })?;
+
+    log::info!("Did Open Text Document: Created - {url}");
+    session
+        .db
+        .add_file_from_texter(parsers, url, text)
+        .map_err(|e| e.into())
+}
 
 /// Handle the watched files change notification.
 ///
@@ -49,7 +102,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
             })?;
 
             let (parsers, url, text) = session.read_file(&file_path).map_err(RuntimeError::from)?;
-            log::info!("Watched Files: Created - {}", uri.to_string());
+            log::info!("Watched Files: Created - {uri}");
             session
                 .db
                 .add_file_from_texter(parsers, &url, text)
@@ -82,7 +135,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                                 path: uri.clone(),
                             })
                         })?;
-                        log::info!("Watched Files: Changed - {}", uri.to_string());
+                        log::info!("Watched Files: Changed - {uri}");
                         let (parsers, url, text) =
                             session.read_file(&file_path).map_err(RuntimeError::from)?;
                         session
@@ -99,7 +152,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
             }
         }
         FileChangeType::DELETED => {
-            log::info!("Watched Files: Deleted - {}", file.uri.to_string());
+            log::info!("Watched Files: Deleted - {}", file.uri);
             session
                 .db
                 .remove_file(&file.uri)
