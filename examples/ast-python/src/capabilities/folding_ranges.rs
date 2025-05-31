@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{FoldingRange, FoldingRangeKind, FoldingRangeParams};
 use auto_lsp::tree_sitter::StreamingIterator;
 use auto_lsp::{anyhow, tree_sitter};

@@ -16,10 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::server::session::Session;
 use auto_lsp_core::errors::{ExtensionError, FileSystemError, RuntimeError};
 use auto_lsp_core::parsers::Parsers;
-use auto_lsp_core::salsa::db::{BaseDatabase, FileManager};
+use auto_lsp_server::Session;
 use lsp_types::{InitializeParams, Url};
 use rayon::prelude::*;
 use std::path::PathBuf;
@@ -27,9 +26,21 @@ use std::{fs::File, io::Read};
 use texter::core::text::Text;
 use walkdir::WalkDir;
 
-impl<Db: BaseDatabase> Session<Db> {
+use crate::db::BaseDatabase;
+use crate::db::FileManager;
+
+pub trait WorkspaceInit {
+    fn init_workspace(
+        &mut self,
+        params: InitializeParams,
+    ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError>;
+
+    fn read_file(&self, file: &PathBuf) -> Result<(&'static Parsers, Url, Text), FileSystemError>;
+}
+
+impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
     /// Initializes the workspace by loading files and associating them with parsers.
-    pub fn init_workspace(
+    fn init_workspace(
         &mut self,
         params: InitializeParams,
     ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError> {
@@ -71,10 +82,7 @@ impl<Db: BaseDatabase> Session<Db> {
         Ok(errors)
     }
 
-    pub(crate) fn read_file(
-        &self,
-        file: &PathBuf,
-    ) -> Result<(&'static Parsers, Url, Text), FileSystemError> {
+    fn read_file(&self, file: &PathBuf) -> Result<(&'static Parsers, Url, Text), FileSystemError> {
         let url = Url::from_file_path(file)
             .map_err(|_| FileSystemError::FilePathToUrl { path: file.clone() })?;
 

@@ -13,7 +13,7 @@ edition = "2021"
 readme = "README.MD"
 
 [workspace]
-members = ["crates/core", "crates/codegen"]
+members = ["crates/core", "crates/codegen", "crates/server", "crates/default"]
 exclude = [
     "examples/vscode-wasi/server",
     "examples/vscode-native/server",
@@ -23,19 +23,20 @@ exclude = [
 ]
 
 [features]
-default = []
-lsp_server = [
-    "dep:serde",
-    "dep:serde_json",
-    "dep:walkdir",
-    "dep:lsp-server",
-    "dep:crossbeam-channel",
-]
+default = ["dep:auto-lsp-default"]
+lsp_server = ["dep:auto-lsp-server", "dep:lsp-server"]
 wasm = ["parking_lot/nightly", "auto-lsp-core/wasm"]
 
 [workspace.dependencies]
+serde = "1.0.219"
+serde_json = "1.0.140"
+auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
+auto-lsp-server = { path = "./crates/server", version = "0.1.0" }
+auto-lsp-default = { path = "./crates/default", version = "0.1.0" }
 texter = { version = "0.2.0", default-features = false }
 lsp-types = "0.94.1"
+lsp-server = "0.7.8"
+crossbeam-channel = "0.5.14"
 tree-sitter = "0.25.4"
 downcast-rs = "2.0.1"
 streaming-iterator = "0.1.9"
@@ -50,10 +51,10 @@ dashmap = "6.1.0"
 thiserror = "2.0.12"
 ariadne = "0.5.1"
 fastrace = "0.7"
+walkdir = "2.5.0"
+rayon-par-bridge = "0.1.0"
 
 [dependencies]
-auto-lsp-core = { path = "./crates/core", version = "0.5.0" }
-rayon-par-bridge = "0.1.0"
 tree-sitter-language = "0.1.5"
 regex = "1.11.1"
 fastrace = { workspace = true }
@@ -65,15 +66,12 @@ parking_lot = { workspace = true }
 log = { workspace = true }
 salsa = { workspace = true }
 rayon = { workspace = true }
+auto-lsp-core = { workspace = true }
 texter = { workspace = true, default-features = false }
-lsp-server = { version = "0.7.8", optional = true }
-serde = { version = "1.0.219", optional = true }
-serde_json = { version = "1.0.140", optional = true }
-walkdir = { version = "2.5.0", optional = true }
-crossbeam-channel = { version = "0.5.14", optional = true }
+auto-lsp-server = { workspace = true, optional = true }
+auto-lsp-default = { workspace = true, optional = true }
+lsp-server = { workspace = true, optional = true }
+walkdir = { workspace = true, optional = true }
 
 [package.metadata.docs.rs]
-features = ["lsp_server"]
-
-[dev-dependencies]
-tempfile = "3.19.0"
+features = ["default", "lsp_server"]

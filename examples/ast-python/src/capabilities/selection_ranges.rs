@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{SelectionRange, SelectionRangeParams};
 use auto_lsp::{anyhow, tree_sitter};
 

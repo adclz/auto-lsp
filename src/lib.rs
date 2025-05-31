@@ -73,9 +73,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! - [Ruff](https://github.com/astral-sh/ruff)
 //! - [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache
 
+#[cfg(feature = "default")]
+pub mod default {
+    pub use auto_lsp_default::*;
+}
+
 // LSP server (enabled with the feature `lsp_server`)
 #[cfg(feature = "lsp_server")]
-pub mod server;
+pub mod server {
+    pub use auto_lsp_server::*;
+}
 
 /// Re-export of the [`auto_lsp_core`] crate
 pub mod core {

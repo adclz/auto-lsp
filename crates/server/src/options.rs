@@ -16,16 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-//! # Server module
-//!
-//! This module is available when the `lsp_server` feature is enabled.
-//!
+use std::collections::HashMap;
 
-pub mod default;
-/// Session handling
-mod session;
+use auto_lsp_core::parsers::Parsers;
+use lsp_types::{
+    OneOf, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    ServerCapabilities, ServerInfo, WorkspaceFoldersServerCapabilities,
+    WorkspaceServerCapabilities,
+};
 
-pub use session::notification_registry::NotificationRegistry;
-pub use session::options::*;
-pub use session::request_registry::RequestRegistry;
-pub use session::Session;
+/// Initialization options for the LSP server
+pub struct InitOptions {
+    pub parsers: &'static HashMap<&'static str, Parsers>,
+    pub capabilities: ServerCapabilities,
+    pub server_info: Option<ServerInfo>,
+}

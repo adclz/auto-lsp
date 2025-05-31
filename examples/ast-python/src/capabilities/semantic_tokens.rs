@@ -18,9 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::FunctionDefinition;
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
-use auto_lsp::core::salsa::db::{BaseDatabase, File};
-use auto_lsp::core::salsa::tracked::get_ast;
 use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
+use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::{BaseDatabase, File};
 use auto_lsp::lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
 

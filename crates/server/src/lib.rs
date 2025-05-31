@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::server::session::init::TextFn;
+use init::TextFn;
 use lsp_server::Connection;
 use main_loop::Task;
 use options::InitOptions;
@@ -35,13 +35,13 @@ type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
 /// Main session object that holds both lsp server connection and initialization options.
 pub struct Session<Db: salsa::Database> {
     /// Initialization options provided by the library user.
-    pub(crate) init_options: InitOptions,
+    pub init_options: InitOptions,
     /// Text `fn` used to parse text files with the correct encoding.
     ///
     /// The client is responsible for providing the encoding at initialization (UTF-8, 16 or 32).
-    pub(crate) text_fn: TextFn,
+    pub text_fn: TextFn,
     /// Language extensions to parser mappings.
-    pub(crate) extensions: HashMap<String, String>,
+    pub extensions: HashMap<String, String>,
     pub(crate) task_rx: crossbeam_channel::Receiver<Task>,
     pub(crate) task_pool: task_pool::TaskPool<Task>,
     /// Request queue for incoming requests

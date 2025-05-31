@@ -17,8 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::db::create_python_db;
 use crate::generated::{CompoundStatement_SimpleStatement, PassStatement, SimpleStatement};
-use auto_lsp::core::salsa::db::BaseDatabase;
-use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::Url;
 use rstest::{fixture, rstest};
 

@@ -20,7 +20,7 @@ use crate::capabilities::semantic_tokens::{
     semantic_tokens_full, DECLARATION, FUNCTION, SUPPORTED_MODIFIERS, SUPPORTED_TYPES,
 };
 use crate::db::create_python_db;
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{
     SemanticTokensParams, SemanticTokensResult, TextDocumentIdentifier, Url,
 };

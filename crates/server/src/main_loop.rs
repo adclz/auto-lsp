@@ -18,9 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::panic::RefUnwindSafe;
 
+use crate::{notification_registry::NotificationRegistry, request_registry::RequestRegistry};
+
 use super::Session;
-use crate::server::session::notification_registry::NotificationRegistry;
-use crate::server::session::request_registry::RequestRegistry;
 use anyhow::Error;
 use crossbeam_channel::select;
 use lsp_server::Message;

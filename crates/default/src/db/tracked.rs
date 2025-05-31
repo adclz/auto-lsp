@@ -15,10 +15,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-use super::db::{BaseDatabase, File};
 use super::lexer::get_tree_sitter_errors;
-use crate::ast::AstNode;
-use crate::errors::ParseErrorAccumulator;
+use super::{BaseDatabase, File};
+use auto_lsp_core::ast::AstNode;
+use auto_lsp_core::errors::ParseErrorAccumulator;
 use fastrace::prelude::*;
 use salsa::Accumulator;
 use std::ops::Deref;

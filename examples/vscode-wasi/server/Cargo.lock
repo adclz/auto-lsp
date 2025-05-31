@@ -49,23 +49,20 @@ version = "0.5.1"
 dependencies = [
  "anyhow",
  "auto-lsp-core",
- "crossbeam-channel",
+ "auto-lsp-default",
+ "auto-lsp-server",
  "fastrace",
  "log",
  "lsp-server",
  "lsp-types",
  "parking_lot",
  "rayon",
- "rayon-par-bridge",
  "regex",
  "salsa",
- "serde",
- "serde_json",
  "streaming-iterator",
  "texter",
  "tree-sitter",
  "tree-sitter-language",
- "walkdir",
 ]
 
 [[package]]
@@ -98,6 +95,48 @@ dependencies = [
  "texter",
  "thiserror",
  "tree-sitter",
+]
+
+[[package]]
+name = "auto-lsp-default"
+version = "0.1.0"
+dependencies = [
+ "auto-lsp-core",
+ "auto-lsp-server",
+ "dashmap",
+ "fastrace",
+ "log",
+ "lsp-types",
+ "parking_lot",
+ "rayon",
+ "rayon-par-bridge",
+ "salsa",
+ "texter",
+ "tree-sitter",
+ "walkdir",
+]
+
+[[package]]
+name = "auto-lsp-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "auto-lsp-core",
+ "crossbeam-channel",
+ "dashmap",
+ "fastrace",
+ "log",
+ "lsp-server",
+ "lsp-types",
+ "parking_lot",
+ "rayon",
+ "rayon-par-bridge",
+ "salsa",
+ "serde",
+ "serde_json",
+ "texter",
+ "tree-sitter",
+ "walkdir",
 ]
 
 [[package]]

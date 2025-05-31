@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::capabilities::code_lenses::code_lenses;
 use crate::db::create_python_db;
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{
     CodeLensParams, PartialResultParams, TextDocumentIdentifier, Url, WorkDoneProgressParams,
 };

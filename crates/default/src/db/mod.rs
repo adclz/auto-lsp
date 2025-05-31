@@ -19,9 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 /// All structs and traits present in this module serve a minimal database implementation with basic file management.
 ///
 /// Depending on your needs, you might want to create your own database and inputs.
-use crate::document::Document;
-use crate::errors::{DataBaseError, TreeSitterError};
-use crate::parsers::Parsers;
+pub mod lexer;
+pub mod tracked;
+
+use auto_lsp_core::document::Document;
+use auto_lsp_core::errors::{DataBaseError, TreeSitterError};
+use auto_lsp_core::parsers::Parsers;
 use dashmap::{DashMap, Entry};
 use lsp_types::Url;
 use salsa::Setter;

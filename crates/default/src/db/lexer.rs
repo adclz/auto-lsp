@@ -16,16 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use auto_lsp_core::errors::{LexerError, ParseErrorAccumulator};
 use lsp_types::{Position, Range};
 use salsa::Accumulator;
 use tree_sitter::Node;
 
-use crate::{
-    errors::{LexerError, ParseErrorAccumulator},
-    salsa::db::BaseDatabase,
-};
-
-
+use super::BaseDatabase;
 
 /// Traverse a tree-sitter syntax tree to collect error nodes.
 ///

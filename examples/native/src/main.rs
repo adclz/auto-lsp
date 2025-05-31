@@ -17,7 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::server::capabilities::WORKSPACE_PROVIDER;
+use auto_lsp::default::server::file_events::{changed_watched_files, open_text_document};
+use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::notification::{
@@ -25,9 +28,10 @@ use auto_lsp::lsp_types::notification::{
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
 use auto_lsp::lsp_types::ServerCapabilities;
-use auto_lsp::server::default::{changed_watched_files, open_text_document};
-use auto_lsp::server::{InitOptions, NotificationRegistry, Session};
-use auto_lsp::server::{RequestRegistry, WORKSPACE_PROVIDER};
+use auto_lsp::server::notification_registry::NotificationRegistry;
+use auto_lsp::server::options::InitOptions;
+use auto_lsp::server::request_registry::RequestRegistry;
+use auto_lsp::server::Session;
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
