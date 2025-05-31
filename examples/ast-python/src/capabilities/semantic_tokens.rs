@@ -76,26 +76,20 @@ pub fn semantic_tokens_range(
 
     let mut builder = SemanticTokensBuilder::new("".into());
 
-    get_ast(db, file)
-        .iter()
-        .filter(|node| {
-            let range = node.get_lsp_range();
-            let start = range.start;
-            let end = range.end;
-            start.line >= params.range.start.line
-                && start.character >= params.range.start.character
-                && end.line <= params.range.end.line
-                && end.character <= params.range.end.character
-        })
-        .try_for_each(|node| {
-            dispatch!(
-                node,
-                [
-                    FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
-                ]
-            );
-            anyhow::Ok(())
-        })?;
+    for node in get_ast(db, file).iter() {
+        if node.get_lsp_range().end <= params.range.start {
+            continue;
+        }
+        if node.get_lsp_range().start >= params.range.end {
+            break;
+        }
+        dispatch!(node.lower(),
+            [
+                FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
+            ]
+        );
+    }
+
     Ok(Some(SemanticTokensResult::Tokens(builder.build())))
 }
 
