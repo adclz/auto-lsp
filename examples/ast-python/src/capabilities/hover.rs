@@ -15,11 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+
 use crate::generated::{Identifier, PassStatement};
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch_once;
-use auto_lsp::core::salsa::db::{BaseDatabase, File};
-use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::{BaseDatabase, File};
 use auto_lsp::lsp_types::{Hover, HoverParams};
 use auto_lsp::{anyhow, lsp_types};
 
@@ -34,12 +35,12 @@ pub fn hover(db: &impl BaseDatabase, params: HoverParams) -> anyhow::Result<Opti
 
     let position = document
         .offset_at(params.text_document_position_params.position)
-        .unwrap_or_else(|| {
-            panic!(
+        .ok_or_else(|| {
+            anyhow::format_err!(
                 "Invalid position, {:?}",
                 params.text_document_position_params.position
             )
-        });
+        })?;
 
     if let Some(node) = get_ast(db, file).descendant_at(position) {
         dispatch_once!(node.lower(), [

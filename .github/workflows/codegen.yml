@@ -1,0 +1,24 @@
+name: Codegen
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install nextest
+        run: cargo install cargo-nextest
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: nextest
+        working-directory: ./crates/codegen
+        run: cargo-nextest ntr

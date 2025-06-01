@@ -1,0 +1,38 @@
+name: Test AST - native
+on: 
+  push:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"  
+
+jobs:
+  test:
+    name: cargo test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: cargo install cargo-insta
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: main crate
+        run: cargo test --all-features --workspace --exclude auto-lsp-codegen
+      - name: python ast
+        working-directory: ./examples/ast-python
+        env:
+          INSTA_UPDATE: new
+          AST_GEN: 1 
+        run: cargo insta test --accept 
+      - name: html ast
+        working-directory: ./examples/ast-html
+        env:
+          INSTA_UPDATE: new
+          AST_GEN: 1 
+        run: cargo insta test --accept

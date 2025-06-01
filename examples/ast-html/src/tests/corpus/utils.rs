@@ -25,8 +25,8 @@ macro_rules! snap {
         settings.set_snapshot_suffix(&format!("{}", stringify!(name)));
         let _guard = settings.bind_to_scope();
 
-       use ::auto_lsp::core::salsa::db::BaseDatabase;
-        use ::auto_lsp::core::salsa::tracked::get_ast;
+        use ::auto_lsp::default::db::BaseDatabase;
+        use ::auto_lsp::default::db::tracked::get_ast;
 
         let db = $crate::db::create_html_db(&[$input]);
         let file = db

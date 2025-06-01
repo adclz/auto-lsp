@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::errors::ParseErrorAccumulator;
-use crate::salsa::db::BaseDatabase;
 use crate::{ast::AstNode, errors::AstError};
 use salsa::Accumulator;
 use std::ops::ControlFlow;
@@ -26,11 +25,11 @@ use tree_sitter::{Node, TreeCursor};
 
 /// Parameters for [`TryFrom`] implementations of AST nodes.
 pub type TryFromParams<'from> = (
-    &'from Node<'from>,      // Last node to convert
-    &'from dyn BaseDatabase, // Salsa Database
-    &'from mut Builder,      // Builder
-    usize,                   // Node ID (incremented by Builder struct)
-    Option<usize>,           // Parent ID (if any)
+    &'from Node<'from>,         // Last node to convert
+    &'from dyn salsa::Database, // Salsa Database
+    &'from mut Builder,         // Builder
+    usize,                      // Node ID (incremented by Builder struct)
+    Option<usize>,              // Parent ID (if any)
 );
 
 /// A builder for creating AST nodes during the parsing process.
@@ -67,7 +66,7 @@ impl Builder {
     /// The node is built using the [`AstNode`] try_from implementation for `T`.
     fn create<'db, T: AstNode + for<'from> TryFrom<TryFromParams<'from>, Error = AstError>>(
         &mut self,
-        db: &'db dyn BaseDatabase,
+        db: &'db dyn salsa::Database,
         cursor: &TreeCursor,
         parent_id: Option<usize>,
     ) -> Result<Arc<T>, AstError> {
@@ -83,7 +82,7 @@ impl Builder {
     /// Starts a [`TreeWalk`] traversal using the given closure.
     pub fn builder<'cursor, F>(
         &'cursor mut self,
-        db: &'cursor dyn BaseDatabase,
+        db: &'cursor dyn salsa::Database,
         node: &'cursor Node<'cursor>,
         parent: Option<usize>,
         mut f: F,
@@ -98,7 +97,7 @@ impl Builder {
 
 /// A struct that walks through the current tree and calls the provided closure while traversing the tree.
 pub struct TreeWalk<'cursor> {
-    db: &'cursor dyn BaseDatabase,
+    db: &'cursor dyn salsa::Database,
     builder: &'cursor mut Builder, // Builder instance
     cursor: TreeCursor<'cursor>,   // cursor (initialized at the beginning with the root node)
     parent: Option<usize>,
@@ -107,7 +106,7 @@ pub struct TreeWalk<'cursor> {
 impl<'cursor> TreeWalk<'cursor> {
     fn new(
         builder: &'cursor mut Builder,
-        db: &'cursor dyn BaseDatabase,
+        db: &'cursor dyn salsa::Database,
         node: &'cursor Node<'cursor>,
         parent: Option<usize>,
     ) -> Self {

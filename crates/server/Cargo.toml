@@ -1,0 +1,30 @@
+[package]
+name = "auto-lsp-server"
+authors = ["Clauzel Adrien"]
+license = "GPL-3.0"
+repository = "https://github.com/adclz/auto-lsp"
+description = """
+Default database and server capabilities for `auto_lsp`.
+"""
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+
+[dependencies]
+tree-sitter = { workspace = true }
+auto-lsp-core = { workspace = true }
+lsp-server = { workspace = true }
+crossbeam-channel = { workspace = true }
+lsp-types = { workspace = true }
+walkdir = { workspace = true }
+salsa = { workspace = true }
+dashmap = { workspace = true }
+texter = { workspace = true }
+parking_lot = { workspace = true }
+log = { workspace = true }
+fastrace = { workspace = true }
+rayon = { workspace = true }
+rayon-par-bridge = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }

@@ -1,0 +1,44 @@
+name: Test AST - wasi-p1-threads
+on: 
+  push:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"  
+
+jobs:
+  test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - run: cargo install cargo-insta
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: rustup target add wasm32-wasip1-threads
+      - name: Install Wasmtime
+        run: |
+          curl https://wasmtime.dev/install.sh -sSf | bash
+          echo "${HOME}/.wasmtime/bin" >> $GITHUB_PATH
+      - name: Install Gcc multilib
+        run: |
+             sudo apt update
+             sudo apt install gcc-multilib -y    
+      - name: main crate
+        run: CFLAGS="-DHAVE_ENDIAN_H" cargo test --features=wasm --workspace --exclude auto-lsp-codegen --target wasm32-wasip1-threads
+      - name: python ast
+        working-directory: ./examples/ast-python
+        env:
+          INSTA_UPDATE: new
+          AST_GEN: 1
+        run: CFLAGS="-DHAVE_ENDIAN_H" cargo test --target wasm32-wasip1-threads  
+      - name: html ast
+        env:
+          INSTA_UPDATE: new
+          AST_GEN: 1 
+        working-directory: ./examples/ast-html
+        run: CFLAGS="-DHAVE_ENDIAN_H" cargo test --target wasm32-wasip1-threads

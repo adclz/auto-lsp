@@ -21,8 +21,8 @@ pub(crate) type Result = std::result::Result<(), Box<dyn std::error::Error>>;
 #[macro_export]
 macro_rules! snap {
     ($input: expr) => {{
-        use ::auto_lsp::core::salsa::db::BaseDatabase;
-        use ::auto_lsp::core::salsa::tracked::get_ast;
+        use ::auto_lsp::default::db::BaseDatabase;
+        use ::auto_lsp::default::db::tracked::get_ast;
 
         let db = $crate::db::create_python_db(&[$input]);
         let file = db

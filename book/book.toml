@@ -19,8 +19,6 @@ boost-hierarchy = 2
 boost-paragraph = 1
 expand = true
 
-[preprocessor]
-
 [preprocessor.admonish]
 command = "mdbook-admonish"
 assets_version = "3.0.2"    # do not edit: managed by `mdbook-admonish install`

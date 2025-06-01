@@ -20,7 +20,7 @@ use crate::capabilities::inlay_hints::inlay_hints;
 use crate::db::create_python_db;
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::Url;
-use auto_lsp::{core::salsa::db::BaseDatabase, lsp_types::InlayHintParams};
+use auto_lsp::{default::db::BaseDatabase, lsp_types::InlayHintParams};
 use rstest::{fixture, rstest};
 
 #[fixture]

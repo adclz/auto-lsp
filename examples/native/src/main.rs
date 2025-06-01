@@ -17,20 +17,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::core::salsa::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::server::capabilities::WORKSPACE_PROVIDER;
+use auto_lsp::default::server::file_events::{changed_watched_files, open_text_document};
+use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
-use auto_lsp::server::capabilities::{changed_watched_files, open_text_document};
-use auto_lsp::server::{RequestRegistry, WORKSPACE_PROVIDER};
-use auto_lsp::server::{InitOptions, NotificationRegistry, Session};
+use auto_lsp::lsp_types::ServerCapabilities;
+use auto_lsp::server::notification_registry::NotificationRegistry;
+use auto_lsp::server::options::InitOptions;
+use auto_lsp::server::request_registry::RequestRegistry;
+use auto_lsp::server::Session;
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
-use auto_lsp::lsp_types::ServerCapabilities;
 
 pub trait ExtendDb: BaseDatabase {
     fn get_urls(&self) -> Vec<String> {
@@ -47,14 +51,14 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
     let db = BaseDb::default();
 
-    let mut session = Session::create(
+    let (mut session, params) = Session::create(
         InitOptions {
             parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
                 workspace: WORKSPACE_PROVIDER.clone(),
                 ..Default::default()
             },
-            server_info: None
+            server_info: None,
         },
         connection,
         db,
@@ -64,6 +68,17 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
     request_registry.on::<GetWorkspaceFiles, _>(|s, _| Ok(s.get_urls()));
+
+    // Initialize the session with the client's initialization options.
+    // This will also add all documents, parse and send diagnostics.
+    let init_results = session.init_workspace(params)?;
+    if !init_results.is_empty() {
+        init_results.into_iter().for_each(|result| {
+            if let Err(err) = result {
+                eprintln!("{}", err);
+            }
+        });
+    };
 
     // Run the server and wait for the two threads to end (typically by trigger LSP Exit event).
     session.main_loop(

@@ -1,93 +1,55 @@
-# Auto LSP
+<div align="center" style="margin-bottom: 50px">
+  <h1>Auto LSP</h1>
+  <p>
+    <strong>A Rust crate for creating <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract Syntax Trees</a> (AST)
+    and <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a> (LSP) servers powered by <a href="https://tree-sitter.github.io/tree-sitter/">Tree-sitter</a></strong>
+  </p>
 
-A Rust crate for creating [Abstract Syntax Trees](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (AST)
-and [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) (LSP) servers.
+  [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml)
+  [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/lsp-server-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/lsp-server-native.yml)
+  [![Book](https://img.shields.io/badge/📚-book-blue)](https://adclz.github.io/auto-lsp/)
+  [![crates.io](https://img.shields.io/crates/v/auto-lsp)](https://crates.io/crates/auto-lsp)
+  ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
+</div>
 
-[![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml)
-[![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/lsp-server-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/lsp-server-native.yml)
-[![Book](https://img.shields.io/badge/📚-book-blue)](https://adclz.github.io/auto-lsp/)
-[![crates.io](https://img.shields.io/crates/v/auto-lsp)](https://crates.io/crates/auto-lsp)
-![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)
+`auto_lsp` is a generic library for creating Abstract Syntax Trees (AST) and Language Server Protocol (LSP) servers.
 
-`auto_lsp` is designed to be as language-agnostic as possible, allowing any Tree-sitter grammar to be used.
+It leverages crates such as [lsp_types](https://docs.rs/lsp-types/0.97/lsp_types/), [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/), [salsa](https://docs.rs/salsa/latest/salsa/), and [texter](https://docs.rs/texter/latest/texter/), and generates the AST of a Tree-sitter language to simplify building LSP servers.
 
-Defining a simple AST involves two steps: writing the queries and then defining the corresponding AST structures in Rust.
+`auto_lsp` provides useful abstractions while remaining flexible. You can override the default database as well as all LSP request and notification handlers.
 
-```sh
-cargo add auto_lsp
-```
+It is designed to be as language-agnostic as possible, allowing any Tree-sitter grammar to be used.
 
-## Quick example
+See [ARCHITECTURE.md](ARCHITECTURE.md) for more information.
 
-Let's say you have a toy language with a root node named **document** containing a list of **function** nodes,
-each containing a unique **name**.
+## ✨ Features
 
-A simple query file to capture the root document and function names:
+- Generates a thread-safe, immutable and iterable AST with parent-child relations from a Tree-sitter language.
+- Supports downcasting of AST nodes to concrete types.
+- Integrates with a Salsa database and parallelize LSP requests and notifications.
 
+## 📚 Documentation
 
-```lisp
-(document) @document
-(function
-    (name) @name) @function
-```
-
-The corresponding AST definition in Rust:
-
-```rust, ignore
-use auto_lsp::seq;
-
-#[seq(query = "document")]
-struct Document {
-   functions: Vec<Function>
-}
-
-#[seq(query = "function")]
-struct Function {
-   name: Name
-}
-
-#[seq(query = "name")]
-struct Name {}
-```
-
-Now that you have your AST defined, you can:
- - Implement the [AST traits](/auto-lsp/ast-and-queries/seq.html#seq-attributes) and create a LSP server (with the `lsp_server` feature).
- - Add your own logic for testing purposes, code generation, etc.
-
-## Simplicity
-
-`auto-lsp` only has 2 macros to define an AST:
- - [`#seq`](/auto-lsp/ast-and-queries/seq.html)
- - [`#choice`](/auto-lsp/ast-and-queries/choice.html)
-
-All symbols are thread-safe and have their own parse function via blanket implementations. This means any symbol can be used as a root node, allowing you to:
-
- - Create a full AST from any Tree-sitter grammar.
- - Derive a subset of the grammar, depending on your needs.
-
-However, this level of flexibility and permissiveness comes with some caveats.
-It can be more prone to errors and requires careful attention when writing your queries.
-
-To address this, `auto_lsp`  provides testing and logging utilities to help you ensure that the AST behaves as intended.
+- [Book](https://adclz.github.io/auto-lsp/)
+- [docs.rs](https://docs.rs/auto-lsp)
 
 ## Examples
 
- - [HTML Ast](https://github.com/adclz/auto-lsp/blob/main/src/tests/html_workspace/mod.rs)
- - [Python Ast](https://github.com/adclz/auto-lsp/blob/main/src/tests/python_workspace/ast.rs)
- - [Simple LSP Server](https://github.com/adclz/auto-lsp/tree/main/examples/native)
- - [Vscode extension with WASI](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
+- [HTML AST](https://github.com/adclz/auto-lsp/tree/main/examples/ast-html)
+- [Python AST](https://github.com/adclz/auto-lsp/tree/main/examples/ast-python)
+- [Simple LSP server](https://github.com/adclz/auto-lsp/tree/main/examples/native)
+- [VSCode extension](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-native)
+- [VSCode extension with WASI](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
 
-## Features
+## Cargo Features
 
+- `lsp_server`: Enable the LSP server (uses [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/)).
+- `wasm`: Enables WASM support (compatible only with `wasi-p1-threads`).
 
-- `lsp_server`: Enable the LSP server (uses [`lsp_server`](https://crates.io/crates/lsp-server)).
-- `wasm`: Enable wasm support (only compatible with `wasi-p1-threads`).
-- `html`: Enable the html workspace mock for testing purposes.
-- `python`: Enable the python workspace mock for testing purposes.
-
-# Inspirations / Similar projects
+## Inspirations / Similar Projects
 
 - [Volar](https://volarjs.dev/)
-- [Rust-sitter](https://github.com/hydro-project/rust-sitter)
-- [StackGraphs](https://github.com/github/stack-graphs)
-- [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache
+- [Type-sitter](https://github.com/Jakobeha/type-sitter/)
+- [Rust Analyzer](https://github.com/rust-lang/rust-analyzer)
+- [Ruff](https://github.com/astral-sh/ruff)
+- [texter](https://github.com/airblast-dev/texter) by [airblast-dev](https://github.com/airblast-dev), which saved hours of headaches.

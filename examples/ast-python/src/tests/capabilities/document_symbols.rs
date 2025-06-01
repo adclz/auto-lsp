@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::capabilities::document_symbols::document_symbols;
 use crate::db::create_python_db;
-use auto_lsp::core::salsa::db::BaseDatabase;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{
     self, DocumentSymbolParams, DocumentSymbolResponse, PartialResultParams,
 };

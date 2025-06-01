@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::ast::AstNode;
 use crate::document::Document;
 use crate::errors::ParseError;
-use crate::salsa::db::BaseDatabase;
 use parking_lot::RwLock;
 use std::sync::Arc;
 use tree_sitter::{Language, Parser};
@@ -41,4 +40,4 @@ impl std::fmt::Debug for Parsers {
 }
 
 pub type InvokeParserFn =
-    fn(&dyn BaseDatabase, &Document) -> Result<Vec<Arc<dyn AstNode>>, ParseError>;
+    fn(&dyn salsa::Database, &Document) -> Result<Vec<Arc<dyn AstNode>>, ParseError>;

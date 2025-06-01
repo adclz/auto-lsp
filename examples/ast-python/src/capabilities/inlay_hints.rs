@@ -19,8 +19,8 @@ use crate::generated::FunctionDefinition;
 use auto_lsp::anyhow;
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
-use auto_lsp::core::salsa::db::{BaseDatabase, File};
-use auto_lsp::core::salsa::tracked::get_ast;
+use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::{BaseDatabase, File};
 use auto_lsp::lsp_types::{InlayHint, InlayHintParams};
 
 pub fn inlay_hints(
