@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use auto_lsp::core::errors::ParseErrorAccumulator;
 use auto_lsp::default::db::tracked::get_ast;
-use auto_lsp::default::db::{BaseDatabase, File};
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{
     FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport,
     WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport,
