@@ -70,7 +70,7 @@ fn query_ast(foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
 }
 
 #[rstest]
-fn update_file(mut foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
+fn update_file(foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
     let (mut foo_bar, logs) = foo_bar;
 
     let file0 = foo_bar
