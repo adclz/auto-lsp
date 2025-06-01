@@ -79,7 +79,6 @@ version = "0.5.0"
 dependencies = [
  "anyhow",
  "ariadne",
- "dashmap",
  "downcast-rs",
  "fastrace",
  "log",
@@ -119,20 +118,14 @@ dependencies = [
  "anyhow",
  "auto-lsp-core",
  "crossbeam-channel",
- "dashmap",
- "fastrace",
  "log",
  "lsp-server",
  "lsp-types",
- "parking_lot",
  "rayon",
- "rayon-par-bridge",
  "salsa",
  "serde",
  "serde_json",
  "texter",
- "tree-sitter",
- "walkdir",
 ]
 
 [[package]]

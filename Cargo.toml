@@ -61,8 +61,8 @@ lsp-types = { workspace = true }
 anyhow = { workspace = true }
 parking_lot = { workspace = true }
 salsa = { workspace = true }
-auto-lsp-core = { workspace = true }
 texter = { workspace = true, default-features = false }
+auto-lsp-core = { workspace = true }
 auto-lsp-server = { workspace = true, optional = true }
 auto-lsp-default = { workspace = true, optional = true }
 lsp-server = { workspace = true, optional = true }

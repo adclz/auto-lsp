@@ -19,9 +19,7 @@ texter = { workspace = true }
 anyhow = { workspace = true }
 regex = { workspace = true }
 salsa = { workspace = true }
-dashmap = { workspace = true }
 log = { workspace = true }
-rayon = { workspace = true, optional = true }
 thiserror = { workspace = true }
 ariadne = { workspace = true, features = ["auto-color"] }
 fastrace = { workspace = true }
