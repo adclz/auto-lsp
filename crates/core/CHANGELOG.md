@@ -2,6 +2,112 @@
 
 ## [Unreleased]
 
+## [0.6.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.5.0...auto-lsp-core-v0.6.0)
+
+### Features
+
+- *(errors)* Add UnexpectedSymbol variant to AstError enum - ([5c027dd](https://github.com/adclz/auto-lsp/commit/5c027dd672782851783c54023d0c888cbcaa06fa))
+- *(errors)* Add last errors - ([fbd9725](https://github.com/adclz/auto-lsp/commit/fbd9725809291912ab20ffc7dfc2311e8a9ce10f))
+- *(errors)* Add error types for text retrieval failures - ([872152e](https://github.com/adclz/auto-lsp/commit/872152e0989e5034effaefbab1e5060450ac2073))
+- *(errors)* Add AutoLspError and related error types - ([570470f](https://github.com/adclz/auto-lsp/commit/570470fc7695d67ed7c654545f447b3b1baad63f))
+- *(symbol)* Implement Display - ([7f33825](https://github.com/adclz/auto-lsp/commit/7f338258752d94a8bc6f5b2776a21241d0c7e86e))
+- Add dispatch_once! macro - ([06d4e55](https://github.com/adclz/auto-lsp/commit/06d4e55d498b7bd3d85572f41ec7a357a1ed9848))
+- FileManager trait - ([bb0c753](https://github.com/adclz/auto-lsp/commit/bb0c753c6983a756a3d4b888ba5ab0fbd29a9899))
+- Add fastrace tracing - ([801bd4c](https://github.com/adclz/auto-lsp/commit/801bd4c513b34b61f6182c8788465f8e6f4a80a4))
+- Add lower method to `AstNode` trait - ([c11a3a7](https://github.com/adclz/auto-lsp/commit/c11a3a7e385c0a81f72005fbb099539d345afbcc))
+- Builder pattern for AST with ids and parents - ([e8b57cb](https://github.com/adclz/auto-lsp/commit/e8b57cb5964736e681f37cf6a056c31b5e1eb9be))
+- Integrate id-arena and remove Symbol wrapper - ([7ddfbdd](https://github.com/adclz/auto-lsp/commit/7ddfbdd617f209cbacf03ca05dcacc617061db67))
+- Add id-arena dependency - ([a7db203](https://github.com/adclz/auto-lsp/commit/a7db203c763c5768e26c98673e9f00ccaae4ba11))
+- Add thiserror dependency - ([693b3d8](https://github.com/adclz/auto-lsp/commit/693b3d8c4d3a3233699809b7673511a025193a0d))
+
+### Bug Fixes
+
+- *(document)* Invalid line index when position is out-of-bounds - ([e5d920f](https://github.com/adclz/auto-lsp/commit/e5d920f9264d3074d4831f97834bbb410fc1174c))
+- *(document)* Invalid offset position when line is 0 - ([599b475](https://github.com/adclz/auto-lsp/commit/599b47545fccd5bcca1bda7a1b5f58b364d2b70e))
+- Remove unused dependencies from Cargo.toml files - ([141bcf9](https://github.com/adclz/auto-lsp/commit/141bcf9ae6d835d6a1d6e3f3d6563cb15b65afed))
+- Derive Debug for ParseErrorAccumulator - ([1cae45b](https://github.com/adclz/auto-lsp/commit/1cae45b78b2ed4a5ea3183d8f7160f6e5e7cb034))
+- Update get_parent method to accept a slice and enhance equality check in PartialEq - ([9838231](https://github.com/adclz/auto-lsp/commit/9838231410e7e4584369482b3e0c299afe6cac54))
+- Add error for missing perFileParser in initialization options - ([3e2f0f4](https://github.com/adclz/auto-lsp/commit/3e2f0f404431559e8688e0e6dd0bb3933356e0c2))
+- Error conversion to lsp_types::Diagnostic - ([2023eac](https://github.com/adclz/auto-lsp/commit/2023eac221ea5b824344f9980dfefa89b0823f79))
+- Fix windows path - ([64bd534](https://github.com/adclz/auto-lsp/commit/64bd534a3061669bab74769067034bd577b2e27b))
+- Fix(document) get position after last br index - ([1935dc6](https://github.com/adclz/auto-lsp/commit/1935dc6744341e642f09ecaffd72bdc3def4f489))
+
+### Refactor
+
+- *(ast-node)* Remove capabilities module from the project - ([701d4b7](https://github.com/adclz/auto-lsp/commit/701d4b79f7ae4ea68fa97839e4cea49acabaa342))
+- *(ast-python)* Replace trait implementations with dispatch functions - ([c11861e](https://github.com/adclz/auto-lsp/commit/c11861e3f2d2457bf8ad2cc382ea0e43f0421fcb))
+- *(core)* Replace anyhow with TreeSitterError - ([fe11ea9](https://github.com/adclz/auto-lsp/commit/fe11ea9ff43010b77d1ab49ca3176095d2184053))
+- *(core)* LSP capabilities now support error propagation - ([f713cc1](https://github.com/adclz/auto-lsp/commit/f713cc1455a7c1862e9769aaa8369fb58d525902))
+- *(core_build)* Stack builder - ([604cd7b](https://github.com/adclz/auto-lsp/commit/604cd7b9365405c50afbae8aefc39ae983844023))
+- *(core_build)* Remove url field - ([763aca6](https://github.com/adclz/auto-lsp/commit/763aca6f0283bb6a865d1551948849d39c9a52ba))
+- *(document)* Add new error types - ([aa9371c](https://github.com/adclz/auto-lsp/commit/aa9371caa95ee95e79fda8a0670d1f5431ede595))
+- *(document)* Move LAST_LINE to thread-local storage - ([ace0220](https://github.com/adclz/auto-lsp/commit/ace0220d9c600caf4a68a683b187c15d063d3f11))
+- *(errors)* Rename AutoLspError to ParseError - ([2d56839](https://github.com/adclz/auto-lsp/commit/2d56839f2b64be4d63acec0bf8546d6b93ea6478))
+- *(errors)* Replace anyhow usage with new errors - ([a9e773d](https://github.com/adclz/auto-lsp/commit/a9e773d658426e2fb73f8d950ba80f5c530911fb))
+- *(errors)* Replace Diagnostic with AstError and update error handling across modules - ([8c47155](https://github.com/adclz/auto-lsp/commit/8c4715575af3626326624e808c795dcfce93bcef))
+- *(errors)* Simplify AutoLspError and AstError enums, remove URL references - ([8f30f33](https://github.com/adclz/auto-lsp/commit/8f30f3388293963f8e0922021938d9e2e7c0fe85))
+- *(errors)* Update methods to return Result with DocumentError - ([12b53bf](https://github.com/adclz/auto-lsp/commit/12b53bf69cd07fdb5ff4689d3826192795889192))
+- *(lexer)* Replace DiagnosticAccumulator with AutoLspErrorAccumulator - ([2eea510](https://github.com/adclz/auto-lsp/commit/2eea510887837ef415ea3fab8761fea791c989f3))
+- *(parser)* Remove range parameter from symbol creation methods - ([ba888b1](https://github.com/adclz/auto-lsp/commit/ba888b1039429be8c43efc6a1790c9c4c925dca1))
+- *(parsers)* Streamline parser structure and simplify configure_parsers macro - ([92ab0ee](https://github.com/adclz/auto-lsp/commit/92ab0ee91ca44604b320f07c0e54b6da2655b14b))
+- Split server and database modules into separate crates - ([1f768f1](https://github.com/adclz/auto-lsp/commit/1f768f12695e1ca2001bd1e1964a3528f71ac26b))
+- Rename InvokeParserFn2 to InvokeParserFn - ([0c0e5cd](https://github.com/adclz/auto-lsp/commit/0c0e5cd572c19ef4f93708ad3cf1cc349c4841d0))
+- Remove Document RwLock in db - ([e6c44d6](https://github.com/adclz/auto-lsp/commit/e6c44d6cda21c7909580d65a09de7b348cd6b1c8))
+- Remove default implementation of capabilities - ([f779f28](https://github.com/adclz/auto-lsp/commit/f779f2854b44077f79626852f23f7d88682f1469))
+- Remove min_specialization - ([85f2fc6](https://github.com/adclz/auto-lsp/commit/85f2fc6b8dfb3aeb7bde89cc10f31f906f0a213c))
+- Update AST node creationto use database and improve error handling - ([9597099](https://github.com/adclz/auto-lsp/commit/9597099c38c55499cd7d90bd9e9b8057907c611b))
+- Rename ParsedAst2 to ParsedAst and update trait impls - ([a9c1fcb](https://github.com/adclz/auto-lsp/commit/a9c1fcbef706acef3d62cff54d33a1837285a5c1))
+- Remove old AST errors - ([2ebacb2](https://github.com/adclz/auto-lsp/commit/2ebacb2cdef326f6b8bb3059b6dadf2269048b9a))
+- Remove core_build, unused core_ast modules and proc_macro crate - ([1decdec](https://github.com/adclz/auto-lsp/commit/1decdec4d50bd4b0ed06e11a3c71ba27608d7e5a))
+- Reorganize AST-related and DB modules - ([d9f4dfb](https://github.com/adclz/auto-lsp/commit/d9f4dfb4ab72a67a995404b31a956a409449c320))
+- Disable tests and core_build modules - ([3e1c457](https://github.com/adclz/auto-lsp/commit/3e1c45751b2da7cf2bd3b7b3d72ae8560419ea73))
+- Remove log feature - ([ba5c57b](https://github.com/adclz/auto-lsp/commit/ba5c57bf333d0745077804a148adf28ea3753420))
+- Remove rayon and deadlock_detection features - ([bdb21c0](https://github.com/adclz/auto-lsp/commit/bdb21c0e98d5aefe9d614b7ea9713f4ef784bdd9))
+- Use id_ctr instead of tree sitter subtree pointers - ([6bcfb41](https://github.com/adclz/auto-lsp/commit/6bcfb41328e7059b601f78d6d7f186662a1e8400))
+- Simplify borrowing for pending symbols - ([d55c2c0](https://github.com/adclz/auto-lsp/commit/d55c2c0b0db2e2ecfc89920e6bf9ab776acea1ae))
+- Replace tuple parameters with TryFromParams type alias - ([ef57211](https://github.com/adclz/auto-lsp/commit/ef572119115a16ffd3963b7ebc352d5d24b8dfdd))
+- Remove symbol module (WeakSymbol and DynSymbol) - ([89e3748](https://github.com/adclz/auto-lsp/commit/89e3748f48055116eaf0e240deeb4285a2de9685))
+- Replace parse result tuple with vec only - ([21586b9](https://github.com/adclz/auto-lsp/commit/21586b986ab95ada53885b4caa89948c195f9ca5))
+- Remove Traverse trait - ([2deea94](https://github.com/adclz/auto-lsp/commit/2deea946373b6b98d27fdbb32cde0d400f43af35))
+- Remove unused parameters from AddSymbol trait methods - ([2fc7f4b](https://github.com/adclz/auto-lsp/commit/2fc7f4b10460e75ee80f62e7630f349c0a0eb715))
+- Remove Finalize trait - ([e9421f5](https://github.com/adclz/auto-lsp/commit/e9421f55f2c54621c21fccbc1c9aa15c4a9b10b6))
+- Update AST symbol handling with new ID management and mutable data access - ([af49550](https://github.com/adclz/auto-lsp/commit/af495504a24f0f04df899c1665294f6eba8b3d57))
+- Simplify InvalidSymbol error message in AstError enum - ([0a05c64](https://github.com/adclz/auto-lsp/commit/0a05c64b82e7bb645c2bc70cdc0d23ed65cb0e9d))
+- Rewrite tests and capabilities with new Arc wrapper - ([ce66d7d](https://github.com/adclz/auto-lsp/commit/ce66d7dfcabfd42fa4eea0fbd5c5950826564e47))
+- Replace Symbol wrapper with Arc - ([1ebce96](https://github.com/adclz/auto-lsp/commit/1ebce96656cadba64271231e8ac51266c3b7a05c))
+- Remove RwLock, mutable traits and methods from AST - ([2d0015b](https://github.com/adclz/auto-lsp/commit/2d0015b4106c151891abdae37a129498a740e570))
+- Remove TryFromBuilder and TryIntoBuilder traits - ([7ce632c](https://github.com/adclz/auto-lsp/commit/7ce632ca1120de57a5f4d2daaab4b8973eb258d5))
+- Replace TryFromBuilder with TryFrom in downcasting and parsing traits - ([1036c4b](https://github.com/adclz/auto-lsp/commit/1036c4b2ff253d947a086bfcd2d6f45e1a638940))
+- Streamline GetSymbolData implementation and add inline attributes - ([342bb7c](https://github.com/adclz/auto-lsp/commit/342bb7c1e7396f8f79481415b6820e7a20c7df8c))
+- Remove Url references - ([9da8416](https://github.com/adclz/auto-lsp/commit/9da84165da43c37f8905a784c7279b337dcb1a2c))
+- Text retrieval methods now return Results - ([4de460d](https://github.com/adclz/auto-lsp/commit/4de460d09b03714eba62b5cb172ccf1ef6e2aab6))
+- Buildable trait range getter - ([3927d68](https://github.com/adclz/auto-lsp/commit/3927d688c4320349202d60d17a96dc51e535a24c))
+- Remove new_and_check method and add From trait idioms - ([40a1c42](https://github.com/adclz/auto-lsp/commit/40a1c4284aa7abce1071a8a99802566649b57bbf))
+- Disable salsa default features - ([7161c72](https://github.com/adclz/auto-lsp/commit/7161c728b9656ff12edc1eb6f9ebbacbeccd77fd))
+- Move core and proc-macro to crates folder - ([9ca4d9c](https://github.com/adclz/auto-lsp/commit/9ca4d9c260d764dda4256a0bbbd85684a968c864))
+
+### Documentation
+
+- *(errors)* Enhance documentation for error types - ([1af524c](https://github.com/adclz/auto-lsp/commit/1af524c47d56d60651656971f44cdb12206791a1))
+- Update descriptions in Cargo.toml and lib.rs - ([8501e7c](https://github.com/adclz/auto-lsp/commit/8501e7c2070e5d8d1923765fc955dd864acbab53))
+- Add doc for dispatch macros - ([f1d4db8](https://github.com/adclz/auto-lsp/commit/f1d4db8c085911b6c3c52bf8c794298322134826))
+- Add documentation for salsa module - ([5be2989](https://github.com/adclz/auto-lsp/commit/5be298902edac11bf3f92d8ddc626f7d7ff7fcec))
+- AstNode trait - ([5c1d33c](https://github.com/adclz/auto-lsp/commit/5c1d33c0801d54aa5c6c373a39896711016d6a79))
+
+### Testing
+
+- *(iter)* Add tests for traversing AST nodes - ([9fffc3e](https://github.com/adclz/auto-lsp/commit/9fffc3ede4c0c391c5948a43aed43669b8828d67))
+
+### Miscellaneous Tasks
+
+- *(license)* Update Cargo.toml files - ([dd5971f](https://github.com/adclz/auto-lsp/commit/dd5971f8d8c5e0ffa5fa0b97c0a3b3c517c2f82c))
+- *(license)* Add GPLv3 license header to all source files - ([60d6d5a](https://github.com/adclz/auto-lsp/commit/60d6d5abe8a3e10f79fe651de074fa61cad9e7f6))
+- Remove id-arena dependency - ([b4b5923](https://github.com/adclz/auto-lsp/commit/b4b592359f45cf072234d8c1b6769ce0a091e1be))
+- Update license header in errors.rs - ([90e5b8f](https://github.com/adclz/auto-lsp/commit/90e5b8f577d6dd4ba76183c7398c6b96c75edf78))
+- Salsa macros feature - ([b9e90dd](https://github.com/adclz/auto-lsp/commit/b9e90ddc54f1c9ad3fb84190bfca784cbb326d50))
+- Logs for file events - ([219a6b2](https://github.com/adclz/auto-lsp/commit/219a6b273633bccddfc62c708ec4517bc36dbb5b))
+
+
 ## [0.5.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.4.0...auto-lsp-core-v0.5.0)
 
 ### Features
