@@ -79,12 +79,15 @@ Most tests are located in the [examples](https://github.com/adclz/auto-lsp/tree/
 Alongside testing the behavior of the AST, database, and LSP server,
 we also test whether the generated ASTs are correct in the `corpus` folder using [insta](https://insta.rs/).
 
-3 workflows are used to test auto-lsp:
+Workflows:
 
-- [ast-gen-native](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-native.yml): 
+- [codegen](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-wasi-p1-threads.yml): 
+Tests the `auto_lsp_codegen` crate.
+
+- [test-ast-native](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-native.yml): 
 Run main crate tests, ast-python and ast-html tests on Windows and Linux targets.
 
-- [ast-gen-wasi-p1-threads](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-wasi-p1-threads.yml): 
+- [test-ast-wasi-p1-threads](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-wasi-p1-threads.yml): 
 Same as above but for wasi-p1-threads target.
 
 - [lsp-server-native](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/lsp-server-native.yml): 
