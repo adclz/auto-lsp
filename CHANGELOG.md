@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [0.5.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.1...auto-lsp-v0.5.2)
+## [0.6.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.1...auto-lsp-v0.6.0)
 
 ### Features
 
