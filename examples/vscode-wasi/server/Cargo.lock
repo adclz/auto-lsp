@@ -46,7 +46,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp"
-version = "0.5.1"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "auto-lsp-core",
@@ -63,7 +63,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-codegen"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "phf",
  "proc-macro2",
@@ -75,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-core"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "ariadne",
