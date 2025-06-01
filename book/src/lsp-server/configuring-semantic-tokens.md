@@ -48,7 +48,7 @@ This generates:
 # Example in AST
 
 ```rust, ignore
-use auto_lsp::semantic_tokens::{SemanticToken, SemanticTokenType, SemanticTokenModifier};
+use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
 
 define_semantic_token_types![
     standard {
@@ -66,32 +66,13 @@ define_semantic_token_modifiers![
     custom {}
 ];
 
-impl BuildSemanticTokens for MyType {
-    fn build_semantic_tokens(&self, doc: &Document, builder: &mut SemanticTokensBuilder) {
+impl MyType {
+    fn build_semantic_tokens(&self, builder: &mut SemanticTokensBuilder) {
         builder.push(
-            self.name.get_lsp_range(doc),
+            self.name.get_lsp_range(),
             SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
             SUPPORTED_MODIFIERS.iter().position(|x| *x == DECLARATION).unwrap() as u32,
         );
     }
-}
-```
-
-# LSP Server Initialization
-
-To inform the LSP client about the supported token types and modifiers, you need to pass the `SemanticTokensList` to the `LspOptions` struct.
-
-```rust, ignore
-fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
-    let mut session = Session::create(InitOptions {
-        parsers: &PYTHON_PARSERS,
-        lsp_options: LspOptions {
-            semantic_tokens: Some(SemanticTokensList {
-                semantic_token_types: SUPPORTED_TYPES,
-                semantic_token_modifiers: SUPPORTED_MODIFIERS,
-            })
-            ..Default::default()
-        },
-    })?;
 }
 ```

@@ -13,37 +13,22 @@ The Document struct has the following fields:
 
 ## Creating a document
 
-Document can be created using either the  `from_utf8` or `from_texter` methods of `Root`.
+Document can be created using either the  `from_utf8` or `from_texter` methods of `FileManager`.
 
 ## Updating a document
 
-Use `document.update()` to process document changes:
+The database support updating a document using the `update` method of `FileManager`.
 
-`update` takes two parameters:
- - The tree-sitter parser instance.
- - A list of `lsp_types::TextDocumentChangeEvent` changes.
+`update` takes 2 parameters:
+ - The `Url` of the document to update.
+ - A list of [`lsp_types::TextDocumentChangeEvent`](https://docs.rs/lsp-types/latest/lsp_types/struct.TextDocumentContentChangeEvent.html) changes.
+
+These changes are sent by the client when the document is modified.
 
 ```rust, ignore
-let change = lsp_types::TextDocumentContentChangeEvent {
-    range: Some(lsp_types::Range {
-        start: lsp_types::Position {
-            line: 0,
-            character: 0,
-        },
-        end: lsp_types::Position {
-            line: 0,
-            character: 0,
-        },
-    }),
-    range_length: Some(26),
-    text: "<div></div>".into(),
-};
-
-let edits = document
-    .update(
-        &mut root.parsers.tree_sitter.parser.write(),
-        &vec![change],
-    )
-    .unwrap();
-
+registry.on_mut::<DidChangeTextDocument, _>(|session, params| {
+    Ok(session.db.update(&params.text_document.uri, &params.content_changes)?)
+})
 ```
+
+`update` may return a `DataBaseError` if the update fails.
