@@ -23,8 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //!    and <a href="https://microsoft.github.io/language-server-protocol/">Language Server Protocol</a> (LSP) servers powered by <a href="https://tree-sitter.github.io/tree-sitter/">Tree-sitter</a></strong>
 //!  </p>
 //!
-//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml)
-//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/lsp-server-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/)
+//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/codegen.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/ast-gen-native.yml)
+//! [![CI Status](https://github.com/adclz/auto-lsp/actions/workflows/test-ast-native.yml/badge.svg)](https://github.com/adclz/auto-lsp/actions/workflows/)
 //! [![Book](https://img.shields.io/badge/📚-book-blue)](https://adclz.github.io/auto-lsp/)
 //! [![crates.io](https://img.shields.io/crates/v/auto-lsp)](https://crates.io/crates/auto-lsp)
 //! ![Rust Version](https://img.shields.io/badge/rustc-1.83.0%2B-orange)

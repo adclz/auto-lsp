@@ -1,0 +1,22 @@
+name: Codegen
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.js"
+      - "**.ts"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo test
+        working-directory: ./crates/native
+        run: cargo test -- --test-threads=1
