@@ -1,4 +1,4 @@
-# Auto-LSP Architecture
+# Architecture
 
 ## Introduction
 
