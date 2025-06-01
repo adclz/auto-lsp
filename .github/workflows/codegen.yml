@@ -15,8 +15,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Install nextest
+        run: cargo install cargo-nextest
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
-      - name: cargo test
+      - name: nextest
         working-directory: ./crates/native
-        run: cargo test -- --test-threads=1
+        run: cargo-nextest ntr
