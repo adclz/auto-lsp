@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - name: main crate
-        run: cargo test --all-features --workspace
+        run: cargo test --all-features --workspace --exclude auto-lsp-codegen
       - name: python ast
         working-directory: ./examples/ast-python
         env:

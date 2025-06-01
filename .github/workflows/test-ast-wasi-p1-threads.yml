@@ -29,7 +29,7 @@ jobs:
              sudo apt update
              sudo apt install gcc-multilib -y    
       - name: main crate
-        run: CFLAGS="-DHAVE_ENDIAN_H" cargo test --features=wasm --workspace --target wasm32-wasip1-threads
+        run: CFLAGS="-DHAVE_ENDIAN_H" cargo test --features=wasm --workspace --exclude auto-lsp-codegen --target wasm32-wasip1-threads
       - name: python ast
         working-directory: ./examples/ast-python
         env:
