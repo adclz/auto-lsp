@@ -125,9 +125,17 @@ pub(crate) fn generate_struct(
             }
         }
         None => {
-            quote! {
-                fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
-                    matches!(node.kind(), #struct_type)
+            if let Some(id) = NODE_ID_FOR_UNNAMED_NODE.lock().unwrap().get(struct_type) {
+                quote! {
+                    fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
+                        matches!(node.kind_id(), #id)
+                    }
+                }
+            } else {
+                quote! {
+                    fn contains(node: &auto_lsp::tree_sitter::Node) -> bool {
+                        matches!(node.kind(), #struct_type)
+                    }
                 }
             }
         }
@@ -243,23 +251,37 @@ pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> T
                     .types
                     .iter()
                     .map(|t| {
-                        *NODE_ID_FOR_NAMED_NODE
-                            .lock()
-                            .unwrap()
-                            .get::<String>(&t.clone())
-                            .unwrap()
+                        if let Ok(named_nodes) = NODE_ID_FOR_NAMED_NODE.lock() {
+                            if let Some(node_id) = named_nodes.get(t) {
+                                return *node_id;
+                            }
+                        }
+
+                        if let Ok(unnamed_nodes) = NODE_ID_FOR_UNNAMED_NODE.lock() {
+                            if let Some(node_id) = unnamed_nodes.get(t) {
+                                return *node_id;
+                            }
+                        }
+
+                        panic!("Node ID not found for type: {}", t);
                     })
                     .collect(),
             );
         } else {
             r_variants.push(variant_name.to_token_stream());
-            r_types.push(
+            r_types.push(if value.named {
                 *NODE_ID_FOR_NAMED_NODE
                     .lock()
                     .unwrap()
                     .get(&value.kind)
-                    .unwrap(),
-            );
+                    .unwrap()
+            } else {
+                *NODE_ID_FOR_UNNAMED_NODE
+                    .lock()
+                    .unwrap()
+                    .get(&value.kind)
+                    .unwrap()
+            });
         }
     }
 
