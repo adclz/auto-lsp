@@ -1,4 +1,4 @@
-name: Generate AST - native
+name: Test AST - native
 on: 
   push:
     paths-ignore:
