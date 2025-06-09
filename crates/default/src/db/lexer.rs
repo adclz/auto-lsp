@@ -59,7 +59,7 @@ fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
     if node.is_missing() {
         LexerError::Missing {
             range,
-            error: format!("Syntax error: Missing {:?}", node.grammar_name()),
+            error: format!("Syntax error: Missing '{}'", node.grammar_name()),
         }
     } else {
         let children_text: Vec<String> = (0..node.child_count())
