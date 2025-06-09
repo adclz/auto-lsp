@@ -97,8 +97,20 @@ pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
     }
 
     /// Retrieves the parent node, if present, from the node list.
+    ///
+    /// The node list must be sorted by ID.
     fn get_parent<'a>(&'a self, nodes: &'a [Arc<dyn AstNode>]) -> Option<&'a Arc<dyn AstNode>> {
-        nodes.get(self.get_parent_id()?)
+        match nodes.first() {
+            Some(first) => {
+                assert_eq!(
+                    first.get_id(),
+                    0,
+                    "get_parent called on an unsorted node list"
+                );
+                nodes.get(self.get_parent_id()?)
+            }
+            None => None,
+        }
     }
 }
 
