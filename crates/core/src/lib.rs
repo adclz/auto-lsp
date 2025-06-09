@@ -19,11 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! # Auto LSP Core
 //! Core crate for auto_lsp
 
-mod ast_node;
-pub mod ast {
-    pub use crate::ast_node::builder::*;
-    pub use crate::ast_node::node::*;
-}
+pub mod ast;
 
 /// Semantic tokens builder
 pub mod semantic_tokens_builder;
