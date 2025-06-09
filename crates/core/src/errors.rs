@@ -31,13 +31,13 @@ use thiserror::Error;
 /// An ariadne report can be generated from [`ParseError`] using the `to_label` method.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum ParseError {
-    #[error("{error:?}")]
+    #[error("{error}")]
     LexerError {
         range: lsp_types::Range,
         #[source]
         error: LexerError,
     },
-    #[error("{error:?}")]
+    #[error("{error}")]
     AstError {
         range: lsp_types::Range,
         #[source]
@@ -96,7 +96,7 @@ impl ParseError {
 /// Error type for AST parsing.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum AstError {
-    #[error("Unexpected {symbol:?} in {parent_name:?}")]
+    #[error("Unexpected {symbol} in {parent_name}")]
     UnexpectedSymbol {
         range: tree_sitter::Range,
         symbol: &'static str,
@@ -127,12 +127,12 @@ impl From<AstError> for ParseError {
 /// Can either be a syntax error or a missing symbol error.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum LexerError {
-    #[error("{error:?}")]
+    #[error("{error}")]
     Missing {
         range: lsp_types::Range,
         error: String,
     },
-    #[error("{error:?}")]
+    #[error("{error}")]
     Syntax {
         range: lsp_types::Range,
         error: String,
@@ -208,11 +208,11 @@ impl From<AstError> for ParseErrorAccumulator {
 /// Only emitted by methods of the [`crate::document::Document`] struct.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum PositionError {
-    #[error("Failed to find position of offset {offset:?}, max line length is {length:?}")]
+    #[error("Failed to find position of offset {offset}, max line length is {length}")]
     LineOutOfBound { offset: usize, length: usize },
-    #[error("Failed to get position of offset {offset:?}")]
+    #[error("Failed to get position of offset {offset}")]
     WrongPosition { offset: usize },
-    #[error("Failed to get range of {range:?}: {position_error:?}")]
+    #[error("Failed to get range of {range:?}: {position_error}")]
     WrongRange {
         range: std::ops::Range<usize>,
         #[source]
@@ -220,7 +220,7 @@ pub enum PositionError {
     },
     #[error("Failed to get text in {range:?}")]
     WrongTextRange { range: std::ops::Range<usize> },
-    #[error("Failed to get text in {range:?}: Encountered UTF-8 error {utf8_error:?}")]
+    #[error("Failed to get text in {range:?}: Encountered UTF-8 error {utf8_error}")]
     UTF8Error {
         range: std::ops::Range<usize>,
         utf8_error: Utf8Error,
@@ -230,7 +230,7 @@ pub enum PositionError {
 /// Error type produced by the runtime - aka the server -.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum RuntimeError {
-    #[error("Document error in {uri:?}: {error:?}")]
+    #[error("Document error in {uri}: {error}")]
     DocumentError {
         uri: Url,
         #[source]
@@ -279,17 +279,17 @@ impl From<(&Url, TexterError)> for RuntimeError {
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum FileSystemError {
     #[cfg(windows)]
-    #[error("Invalid host '{host:?}' for file path: {path:?}")]
+    #[error("Invalid host '{host}' for file path: {path}")]
     FileUrlHost { host: String, path: Url },
-    #[error("Failed to convert url {path:?} to file path")]
+    #[error("Failed to convert url {path} to file path")]
     FileUrlToFilePath { path: Url },
-    #[error("Failed to convert file path {path:?} to url")]
+    #[error("Failed to convert file path {path} to url")]
     FilePathToUrl { path: PathBuf },
-    #[error("Failed to get extension of file {path:?}")]
+    #[error("Failed to get extension of file {path}")]
     FileExtension { path: Url },
-    #[error("Failed to open file {path:?}: {error:?}")]
+    #[error("Failed to open file {path}: {error}")]
     FileOpen { path: Url, error: String },
-    #[error("Failed to read file {path:?}: {error:?}")]
+    #[error("Failed to read file {path}: {error}")]
     FileRead { path: Url, error: String },
     #[error(transparent)]
     ExtensionError(#[from] ExtensionError),
@@ -298,12 +298,12 @@ pub enum FileSystemError {
 /// Error type for file extensions and parsers associated with them.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum ExtensionError {
-    #[error("Unknown file extension {extension:?}, available extensions are: {available:?}")]
+    #[error("Unknown file extension {extension}, available extensions are: {available:?}")]
     UnknownExtension {
         extension: String,
         available: HashMap<String, String>,
     },
-    #[error("No parser found for extension {extension:?}, available parsers are: {available:?}")]
+    #[error("No parser found for extension {extension}, available parsers are: {available:?}")]
     UnknownParser {
         extension: String,
         available: Vec<&'static str>,
@@ -313,11 +313,11 @@ pub enum ExtensionError {
 /// Error type triggered by the database.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum DataBaseError {
-    #[error("Failed to get file {uri:?}")]
+    #[error("Failed to get file {uri}")]
     FileNotFound { uri: Url },
-    #[error("File {uri:?} already exists")]
+    #[error("File {uri} already exists")]
     FileAlreadyExists { uri: Url },
-    #[error("Document error in {uri:?}: {error:?}")]
+    #[error("Document error in {uri}: {error}")]
     DocumentError {
         uri: Url,
         #[source]
