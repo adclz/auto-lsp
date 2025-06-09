@@ -22,7 +22,7 @@ This the main crate that reexports **auto_lsp_core**, **auto_lsp_codegen**, **au
 
 **auto_lsp_core** is the most important crate, it exports:
 
-- `ast_node` Defines the AstNode trait and templates used by the codegen crate to build the AST.
+- `ast` Defines the AstNode trait and templates used by the codegen crate to build the AST.
 - `document` The Document struct that stores the text and Tree-sitter tree of a file.
 - `parsers` Contains the Parsers struct that stores a Tree-sitter parser and an AST parser function, configured via the `configure_parsers!` macro. This is used by the db to know how to parse a file.
 
