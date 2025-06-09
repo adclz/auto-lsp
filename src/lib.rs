@@ -62,8 +62,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //!
 //! # Cargo Features
 //!
-//! - `lsp_server`: Enable the LSP server (uses [`lsp_server`]).
-//! - `wasm`: Enable wasm support (only compatible with `wasi-p1-threads`).
+//! - `lsp_server`: Enables the LSP server (uses [`lsp_server`]).
+//! - `wasm`: Enables wasm support (only compatible with `wasi-p1-threads`).
 //!
 //! # Inspirations / Similar projects
 //!

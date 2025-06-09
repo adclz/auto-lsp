@@ -43,7 +43,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for more information.
 
 ## Cargo Features
 
-- `lsp_server`: Enable the LSP server (uses [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/)).
+- `lsp_server`: Enables the LSP server (uses [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/)).
 - `wasm`: Enables WASM support (compatible only with `wasi-p1-threads`).
 
 ## Inspirations / Similar Projects
