@@ -56,7 +56,9 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     }
 }
 
-/// Cheap cloneable wrapper around a parsed AST.
+/// Cloneable wrapper around a parsed AST.
+///
+/// The nodes are sorted by their id.
 ///
 /// The first node of the list is always the root node.
 #[derive(Debug, Default, Clone, Eq)]
@@ -92,22 +94,24 @@ impl ParsedAst {
     }
 
     /// Returns the first node that contains the given offset.
+    ///
+    /// This method uses binary search to find the node.
     pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
-        let mut result = None;
-        for node in self.nodes.iter() {
-            let range = node.get_range();
+        debug_assert!(self.nodes.is_sorted());
 
-            if range.start_byte > offset {
-                // If the start byte is greater than the offset, we can stop searching
-                continue;
-            }
-
-            if range.start_byte <= offset && offset <= range.end_byte {
-                result = Some(node);
-            } else {
-                continue;
-            }
-        }
-        result
+        let result = self
+            .nodes
+            .binary_search_by(|f| {
+                let range = f.get_range();
+                if range.start_byte <= offset && offset <= range.end_byte {
+                    std::cmp::Ordering::Equal
+                } else if range.start_byte > offset {
+                    std::cmp::Ordering::Greater
+                } else {
+                    std::cmp::Ordering::Less
+                }
+            })
+            .ok()?;
+        self.nodes.get(result)
     }
 }
