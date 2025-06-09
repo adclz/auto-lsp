@@ -60,7 +60,7 @@ impl FunctionDefinition {
             "[{} {}] - {}",
             range.start_byte,
             range.end_byte,
-            self.name.get_text(doc.texter.text.as_bytes())?
+            self.name.get_text(doc.as_bytes())?
         );
         acc.push(auto_lsp::lsp_types::InlayHint {
             kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),

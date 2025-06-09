@@ -123,11 +123,8 @@ pub fn changed_watched_files<Db: BaseDatabase>(
 
             match session.db.get_file(uri) {
                 Some(file) => {
-                    if is_file_content_different(
-                        &open_file,
-                        &file.document(&session.db).texter.text,
-                    )
-                    .unwrap()
+                    if is_file_content_different(&open_file, &file.document(&session.db).as_str())
+                        .unwrap()
                     {
                         session.db.remove_file(uri).map_err(RuntimeError::from)?;
                         let file_path = uri.to_file_path().map_err(|_| {

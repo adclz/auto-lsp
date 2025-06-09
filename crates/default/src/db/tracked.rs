@@ -33,7 +33,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let doc = file.document(db);
     let url = file.url(db);
 
-    if doc.texter.text.is_empty() {
+    if doc.is_empty() {
         return ParsedAst::default();
     }
 
@@ -43,10 +43,9 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let _guard = root.set_local_parent();
 
     let node = doc.tree.root_node();
-    let source_code = doc.texter.text.as_bytes();
 
     // Find tree-sitter errors and accumulate them
-    get_tree_sitter_errors(db, &node, source_code);
+    get_tree_sitter_errors(db, &node, doc.as_bytes());
 
     match (parsers.ast_parser)(db, &doc) {
         Ok(mut nodes) => {

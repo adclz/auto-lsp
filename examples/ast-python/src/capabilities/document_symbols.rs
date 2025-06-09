@@ -92,7 +92,7 @@ impl FunctionDefinition {
             .try_for_each(|f| f.build_document_symbols(doc, &mut nested_builder))?;
 
         builder.push_symbol(lsp_types::DocumentSymbol {
-            name: self.name.get_text(doc.texter.text.as_bytes())?.to_string(),
+            name: self.name.get_text(doc.as_bytes())?.to_string(),
             kind: lsp_types::SymbolKind::FUNCTION,
             range: self.name.get_lsp_range(),
             selection_range: self.name.get_lsp_range(),

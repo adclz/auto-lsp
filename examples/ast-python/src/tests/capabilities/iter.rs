@@ -39,7 +39,7 @@ fn sort(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar);
-    let source_code = document.texter.text.as_bytes();
+    let source_code = document.as_bytes();
     let ast = get_ast(&foo_bar, file);
 
     // Nodes should be sorted by their position in the source code
@@ -98,7 +98,7 @@ fn descendant_at(foo_bar: impl BaseDatabase) {
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
     let document = file.document(&foo_bar);
-    let source_code = document.texter.text.as_bytes();
+    let source_code = document.as_bytes();
     let ast = get_ast(&foo_bar, file);
 
     let pass_statement = ast.descendant_at(66).unwrap();

@@ -56,7 +56,7 @@ pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file
 
 impl TypedDefaultParameter {
     fn check(&self, db: &dyn BaseDatabase, doc: &Document) {
-        let source = doc.texter.text.as_bytes();
+        let source = doc.as_bytes();
 
         match self.Type.get_text(source).unwrap() {
             "int" => match self.value.is_integer() {
@@ -92,7 +92,7 @@ impl TypedDefaultParameter {
 
 impl TypedDefaultParameter {
     fn type_error_message(&self, document: &Document) -> CheckErrorAccumulator {
-        let source_code = document.texter.text.as_bytes();
+        let source_code = document.as_bytes();
         CheckErrorAccumulator(lsp_types::Diagnostic {
             range: self.get_lsp_range(),
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),

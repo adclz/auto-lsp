@@ -57,6 +57,18 @@ impl Document {
         Self { texter, tree }
     }
 
+    pub fn as_str(&self) -> &str {
+        &self.texter.text
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        self.texter.text.as_bytes()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.texter.text.is_empty()
+    }
+
     /// Updates the document based on the provided list of text changes.
     ///
     /// This method applies the changes to both the text [`texter`] and the syntax tree [`Tree`].

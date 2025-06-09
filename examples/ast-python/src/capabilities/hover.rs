@@ -80,7 +80,7 @@ impl Identifier {
         Ok(Some(lsp_types::Hover {
             contents: lsp_types::HoverContents::Markup(lsp_types::MarkupContent {
                 kind: lsp_types::MarkupKind::PlainText,
-                value: format!("hover {}", self.get_text(doc.texter.text.as_bytes())?),
+                value: format!("hover {}", self.get_text(doc.as_bytes())?),
             }),
             range: None,
         }))

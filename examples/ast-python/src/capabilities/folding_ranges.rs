@@ -72,7 +72,7 @@ pub fn folding_ranges(
     let document = file.document(db);
 
     let root_node = document.tree.root_node();
-    let source = document.texter.text.as_str();
+    let source = document.as_str();
 
     let mut query_cursor = tree_sitter::QueryCursor::new();
     let mut captures = query_cursor.captures(&FOLD_QUERY, root_node, source.as_bytes());

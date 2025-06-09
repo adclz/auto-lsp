@@ -33,7 +33,7 @@ pub fn find_all_with_regex<'a>(
     regex: &Regex,
 ) -> Vec<(Match<'a>, usize)> {
     let root_node = document.tree.root_node();
-    let source = document.texter.text.as_str();
+    let source = document.as_str();
 
     let mut query_cursor = tree_sitter::QueryCursor::new();
     let mut captures = query_cursor.captures(query, root_node, source.as_bytes());
