@@ -48,15 +48,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     get_tree_sitter_errors(db, &node, doc.as_bytes());
 
     match (parsers.ast_parser)(db, &doc) {
-        Ok(mut nodes) => {
-            {
-                let _ = Span::enter_with_parent("sort unstable", &root);
-                nodes.sort_unstable();
-            }
-            root.add_event(Event::new(format!("total nodes: {}", nodes.len())));
-            fastrace::flush();
-            ParsedAst::new(nodes)
-        }
+        Ok(nodes) => ParsedAst::new(nodes),
         Err(e) => {
             ParseErrorAccumulator::accumulate(e.clone().into(), db);
             ParsedAst::default()
@@ -87,7 +79,8 @@ impl Deref for ParsedAst {
 }
 
 impl ParsedAst {
-    pub(crate) fn new(nodes: Vec<Arc<dyn AstNode>>) -> Self {
+    pub fn new(mut nodes: Vec<Arc<dyn AstNode>>) -> Self {
+        nodes.sort_unstable();
         Self {
             nodes: Arc::new(nodes),
         }
