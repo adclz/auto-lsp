@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [0.6.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.6.0...auto-lsp-v0.6.1)
+
+### Bug Fixes
+
+- *(ast)* Add assertion for sorted node list in get_parent method - ([2ef5623](https://github.com/adclz/auto-lsp/commit/2ef56232061f39ffa13e76a60a4dd1234f355b28))
+- *(default)* Remove debug output in syntax error message - ([7957370](https://github.com/adclz/auto-lsp/commit/7957370bcef7e37a39789489a2692576a0443a94))
+- *(docs)* Update CI badge links in documentation files - ([930c9e1](https://github.com/adclz/auto-lsp/commit/930c9e156ccc644472b70a643045b92c29e8522b))
+- *(errors)* Improve error message formatting by removing debug output - ([e5b8218](https://github.com/adclz/auto-lsp/commit/e5b821856accb4961f76a052cb68947c56b9568f))
+
+### Refactor
+
+- *(core)* Rename ast_node module to ast - ([a76f141](https://github.com/adclz/auto-lsp/commit/a76f1414cef0c7b9bb24bcbeeb0a28d73c9b37fd))
+- *(default)* Use binary search for descendant_at method - ([e03131f](https://github.com/adclz/auto-lsp/commit/e03131f6d78a05189ed42c3d8dcf2b6fc51abf51))
+- *(default)* Move sort_unstable to ParsedAst constructor - ([6454f17](https://github.com/adclz/auto-lsp/commit/6454f1767958a7586cbab172d4a778b49c9f4528))
+- Improve Document API with as_str and as_bytes methods - ([100fb16](https://github.com/adclz/auto-lsp/commit/100fb161f24ab255f0465535abc120d5869f376b))
+
+### Documentation
+
+- Typos in Cargo Features section - ([398bb64](https://github.com/adclz/auto-lsp/commit/398bb6474767a1e43f2b6071656981151d5209d6))
+
+
 ## [0.6.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.5.1...auto-lsp-v0.6.0)
 
 ### Features
