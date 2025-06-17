@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.6.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.6.1...auto-lsp-v0.6.2)
+
+### Features
+
+- *(codegen)* Add numeric tokens and add sanitization tests - ([14b7d01](https://github.com/adclz/auto-lsp/commit/14b7d01a05d7cb9a0c938bd1f881fb793c81e521))
+- *(errors)* Add additional fields to LexerError - ([0a19465](https://github.com/adclz/auto-lsp/commit/0a194651f158a520594e941e5953e1462c1b7bee))
+
+### Bug Fixes
+
+- *(file_events)* Ignore non file:// scheme URIs - ([3dcc8db](https://github.com/adclz/auto-lsp/commit/3dcc8db9b21bb9bf69053d9ed4e50bf79ae0fd84))
+- *(server)* Fallback to default value if available_parallelism is unavailable - ([8c23b5c](https://github.com/adclz/auto-lsp/commit/8c23b5c464a86fb99e5cea5828aef43d8945b037))
+
+
 ## [0.6.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.6.0...auto-lsp-v0.6.1)
 
 ### Bug Fixes
