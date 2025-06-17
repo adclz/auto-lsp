@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use std::collections::HashMap;
+use std::num::NonZeroUsize;
 
 use super::task_pool::TaskPool;
 use super::InitOptions;
@@ -68,7 +69,9 @@ impl<Db: salsa::Database> Session<Db> {
     ) -> Self {
         let (sender, task_rx) = crossbeam_channel::unbounded();
 
-        let max_threads = std::thread::available_parallelism().unwrap().get();
+        let max_threads = std::thread::available_parallelism()
+            .unwrap_or_else(|_| NonZeroUsize::new(1).unwrap())
+            .get();
 
         log::info!("Max threads: {max_threads}");
 
