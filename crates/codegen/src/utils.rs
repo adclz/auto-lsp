@@ -157,6 +157,16 @@ pub(crate) static TOKENS: LazyLock<RwLock<HashMap<&'static str, &'static str>>> 
             ("<=>", "LessGreaterEqual"),
             ("<!", "LessBang"),
             ("</", "LessSlash"),
+            ("0", "Zero"),
+            ("1", "One"),
+            ("2", "Two"),
+            ("3", "Three"),
+            ("4", "Four"),
+            ("5", "Five"),
+            ("6", "Six"),
+            ("7", "Seven"),
+            ("8", "Eight"),
+            ("9", "Nine"),
         ]))
     });
 
@@ -210,3 +220,61 @@ pub static RUST_KEYWORDS: phf::Map<&'static str, &'static str> = phf::phf_map! {
     "Option" => "_Option",
     "Vec" => "_Vec",
 };
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sanitize() {
+        assert_eq!(sanitize_string("fn"), "Fn");
+        assert_eq!(
+            sanitize_string("namespace_0_async_$"),
+            "namespace_Zero_async_Dollar"
+        );
+        assert_eq!(sanitize_string("let"), "Let");
+        assert_eq!(sanitize_string("match"), "Match");
+        // Test special tokens
+        assert_eq!(sanitize_string("=>"), "FatArrow");
+        assert_eq!(sanitize_string("??"), "Nullish");
+        // Test mixed content
+        assert_eq!(
+            sanitize_string("if_=>_??"),
+            "if_EqualGreater_QuestionQuestion"
+        );
+        // Test empty string
+        assert_eq!(sanitize_string(""), "");
+        // Test numbers
+        assert_eq!(sanitize_string("123"), "OneTwoThree");
+        // Test special characters
+        assert_eq!(sanitize_string("!@#"), "BangAtHash");
+    }
+
+    #[test]
+    fn sanitize_to_pascal() {
+        assert_eq!(sanitize_string("fn"), "Fn");
+        assert_eq!(
+            sanitize_string_to_pascal("namespace_0_async_$"),
+            "NamespaceZeroAsyncDollar"
+        );
+        // Test Rust keywords
+        assert_eq!(sanitize_string_to_pascal("let"), "Let");
+        assert_eq!(sanitize_string_to_pascal("match"), "Match");
+        // Test special tokens
+        assert_eq!(sanitize_string_to_pascal("=>"), "FatArrow");
+        assert_eq!(sanitize_string_to_pascal("??"), "Nullish");
+        // Test mixed content with underscores
+        assert_eq!(
+            sanitize_string_to_pascal("if_=>_??"),
+            "IfEqualGreaterQuestionQuestion"
+        );
+        // Test empty string
+        assert_eq!(sanitize_string_to_pascal(""), "");
+        // Test with spaces
+        assert_eq!(sanitize_string_to_pascal("hello world"), "HelloWorld");
+        // Test with mixed case
+        assert_eq!(sanitize_string_to_pascal("hello_World"), "HelloWorld");
+        // Test with multiple underscores
+        assert_eq!(sanitize_string_to_pascal("hello__world"), "HelloWorld");
+    }
+}
