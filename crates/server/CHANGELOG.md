@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-server-v0.1.1...auto-lsp-server-v0.1.2)
+
+### Bug Fixes
+
+- *(server)* Fallback to default value if available_parallelism is unavailable - ([8c23b5c](https://github.com/adclz/auto-lsp/commit/8c23b5c464a86fb99e5cea5828aef43d8945b037))
+
+
 ## [0.1.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-server-v0.1.0...auto-lsp-server-v0.1.1)
 
 ### Miscellaneous Tasks

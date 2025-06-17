@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-default-v0.1.1...auto-lsp-default-v0.1.2)
+
+### Features
+
+- *(errors)* Add additional fields to LexerError - ([0a19465](https://github.com/adclz/auto-lsp/commit/0a194651f158a520594e941e5953e1462c1b7bee))
+
+### Bug Fixes
+
+- *(file_events)* Ignore non file:// scheme URIs - ([3dcc8db](https://github.com/adclz/auto-lsp/commit/3dcc8db9b21bb9bf69053d9ed4e50bf79ae0fd84))
+
+
 ## [0.1.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-default-v0.1.0...auto-lsp-default-v0.1.1)
 
 ### Bug Fixes

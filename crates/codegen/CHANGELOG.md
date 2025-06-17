@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.2.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-codegen-v0.2.0...auto-lsp-codegen-v0.2.1)
+
+### Features
+
+- *(codegen)* Add numeric tokens and add sanitization tests - ([14b7d01](https://github.com/adclz/auto-lsp/commit/14b7d01a05d7cb9a0c938bd1f881fb793c81e521))
+
+
 ## [0.2.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-codegen-v0.1.0...auto-lsp-codegen-v0.2.0)
 
 ### Features

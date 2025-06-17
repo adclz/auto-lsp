@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.7.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.6.1...auto-lsp-core-v0.7.0)
+
+### Features
+
+- *(errors)* Add additional fields to LexerError - ([0a19465](https://github.com/adclz/auto-lsp/commit/0a194651f158a520594e941e5953e1462c1b7bee))
+
+
 ## [0.6.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.6.0...auto-lsp-core-v0.6.1)
 
 ### Bug Fixes

@@ -6,7 +6,7 @@ repository = "https://github.com/adclz/auto-lsp"
 description = """
 Core crate for `auto_lsp`.
 """
-version = "0.6.1"
+version = "0.7.0"
 edition = "2021"
 
 [dependencies]
