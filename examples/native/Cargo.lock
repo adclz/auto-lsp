@@ -83,7 +83,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "anyhow",
  "auto-lsp-core",
@@ -112,7 +112,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-core"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "anyhow",
  "ariadne",
@@ -131,7 +131,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-default"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "auto-lsp-core",
  "auto-lsp-server",
@@ -150,7 +150,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-server"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "auto-lsp-core",
