@@ -88,75 +88,84 @@ pub fn changed_watched_files<Db: BaseDatabase>(
     session: &mut Session<Db>,
     params: DidChangeWatchedFilesParams,
 ) -> Result<(), RuntimeError> {
-    params.changes.iter().try_for_each(|file| match file.typ {
-        FileChangeType::CREATED => {
-            let uri = &file.uri;
-
-            if session.db.get_file(uri).is_some() {
-                // The file is already in db
-                // We can ignore this change
-                return Ok(());
-            };
-            let file_path = uri.to_file_path().map_err(|_| {
-                RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
-            })?;
-
-            let (parsers, url, text) = session.read_file(&file_path).map_err(RuntimeError::from)?;
-            log::info!("Watched Files: Created - {uri}");
-            session
-                .db
-                .add_file_from_texter(parsers, &url, text)
-                .map_err(RuntimeError::from)
+    params.changes.iter().try_for_each(|file| {
+        // Some IDEs such as vscode creates temp files with a non file scheme
+        if file.uri.scheme() != "file" {
+            return Ok(());
         }
-        FileChangeType::CHANGED => {
-            let uri = &file.uri;
-            let file_path = uri.to_file_path().map_err(|_| {
-                RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
-            })?;
+        match file.typ {
+            FileChangeType::CREATED => {
+                let uri = &file.uri;
+                if session.db.get_file(uri).is_some() {
+                    // The file is already in db
+                    // We can ignore this change
+                    return Ok(());
+                };
+                let file_path = uri.to_file_path().map_err(|_| {
+                    RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
+                })?;
 
-            let open_file = File::open(file_path).map_err(|err| {
-                RuntimeError::from(FileSystemError::FileOpen {
-                    path: uri.clone(),
-                    error: err.to_string(),
-                })
-            })?;
-
-            match session.db.get_file(uri) {
-                Some(file) => {
-                    if is_file_content_different(&open_file, &file.document(&session.db).as_str())
-                        .unwrap()
-                    {
-                        session.db.remove_file(uri).map_err(RuntimeError::from)?;
-                        let file_path = uri.to_file_path().map_err(|_| {
-                            RuntimeError::from(FileSystemError::FileUrlToFilePath {
-                                path: uri.clone(),
-                            })
-                        })?;
-                        log::info!("Watched Files: Changed - {uri}");
-                        let (parsers, url, text) =
-                            session.read_file(&file_path).map_err(RuntimeError::from)?;
-                        session
-                            .db
-                            .add_file_from_texter(parsers, &url, text)
-                            .map_err(RuntimeError::from)
-                    } else {
-                        // The file is already in db and the content is the same
-                        // We can ignore this change
-                        Ok(())
-                    }
-                }
-                None => Ok(()),
+                let (parsers, url, text) =
+                    session.read_file(&file_path).map_err(RuntimeError::from)?;
+                log::info!("Watched Files: Created - {uri}");
+                session
+                    .db
+                    .add_file_from_texter(parsers, &url, text)
+                    .map_err(RuntimeError::from)
             }
+            FileChangeType::CHANGED => {
+                let uri = &file.uri;
+                let file_path = uri.to_file_path().map_err(|_| {
+                    RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
+                })?;
+
+                let open_file = File::open(file_path).map_err(|err| {
+                    RuntimeError::from(FileSystemError::FileOpen {
+                        path: uri.clone(),
+                        error: err.to_string(),
+                    })
+                })?;
+
+                match session.db.get_file(uri) {
+                    Some(file) => {
+                        if is_file_content_different(
+                            &open_file,
+                            &file.document(&session.db).as_str(),
+                        )
+                        .unwrap()
+                        {
+                            session.db.remove_file(uri).map_err(RuntimeError::from)?;
+                            let file_path = uri.to_file_path().map_err(|_| {
+                                RuntimeError::from(FileSystemError::FileUrlToFilePath {
+                                    path: uri.clone(),
+                                })
+                            })?;
+                            log::info!("Watched Files: Changed - {uri}");
+                            let (parsers, url, text) =
+                                session.read_file(&file_path).map_err(RuntimeError::from)?;
+                            session
+                                .db
+                                .add_file_from_texter(parsers, &url, text)
+                                .map_err(RuntimeError::from)
+                        } else {
+                            // The file is already in db and the content is the same
+                            // We can ignore this change
+                            Ok(())
+                        }
+                    }
+                    None => Ok(()),
+                }
+            }
+            FileChangeType::DELETED => {
+                log::info!("Watched Files: Deleted - {}", file.uri);
+                session
+                    .db
+                    .remove_file(&file.uri)
+                    .map_err(RuntimeError::from)
+            }
+            // Should never happen
+            _ => Ok(()),
         }
-        FileChangeType::DELETED => {
-            log::info!("Watched Files: Deleted - {}", file.uri);
-            session
-                .db
-                .remove_file(&file.uri)
-                .map_err(RuntimeError::from)
-        }
-        // Should never happen
-        _ => Ok(()),
     })
 }
 
