@@ -131,11 +131,14 @@ pub enum LexerError {
     Missing {
         range: lsp_types::Range,
         error: String,
+        // Missing node's symbol name as it appears in the grammar ignoring aliases as a string
+        grammar_name: &'static str,
     },
     #[error("{error}")]
     Syntax {
         range: lsp_types::Range,
         error: String,
+        affected: String,
     },
 }
 

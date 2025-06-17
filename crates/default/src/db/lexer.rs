@@ -60,6 +60,7 @@ fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
         LexerError::Missing {
             range,
             error: format!("Syntax error: Missing '{}'", node.grammar_name()),
+            grammar_name: node.grammar_name(),
         }
     } else {
         let children_text: Vec<String> = (0..node.child_count())
@@ -74,6 +75,7 @@ fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
         LexerError::Syntax {
             range,
             error: format!("Unexpected token(s): '{}'", children_text.join(" ")),
+            affected: children_text.join(" "),
         }
     }
 }
