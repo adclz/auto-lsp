@@ -26,7 +26,7 @@ use auto_lsp_core::document::Document;
 use auto_lsp_core::errors::{DataBaseError, TreeSitterError};
 use auto_lsp_core::parsers::Parsers;
 use dashmap::{DashMap, Entry};
-use lsp_types::Url;
+use lsp_types::{PositionEncodingKind, Url};
 use salsa::Setter;
 use salsa::{Database, Storage};
 use std::{hash::Hash, sync::Arc};
@@ -37,7 +37,7 @@ use texter::core::text::Text;
 /// An [`lsp_types::Url`] is used as the unique identifier of the file.
 #[salsa::input]
 pub struct File {
-    #[id]
+    #[return_ref]
     pub url: Url,
     pub parsers: &'static Parsers,
     #[return_ref]
@@ -103,6 +103,7 @@ pub trait FileManager: BaseDatabase + salsa::Database {
         &mut self,
         parsers: &'static Parsers,
         url: &Url,
+        encoding: &PositionEncodingKind,
         texter: Text,
     ) -> Result<(), DataBaseError> {
         let tree = parsers
@@ -111,7 +112,7 @@ pub trait FileManager: BaseDatabase + salsa::Database {
             .parse(texter.text.as_bytes(), None)
             .ok_or_else(|| DataBaseError::from((url, TreeSitterError::TreeSitterParser)))?;
 
-        let document = Document { texter, tree };
+        let document = Document::new(texter, tree, encoding);
         let file = File::new(self, url.clone(), parsers, Arc::new(document));
 
         match self.get_files().entry(url.clone()) {
@@ -143,10 +144,16 @@ pub trait FileManager: BaseDatabase + salsa::Database {
     }
 
     fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError> {
-        match self.get_files().remove(url) {
-            None => Err(DataBaseError::FileNotFound { uri: url.clone() }),
-            Some(_) => Ok(()),
-        }
+        let file = *self
+            .get_files()
+            .get_mut(url)
+            .ok_or_else(|| DataBaseError::FileNotFound { uri: url.clone() })?;
+
+        self.get_files().remove(url);
+
+        file.set_url(self)
+            .to(Url::parse("file:///dev/null").unwrap());
+        Ok(())
     }
 }
 

@@ -16,10 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::{
-    ops::Range,
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use lsp_types::PositionEncodingKind;
+use std::{ops::Range, sync::atomic::AtomicUsize};
 use texter::core::text::Text;
 use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
@@ -27,6 +25,13 @@ use tree_sitter::{Point, Tree};
 use crate::errors::{DocumentError, PositionError, TexterError, TreeSitterError};
 
 pub(crate) mod texter_impl;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Encoding {
+    UTF8,
+    UTF16,
+    UTF32,
+}
 
 /// Represents a text document that combines plain text [`texter`] with its parsed syntax tree [`tree_sitter::Tree`].
 ///
@@ -37,6 +42,7 @@ pub(crate) mod texter_impl;
 pub struct Document {
     pub texter: Text,
     pub tree: Tree,
+    pub encoding: Encoding,
 }
 
 thread_local! {
@@ -53,8 +59,16 @@ thread_local! {
 }
 
 impl Document {
-    pub fn new(texter: Text, tree: Tree) -> Self {
-        Self { texter, tree }
+    pub fn new(texter: Text, tree: Tree, encoding: &PositionEncodingKind) -> Self {
+        Self {
+            texter,
+            tree,
+            encoding: match encoding.as_str() {
+                "utf-16" => Encoding::UTF16,
+                "utf-32" => Encoding::UTF32,
+                _ => Encoding::UTF8,
+            },
+        }
     }
 
     pub fn as_str(&self) -> &str {
@@ -131,57 +145,33 @@ impl Document {
 
     /// Converts a byte offset in the document to its corresponding position (line and character).
     pub fn position_at(&self, offset: usize) -> Result<lsp_types::Position, PositionError> {
-        let mut last_br_index = 0;
-        let last_line = LAST_LINE.with(|a| a.load(Ordering::SeqCst));
+        let (line, start, end) = self
+            .find_line(offset)
+            .ok_or(PositionError::WrongPosition { offset })?;
+        let line_str = self.texter.get_row(line).unwrap();
 
-        // If the document is a single line, we can avoid the loop
-        if self.texter.br_indexes.0.len() == 1 {
-            return if offset > self.texter.text.len() {
-                Err(PositionError::LineOutOfBound {
-                    offset,
-                    length: self.texter.text.len(),
-                })
-            } else {
-                Ok(lsp_types::Position {
-                    line: 0,
-                    character: offset as u32,
-                })
-            };
-        }
-
-        // Determine the starting line for the search
-        let start = match self.texter.br_indexes.0.get(last_line) {
-            Some(&br_index) if offset > br_index && last_line >= 1 => last_line, // Start from cached line if offset is beyond it
-            _ => 1, // Start from at least index 1 to avoid incorrect 0 offset issues
-        };
-
-        for (i, &br_index) in self.texter.br_indexes.0.iter().skip(start).enumerate() {
-            if offset <= br_index {
-                // Cache this line for future calls
-                LAST_LINE.with(|a| a.store(i + (start - 1), Ordering::Release));
-
-                // Compute column by subtracting the last break index
-                let col = offset.saturating_sub(last_br_index);
-
-                return Ok(lsp_types::Position {
-                    line: (i + (start - 1)) as u32,
-                    character: col as u32,
+        if let Some(end) = end {
+            if offset > end {
+                return Err(PositionError::LineOutOfBound {
+                    offset: offset,
+                    length: end,
                 });
             }
-
-            last_br_index = br_index + 1; // Move past the EOL character
         }
 
-        if offset <= self.texter.text.len() {
-            let last_known_col = self.texter.br_indexes.0.iter().len();
-            let last_br = *self.texter.br_indexes.0.last().unwrap();
-            Ok(lsp_types::Position {
-                line: last_known_col.saturating_sub(1) as u32,
-                character: offset.saturating_sub(last_br) as u32,
-            })
-        } else {
-            Err(PositionError::WrongPosition { offset })
-        }
+        let target_u8_offset = offset.saturating_sub(start);
+
+        let column = self.find_column_offset(line_str, target_u8_offset).ok_or(
+            PositionError::LineOutOfBound {
+                offset: target_u8_offset,
+                length: line_str.len(),
+            },
+        )?;
+
+        Ok(lsp_types::Position {
+            line: line as u32,
+            character: column as u32,
+        })
     }
 
     /// Converts a byte offset in the document to its corresponding range (start and end positions).
@@ -205,11 +195,60 @@ impl Document {
     pub fn offset_at(&self, position: lsp_types::Position) -> Option<usize> {
         let line_index = self.texter.br_indexes.row_start(position.line as usize)?;
         let line_str = self.texter.get_row(position.line as usize)?;
-        let col = position.character as usize;
-        if col > line_str.len() {
-            None
-        } else {
-            Some(line_index + col)
+
+        let target_u8_offset = position.character as usize;
+        if target_u8_offset > line_str.len() {
+            return None;
+        }
+        let byte_offset = self.find_column_offset(line_str, target_u8_offset)?;
+
+        Some(line_index + byte_offset)
+    }
+
+    // 1 - line | 2 - start br index | 3 - end br index
+    fn find_line(&self, offset: usize) -> Option<(usize, usize, Option<usize>)> {
+        if self.texter.br_indexes.0.len() == 1 {
+            return Some((0, 0, None));
+        }
+
+        for (line, &br_index) in self.texter.br_indexes.0.iter().enumerate() {
+            if offset < br_index {
+                let line = line.saturating_sub(1);
+                // +1 to skip the breakline (EOL indexes only mark the end of the line, not the start of next line)
+                return Some((line, self.texter.br_indexes.0[line] + 1, Some(br_index)));
+            }
+        }
+        None
+    }
+
+    fn find_column_offset(&self, line_str: &str, target_u8_offset: usize) -> Option<usize> {
+        let mut u8_offset: usize = 0;
+        let mut u16_offset: usize = 0;
+        let mut u32_offset: usize = 0;
+        let mut found = false;
+
+        for c in line_str.chars() {
+            if u8_offset >= target_u8_offset {
+                found = true;
+                break;
+            } else {
+                u8_offset += c.len_utf8();
+                u16_offset += c.len_utf16();
+                u32_offset += 1;
+            }
+        }
+
+        if !found && u8_offset == target_u8_offset {
+            found = true;
+        }
+
+        match found {
+            true => match self.encoding {
+                Encoding::UTF8 => Some(u8_offset),
+                Encoding::UTF16 => Some(u16_offset),
+                Encoding::UTF32 => Some(u32_offset),
+            },
+            false => return None,
         }
     }
 }
@@ -217,7 +256,7 @@ impl Document {
 #[cfg(test)]
 mod test {
     use super::*;
-    use lsp_types::Position;
+    use lsp_types::{Position, PositionEncodingKind};
     use rstest::{fixture, rstest};
     use tree_sitter::Parser;
 
@@ -228,20 +267,28 @@ mod test {
         p
     }
 
-    fn get_last_line() -> usize {
-        use crate::document::LAST_LINE; // adjust path if needed
-        use std::sync::atomic::Ordering;
-
-        LAST_LINE.with(|val| val.load(Ordering::Acquire))
-    }
-
     #[rstest]
-    fn position_at(mut parser: Parser) {
-        let source = "<div>こんにちは\nGoodbye\r\nSee you!\n</div>";
-        let text = Text::new(source.into());
-        let document = Document::new(text, parser.parse(source, None).unwrap());
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn position_at(mut parser: Parser, #[case] encoding: Encoding) {
+        let source = "<div>こんにちは\nGoodbye\r\nSee 👨‍👨‍👧 you!\n</div>";
+        let text = match encoding {
+            Encoding::UTF8 => Text::new(source.into()),
+            Encoding::UTF16 => Text::new_utf16(source.into()),
+            Encoding::UTF32 => Text::new_utf32(source.into()),
+        };
+        let document = Document::new(
+            text,
+            parser.parse(source, None).unwrap(),
+            &match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            },
+        );
 
-        assert_eq!(&document.texter.br_indexes.0, &[0, 20, 29, 38]);
+        assert_eq!(&document.texter.br_indexes.0, &[0, 20, 29, 57]);
 
         assert_eq!(
             document.position_at(0).unwrap(),
@@ -256,7 +303,11 @@ mod test {
             document.position_at(11).unwrap(),
             Position {
                 line: 0,
-                character: 11
+                character: match encoding {
+                    Encoding::UTF8 => 11,
+                    Encoding::UTF16 => 7,
+                    Encoding::UTF32 => 7,
+                }
             }
         );
 
@@ -287,21 +338,45 @@ mod test {
             }
         );
 
-        // Offset 40 is at the last line at pos 2
         assert_eq!(
-            document.position_at(40).unwrap(),
+            document.position_at(52).unwrap(),
             Position {
-                line: 3,
-                character: 2
+                line: 2,
+                character: match encoding {
+                    Encoding::UTF8 => 22,
+                    Encoding::UTF16 => 12,
+                    Encoding::UTF32 => 9,
+                }
             }
+        );
+
+        // Offset 59 is out of bounds
+        assert_eq!(
+            document.position_at(59),
+            Err(PositionError::WrongPosition { offset: 59 })
         );
     }
 
     #[rstest]
-    fn position_at_single_line(mut parser: Parser) {
-        let source = "<div>AREALLYREALLYREALLYLONGTEXT<div>";
-        let text = Text::new(source.into());
-        let document = Document::new(text, parser.parse(source, None).unwrap());
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn position_at_single_line(mut parser: Parser, #[case] encoding: Encoding) {
+        let source = "<div>✨✨✨AREALLYREALLYREALLYLONGTEXT<div>";
+        let text = match encoding {
+            Encoding::UTF8 => Text::new(source.into()),
+            Encoding::UTF16 => Text::new_utf16(source.into()),
+            Encoding::UTF32 => Text::new_utf32(source.into()),
+        };
+        let document = Document::new(
+            text,
+            parser.parse(source, None).unwrap(),
+            &match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            },
+        );
 
         assert_eq!(&document.texter.br_indexes.0, &[0]);
 
@@ -325,18 +400,37 @@ mod test {
             document.position_at(30).unwrap(),
             Position {
                 line: 0,
-                character: 30
+                character: match encoding {
+                    Encoding::UTF8 => 30,
+                    Encoding::UTF16 => 24,
+                    Encoding::UTF32 => 24,
+                }
             }
         );
     }
 
     #[rstest]
-    fn range_at(mut parser: Parser) {
-        let source = "<div>こんにちは\nGoodbye\r\nSee you!\n</div>";
-        let text = Text::new(source.into());
-        let document = Document::new(text, parser.parse(source, None).unwrap());
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn range_at(mut parser: Parser, #[case] encoding: Encoding) {
+        let source = "<div>こんにちは\n❤️Goodbye\r\nSee you!\n</div>";
+        let text = match encoding {
+            Encoding::UTF8 => Text::new(source.into()),
+            Encoding::UTF16 => Text::new_utf16(source.into()),
+            Encoding::UTF32 => Text::new_utf32(source.into()),
+        };
+        let document = Document::new(
+            text,
+            parser.parse(source, None).unwrap(),
+            &match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            },
+        );
 
-        assert_eq!(&document.texter.br_indexes.0, &[0, 20, 29, 38]);
+        assert_eq!(&document.texter.br_indexes.0, &[0, 20, 35, 44]);
 
         // Test range covering part of first line
         assert_eq!(
@@ -348,29 +442,60 @@ mod test {
                 },
                 end: Position {
                     line: 0,
-                    character: 11
+                    character: match encoding {
+                        Encoding::UTF8 => 11,
+                        Encoding::UTF16 => 7,
+                        Encoding::UTF32 => 7,
+                    }
                 },
             }
         );
 
         // Test range spanning multiple lines
         assert_eq!(
-            document.range_at(15..28).unwrap(),
+            document.range_at(14..28).unwrap(),
             lsp_types::Range {
                 start: Position {
                     line: 0,
-                    character: 15
+                    character: match encoding {
+                        Encoding::UTF8 => 14,
+                        Encoding::UTF16 => 8,
+                        Encoding::UTF32 => 8,
+                    }
                 },
                 end: Position {
                     line: 1,
-                    character: 7
+                    character: match encoding {
+                        Encoding::UTF8 => 7,
+                        Encoding::UTF16 => 3,
+                        Encoding::UTF32 => 3,
+                    }
                 },
             }
         );
 
         // Test range from start of a line to another
         assert_eq!(
-            document.range_at(21..30).unwrap(),
+            document.range_at(20..30).unwrap(),
+            lsp_types::Range {
+                start: Position {
+                    line: 1,
+                    character: 0
+                },
+                end: Position {
+                    line: 1,
+                    character: match encoding {
+                        Encoding::UTF8 => 9,
+                        Encoding::UTF16 => 5,
+                        Encoding::UTF32 => 5,
+                    }
+                },
+            }
+        );
+
+        // Test range entirely in one line
+        assert_eq!(
+            document.range_at(20..35).unwrap(),
             lsp_types::Range {
                 start: Position {
                     line: 1,
@@ -379,21 +504,6 @@ mod test {
                 end: Position {
                     line: 2,
                     character: 0
-                },
-            }
-        );
-
-        // Test range entirely in one line
-        assert_eq!(
-            document.range_at(30..35).unwrap(),
-            lsp_types::Range {
-                start: Position {
-                    line: 2,
-                    character: 0
-                },
-                end: Position {
-                    line: 2,
-                    character: 5
                 },
             }
         );
@@ -412,9 +522,11 @@ mod test {
     fn range_at_single_line(mut parser: Parser) {
         let source = "<div>AREALLYREALLYREALLYLONGTEXT<div>";
         let text = Text::new(source.into());
-        let document = Document::new(text, parser.parse(source, None).unwrap());
-
-        assert_eq!(&document.texter.br_indexes.0, &[0]);
+        let document = Document::new(
+            text,
+            parser.parse(source, None).unwrap(),
+            &PositionEncodingKind::UTF8,
+        );
 
         // Ensure the line break indexes are correct
         assert_eq!(&document.texter.br_indexes.0, &[0]);
@@ -467,7 +579,11 @@ mod test {
     fn offset_at(mut parser: Parser) {
         let source = "Apples\nBashdjad\nashdkasdh\nasdsad";
         let text = Text::new(source.into());
-        let document = Document::new(text, parser.parse(source, None).unwrap());
+        let document = Document::new(
+            text,
+            parser.parse(source, None).unwrap(),
+            &PositionEncodingKind::UTF16,
+        );
 
         assert_eq!(&document.texter.br_indexes.0, &[0, 6, 15, 25]);
 
@@ -524,33 +640,5 @@ mod test {
             }),
             None
         );
-    }
-
-    #[rstest]
-    fn line_tracking(mut parser: Parser) {
-        let source = "one\nline two\nline three\n";
-        let text = Text::new(source.into());
-        let document = Document::new(text, parser.parse(source, None).unwrap());
-
-        // Offset in line 0
-        let pos1 = document.position_at(2).unwrap();
-        assert_eq!(pos1.line, 0);
-        assert_eq!(get_last_line(), 0);
-
-        // Offset in line 1
-        let pos2 = document.position_at(6).unwrap();
-        assert_eq!(pos2.line, 1);
-        assert_eq!(get_last_line(), 1);
-
-        // Offset in line 2
-        let pos3 = document.position_at(18).unwrap();
-        assert_eq!(pos3.line, 2);
-        assert_eq!(get_last_line(), 2);
-
-        // Offset is ine line 0
-        // This should reset the last line index
-        let pos3 = document.position_at(0).unwrap();
-        assert_eq!(pos3.line, 0);
-        assert_eq!(get_last_line(), 0);
     }
 }

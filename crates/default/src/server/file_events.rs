@@ -75,7 +75,7 @@ pub fn open_text_document<Db: BaseDatabase>(
     log::info!("Did Open Text Document: Created - {url}");
     session
         .db
-        .add_file_from_texter(parsers, url, text)
+        .add_file_from_texter(parsers, url, &session.encoding, text)
         .map_err(|e| e.into())
 }
 
@@ -110,7 +110,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                 log::info!("Watched Files: Created - {uri}");
                 session
                     .db
-                    .add_file_from_texter(parsers, &url, text)
+                    .add_file_from_texter(parsers, &url, &session.encoding, text)
                     .map_err(RuntimeError::from)
             }
             FileChangeType::CHANGED => {
@@ -145,7 +145,7 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                                 session.read_file(&file_path).map_err(RuntimeError::from)?;
                             session
                                 .db
-                                .add_file_from_texter(parsers, &url, text)
+                                .add_file_from_texter(parsers, &url, &session.encoding, text)
                                 .map_err(RuntimeError::from)
                         } else {
                             // The file is already in db and the content is the same

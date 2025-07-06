@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::generated::Module;
-use auto_lsp::configure_parsers;
 use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_types::Url;
 use auto_lsp::texter::core::text::Text;
+use auto_lsp::{configure_parsers, lsp_types};
 
 configure_parsers!(
     PYTHON_PARSERS,
@@ -41,6 +41,7 @@ pub fn create_python_db(source_code: &'static [&str]) -> impl BaseDatabase {
                 .get("python")
                 .expect("Python parser not found"),
             &url,
+            &lsp_types::PositionEncodingKind::UTF8,
             Text::new(source_code.to_string()),
         )
         .expect("Failed to add file");
@@ -68,6 +69,7 @@ pub fn create_python_db_with_logger(
                 .get("python")
                 .expect("Python parser not found"),
             &url,
+            &lsp_types::PositionEncodingKind::UTF8,
             Text::new(source_code.to_string()),
         )
         .expect("Failed to add file");

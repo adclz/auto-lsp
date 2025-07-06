@@ -70,7 +70,7 @@ impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
                         .map(|file| match self.read_file(&file.into_path()) {
                             Ok((parsers, url, text)) => self
                                 .db
-                                .add_file_from_texter(parsers, &url, text)
+                                .add_file_from_texter(parsers, &url, &self.encoding, text)
                                 .map_err(RuntimeError::from),
                             Err(err) => Err(RuntimeError::from(err)),
                         })

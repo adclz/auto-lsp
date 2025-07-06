@@ -75,8 +75,17 @@ impl<Db: salsa::Database> Session<Db> {
 
         log::info!("Max threads: {max_threads}");
 
+        let encoding = init_options
+            .capabilities
+            .position_encoding
+            .clone()
+            .unwrap_or(PositionEncodingKind::UTF16);
+
+        log::info!("Position encoding: {encoding:?}");
+
         Self {
             init_options,
+            encoding,
             connection,
             text_fn,
             extensions: HashMap::new(),
