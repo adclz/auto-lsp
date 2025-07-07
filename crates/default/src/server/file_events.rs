@@ -16,19 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::fs::File;
-use std::io::Read;
-
 use auto_lsp_core::errors::FileSystemError;
-use auto_lsp_core::errors::{ExtensionError, RuntimeError};
+use auto_lsp_core::errors::RuntimeError;
 use auto_lsp_server::Session;
 use lsp_types::DidChangeWatchedFilesParams;
 use lsp_types::DidOpenTextDocumentParams;
 use lsp_types::FileChangeType;
 
 use crate::db::BaseDatabase;
-use crate::db::FileManager;
-use crate::server::workspace_init::WorkspaceInit;
+use crate::db::{file::File, FileManager};
 
 pub fn open_text_document<Db: BaseDatabase>(
     session: &mut Session<Db>,
@@ -42,41 +38,13 @@ pub fn open_text_document<Db: BaseDatabase>(
         return Ok(());
     };
 
-    let extension = &params.text_document.language_id;
-
-    let extension = match session.extensions.get(extension) {
-        Some(extension) => extension,
-        None => {
-            if session.extensions.values().any(|x| x == extension) {
-                extension
-            } else {
-                return Err(ExtensionError::UnknownExtension {
-                    extension: extension.clone(),
-                    available: session.extensions.clone(),
-                }
-                .into());
-            }
-        }
-    };
-
-    let text = (session.text_fn)(params.text_document.text.clone());
-
-    let parsers = session
-        .init_options
-        .parsers
-        .get(extension.as_str())
-        .ok_or_else(|| {
-            RuntimeError::from(ExtensionError::UnknownParser {
-                extension: extension.clone(),
-                available: session.init_options.parsers.keys().cloned().collect(),
-            })
-        })?;
+    let file = File::from_text_doc()
+        .doc(&params.text_document)
+        .session(session)
+        .call()?;
 
     log::info!("Did Open Text Document: Created - {url}");
-    session
-        .db
-        .add_file_from_texter(parsers, url, &session.encoding, text)
-        .map_err(|e| e.into())
+    session.db.add_file(file).map_err(|e| e.into())
 }
 
 /// Handle the watched files change notification.
@@ -89,137 +57,41 @@ pub fn changed_watched_files<Db: BaseDatabase>(
     params: DidChangeWatchedFilesParams,
 ) -> Result<(), RuntimeError> {
     params.changes.iter().try_for_each(|file| {
-        // Some IDEs such as vscode creates temp files with a non file scheme
         if file.uri.scheme() != "file" {
             return Ok(());
         }
         match file.typ {
             FileChangeType::CREATED => {
-                let uri = &file.uri;
-                if session.db.get_file(uri).is_some() {
-                    // The file is already in db
-                    // We can ignore this change
-                    return Ok(());
-                };
-                let file_path = uri.to_file_path().map_err(|_| {
-                    RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
-                })?;
+                let url = &file.uri;
+                let file = File::from_fs().session(session).url(&url).call()?;
 
-                let (parsers, url, text) =
-                    session.read_file(&file_path).map_err(RuntimeError::from)?;
-                log::info!("Watched Files: Created - {uri}");
-                session
-                    .db
-                    .add_file_from_texter(parsers, &url, &session.encoding, text)
-                    .map_err(RuntimeError::from)
+                log::info!("Watched Files: Created - {url}");
+                session.db.add_file(file).map_err(RuntimeError::from)
             }
             FileChangeType::CHANGED => {
-                let uri = &file.uri;
-                let file_path = uri.to_file_path().map_err(|_| {
-                    RuntimeError::from(FileSystemError::FileUrlToFilePath { path: uri.clone() })
+                let url: &lsp_types::Url = &file.uri;
+                let file = session.db.get_file(&url).ok_or_else(|| {
+                    RuntimeError::from(FileSystemError::FileUrlToFilePath { path: url.clone() })
                 })?;
 
-                let open_file = File::open(file_path).map_err(|err| {
-                    RuntimeError::from(FileSystemError::FileOpen {
-                        path: uri.clone(),
-                        error: err.to_string(),
+                log::info!("Watched Files: Changed - {url}");
+                file.update_full_fs(session).map_err(RuntimeError::from)
+            }
+            FileChangeType::DELETED => {
+                let url = &file.uri;
+                let file = session.db.get_file(&url).ok_or_else(|| {
+                    RuntimeError::from(FileSystemError::FileUrlToFilePath {
+                        path: file.uri.clone(),
                     })
                 })?;
 
-                match session.db.get_file(uri) {
-                    Some(file) => {
-                        if is_file_content_different(
-                            &open_file,
-                            &file.document(&session.db).as_str(),
-                        )
-                        .unwrap()
-                        {
-                            session.db.remove_file(uri).map_err(RuntimeError::from)?;
-                            let file_path = uri.to_file_path().map_err(|_| {
-                                RuntimeError::from(FileSystemError::FileUrlToFilePath {
-                                    path: uri.clone(),
-                                })
-                            })?;
-                            log::info!("Watched Files: Changed - {uri}");
-                            let (parsers, url, text) =
-                                session.read_file(&file_path).map_err(RuntimeError::from)?;
-                            session
-                                .db
-                                .add_file_from_texter(parsers, &url, &session.encoding, text)
-                                .map_err(RuntimeError::from)
-                        } else {
-                            // The file is already in db and the content is the same
-                            // We can ignore this change
-                            Ok(())
-                        }
-                    }
-                    None => Ok(()),
-                }
-            }
-            FileChangeType::DELETED => {
-                log::info!("Watched Files: Deleted - {}", file.uri);
-                session
-                    .db
-                    .remove_file(&file.uri)
-                    .map_err(RuntimeError::from)
+                file.reset(&mut session.db).map_err(RuntimeError::from)?;
+
+                log::info!("Watched Files: Deleted - {}", &url);
+                session.db.remove_file(&url).map_err(RuntimeError::from)
             }
             // Should never happen
             _ => Ok(()),
         }
     })
-}
-
-/// Compare the equality of a file with a string using buffers
-fn is_file_content_different(file: &File, content: &str) -> std::io::Result<bool> {
-    let mut file = std::io::BufReader::new(file);
-    let content_bytes = content.as_bytes();
-    let mut buffer = [0u8; 1024];
-    let mut index = 0;
-
-    loop {
-        let bytes_read = file.read(&mut buffer)?;
-
-        // Compare the file's chunk with the corresponding slice of the content
-        if content_bytes.len() < index + bytes_read
-            || content_bytes[index..index + bytes_read] != buffer[..bytes_read]
-        {
-            return Ok(true); // There's a difference
-        }
-
-        index += bytes_read;
-
-        if bytes_read == 0 {
-            break;
-        }
-    }
-
-    // Ensure the content doesn't have extra bytes at the end
-    Ok(index != content_bytes.len())
-}
-
-#[cfg(all(test, not(target_arch = "wasm32")))]
-mod tests {
-    #[test]
-    fn test_file_content_different() {
-        use super::is_file_content_different;
-        use std::fs::File;
-        use std::io::Write;
-        use tempfile::tempdir;
-
-        let tmp_dir = tempdir().unwrap();
-
-        let file_path = tmp_dir.path().join("my-temporary-note.txt");
-
-        let mut tmp_file = File::create(&file_path).unwrap();
-        tmp_file.write_all(b"Hello, World!").unwrap();
-
-        // Bad file descriptor
-        drop(tmp_file);
-        let tmp_file = File::open(&file_path).unwrap();
-
-        assert!(!is_file_content_different(&tmp_file, "Hello, World!").unwrap());
-        assert!(is_file_content_different(&tmp_file, "Hello, World").unwrap());
-        assert!(is_file_content_different(&tmp_file, "Hello,_World!").unwrap());
-        assert!(is_file_content_different(&tmp_file, "Hello, World!!").unwrap());
-    }
 }

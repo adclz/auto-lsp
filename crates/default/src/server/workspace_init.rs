@@ -16,26 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::errors::{ExtensionError, FileSystemError, RuntimeError};
-use auto_lsp_core::parsers::Parsers;
+use crate::db::file::File;
+use crate::db::FileManager;
+use auto_lsp_core::errors::{FileSystemError, RuntimeError};
 use auto_lsp_server::Session;
 use lsp_types::{InitializeParams, Url};
 use rayon::prelude::*;
-use std::path::Path;
-use std::{fs::File, io::Read};
-use texter::core::text::Text;
 use walkdir::WalkDir;
 
 use crate::db::BaseDatabase;
-use crate::db::FileManager;
 
 pub trait WorkspaceInit {
     fn init_workspace(
         &mut self,
         params: InitializeParams,
     ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError>;
-
-    fn read_file(&self, file: &Path) -> Result<(&'static Parsers, Url, Text), FileSystemError>;
 }
 
 impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
@@ -63,16 +58,17 @@ impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
                 .collect::<Vec<_>>();
 
             errors.extend(rayon_par_bridge::par_bridge(
-                16,
+                4,
                 files.into_par_iter(),
                 |file_iter| {
                     file_iter
-                        .map(|file| match self.read_file(&file.into_path()) {
-                            Ok((parsers, url, text)) => self
-                                .db
-                                .add_file_from_texter(parsers, &url, &self.encoding, text)
-                                .map_err(RuntimeError::from),
-                            Err(err) => Err(RuntimeError::from(err)),
+                        .map(|file| {
+                            let f = File::from_fs()
+                                .session(self)
+                                .url(&Url::from_file_path(file.into_path()).unwrap())
+                                .call()?;
+                            self.db.add_file(f)?;
+                            Ok(())
                         })
                         .collect::<Vec<_>>()
                 },
@@ -80,49 +76,6 @@ impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
         }
 
         Ok(errors)
-    }
-
-    fn read_file(&self, file: &Path) -> Result<(&'static Parsers, Url, Text), FileSystemError> {
-        let url = Url::from_file_path(file).map_err(|_| FileSystemError::FilePathToUrl {
-            path: file.to_path_buf(),
-        })?;
-
-        let mut open_file = File::open(file).map_err(|e| FileSystemError::FileOpen {
-            path: url.clone(),
-            error: e.to_string(),
-        })?;
-        let mut buffer = String::new();
-        open_file
-            .read_to_string(&mut buffer)
-            .map_err(|e| FileSystemError::FileRead {
-                path: url.clone(),
-                error: e.to_string(),
-            })?;
-
-        let extension = get_extension(&url)?;
-
-        let text = (self.text_fn)(buffer.to_string());
-        let extension = match self.extensions.get(&extension) {
-            Some(extension) => extension,
-            None => {
-                return Err(FileSystemError::from(ExtensionError::UnknownExtension {
-                    extension: extension.clone(),
-                    available: self.extensions.clone(),
-                }))
-            }
-        };
-
-        let parsers = self
-            .init_options
-            .parsers
-            .get(extension.as_str())
-            .ok_or_else(|| {
-                FileSystemError::from(ExtensionError::UnknownParser {
-                    extension: extension.clone(),
-                    available: self.init_options.parsers.keys().cloned().collect(),
-                })
-            })?;
-        Ok((parsers, url, text))
     }
 }
 
