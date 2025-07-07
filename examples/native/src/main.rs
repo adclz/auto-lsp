@@ -17,12 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::db::{BaseDatabase, BaseDb};
 use auto_lsp::default::server::capabilities::WORKSPACE_PROVIDER;
 use auto_lsp::default::server::file_events::{changed_watched_files, open_text_document};
 use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
-use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
@@ -32,6 +31,7 @@ use auto_lsp::server::notification_registry::NotificationRegistry;
 use auto_lsp::server::options::InitOptions;
 use auto_lsp::server::request_registry::RequestRegistry;
 use auto_lsp::server::Session;
+use auto_lsp::{anyhow, lsp_types};
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
@@ -98,7 +98,10 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry
         .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
         .on_mut::<DidChangeTextDocument, _>(|s, p| {
-            s.db.update(&p.text_document.uri, &p.content_changes)?;
+            let file =
+                s.db.get_file(&p.text_document.uri)
+                    .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
+            file.update_edit(&mut s.db, &p)?;
             Ok(())
         })
         .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))

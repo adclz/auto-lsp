@@ -16,9 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::generated::Document;
+use auto_lsp::default::db::file::File;
 use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_types::Url;
-use auto_lsp::texter::core::text::Text;
 use auto_lsp::{configure_parsers, lsp_types};
 
 configure_parsers!(
@@ -34,13 +34,16 @@ pub fn create_html_db(source_code: &'static [&str]) -> impl BaseDatabase {
     source_code.iter().enumerate().for_each(|(i, source_code)| {
         let url = Url::parse(&format!("file:///test{i}.html")).expect("Failed to parse URL");
 
-        db.add_file_from_texter(
-            HTML_PARSERS.get("html").expect("Html parser not found"),
-            &url,
-            &lsp_types::PositionEncodingKind::UTF8,
-            Text::new(source_code.to_string()),
-        )
-        .expect("Failed to add file");
+        let file = File::from_string()
+            .db(&db)
+            .source(source_code.to_string())
+            .url(&url)
+            .parsers(HTML_PARSERS.get("html").expect("Html parser not found"))
+            .encoding(&lsp_types::PositionEncodingKind::UTF8)
+            .call()
+            .expect("Failed to create file");
+
+        db.add_file(file).expect("Failed to add file");
     });
 
     db

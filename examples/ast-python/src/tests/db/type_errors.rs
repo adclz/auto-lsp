@@ -22,9 +22,10 @@ use crate::generated::{
 };
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
+use auto_lsp::default::db::file::File;
 use auto_lsp::default::db::tracked::get_ast;
-use auto_lsp::default::db::{BaseDatabase, File, FileManager};
-use auto_lsp::lsp_types::Url;
+use auto_lsp::default::db::BaseDatabase;
+use auto_lsp::lsp_types::{DidChangeTextDocumentParams, Url};
 use auto_lsp::salsa::Accumulator;
 use auto_lsp::{lsp_types, salsa};
 use rstest::{fixture, rstest};
@@ -229,7 +230,7 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: impl BaseDatabase) {
 
     // Insert "xxxx"
     // "def foo(p: int = "x"): pass " -> "def foo(p: int = "xxxx"): pass "
-    let change = lsp_types::TextDocumentContentChangeEvent {
+    let changes = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
             start: lsp_types::Position {
                 line: 0,
@@ -244,7 +245,15 @@ fn non_redundant_edited_type_error(mut foo_with_type_error: impl BaseDatabase) {
         text: "xxxx".into(),
     };
 
-    foo_with_type_error.update(&file0_url, &[change]).unwrap();
+    let change = DidChangeTextDocumentParams {
+        text_document: lsp_types::VersionedTextDocumentIdentifier {
+            uri: file.url(&foo_with_type_error).clone(),
+            version: 1,
+        },
+        content_changes: vec![changes],
+    };
+
+    file.update_edit(&mut foo_with_type_error, &change).unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
         CheckErrorAccumulator,
@@ -277,7 +286,7 @@ fn fix_type_error(mut foo_with_type_error: impl BaseDatabase) {
 
     // Replace "x" with 1
     // "def foo(p: int = "x"): pass " -> "def foo(p: int = 1): pass "
-    let change = lsp_types::TextDocumentContentChangeEvent {
+    let changes = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
             start: lsp_types::Position {
                 line: 0,
@@ -292,7 +301,15 @@ fn fix_type_error(mut foo_with_type_error: impl BaseDatabase) {
         text: "1".into(),
     };
 
-    foo_with_type_error.update(&file0_url, &[change]).unwrap();
+    let change = DidChangeTextDocumentParams {
+        text_document: lsp_types::VersionedTextDocumentIdentifier {
+            uri: file.url(&foo_with_type_error).clone(),
+            version: 1,
+        },
+        content_changes: vec![changes],
+    };
+
+    file.update_edit(&mut foo_with_type_error, &change).unwrap();
 
     let foo_with_type_error_diagnostics = type_check_default_parameters::accumulated::<
         CheckErrorAccumulator,
