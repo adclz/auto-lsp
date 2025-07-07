@@ -24,6 +24,7 @@ log = { workspace = true }
 fastrace = { workspace = true }
 rayon = { workspace = true }
 rayon-par-bridge = { workspace = true }
+bon = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3.19.0"

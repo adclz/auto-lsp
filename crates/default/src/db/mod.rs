@@ -16,33 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+pub mod file;
 /// All structs and traits present in this module serve a minimal database implementation with basic file management.
 ///
 /// Depending on your needs, you might want to create your own database and inputs.
 pub mod lexer;
 pub mod tracked;
 
-use auto_lsp_core::document::Document;
-use auto_lsp_core::errors::{DataBaseError, TreeSitterError};
-use auto_lsp_core::parsers::Parsers;
+use crate::db::file::File;
+use auto_lsp_core::errors::DataBaseError;
 use dashmap::{DashMap, Entry};
-use lsp_types::{PositionEncodingKind, Url};
-use salsa::Setter;
+use lsp_types::Url;
 use salsa::{Database, Storage};
-use std::{hash::Hash, sync::Arc};
-use texter::core::text::Text;
-
-/// Input that represents a file in the database.
-///
-/// An [`lsp_types::Url`] is used as the unique identifier of the file.
-#[salsa::input]
-pub struct File {
-    #[return_ref]
-    pub url: Url,
-    pub parsers: &'static Parsers,
-    #[return_ref]
-    pub document: Arc<Document>,
-}
 
 /// Base database that stores files.
 ///
@@ -99,24 +84,11 @@ impl BaseDatabase for BaseDb {
 ///
 /// This trait is implemented for any database that implements [`BaseDatabase`].
 pub trait FileManager: BaseDatabase + salsa::Database {
-    fn add_file_from_texter(
-        &mut self,
-        parsers: &'static Parsers,
-        url: &Url,
-        encoding: &PositionEncodingKind,
-        texter: Text,
-    ) -> Result<(), DataBaseError> {
-        let tree = parsers
-            .parser
-            .write()
-            .parse(texter.text.as_bytes(), None)
-            .ok_or_else(|| DataBaseError::from((url, TreeSitterError::TreeSitterParser)))?;
-
-        let document = Document::new(texter, tree, encoding);
-        let file = File::new(self, url.clone(), parsers, Arc::new(document));
-
-        match self.get_files().entry(url.clone()) {
-            Entry::Occupied(_) => Err(DataBaseError::FileAlreadyExists { uri: url.clone() }),
+    fn add_file(&mut self, file: File) -> Result<(), DataBaseError> {
+        match self.get_files().entry(file.url(self)) {
+            Entry::Occupied(_) => Err(DataBaseError::FileAlreadyExists {
+                uri: file.url(self).clone(),
+            }),
             Entry::Vacant(entry) => {
                 entry.insert(file);
                 Ok(())
@@ -124,36 +96,14 @@ pub trait FileManager: BaseDatabase + salsa::Database {
         }
     }
 
-    fn update(
-        &mut self,
-        url: &Url,
-        changes: &[lsp_types::TextDocumentContentChangeEvent],
-    ) -> Result<(), DataBaseError> {
-        let file = *self
-            .get_files()
-            .get_mut(url)
-            .ok_or_else(|| DataBaseError::FileNotFound { uri: url.clone() })?;
-
-        let mut doc = (*file.document(self)).clone();
-
-        doc.update(&mut file.parsers(self).parser.write(), changes)
-            .map_err(|e| DataBaseError::from((url, e)))?;
-
-        file.set_document(self).to(Arc::new(doc));
-        Ok(())
-    }
-
     fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError> {
-        let file = *self
-            .get_files()
-            .get_mut(url)
-            .ok_or_else(|| DataBaseError::FileNotFound { uri: url.clone() })?;
-
-        self.get_files().remove(url);
-
-        file.set_url(self)
-            .to(Url::parse("file:///dev/null").unwrap());
-        Ok(())
+        match self.get_files().entry(url.clone()) {
+            Entry::Occupied(entry) => {
+                entry.remove();
+                Ok(())
+            }
+            Entry::Vacant(_) => Err(DataBaseError::FileNotFound { uri: url.clone() }),
+        }
     }
 }
 

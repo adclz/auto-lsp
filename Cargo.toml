@@ -53,6 +53,7 @@ ariadne = "0.5.1"
 fastrace = "0.7.9"
 walkdir = "2.5.0"
 rayon-par-bridge = "0.1.0"
+bon = "3.6.4"
 
 [dependencies]
 tree-sitter-language = "0.1.5"
