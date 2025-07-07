@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use lsp_types::PositionEncodingKind;
-use std::{ops::Range, sync::atomic::AtomicUsize};
+use std::ops::Range;
 use texter::core::text::Text;
 use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
@@ -45,28 +45,22 @@ pub struct Document {
     pub encoding: Encoding,
 }
 
-thread_local! {
-    /// Thread-local storage for the last line index accessed.
-    ///
-    /// It is initialized to 0, indicating that no lines have been accessed yet.
-    /// This is a performance optimization to avoid searching from the beginning of the document
-    /// every time we need to find a position.
-    /// The value is updated whenever a position is found, so that subsequent calls can start from
-    /// the last accessed line.
-    /// If the offset is greater than value, we reset the counter to 0.
-
-    pub static LAST_LINE: AtomicUsize = const { AtomicUsize::new(0) };
-}
-
 impl Document {
-    pub fn new(texter: Text, tree: Tree, encoding: &PositionEncodingKind) -> Self {
+    /// Creates a new `Document` instance with the provided text, syntax tree, and encoding.
+    ///
+    /// Will default to UTF16 if the encoding is not specified or invalid.
+    pub fn new(texter: Text, tree: Tree, encoding: Option<&PositionEncodingKind>) -> Self {
         Self {
             texter,
             tree,
-            encoding: match encoding.as_str() {
-                "utf-16" => Encoding::UTF16,
-                "utf-32" => Encoding::UTF32,
-                _ => Encoding::UTF8,
+            encoding: match encoding.as_ref() {
+                Some(enc) => match enc.as_str() {
+                    "utf-8" => Encoding::UTF8,
+                    "utf-16" => Encoding::UTF16,
+                    "utf-32" => Encoding::UTF32,
+                    _ => Encoding::UTF16,
+                },
+                None => Encoding::UTF16,
             },
         }
     }
@@ -281,11 +275,11 @@ mod test {
         let document = Document::new(
             text,
             parser.parse(source, None).unwrap(),
-            &match encoding {
+            Some(&match encoding {
                 Encoding::UTF8 => PositionEncodingKind::UTF8,
                 Encoding::UTF16 => PositionEncodingKind::UTF16,
                 Encoding::UTF32 => PositionEncodingKind::UTF32,
-            },
+            }),
         );
 
         assert_eq!(&document.texter.br_indexes.0, &[0, 20, 29, 57]);
@@ -371,11 +365,11 @@ mod test {
         let document = Document::new(
             text,
             parser.parse(source, None).unwrap(),
-            &match encoding {
+            Some(&match encoding {
                 Encoding::UTF8 => PositionEncodingKind::UTF8,
                 Encoding::UTF16 => PositionEncodingKind::UTF16,
                 Encoding::UTF32 => PositionEncodingKind::UTF32,
-            },
+            }),
         );
 
         assert_eq!(&document.texter.br_indexes.0, &[0]);
@@ -423,11 +417,11 @@ mod test {
         let document = Document::new(
             text,
             parser.parse(source, None).unwrap(),
-            &match encoding {
+            Some(&match encoding {
                 Encoding::UTF8 => PositionEncodingKind::UTF8,
                 Encoding::UTF16 => PositionEncodingKind::UTF16,
                 Encoding::UTF32 => PositionEncodingKind::UTF32,
-            },
+            }),
         );
 
         assert_eq!(&document.texter.br_indexes.0, &[0, 20, 35, 44]);
@@ -525,7 +519,7 @@ mod test {
         let document = Document::new(
             text,
             parser.parse(source, None).unwrap(),
-            &PositionEncodingKind::UTF8,
+            Some(&PositionEncodingKind::UTF8),
         );
 
         // Ensure the line break indexes are correct
@@ -582,7 +576,7 @@ mod test {
         let document = Document::new(
             text,
             parser.parse(source, None).unwrap(),
-            &PositionEncodingKind::UTF16,
+            Some(&PositionEncodingKind::UTF16),
         );
 
         assert_eq!(&document.texter.br_indexes.0, &[0, 6, 15, 25]);
