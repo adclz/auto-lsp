@@ -34,13 +34,13 @@ use thiserror::Error;
 pub enum ParseError {
     #[error("{error}")]
     LexerError {
-        span: Span<'static>,
+        span: Span,
         #[source]
         error: LexerError,
     },
     #[error("{error}")]
     AstError {
-        span: Span<'static>,
+        span: Span,
         #[source]
         error: AstError,
     },

@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ops::Deref};
+use std::ops::Deref;
 
 /// A newtype for [`tree_sitter::Range`].
 ///
@@ -8,9 +8,9 @@ use std::{borrow::Cow, ops::Deref};
 ///
 /// Tree-sitter ranges also retain byte offsets, which are not available in [`lsp_types::Range`].
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Span<'a>(pub(crate) Cow<'a, tree_sitter::Range>);
+pub struct Span(pub(crate) tree_sitter::Range);
 
-impl<'a> Span<'a> {
+impl Span {
     pub fn lsp(&self) -> lsp_types::Range {
         self.into()
     }
@@ -20,7 +20,7 @@ impl<'a> Span<'a> {
     }
 }
 
-impl Deref for Span<'_> {
+impl Deref for Span {
     type Target = tree_sitter::Range;
 
     fn deref(&self) -> &Self::Target {
@@ -28,19 +28,19 @@ impl Deref for Span<'_> {
     }
 }
 
-impl<'a> From<tree_sitter::Range> for Span<'a> {
+impl From<tree_sitter::Range> for Span {
     fn from(range: tree_sitter::Range) -> Self {
-        Span(Cow::Owned(range))
+        Span(range)
     }
 }
 
-impl<'a> From<&'a tree_sitter::Range> for Span<'a> {
+impl<'a> From<&'a tree_sitter::Range> for Span {
     fn from(range: &'a tree_sitter::Range) -> Self {
-        Span(Cow::Borrowed(range))
+        Span(range.clone())
     }
 }
 
-impl From<&Span<'_>> for lsp_types::Range {
+impl From<&Span> for lsp_types::Range {
     fn from(range: &Span) -> Self {
         lsp_types::Range {
             start: lsp_types::Position::new(
@@ -55,19 +55,19 @@ impl From<&Span<'_>> for lsp_types::Range {
     }
 }
 
-impl From<Span<'_>> for lsp_types::Range {
+impl From<Span> for lsp_types::Range {
     fn from(span: Span) -> Self {
         (&span).into()
     }
 }
 
-impl PartialEq<tree_sitter::Range> for Span<'_> {
+impl PartialEq<tree_sitter::Range> for Span {
     fn eq(&self, other: &tree_sitter::Range) -> bool {
-        *self == Span(Cow::Borrowed(other))
+        self == other
     }
 }
 
-impl PartialEq<lsp_types::Range> for Span<'_> {
+impl PartialEq<lsp_types::Range> for Span {
     fn eq(&self, other: &lsp_types::Range) -> bool {
         lsp_types::Range::from(self) == *other
     }
@@ -86,7 +86,7 @@ mod tests {
             end_point: tree_sitter::Point::new(0, 10),
         };
 
-        let span = Span(Cow::Owned(range));
+        let span = Span(range);
 
         assert_eq!(span, range);
         assert_eq!(
