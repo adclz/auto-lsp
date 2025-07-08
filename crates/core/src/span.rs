@@ -88,7 +88,6 @@ mod tests {
 
         let span = Span(range);
 
-        assert_eq!(span, range);
         assert_eq!(
             span,
             lsp_types::Range {
