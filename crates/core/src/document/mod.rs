@@ -46,22 +46,28 @@ pub struct Document {
 }
 
 impl Document {
-    /// Creates a new `Document` instance with the provided text, syntax tree, and encoding.
+    /// Creates a new `Document` instance with the provided source, syntax tree, and encoding.
     ///
     /// Will default to UTF16 if the encoding is not specified or invalid.
-    pub fn new(texter: Text, tree: Tree, encoding: Option<&PositionEncodingKind>) -> Self {
-        Self {
-            texter,
-            tree,
-            encoding: match encoding.as_ref() {
-                Some(enc) => match enc.as_str() {
-                    "utf-8" => Encoding::UTF8,
-                    "utf-16" => Encoding::UTF16,
-                    "utf-32" => Encoding::UTF32,
-                    _ => Encoding::UTF16,
-                },
-                None => Encoding::UTF16,
+    pub fn new(source: String, tree: Tree, encoding: Option<&PositionEncodingKind>) -> Self {
+        let encoding = match encoding.as_ref() {
+            Some(enc) => match enc.as_str() {
+                "utf-8" => Encoding::UTF8,
+                "utf-16" => Encoding::UTF16,
+                "utf-32" => Encoding::UTF32,
+                _ => Encoding::UTF16,
             },
+            None => Encoding::UTF16,
+        };
+
+        Self {
+            texter: match encoding {
+                Encoding::UTF8 => Text::new(source),
+                Encoding::UTF16 => Text::new_utf16(source),
+                Encoding::UTF32 => Text::new_utf32(source),
+            },
+            tree,
+            encoding,
         }
     }
 
@@ -267,13 +273,8 @@ mod test {
     #[case(Encoding::UTF32)]
     fn position_at(mut parser: Parser, #[case] encoding: Encoding) {
         let source = "<div>こんにちは\nGoodbye\r\nSee 👨‍👨‍👧 you!\n</div>";
-        let text = match encoding {
-            Encoding::UTF8 => Text::new(source.into()),
-            Encoding::UTF16 => Text::new_utf16(source.into()),
-            Encoding::UTF32 => Text::new_utf32(source.into()),
-        };
         let document = Document::new(
-            text,
+            source.into(),
             parser.parse(source, None).unwrap(),
             Some(&match encoding {
                 Encoding::UTF8 => PositionEncodingKind::UTF8,
@@ -357,13 +358,8 @@ mod test {
     #[case(Encoding::UTF32)]
     fn position_at_single_line(mut parser: Parser, #[case] encoding: Encoding) {
         let source = "<div>✨✨✨AREALLYREALLYREALLYLONGTEXT<div>";
-        let text = match encoding {
-            Encoding::UTF8 => Text::new(source.into()),
-            Encoding::UTF16 => Text::new_utf16(source.into()),
-            Encoding::UTF32 => Text::new_utf32(source.into()),
-        };
         let document = Document::new(
-            text,
+            source.into(),
             parser.parse(source, None).unwrap(),
             Some(&match encoding {
                 Encoding::UTF8 => PositionEncodingKind::UTF8,
@@ -409,13 +405,8 @@ mod test {
     #[case(Encoding::UTF32)]
     fn range_at(mut parser: Parser, #[case] encoding: Encoding) {
         let source = "<div>こんにちは\n❤️Goodbye\r\nSee you!\n</div>";
-        let text = match encoding {
-            Encoding::UTF8 => Text::new(source.into()),
-            Encoding::UTF16 => Text::new_utf16(source.into()),
-            Encoding::UTF32 => Text::new_utf32(source.into()),
-        };
         let document = Document::new(
-            text,
+            source.into(),
             parser.parse(source, None).unwrap(),
             Some(&match encoding {
                 Encoding::UTF8 => PositionEncodingKind::UTF8,
@@ -515,9 +506,8 @@ mod test {
     #[rstest]
     fn range_at_single_line(mut parser: Parser) {
         let source = "<div>AREALLYREALLYREALLYLONGTEXT<div>";
-        let text = Text::new(source.into());
         let document = Document::new(
-            text,
+            source.into(),
             parser.parse(source, None).unwrap(),
             Some(&PositionEncodingKind::UTF8),
         );
@@ -572,9 +562,8 @@ mod test {
     #[rstest]
     fn offset_at(mut parser: Parser) {
         let source = "Apples\nBashdjad\nashdkasdh\nasdsad";
-        let text = Text::new(source.into());
         let document = Document::new(
-            text,
+            source.into(),
             parser.parse(source, None).unwrap(),
             Some(&PositionEncodingKind::UTF16),
         );

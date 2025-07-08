@@ -28,7 +28,6 @@ use lsp_types::{InitializeParams, InitializeResult, PositionEncodingKind};
 use serde::Deserialize;
 #[cfg(target_arch = "wasm32")]
 use std::fs;
-use texter::core::text::Text;
 
 #[allow(non_snake_case, reason = "JSON")]
 #[derive(Debug, Deserialize)]
@@ -40,33 +39,8 @@ struct InitializationOptions {
     perFileParser: HashMap<String, String>,
 }
 
-/// Function to create a new [`Text`] from a [`String`]
-pub(crate) type TextFn = fn(String) -> Text;
-
-fn decide_encoding(encs: Option<&[PositionEncodingKind]>) -> (TextFn, PositionEncodingKind) {
-    const DEFAULT: (TextFn, PositionEncodingKind) = (Text::new_utf16, PositionEncodingKind::UTF16);
-    let Some(encs) = encs else {
-        return DEFAULT;
-    };
-
-    for enc in encs {
-        if *enc == PositionEncodingKind::UTF16 {
-            return (Text::new_utf16, enc.clone());
-        } else if *enc == PositionEncodingKind::UTF8 {
-            return (Text::new, enc.clone());
-        }
-    }
-
-    DEFAULT
-}
-
 impl<Db: salsa::Database> Session<Db> {
-    pub(crate) fn new(
-        init_options: InitOptions,
-        connection: Connection,
-        text_fn: TextFn,
-        db: Db,
-    ) -> Self {
+    pub(crate) fn new(init_options: InitOptions, connection: Connection, db: Db) -> Self {
         let (sender, task_rx) = crossbeam_channel::unbounded();
 
         let max_threads = std::thread::available_parallelism()
@@ -87,7 +61,6 @@ impl<Db: salsa::Database> Session<Db> {
             init_options,
             encoding,
             connection,
-            text_fn,
             extensions: HashMap::new(),
             req_queue: ReqQueue::default(),
             db,
@@ -123,9 +96,6 @@ impl<Db: salsa::Database> Session<Db> {
             .as_ref()
             .and_then(|g| g.position_encodings.as_deref());
 
-        let (t_fn, enc) = decide_encoding(pos_encoding);
-        init_options.capabilities.position_encoding = Some(enc);
-
         let server_capabilities = serde_json::to_value(&InitializeResult {
             capabilities: init_options.capabilities.clone(),
             server_info: init_options.server_info.clone(),
@@ -134,7 +104,7 @@ impl<Db: salsa::Database> Session<Db> {
 
         connection.initialize_finish(id, server_capabilities)?;
 
-        let mut session = Session::new(init_options, connection, t_fn, db);
+        let mut session = Session::new(init_options, connection, db);
 
         let options = InitializationOptions::deserialize(
             params

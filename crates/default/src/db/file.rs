@@ -68,11 +68,10 @@ impl File {
         doc: &lsp_types::TextDocumentItem,
     ) -> Result<Self, RuntimeError> {
         let url = &doc.uri;
-        let text = Text::new(doc.text.clone());
 
         let parsers = Self::get_ast_parser(session, &doc.language_id)?;
-        let tree = Self::ts_parse(parsers, &text, url)?;
-        let document = Document::new(text, tree, Some(&session.encoding));
+        let tree = Self::ts_parse(parsers, &doc.text, url)?;
+        let document = Document::new(doc.text.clone(), tree, Some(&session.encoding));
 
         Ok(File::new(
             &session.db,
@@ -92,10 +91,8 @@ impl File {
         parsers: &'static Parsers,
         encoding: Option<&PositionEncodingKind>,
     ) -> Result<Self, RuntimeError> {
-        let text = Text::new(source);
-
-        let tree = Self::ts_parse(parsers, &text, url)?;
-        let document = Document::new(text, tree, encoding);
+        let tree = Self::ts_parse(parsers, &source, url)?;
+        let document = Document::new(source, tree, encoding);
 
         Ok(File::new(
             db,
@@ -152,9 +149,8 @@ impl File {
         event: &lsp_types::TextDocumentItem,
     ) -> Result<(), DataBaseError> {
         let db = &mut session.db;
-        let text = Text::new(event.text.clone());
-        let tree = Self::ts_parse(self.parsers(db), &text, &self.url(db))?;
-        let document = Document::new(text, tree, Some(&PositionEncodingKind::UTF16));
+        let tree = Self::ts_parse(self.parsers(db), &event.text, &self.url(db))?;
+        let document = Document::new(event.text.clone(), tree, Some(&session.encoding));
 
         self.set_document(db).to(Arc::new(document));
         self.set_version(db).to(Some(event.version));
@@ -163,9 +159,12 @@ impl File {
 
     /// Resets the file to an empty document.
     pub fn reset(&self, db: &mut impl BaseDatabase) -> Result<(), DataBaseError> {
-        let text = Text::new("".into());
-        let tree = Self::ts_parse(self.parsers(db), &text, &self.url(db))?;
-        let document = Document::new(text, tree, Some(&PositionEncodingKind::UTF16));
+        let tree = Self::ts_parse(self.parsers(db), &"", &self.url(db))?;
+        let document = Document {
+            texter: Text::new("".into()),
+            tree,
+            encoding: self.document(db).encoding,
+        };
 
         self.set_document(db).to(Arc::new(document));
         self.set_version(db).to(None);
@@ -175,7 +174,7 @@ impl File {
     pub fn read_file(
         session: &Session<impl BaseDatabase>,
         file: &Path,
-    ) -> Result<(&'static Parsers, Url, Text), RuntimeError> {
+    ) -> Result<(&'static Parsers, Url, String), RuntimeError> {
         let url = Url::from_file_path(file).map_err(|_| FileSystemError::FilePathToUrl {
             path: file.to_path_buf(),
         })?;
@@ -184,7 +183,9 @@ impl File {
             path: url.clone(),
             error: e.to_string(),
         })?;
+
         let mut buffer = String::new();
+
         open_file
             .read_to_string(&mut buffer)
             .map_err(|e| FileSystemError::FileRead {
@@ -195,17 +196,16 @@ impl File {
         let extension = get_extension(&url)?;
 
         let parsers = Self::get_ast_parser(session, &extension)?;
-        let text = Text::new(buffer);
 
-        Ok((parsers, url, text))
+        Ok((parsers, url, buffer))
     }
 
     /// Utility function to parse a tree sitter tree.
-    fn ts_parse(parsers: &'static Parsers, text: &Text, url: &Url) -> Result<Tree, DataBaseError> {
+    fn ts_parse(parsers: &'static Parsers, source: &str, url: &Url) -> Result<Tree, DataBaseError> {
         parsers
             .parser
             .write()
-            .parse(text.text.as_bytes(), None)
+            .parse(source.as_bytes(), None)
             .ok_or_else(|| DataBaseError::from((url, TreeSitterError::TreeSitterParser)))
     }
 

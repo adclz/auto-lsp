@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use init::TextFn;
 use lsp_server::Connection;
 use main_loop::Task;
 use options::InitOptions;
@@ -39,7 +38,6 @@ pub struct Session<Db: salsa::Database> {
     /// Text `fn` used to parse text files with the correct encoding.
     ///
     /// The client is responsible for providing the encoding at initialization (UTF-8, 16 or 32).
-    pub text_fn: TextFn,
     pub encoding: lsp_types::PositionEncodingKind,
     /// Language extensions to parser mappings.
     pub extensions: HashMap<String, String>,
