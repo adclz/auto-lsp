@@ -46,13 +46,16 @@ use crate::server::workspace_init::get_extension;
 ///
 /// `reset` can be used to delete the content of a file.
 ///
-#[salsa::input]
+#[salsa::input(debug)]
 pub struct File {
-    #[return_ref]
+    #[returns(ref)]
     pub url: Url,
+
     pub parsers: &'static Parsers,
-    #[return_ref]
+
+    #[returns(ref)]
     pub document: Arc<Document>,
+
     // Document version, None if created via the file system.
     pub version: Option<i32>,
 }
@@ -134,10 +137,10 @@ impl File {
         event: &DidChangeTextDocumentParams,
     ) -> Result<(), DataBaseError> {
         let changes = &event.content_changes;
-        let mut doc = (*self.document(db)).clone();
+        let mut doc = (**self.document(db)).clone();
 
         doc.update(&mut self.parsers(db).parser.write(), changes)
-            .map_err(|e| DataBaseError::from((&self.url(db), e)))?;
+            .map_err(|e| DataBaseError::from((self.url(db), e)))?;
 
         self.set_document(db).to(Arc::new(doc));
         self.set_version(db).to(Some(event.text_document.version));

@@ -85,7 +85,7 @@ impl BaseDatabase for BaseDb {
 /// This trait is implemented for any database that implements [`BaseDatabase`].
 pub trait FileManager: BaseDatabase + salsa::Database {
     fn add_file(&mut self, file: File) -> Result<(), DataBaseError> {
-        match self.get_files().entry(file.url(self)) {
+        match self.get_files().entry(file.url(self).clone()) {
             Entry::Occupied(_) => Err(DataBaseError::FileAlreadyExists {
                 uri: file.url(self).clone(),
             }),
