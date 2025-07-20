@@ -1,4 +1,8 @@
-use std::{io::Read, path::Path, sync::Arc};
+use std::{
+    io::{BufReader, Read},
+    path::Path,
+    sync::Arc,
+};
 
 use auto_lsp_core::{
     document::Document,
@@ -12,9 +16,11 @@ use salsa::Setter;
 use texter::core::text::Text;
 use tree_sitter::Tree;
 
-use crate::{db::BaseDatabase, server::workspace_init::get_extension};
+use crate::server::workspace_init::get_extension;
 
 /// A salsa input that represents a file in the database.
+///
+/// # Creating a File
 ///
 /// Multiple builders are provided to create a file:
 ///  - `from_fs`: Creates a file by reading the file system.
@@ -23,9 +29,23 @@ use crate::{db::BaseDatabase, server::workspace_init::get_extension};
 ///
 /// `from_fs` is suitable for file watchers and workspace loading (e.g. [`lsp_types::notification::DidChangeWatchedFiles`]).
 ///
-/// `from_text_doc` is suitable for text document events (e.g. [`lsp_types::notification::DidChangeTextDocument`]).
+/// `from_text_doc` is suitable for open text document events (e.g. [`lsp_types::notification::DidOpenTextDocument`]).
 ///
 /// `from_string` is suitable for tests and in-memory files.
+///
+/// # Updating a File
+///
+/// Files can be updated using:
+///  - `update_edit`: Updates the file from a [`DidChangeTextDocumentParams`] event.
+///  - `update_full_fs`: Updates the file by reading the file system.
+///         - This will aso check if the file has changed and only update if necessary.
+///  - `update_full_text_doc`: Updates the file from [`TextDocumentItem`].
+///  - `reset`: Resets the file to an empty document.
+///
+/// # Deleting a File
+///
+/// `reset` can be used to delete the content of a file.
+///
 #[salsa::input]
 pub struct File {
     #[return_ref]
@@ -41,16 +61,20 @@ pub struct File {
 impl File {
     /// Creates a new file by reading the file system.
     #[builder]
-    pub fn from_fs(session: &Session<impl BaseDatabase>, url: &Url) -> Result<Self, RuntimeError> {
+    pub fn from_fs(
+        session: &Session<impl salsa::Database>,
+        url: &Url,
+    ) -> Result<Self, RuntimeError> {
         let file_path = url.to_file_path().map_err(|_| {
             RuntimeError::from(FileSystemError::FileUrlToFilePath { path: url.clone() })
         })?;
 
-        let (parsers, _, text) =
-            Self::read_file(session, &file_path).map_err(RuntimeError::from)?;
+        let (_file, buffer) = Self::read_file_content(&file_path).map_err(RuntimeError::from)?;
 
-        let tree = Self::ts_parse(parsers, &text, url)?;
-        let document = Document::new(text, tree, Some(&session.encoding));
+        let extension = get_extension(&url)?;
+        let parsers = Self::get_ast_parser(session, &extension)?;
+        let tree = Self::ts_parse(parsers, &buffer, url)?;
+        let document = Document::new(buffer, tree, Some(&session.encoding));
 
         Ok(File::new(
             &session.db,
@@ -123,7 +147,7 @@ impl File {
     /// Updates the file from the file system.
     pub fn update_full_fs(
         &self,
-        session: &mut Session<impl BaseDatabase>,
+        session: &mut Session<impl salsa::Database>,
     ) -> Result<(), RuntimeError> {
         let url = self.url(&session.db).clone();
 
@@ -131,11 +155,18 @@ impl File {
             RuntimeError::from(FileSystemError::FileUrlToFilePath { path: url.clone() })
         })?;
 
-        let (parsers, _, text) =
-            Self::read_file(&session, &file_path).map_err(RuntimeError::from)?;
+        let (_file, buffer) = Self::read_file_content(&file_path).map_err(RuntimeError::from)?;
 
-        let tree = Self::ts_parse(parsers, &text, &url)?;
-        let document = Document::new(text, tree, Some(&session.encoding));
+        if self.fail_fast_check(&session.db, &buffer) {
+            log::info!("File unchanged: {}", url);
+            return Ok(());
+        }
+
+        let extension = get_extension(&url)?;
+
+        let parsers = Self::get_ast_parser(session, &extension)?;
+        let tree = Self::ts_parse(parsers, &buffer, &url)?;
+        let document = Document::new(buffer, tree, Some(&session.encoding));
 
         let db = &mut session.db;
         self.set_document(db).to(Arc::new(document));
@@ -158,7 +189,7 @@ impl File {
     }
 
     /// Resets the file to an empty document.
-    pub fn reset(&self, db: &mut impl BaseDatabase) -> Result<(), DataBaseError> {
+    pub fn reset(&self, db: &mut impl salsa::Database) -> Result<(), DataBaseError> {
         let tree = Self::ts_parse(self.parsers(db), &"", &self.url(db))?;
         let document = Document {
             texter: Text::new("".into()),
@@ -171,10 +202,7 @@ impl File {
         Ok(())
     }
 
-    pub fn read_file(
-        session: &Session<impl BaseDatabase>,
-        file: &Path,
-    ) -> Result<(&'static Parsers, Url, String), RuntimeError> {
+    pub fn read_file_content(file: &Path) -> Result<(std::fs::File, String), RuntimeError> {
         let url = Url::from_file_path(file).map_err(|_| FileSystemError::FilePathToUrl {
             path: file.to_path_buf(),
         })?;
@@ -193,11 +221,41 @@ impl File {
                 error: e.to_string(),
             })?;
 
-        let extension = get_extension(&url)?;
+        Ok((open_file, buffer))
+    }
 
-        let parsers = Self::get_ast_parser(session, &extension)?;
+    /// Check if this file is equal to a string and stops as soon as it finds a difference.
+    pub fn fail_fast_check(&self, db: &impl salsa::Database, file2: &str) -> bool {
+        let doc = self.document(db);
 
-        Ok((parsers, url, buffer))
+        // simple length check
+        if doc.as_str().len() != file2.len() {
+            return false;
+        }
+
+        let mut reader1 = BufReader::new(doc.as_bytes());
+        let mut reader2 = BufReader::new(file2.as_bytes());
+        let mut buf1 = [0; 10000];
+        let mut buf2 = [0; 10000];
+        loop {
+            if let Result::Ok(n1) = reader1.read(&mut buf1) {
+                if n1 > 0 {
+                    if let Result::Ok(n2) = reader2.read(&mut buf2) {
+                        if n1 == n2 {
+                            if buf1 == buf2 {
+                                continue;
+                            }
+                        }
+                        return false;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        true
     }
 
     /// Utility function to parse a tree sitter tree.

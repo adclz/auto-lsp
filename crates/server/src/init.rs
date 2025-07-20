@@ -73,7 +73,7 @@ impl<Db: salsa::Database> Session<Db> {
     ///
     /// This will establish the connection with the client and send the server capabilities.
     pub fn create(
-        mut init_options: InitOptions,
+        init_options: InitOptions,
         connection: Connection,
         db: Db,
     ) -> anyhow::Result<(Session<Db>, InitializeParams)> {
@@ -89,12 +89,6 @@ impl<Db: salsa::Database> Session<Db> {
         // also be implemented to use sockets or HTTP.
         let (id, resp) = connection.initialize_start()?;
         let params: InitializeParams = serde_json::from_value(resp)?;
-
-        let pos_encoding = params
-            .capabilities
-            .general
-            .as_ref()
-            .and_then(|g| g.position_encodings.as_deref());
 
         let server_capabilities = serde_json::to_value(&InitializeResult {
             capabilities: init_options.capabilities.clone(),
