@@ -42,7 +42,7 @@ pub struct Session<Db: salsa::Database> {
     /// Language extensions to parser mappings.
     pub extensions: HashMap<String, String>,
     pub(crate) task_rx: crossbeam_channel::Receiver<Task>,
-    pub(crate) task_pool: task_pool::TaskPool<Task>,
+    pub task_pool: task_pool::TaskPool<Task>,
     /// Request queue for incoming requests
     pub req_queue: ReqQueue<Db>,
     pub connection: Connection,
