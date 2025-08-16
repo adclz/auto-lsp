@@ -13,7 +13,13 @@ edition = "2021"
 readme = "README.MD"
 
 [workspace]
-members = ["crates/core", "crates/codegen", "crates/server", "crates/default"]
+members = [
+    "crates/core",
+    "crates/codegen",
+    "crates/server",
+    "crates/default",
+    "crates/bench",
+]
 exclude = [
     "examples/vscode-wasi/server",
     "examples/vscode-native/server",
