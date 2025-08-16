@@ -231,33 +231,39 @@ impl File {
     pub fn fail_fast_check(&self, db: &impl salsa::Database, file2: &str) -> bool {
         let doc = self.document(db);
 
-        // simple length check
+        // Quick length check
         if doc.as_str().len() != file2.len() {
             return false;
         }
 
         let mut reader1 = BufReader::new(doc.as_bytes());
         let mut reader2 = BufReader::new(file2.as_bytes());
-        let mut buf1 = [0; 10000];
-        let mut buf2 = [0; 10000];
+
+        let mut buf1 = [0; 8192];
+        let mut buf2 = [0; 8192];
+
         loop {
-            if let Result::Ok(n1) = reader1.read(&mut buf1) {
-                if n1 > 0 {
-                    if let Result::Ok(n2) = reader2.read(&mut buf2) {
-                        if n1 == n2 {
-                            if buf1 == buf2 {
-                                continue;
-                            }
-                        }
-                        return false;
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                break;
+            let n1 = match reader1.read(&mut buf1) {
+                Ok(n) => n,
+                Err(_) => return false,
+            };
+            let n2 = match reader2.read(&mut buf2) {
+                Ok(n) => n,
+                Err(_) => return false,
+            };
+
+            if n1 != n2 {
+                return false;
+            }
+            if n1 == 0 {
+                break; // EOF reached, all chunks matched
+            }
+
+            if &buf1[..n1] != &buf2[..n2] {
+                return false;
             }
         }
+
         true
     }
 
