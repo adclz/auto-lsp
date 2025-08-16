@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-server-v0.1.2...auto-lsp-server-v0.2.0)
+
+### Features
+
+- Add position encoding support to Document and Db - ([dd1f4e6](https://github.com/adclz/auto-lsp/commit/dd1f4e6a90451cdd8ee5b0b466650828e51bca2d))
+
+### Refactor
+
+- *(default)* Update file input events - ([422a7e5](https://github.com/adclz/auto-lsp/commit/422a7e5715f8e377f595330dfb31a4f245744e39))
+- *(document)* Update Document constructor to use source strings directly - ([8d639be](https://github.com/adclz/auto-lsp/commit/8d639be29c20302400b8e84921d980c4cd129e6a))
+- *(server)* Make TaskPool and Task public - ([6308ab8](https://github.com/adclz/auto-lsp/commit/6308ab848167f6cadab397e8e38594a5df832568))
+
+
 ## [0.1.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-server-v0.1.1...auto-lsp-server-v0.1.2)
 
 ### Bug Fixes
