@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install nextest
-        run: cargo install cargo-nextest
+        uses: taiki-e/install-action@nextest
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
       - name: nextest

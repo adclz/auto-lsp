@@ -219,6 +219,16 @@ pub static RUST_KEYWORDS: phf::Map<&'static str, &'static str> = phf::phf_map! {
     "Result" => "_Result",
     "Option" => "_Option",
     "Vec" => "_Vec",
+    "0" => "Zero",
+    "1" => "One",
+    "2" => "Two",
+    "3" => "Three",
+    "4" => "Four",
+    "5" => "Five",
+    "6" => "Six",
+    "7" => "Seven",
+    "8" => "Eight",
+    "9" => "Nine",
 };
 
 #[cfg(test)]
@@ -276,5 +286,9 @@ mod tests {
         assert_eq!(sanitize_string_to_pascal("hello_World"), "HelloWorld");
         // Test with multiple underscores
         assert_eq!(sanitize_string_to_pascal("hello__world"), "HelloWorld");
+
+        // Test numbers
+        assert_eq!(sanitize_string("0"), "Zero");
+        assert_eq!(sanitize_string("123"), "OneTwoThree");
     }
 }

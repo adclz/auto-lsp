@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use auto_lsp_core::errors::{LexerError, ParseErrorAccumulator};
-use lsp_types::{Position, Range};
 use salsa::Accumulator;
 use tree_sitter::Node;
 
@@ -43,22 +42,9 @@ pub fn get_tree_sitter_errors(db: &dyn BaseDatabase, node: &Node, source_code: &
 }
 
 fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
-    let start_position = node.start_position();
-    let end_position = node.end_position();
-    let range = Range {
-        start: Position {
-            line: start_position.row as u32,
-            character: start_position.column as u32,
-        },
-        end: Position {
-            line: end_position.row as u32,
-            character: end_position.column as u32,
-        },
-    };
-
     if node.is_missing() {
         LexerError::Missing {
-            range,
+            range: node.range(),
             error: format!("Syntax error: Missing '{}'", node.grammar_name()),
             grammar_name: node.grammar_name(),
         }
@@ -73,7 +59,7 @@ fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
             })
             .collect();
         LexerError::Syntax {
-            range,
+            range: node.range(),
             error: format!("Unexpected token(s): '{}'", children_text.join(" ")),
             affected: children_text.join(" "),
         }

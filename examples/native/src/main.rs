@@ -17,9 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use ast_python::db::PYTHON_PARSERS;
-use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
+use auto_lsp::default::db::{BaseDatabase, BaseDb};
 use auto_lsp::default::server::capabilities::WORKSPACE_PROVIDER;
-use auto_lsp::default::server::file_events::{changed_watched_files, open_text_document};
+use auto_lsp::default::server::file_events::{
+    change_text_document, changed_watched_files, open_text_document,
+};
 use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
@@ -97,10 +99,7 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
 ) -> &mut NotificationRegistry<Db> {
     registry
         .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
-        .on_mut::<DidChangeTextDocument, _>(|s, p| {
-            s.db.update(&p.text_document.uri, &p.content_changes)?;
-            Ok(())
-        })
+        .on_mut::<DidChangeTextDocument, _>(|s, p| Ok(change_text_document(s, p)?))
         .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
         .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {

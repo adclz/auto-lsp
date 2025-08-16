@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::{collections::HashMap, path::PathBuf, str::Utf8Error};
 
+use crate::span::Span;
 use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
 use lsp_types::Url;
 use thiserror::Error;
@@ -33,13 +34,13 @@ use thiserror::Error;
 pub enum ParseError {
     #[error("{error}")]
     LexerError {
-        range: lsp_types::Range,
+        span: Span,
         #[source]
         error: LexerError,
     },
     #[error("{error}")]
     AstError {
-        range: lsp_types::Range,
+        span: Span,
         #[source]
         error: AstError,
     },
@@ -54,11 +55,11 @@ impl From<ParseError> for lsp_types::Diagnostic {
 impl From<&ParseError> for lsp_types::Diagnostic {
     fn from(error: &ParseError) -> Self {
         let (range, message) = match error {
-            ParseError::AstError { range, error } => (*range, error.to_string()),
-            ParseError::LexerError { range, error } => (*range, error.to_string()),
+            ParseError::AstError { span: range, error } => (range, error.to_string()),
+            ParseError::LexerError { span: range, error } => (range, error.to_string()),
         };
         lsp_types::Diagnostic {
-            range,
+            range: range.into(),
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),
             message,
             code: Some(lsp_types::NumberOrString::String("AUTO_LSP".into())),
@@ -76,8 +77,8 @@ impl ParseError {
         report: &mut ReportBuilder<'_, std::ops::Range<usize>>,
     ) {
         let range = match self {
-            ParseError::LexerError { range, .. } => range,
-            ParseError::AstError { range, .. } => range,
+            ParseError::LexerError { span: range, .. } => range.lsp(),
+            ParseError::AstError { span: range, .. } => range.lsp(),
         };
         let start_line = source.line(range.start.line as usize).unwrap().offset();
         let end_line = source.line(range.end.line as usize).unwrap().offset();
@@ -107,18 +108,12 @@ pub enum AstError {
 impl From<AstError> for ParseError {
     fn from(error: AstError) -> Self {
         let range = match &error {
-            AstError::UnexpectedSymbol { range, .. } => lsp_types::Range {
-                start: lsp_types::Position {
-                    line: range.start_point.row as u32,
-                    character: range.start_point.column as u32,
-                },
-                end: lsp_types::Position {
-                    line: range.end_point.row as u32,
-                    character: range.end_point.column as u32,
-                },
-            },
+            AstError::UnexpectedSymbol { range, .. } => *range,
         };
-        Self::AstError { range, error }
+        Self::AstError {
+            span: range.into(),
+            error,
+        }
     }
 }
 
@@ -129,14 +124,14 @@ impl From<AstError> for ParseError {
 pub enum LexerError {
     #[error("{error}")]
     Missing {
-        range: lsp_types::Range,
+        range: tree_sitter::Range,
         error: String,
         // Missing node's symbol name as it appears in the grammar ignoring aliases as a string
         grammar_name: &'static str,
     },
     #[error("{error}")]
     Syntax {
-        range: lsp_types::Range,
+        range: tree_sitter::Range,
         error: String,
         affected: String,
     },
@@ -148,7 +143,10 @@ impl From<LexerError> for ParseError {
             LexerError::Missing { range, .. } => *range,
             LexerError::Syntax { range, .. } => *range,
         };
-        Self::LexerError { range, error }
+        Self::LexerError {
+            span: range.into(),
+            error,
+        }
     }
 }
 

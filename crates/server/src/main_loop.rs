@@ -26,7 +26,7 @@ use crossbeam_channel::select;
 use lsp_server::Message;
 
 #[derive(Debug)]
-pub(crate) enum Task {
+pub enum Task {
     Response(lsp_server::Response),
     NotificationError(Error),
 }

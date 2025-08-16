@@ -18,28 +18,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::panic::RefUnwindSafe;
 
-pub(crate) struct TaskPool<T> {
+pub struct TaskPool<T> {
     pub sender: crossbeam_channel::Sender<T>,
     pub pool: rayon::ThreadPool,
+    pub max_threads: usize,
 }
 
 impl<T> TaskPool<T> {
-    pub(crate) fn new_with_threads(sender: crossbeam_channel::Sender<T>, threads: usize) -> Self {
+    pub(crate) fn new_with_threads(
+        sender: crossbeam_channel::Sender<T>,
+        max_threads: usize,
+    ) -> Self {
         Self {
             sender,
             pool: rayon::ThreadPoolBuilder::new()
-                .num_threads(threads)
+                .num_threads(max_threads)
                 .build()
                 .unwrap(),
+            max_threads,
         }
     }
 
-    pub(crate) fn spawn<F>(&self, task: F)
+    // Spawns a task into the thread pool using the default sender.
+    pub fn spawn<F>(&self, task: F)
     where
         F: FnOnce(crossbeam_channel::Sender<T>) + Send + 'static,
         T: Send + RefUnwindSafe + 'static,
     {
         let sender = self.sender.clone();
+        self.pool.spawn(move || {
+            task(sender);
+        });
+    }
+
+    /// Spawns a task into the thread pool using a custom sender.
+    pub fn spawn_with_sender<F, S>(&self, task: F, sender: crossbeam_channel::Sender<S>)
+    where
+        F: FnOnce(crossbeam_channel::Sender<S>) + Send + 'static,
+        S: Send + RefUnwindSafe + 'static,
+    {
+        let sender = sender.clone();
         self.pool.spawn(move || {
             task(sender);
         });

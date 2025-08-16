@@ -21,8 +21,8 @@ use std::sync::{Arc, Mutex};
 use crate::db::create_python_db_with_logger;
 use auto_lsp::default::db::tracked::get_ast;
 use auto_lsp::default::db::{BaseDatabase, FileManager};
-use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::Url;
+use auto_lsp::lsp_types::{self, DidChangeTextDocumentParams};
 use rstest::{fixture, rstest};
 
 #[fixture]
@@ -95,7 +95,7 @@ fn update_file(foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
     assert!(current_logs[0].contains("WillExecute { database_key: get_ast(Id(0)) }"));
     assert!(current_logs[1].contains("WillExecute { database_key: get_ast(Id(1)) }"));
 
-    let change = lsp_types::TextDocumentContentChangeEvent {
+    let changes = lsp_types::TextDocumentContentChangeEvent {
         range: Some(lsp_types::Range {
             start: lsp_types::Position {
                 line: 0,
@@ -110,12 +110,15 @@ fn update_file(foo_bar: (impl BaseDatabase, Arc<Mutex<Vec<String>>>)) {
         text: "def".into(),
     };
 
-    foo_bar
-        .update(
-            &Url::parse("file:///test0.py").expect("Invalid URL"),
-            &[change],
-        )
-        .expect("Failed to update file");
+    let change = DidChangeTextDocumentParams {
+        text_document: lsp_types::VersionedTextDocumentIdentifier {
+            uri: file0.url(&foo_bar).clone(),
+            version: 1,
+        },
+        content_changes: vec![changes],
+    };
+
+    file0.update_edit(&mut foo_bar, &change).unwrap();
 
     let file0_ast = get_ast(&foo_bar, file0).get_root();
     assert!(file0_ast.is_some());
