@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - run: cargo install cargo-insta
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
       - name: main crate
         run: cargo test --all-features --workspace --exclude auto-lsp-codegen
