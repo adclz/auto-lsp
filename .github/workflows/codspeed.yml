@@ -17,7 +17,7 @@ jobs:
       - name: Install codespeed
         uses: taiki-e/install-action@v2
         with:
-          tool: codspeed
+          tool: cargo-codspeed
 
       - name: "Build benchmarks"
         run: cargo codspeed build -p auto-lsp-bench
