@@ -1,0 +1,14 @@
+[package]
+name = "auto-lsp-bench"
+authors = ["Clauzel Adrien"]
+license = "GPL-3.0"
+publish = false
+
+[dependencies]
+auto-lsp = { path = "../.." }
+ast-python = { path = "../../examples/ast-python" }
+divan = { version = "3.0.5", package = "codspeed-divan-compat" }
+
+[[bench]]
+name = "build_ast"
+harness = false
