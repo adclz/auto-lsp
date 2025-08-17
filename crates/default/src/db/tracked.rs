@@ -19,7 +19,6 @@ use super::lexer::get_tree_sitter_errors;
 use super::{BaseDatabase, File};
 use auto_lsp_core::ast::AstNode;
 use auto_lsp_core::errors::ParseErrorAccumulator;
-use fastrace::prelude::*;
 use salsa::Accumulator;
 use std::ops::Deref;
 use std::sync::Arc;
@@ -31,16 +30,10 @@ use std::sync::Arc;
 pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
     let parsers = file.parsers(db);
     let doc = file.document(db);
-    let url = file.url(db);
 
     if doc.is_empty() {
         return ParsedAst::default();
     }
-
-    // fastrace
-    let root =
-        Span::root("build ast", SpanContext::random()).with_property(|| ("file", url.to_string()));
-    let _guard = root.set_local_parent();
 
     let node = doc.tree.root_node();
 

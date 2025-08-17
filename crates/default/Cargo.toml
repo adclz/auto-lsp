@@ -21,7 +21,6 @@ dashmap = { workspace = true }
 texter = { workspace = true }
 parking_lot = { workspace = true }
 log = { workspace = true }
-fastrace = { workspace = true }
 rayon = { workspace = true }
 rayon-par-bridge = { workspace = true }
 bon = { workspace = true }

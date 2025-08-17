@@ -14,7 +14,6 @@ fn main() {
     divan::main();
 }
 
-// Register a `fibonacci` function and benchmark it over multiple cases.
 #[divan::bench]
 fn build_ast() {
     let db = create_python_db(SOURCES);
