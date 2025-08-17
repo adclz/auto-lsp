@@ -11,7 +11,7 @@ use auto_lsp::{
         VersionedTextDocumentIdentifier,
     },
 };
-use divan::{counter::BytesCount, AllocProfiler};
+use divan::{AllocProfiler, Bencher};
 
 #[global_allocator]
 static ALLOC: AllocProfiler = AllocProfiler::system();
@@ -24,7 +24,7 @@ fn main() {
 }
 
 #[divan::bench]
-fn parse_ts(bencher: divan::Bencher) {
+fn parse_ts(bencher: Bencher) {
     let url = Url::parse("file:///django.py").expect("Failed to parse URL");
     let mut db = BaseDb::default();
     let file = File::from_string()
@@ -42,12 +42,12 @@ fn parse_ts(bencher: divan::Bencher) {
     db.add_file(file).expect("Failed to add file");
 
     bencher
-        .counter(BytesCount::of_str(file.document(&db).as_str()))
+        //.counter(BytesCount::of_str(file.document(&db).as_str()))
         .bench_local(|| get_ast(&db, file))
 }
 
 #[divan::bench]
-fn build_ast(bencher: divan::Bencher) {
+fn build_ast(bencher: Bencher) {
     let url = Url::parse("file:///django.py").expect("Failed to parse URL");
     let mut db = BaseDb::default();
     let file = File::from_string()
@@ -65,7 +65,7 @@ fn build_ast(bencher: divan::Bencher) {
     db.add_file(file).expect("Failed to add file");
 
     bencher
-        .counter(BytesCount::of_str(file.document(&db).as_str()))
+        //.counter(BytesCount::of_str(file.document(&db).as_str()))
         .bench_local(|| get_ast(&db, file));
 
     let errors = get_ast::accumulated::<ParseErrorAccumulator>(&db, file);
@@ -73,10 +73,10 @@ fn build_ast(bencher: divan::Bencher) {
 }
 
 #[divan::bench]
-fn reparse(bencher: divan::Bencher) {
+fn reparse(bencher: Bencher) {
     let mut db = create_python_db(SOURCES);
     let file = db
-        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .get_file(&Url::parse("file:///django.py").unwrap())
         .unwrap();
 
     let change_event = DidChangeTextDocumentParams {
@@ -101,7 +101,7 @@ fn reparse(bencher: divan::Bencher) {
     };
 
     bencher
-        .counter(BytesCount::of_str(file.document(&db).as_str()))
+        //.counter(BytesCount::of_str(file.document(&db).as_str()))
         .bench_local(|| file.update_edit(&mut db, &change_event));
 
     let errors = get_ast::accumulated::<ParseErrorAccumulator>(&db, file);
