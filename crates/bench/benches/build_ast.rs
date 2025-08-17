@@ -2,7 +2,7 @@ extern crate ast_python;
 extern crate auto_lsp;
 extern crate divan;
 
-use ast_python::db::{create_python_db, PYTHON_PARSERS};
+use ast_python::db::PYTHON_PARSERS;
 use auto_lsp::{
     core::errors::ParseErrorAccumulator,
     default::db::{file::File, tracked::get_ast, BaseDatabase, BaseDb, FileManager},
@@ -17,7 +17,6 @@ use divan::{AllocProfiler, Bencher};
 static ALLOC: AllocProfiler = AllocProfiler::system();
 
 static DJANGO: &'static str = include_str!("./django.py");
-static SOURCES: &'static [&'static str] = &[DJANGO];
 
 fn main() {
     divan::main();
@@ -74,7 +73,22 @@ fn build_ast(bencher: Bencher) {
 
 #[divan::bench]
 fn reparse(bencher: Bencher) {
-    let mut db = create_python_db(SOURCES);
+    let url = Url::parse("file:///django.py").expect("Failed to parse URL");
+    let mut db = BaseDb::default();
+    let file = File::from_string()
+        .db(&db)
+        .source(DJANGO.to_string())
+        .url(&url)
+        .parsers(
+            PYTHON_PARSERS
+                .get("python")
+                .expect("Python parser not found"),
+        )
+        .call()
+        .expect("Failed to create file");
+
+    db.add_file(file).expect("Failed to add file");
+
     let file = db
         .get_file(&Url::parse("file:///django.py").unwrap())
         .unwrap();
