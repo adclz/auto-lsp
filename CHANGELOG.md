@@ -2,6 +2,45 @@
 
 ## [Unreleased]
 
+## [0.6.3](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.6.2...auto-lsp-v0.6.3)
+
+### Features
+
+- *(core)* Add Span newtype - ([1b80c3e](https://github.com/adclz/auto-lsp/commit/1b80c3eb8110687f8e367801d74d0f8cd7dece05))
+- *(db)* Add File struct with builders and update methods - ([df51762](https://github.com/adclz/auto-lsp/commit/df51762b814209842bfaf16d5b7af951a7c0e9e0))
+- Add position encoding support to Document and Db - ([dd1f4e6](https://github.com/adclz/auto-lsp/commit/dd1f4e6a90451cdd8ee5b0b466650828e51bca2d))
+
+### Bug Fixes
+
+- *(codegen)* Add numeric string sanitization to RUST_KEYWORDS - ([b1a2c7a](https://github.com/adclz/auto-lsp/commit/b1a2c7a96d2f2f8882c64842bd4969f502153ea6))
+- *(test)* Fix stack overflow in span equality test - ([c151ffa](https://github.com/adclz/auto-lsp/commit/c151ffaf94e57d92168c175cc1c484409059caf5))
+
+### Refactor
+
+- *(default)* Add debug on file input and replace obsolete outer attributes - ([4d6fc14](https://github.com/adclz/auto-lsp/commit/4d6fc146b5d0659332ba94363bdb7043fec2ef61))
+- *(default)* Update file input events - ([422a7e5](https://github.com/adclz/auto-lsp/commit/422a7e5715f8e377f595330dfb31a4f245744e39))
+- *(default)* Simplify file events and workspace init - ([97984f5](https://github.com/adclz/auto-lsp/commit/97984f5f6afa5b1330868a2b03596cefc1b5c253))
+- *(document)* Update Document constructor to use source strings directly - ([8d639be](https://github.com/adclz/auto-lsp/commit/8d639be29c20302400b8e84921d980c4cd129e6a))
+- *(document)* Make encoding optional - ([037bb68](https://github.com/adclz/auto-lsp/commit/037bb6828f2eb517c5357ac040dbe619e2dbb444))
+- *(errors)* Replace lsp_types::Range with Span in ParseError and LexerError - ([121c8a5](https://github.com/adclz/auto-lsp/commit/121c8a5c761c290e1c6a39f3834ccd164e258132))
+- *(examples)* Update all examples with new file struct and events - ([94aaf6b](https://github.com/adclz/auto-lsp/commit/94aaf6bf3c669a83ee869565c7022dd32032ab82))
+- *(server)* Make TaskPool and Task public - ([6308ab8](https://github.com/adclz/auto-lsp/commit/6308ab848167f6cadab397e8e38594a5df832568))
+- *(span)* Simplify Span struct by removing lifetime and Cow usage - ([1386547](https://github.com/adclz/auto-lsp/commit/13865470e6f6aec5ee8ad39bdd5e09b65e5bcc54))
+
+### Testing
+
+- Add unit tests for file content comparison - ([2c7307c](https://github.com/adclz/auto-lsp/commit/2c7307c5afb1ec21c8b667a0827fe20f15bb670d))
+
+### Miscellaneous Tasks
+
+- Update lock files - ([1447a70](https://github.com/adclz/auto-lsp/commit/1447a70f99b96e91579fc652b1eac233c8707a8f))
+- Update nextest installation - ([7ade7cd](https://github.com/adclz/auto-lsp/commit/7ade7cd33c6025d70b6087e49b0729fb475670c5))
+
+### Bench
+
+- Add codspeed + divan crate ([#24](https://github.com/adclz/auto-lsp/pull/24)) - ([9b98812](https://github.com/adclz/auto-lsp/commit/9b988120f4e086047c039c7a6c526c8348cd6054))
+
+
 ## [0.6.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.6.1...auto-lsp-v0.6.2)
 
 ### Features
