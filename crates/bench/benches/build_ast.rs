@@ -22,29 +22,28 @@ fn main() {
     divan::main();
 }
 
+/// Initial parse with tree-sitter.
 #[divan::bench]
 fn parse_ts(bencher: Bencher) {
     let url = Url::parse("file:///django.py").expect("Failed to parse URL");
-    let mut db = BaseDb::default();
-    let file = File::from_string()
-        .db(&db)
-        .source(DJANGO.to_string())
-        .url(&url)
-        .parsers(
-            PYTHON_PARSERS
-                .get("python")
-                .expect("Python parser not found"),
-        )
-        .call()
-        .expect("Failed to create file");
+    let db = BaseDb::default();
 
-    db.add_file(file).expect("Failed to add file");
-
-    bencher
-        //.counter(BytesCount::of_str(file.document(&db).as_str()))
-        .bench_local(|| get_ast(&db, file))
+    bencher.bench_local(|| {
+        File::from_string()
+            .db(&db)
+            .source(DJANGO.to_string())
+            .url(&url)
+            .parsers(
+                PYTHON_PARSERS
+                    .get("python")
+                    .expect("Python parser not found"),
+            )
+            .call()
+            .expect("Failed to create file");
+    });
 }
 
+/// Build the AST from a tree-sitter tree.
 #[divan::bench]
 fn build_ast(bencher: Bencher) {
     let url = Url::parse("file:///django.py").expect("Failed to parse URL");
@@ -71,6 +70,7 @@ fn build_ast(bencher: Bencher) {
     assert!(errors.is_empty(), "Expected no errors, found: {:?}", errors);
 }
 
+/// Reparse the file after a change.
 #[divan::bench]
 fn reparse(bencher: Bencher) {
     let url = Url::parse("file:///django.py").expect("Failed to parse URL");
@@ -116,7 +116,10 @@ fn reparse(bencher: Bencher) {
 
     bencher
         //.counter(BytesCount::of_str(file.document(&db).as_str()))
-        .bench_local(|| file.update_edit(&mut db, &change_event));
+        .bench_local(|| {
+            file.update_edit(&mut db, &change_event).unwrap();
+            get_ast(&db, file);
+        });
 
     let errors = get_ast::accumulated::<ParseErrorAccumulator>(&db, file);
     assert!(errors.is_empty(), "Expected no errors, found: {:?}", errors);
