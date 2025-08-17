@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.2.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-codegen-v0.2.1...auto-lsp-codegen-v0.2.2)
+
+### Bug Fixes
+
+- *(codegen)* Add numeric string sanitization to RUST_KEYWORDS - ([b1a2c7a](https://github.com/adclz/auto-lsp/commit/b1a2c7a96d2f2f8882c64842bd4969f502153ea6))
+
+
 ## [0.2.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-codegen-v0.2.0...auto-lsp-codegen-v0.2.1)
 
 ### Features
