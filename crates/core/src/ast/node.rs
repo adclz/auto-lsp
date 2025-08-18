@@ -20,7 +20,6 @@ use crate::errors::PositionError;
 use crate::span::Span;
 use downcast_rs::{impl_downcast, DowncastSync};
 use std::cmp::Ordering;
-use std::sync::Arc;
 use tree_sitter::Node;
 
 /// An ast node that uniquely identifies a node in the AST.
@@ -40,7 +39,7 @@ impl<'a, T: AstNode> AstNodeId<T> {
         }
     }
 
-    pub fn cast(&self, nodes: &'a Vec<Arc<dyn AstNode>>) -> &'a T {
+    pub fn cast(&self, nodes: &'a Vec<Box<dyn AstNode>>) -> &'a T {
         debug_assert!(nodes.is_sorted());
         match nodes[self.id].downcast_ref::<T>() {
             Some(node) => node,
@@ -135,7 +134,7 @@ pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
     /// Retrieves the parent node, if present, from the node list.
     ///
     /// The node list must be sorted by ID.
-    fn get_parent<'a>(&'a self, nodes: &'a [Arc<dyn AstNode>]) -> Option<&'a Arc<dyn AstNode>> {
+    fn get_parent<'a>(&'a self, nodes: &'a [Box<dyn AstNode>]) -> Option<&'a Box<dyn AstNode>> {
         match nodes.first() {
             Some(first) => {
                 assert_eq!(

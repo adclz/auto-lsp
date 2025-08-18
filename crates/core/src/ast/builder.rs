@@ -21,7 +21,6 @@ use crate::errors::ParseErrorAccumulator;
 use crate::{ast::AstNode, errors::AstError};
 use salsa::Accumulator;
 use std::ops::ControlFlow;
-use std::sync::Arc;
 use tree_sitter::{Node, TreeCursor};
 
 /// Parameters for [`TryFrom`] implementations of AST nodes.
@@ -41,7 +40,7 @@ pub type TryFromParams<'from> = (
 #[derive(Default)]
 pub struct Builder {
     id_ctr: usize,
-    nodes: Vec<Arc<dyn AstNode>>,
+    nodes: Vec<Box<dyn AstNode>>,
 }
 
 impl Builder {
@@ -53,7 +52,7 @@ impl Builder {
         self.nodes.is_empty()
     }
 
-    pub fn take_nodes(self) -> Vec<Arc<dyn AstNode>> {
+    pub fn take_nodes(self) -> Vec<Box<dyn AstNode>> {
         self.nodes
     }
 
@@ -74,9 +73,9 @@ impl Builder {
         let node = cursor.node();
         // Gets the next ID for the new node
         let id = self.next_id();
-        let result = T::try_from((&node, db, self, id, parent_id)).map(Arc::new)?;
+        let result = T::try_from((&node, db, self, id, parent_id)).map(Box::new)?;
         // Stores the node
-        self.nodes.push(result.clone());
+        self.nodes.push(result);
         Ok(AstNodeId::new(id))
     }
 
