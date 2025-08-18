@@ -23,6 +23,36 @@ use std::cmp::Ordering;
 use std::sync::Arc;
 use tree_sitter::Node;
 
+/// An ast node that uniquely identifies a node in the AST.
+///
+/// It can be casted to the specific node type using the `cast` method.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct AstNodeId<T> {
+    pub id: usize,
+    _marker: std::marker::PhantomData<T>,
+}
+
+impl<'a, T: AstNode> AstNodeId<T> {
+    pub(crate) fn new(id: usize) -> Self {
+        Self {
+            id,
+            _marker: std::marker::PhantomData,
+        }
+    }
+
+    pub fn cast(&self, nodes: &'a Vec<Arc<dyn AstNode>>) -> &'a T {
+        debug_assert!(nodes.is_sorted());
+        match nodes[self.id].downcast_ref::<T>() {
+            Some(node) => node,
+            None => panic!(
+                "Invalid cast of AstNodeId of id {} to {}",
+                self.id,
+                std::any::type_name::<T>(),
+            ),
+        }
+    }
+}
+
 /// Trait representing an AST node.
 pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
     /// Returns `true` if a given [`tree_sitter::Node`] matches this node type.

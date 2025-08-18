@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+use crate::ast::AstNodeId;
 use crate::errors::ParseErrorAccumulator;
 use crate::{ast::AstNode, errors::AstError};
 use salsa::Accumulator;
@@ -69,14 +70,14 @@ impl Builder {
         db: &'db dyn salsa::Database,
         cursor: &TreeCursor,
         parent_id: Option<usize>,
-    ) -> Result<Arc<T>, AstError> {
+    ) -> Result<AstNodeId<T>, AstError> {
         let node = cursor.node();
         // Gets the next ID for the new node
         let id = self.next_id();
         let result = T::try_from((&node, db, self, id, parent_id)).map(Arc::new)?;
         // Stores the node
         self.nodes.push(result.clone());
-        Ok(result)
+        Ok(AstNodeId::new(id))
     }
 
     /// Starts a [`TreeWalk`] traversal using the given closure.
@@ -144,7 +145,7 @@ impl<'cursor> TreeWalk<'cursor> {
         const FIELD_ID: u16,
     >(
         &mut self,
-        result: &mut Result<Option<Arc<T>>, AstError>,
+        result: &mut Result<Option<AstNodeId<T>>, AstError>,
     ) -> ControlFlow<(), &mut Self> {
         if let Some(field) = self.cursor.field_id() {
             if field == std::num::NonZero::new(FIELD_ID).expect("FIELD_ID should be non-zero") {
@@ -166,7 +167,7 @@ impl<'cursor> TreeWalk<'cursor> {
         const FIELD_ID: u16,
     >(
         &mut self,
-        result: &mut Vec<Arc<T>>,
+        result: &mut Vec<AstNodeId<T>>,
     ) -> ControlFlow<(), &mut Self> {
         if let Some(field) = self.cursor.field_id() {
             if field == std::num::NonZero::new(FIELD_ID).expect("FIELD_ID should be non-zero") {
@@ -189,7 +190,7 @@ impl<'cursor> TreeWalk<'cursor> {
         T: AstNode + for<'from> TryFrom<TryFromParams<'from>, Error = AstError>,
     >(
         &mut self,
-        result: &mut Result<Option<Arc<T>>, AstError>,
+        result: &mut Result<Option<AstNodeId<T>>, AstError>,
     ) -> ControlFlow<(), &mut Self> {
         let node = self.cursor.node();
         if T::contains(&node) {
@@ -209,7 +210,7 @@ impl<'cursor> TreeWalk<'cursor> {
         T: AstNode + for<'from> TryFrom<TryFromParams<'from>, Error = AstError>,
     >(
         &mut self,
-        result: &mut Vec<Arc<T>>,
+        result: &mut Vec<AstNodeId<T>>,
     ) -> ControlFlow<(), &mut Self> {
         if T::contains(&self.cursor.node()) {
             match self.builder.create(self.db, &self.cursor, self.parent) {
