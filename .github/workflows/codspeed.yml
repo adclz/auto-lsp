@@ -19,6 +19,14 @@ jobs:
         with:
           tool: cargo-codspeed
 
+      - name: Clean bench artifacts
+        # Seems to be required to avoid issues with stale artifacts
+        run: cargo clean -p auto-lsp-bench    
+        
+      - name: Run benchmarks locally
+        # Sanity check
+        run: cargo bench -p auto-lsp-bench  
+
       - name: "Build benchmarks"
         run: cargo codspeed build -p auto-lsp-bench
         env:
