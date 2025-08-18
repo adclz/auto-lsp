@@ -23,7 +23,7 @@ use crate::generated::{
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
 use auto_lsp::default::db::file::File;
-use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{DidChangeTextDocumentParams, Url};
 use auto_lsp::salsa::Accumulator;
@@ -36,7 +36,8 @@ pub struct CheckErrorAccumulator(pub lsp_types::Diagnostic);
 #[salsa::tracked]
 pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file: File) {
     let doc = file.document(db);
-    let root = get_ast(db, file).get_root();
+    let ast = get_ast(db, file);
+    let root = ast.get_root();
 
     let module = root.unwrap();
     let module = module.downcast_ref::<Module>().unwrap();
@@ -44,55 +45,61 @@ pub(crate) fn type_check_default_parameters<'db>(db: &'db dyn BaseDatabase, file
     for node in &module.children {
         if let CompoundStatement_SimpleStatement::CompoundStatement(
             CompoundStatement::FunctionDefinition(function),
-        ) = node.as_ref()
+        ) = node.cast(ast)
         {
-            function.parameters.children.iter().for_each(|param| {
-                if let Parameter::TypedDefaultParameter(typed_param) = param.as_ref() {
-                    typed_param.check(db, &doc);
-                }
-            });
+            function
+                .parameters
+                .cast(ast)
+                .children
+                .iter()
+                .for_each(|param| {
+                    if let Parameter::TypedDefaultParameter(typed_param) = param.cast(ast) {
+                        typed_param.check(db, &doc, ast);
+                    }
+                });
         }
     }
 }
 
 impl TypedDefaultParameter {
-    fn check(&self, db: &dyn BaseDatabase, doc: &Document) {
+    fn check(&self, db: &dyn BaseDatabase, doc: &Document, ast: &ParsedAst) {
         let source = doc.as_bytes();
 
-        match self.Type.get_text(source).unwrap() {
-            "int" => match self.value.is_integer() {
+        let value = self.value.cast(ast);
+        match self.Type.cast(ast).get_text(source).unwrap() {
+            "int" => match value.is_integer() {
                 true => (),
                 false => {
-                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc, ast), db);
                 }
             },
-            "float" => match self.value.is_float() {
+            "float" => match value.is_float() {
                 true => (),
                 false => {
-                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc, ast), db);
                 }
             },
-            "str" => match self.value.is_string() {
+            "str" => match value.is_string() {
                 true => (),
                 false => {
-                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc, ast), db);
                 }
             },
-            "bool" => match self.value.is_true() || self.value.is_false() {
+            "bool" => match value.is_true() || value.is_false() {
                 true => (),
                 false => {
-                    CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
+                    CheckErrorAccumulator::accumulate(self.type_error_message(doc, ast), db);
                 }
             },
             _ => {
-                CheckErrorAccumulator::accumulate(self.type_error_message(doc), db);
+                CheckErrorAccumulator::accumulate(self.type_error_message(doc, ast), db);
             }
         }
     }
 }
 
 impl TypedDefaultParameter {
-    fn type_error_message(&self, document: &Document) -> CheckErrorAccumulator {
+    fn type_error_message(&self, document: &Document, ast: &ParsedAst) -> CheckErrorAccumulator {
         let source_code = document.as_bytes();
         CheckErrorAccumulator(lsp_types::Diagnostic {
             range: self.get_lsp_range(),
@@ -102,8 +109,8 @@ impl TypedDefaultParameter {
             source: None,
             message: format!(
                 "Invalid value {} for type {}",
-                self.value.get_text(source_code).unwrap(),
-                self.Type.get_text(source_code).unwrap()
+                self.value.cast(ast).get_text(source_code).unwrap(),
+                self.Type.cast(ast).get_text(source_code).unwrap()
             ),
             related_information: None,
             tags: None,

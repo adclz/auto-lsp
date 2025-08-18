@@ -20,7 +20,7 @@ use auto_lsp::anyhow;
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
 use auto_lsp::default::db::file::File;
-use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{InlayHint, InlayHintParams};
 
@@ -36,11 +36,12 @@ pub fn inlay_hints(
 
     let mut acc = vec![];
 
-    get_ast(db, file).iter().try_for_each(|node| {
+    let ast = get_ast(db, file);
+    ast.iter().try_for_each(|node| {
         dispatch!(
             node.lower(),
             [
-                FunctionDefinition => build_inlay_hints(db, file, &mut acc)
+                FunctionDefinition => build_inlay_hints(db, file, ast, &mut acc)
             ]
         );
         anyhow::Ok(())
@@ -52,6 +53,7 @@ impl FunctionDefinition {
         &self,
         db: &impl BaseDatabase,
         file: File,
+        ast: &ParsedAst,
         acc: &mut Vec<auto_lsp::lsp_types::InlayHint>,
     ) -> anyhow::Result<()> {
         let doc = file.document(db);
@@ -61,12 +63,12 @@ impl FunctionDefinition {
             "[{} {}] - {}",
             range.start_byte,
             range.end_byte,
-            self.name.get_text(doc.as_bytes())?
+            self.name.cast(ast).get_text(doc.as_bytes())?
         );
         acc.push(auto_lsp::lsp_types::InlayHint {
             kind: Some(auto_lsp::lsp_types::InlayHintKind::TYPE),
             label: auto_lsp::lsp_types::InlayHintLabel::String(name),
-            position: self.name.get_start_position(),
+            position: self.name.cast(ast).get_start_position(),
             tooltip: None,
             text_edits: None,
             padding_left: None,

@@ -20,7 +20,7 @@ use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
 use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
 use auto_lsp::default::db::file::File;
-use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
@@ -53,11 +53,12 @@ pub fn semantic_tokens_full(
 
     let mut builder = SemanticTokensBuilder::new("".into());
 
-    get_ast(db, file).iter().try_for_each(|node| {
+    let ast = get_ast(db, file);
+    ast.iter().try_for_each(|node| {
         dispatch!(
             node.lower(),
             [
-                FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
+                FunctionDefinition => build_semantic_tokens(db, file, ast, &mut builder)
             ]
         );
         anyhow::Ok(())
@@ -77,7 +78,8 @@ pub fn semantic_tokens_range(
 
     let mut builder = SemanticTokensBuilder::new("".into());
 
-    for node in get_ast(db, file).iter() {
+    let ast = get_ast(db, file);
+    for node in ast.iter() {
         if node.get_lsp_range().end <= params.range.start {
             continue;
         }
@@ -86,7 +88,7 @@ pub fn semantic_tokens_range(
         }
         dispatch!(node.lower(),
             [
-                FunctionDefinition => build_semantic_tokens(db, file, &mut builder)
+                FunctionDefinition => build_semantic_tokens(db, file, ast, &mut builder)
             ]
         );
     }
@@ -99,10 +101,11 @@ impl FunctionDefinition {
         &self,
         _db: &impl BaseDatabase,
         _file: File,
+        ast: &ParsedAst,
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
         builder.push(
-            self.name.get_lsp_range(),
+            self.name.cast(ast).get_lsp_range(),
             SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
             SUPPORTED_MODIFIERS
                 .iter()
