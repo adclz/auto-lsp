@@ -35,6 +35,7 @@ jobs:
       - name: "Run benchmarks"
         uses: CodSpeedHQ/action@v4
         with:
+          mode: instrumentation
           run: cargo codspeed run -p auto-lsp-bench
           token: ${{ secrets.CODSPEED_TOKEN }}
         env:
