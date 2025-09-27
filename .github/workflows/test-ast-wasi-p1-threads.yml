@@ -31,16 +31,16 @@ jobs:
              sudo apt update
              sudo apt install gcc-multilib -y    
       - name: main crate
-        run: CFLAGS="-DHAVE_ENDIAN_H" cargo nextest run --features=wasm --workspace --exclude auto-lsp-codegen --target wasm32-wasip1-threads
+        run: CFLAGS="-DHAVE_ENDIAN_H" cargo nextest --features=wasm --workspace --exclude auto-lsp-codegen --target wasm32-wasip1-threads
       - name: python ast
         working-directory: ./examples/ast-python
         env:
           INSTA_UPDATE: new
           AST_GEN: 1
-        run: CFLAGS="-DHAVE_ENDIAN_H" cargo nextest run --target wasm32-wasip1-threads  
+        run: CFLAGS="-DHAVE_ENDIAN_H" cargo insta test --accept --target wasm32-wasip1-threads  
       - name: html ast
         env:
           INSTA_UPDATE: new
           AST_GEN: 1 
         working-directory: ./examples/ast-html
-        run: CFLAGS="-DHAVE_ENDIAN_H" cargo nextest run --target wasm32-wasip1-threads
+        run: CFLAGS="-DHAVE_ENDIAN_H" cargo insta test --accept --target wasm32-wasip1-threads
