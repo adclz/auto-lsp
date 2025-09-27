@@ -29,10 +29,12 @@ jobs:
       - name: python ast
         working-directory: ./examples/ast-python
         env:
+          INSTA_UPDATE: new
           AST_GEN: 1 
         run: cargo nextest run
       - name: html ast
         working-directory: ./examples/ast-html
         env:
+          INSTA_UPDATE: new
           AST_GEN: 1 
         run: cargo nextest run
