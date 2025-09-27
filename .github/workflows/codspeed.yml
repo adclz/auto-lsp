@@ -33,7 +33,7 @@ jobs:
           AST_GEN: 1
 
       - name: "Run benchmarks"
-        uses: CodSpeedHQ/action@v3
+        uses: CodSpeedHQ/action@v4
         with:
           run: cargo codspeed run -p auto-lsp-bench
           token: ${{ secrets.CODSPEED_TOKEN }}
