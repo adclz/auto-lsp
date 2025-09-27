@@ -1,57 +1,100 @@
 ---
 source: src/tests/corpus/expressions.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 6,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 11,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 16,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 21,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 26,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 31,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 36,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 41,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 46,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 51,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 56,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 61,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 98,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 14,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 3,
-                                            _parent: Some(
-                                                2,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_PlusEqual(
-                                    Token_PlusEqual {
-                                        [RANGE]
-                                        _id: 4,
-                                        _parent: Some(
-                                            2,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 5,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 2,
-                                _parent: Some(
-                                    1,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 7,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 6,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -59,54 +102,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 4,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 5,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 3,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 1,
+                    end_byte: 7,
+                    start_point: Point {
+                        row: 1,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 6,
+                    },
+                },
+                _id: 2,
+                _parent: Some(
+                    1,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 2,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 1,
+                        },
+                    },
+                    _id: 3,
+                    _parent: Some(
+                        2,
+                    ),
+                },
+            ),
+        ),
+        Token_PlusEqual(
+            Token_PlusEqual {
+                _range: Range {
+                    start_byte: 3,
+                    end_byte: 5,
+                    start_point: Point {
+                        row: 1,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 4,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 6,
+                            end_byte: 7,
+                            start_point: Point {
+                                row: 1,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 1,
+                                column: 6,
+                            },
+                        },
+                        _id: 5,
+                        _parent: Some(
+                            2,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 8,
-                                            _parent: Some(
-                                                7,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_GreaterGreaterEqual(
-                                    Token_GreaterGreaterEqual {
-                                        [RANGE]
-                                        _id: 9,
-                                        _parent: Some(
-                                            7,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 10,
-                                                _parent: Some(
-                                                    7,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 7,
-                                _parent: Some(
-                                    6,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 7,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 8,
+                        end_byte: 15,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 7,
+                        },
+                    },
                     _id: 6,
                     _parent: Some(
                         0,
@@ -114,54 +228,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 9,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 10,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 8,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 8,
+                    end_byte: 15,
+                    start_point: Point {
+                        row: 2,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 7,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    6,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 8,
+                        end_byte: 9,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 1,
+                        },
+                    },
+                    _id: 8,
+                    _parent: Some(
+                        7,
+                    ),
+                },
+            ),
+        ),
+        Token_GreaterGreaterEqual(
+            Token_GreaterGreaterEqual {
+                _range: Range {
+                    start_byte: 10,
+                    end_byte: 13,
+                    start_point: Point {
+                        row: 2,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 5,
+                    },
+                },
+                _id: 9,
+                _parent: Some(
+                    7,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 14,
+                            end_byte: 15,
+                            start_point: Point {
+                                row: 2,
+                                column: 6,
+                            },
+                            end_point: Point {
+                                row: 2,
+                                column: 7,
+                            },
+                        },
+                        _id: 10,
+                        _parent: Some(
+                            7,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 13,
-                                            _parent: Some(
-                                                12,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_SlashSlashEqual(
-                                    Token_SlashSlashEqual {
-                                        [RANGE]
-                                        _id: 14,
-                                        _parent: Some(
-                                            12,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 15,
-                                                _parent: Some(
-                                                    12,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 12,
-                                _parent: Some(
-                                    11,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 12,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 16,
+                        end_byte: 23,
+                        start_point: Point {
+                            row: 3,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 7,
+                        },
+                    },
                     _id: 11,
                     _parent: Some(
                         0,
@@ -169,54 +354,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 14,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 15,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 13,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 16,
+                    end_byte: 23,
+                    start_point: Point {
+                        row: 3,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 7,
+                    },
+                },
+                _id: 12,
+                _parent: Some(
+                    11,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 16,
+                        end_byte: 17,
+                        start_point: Point {
+                            row: 3,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 1,
+                        },
+                    },
+                    _id: 13,
+                    _parent: Some(
+                        12,
+                    ),
+                },
+            ),
+        ),
+        Token_SlashSlashEqual(
+            Token_SlashSlashEqual {
+                _range: Range {
+                    start_byte: 18,
+                    end_byte: 21,
+                    start_point: Point {
+                        row: 3,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 5,
+                    },
+                },
+                _id: 14,
+                _parent: Some(
+                    12,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 22,
+                            end_byte: 23,
+                            start_point: Point {
+                                row: 3,
+                                column: 6,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 7,
+                            },
+                        },
+                        _id: 15,
+                        _parent: Some(
+                            12,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 18,
-                                            _parent: Some(
-                                                17,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_AtEqual(
-                                    Token_AtEqual {
-                                        [RANGE]
-                                        _id: 19,
-                                        _parent: Some(
-                                            17,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 20,
-                                                _parent: Some(
-                                                    17,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 17,
-                                _parent: Some(
-                                    16,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 17,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 24,
+                        end_byte: 30,
+                        start_point: Point {
+                            row: 4,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 6,
+                        },
+                    },
                     _id: 16,
                     _parent: Some(
                         0,
@@ -224,54 +480,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 19,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 20,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 18,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 24,
+                    end_byte: 30,
+                    start_point: Point {
+                        row: 4,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 6,
+                    },
+                },
+                _id: 17,
+                _parent: Some(
+                    16,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 24,
+                        end_byte: 25,
+                        start_point: Point {
+                            row: 4,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 1,
+                        },
+                    },
+                    _id: 18,
+                    _parent: Some(
+                        17,
+                    ),
+                },
+            ),
+        ),
+        Token_AtEqual(
+            Token_AtEqual {
+                _range: Range {
+                    start_byte: 26,
+                    end_byte: 28,
+                    start_point: Point {
+                        row: 4,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 4,
+                    },
+                },
+                _id: 19,
+                _parent: Some(
+                    17,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 29,
+                            end_byte: 30,
+                            start_point: Point {
+                                row: 4,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 4,
+                                column: 6,
+                            },
+                        },
+                        _id: 20,
+                        _parent: Some(
+                            17,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 23,
-                                            _parent: Some(
-                                                22,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_MinusEqual(
-                                    Token_MinusEqual {
-                                        [RANGE]
-                                        _id: 24,
-                                        _parent: Some(
-                                            22,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 25,
-                                                _parent: Some(
-                                                    22,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 22,
-                                _parent: Some(
-                                    21,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 22,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 31,
+                        end_byte: 37,
+                        start_point: Point {
+                            row: 5,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 5,
+                            column: 6,
+                        },
+                    },
                     _id: 21,
                     _parent: Some(
                         0,
@@ -279,54 +606,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 24,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 25,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 23,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 31,
+                    end_byte: 37,
+                    start_point: Point {
+                        row: 5,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 6,
+                    },
+                },
+                _id: 22,
+                _parent: Some(
+                    21,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 31,
+                        end_byte: 32,
+                        start_point: Point {
+                            row: 5,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 5,
+                            column: 1,
+                        },
+                    },
+                    _id: 23,
+                    _parent: Some(
+                        22,
+                    ),
+                },
+            ),
+        ),
+        Token_MinusEqual(
+            Token_MinusEqual {
+                _range: Range {
+                    start_byte: 33,
+                    end_byte: 35,
+                    start_point: Point {
+                        row: 5,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 4,
+                    },
+                },
+                _id: 24,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 36,
+                            end_byte: 37,
+                            start_point: Point {
+                                row: 5,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 5,
+                                column: 6,
+                            },
+                        },
+                        _id: 25,
+                        _parent: Some(
+                            22,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 28,
-                                            _parent: Some(
-                                                27,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_PercentEqual(
-                                    Token_PercentEqual {
-                                        [RANGE]
-                                        _id: 29,
-                                        _parent: Some(
-                                            27,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 30,
-                                                _parent: Some(
-                                                    27,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 27,
-                                _parent: Some(
-                                    26,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 27,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 38,
+                        end_byte: 44,
+                        start_point: Point {
+                            row: 6,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 6,
+                            column: 6,
+                        },
+                    },
                     _id: 26,
                     _parent: Some(
                         0,
@@ -334,54 +732,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 29,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 30,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 28,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 38,
+                    end_byte: 44,
+                    start_point: Point {
+                        row: 6,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 6,
+                        column: 6,
+                    },
+                },
+                _id: 27,
+                _parent: Some(
+                    26,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 38,
+                        end_byte: 39,
+                        start_point: Point {
+                            row: 6,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 6,
+                            column: 1,
+                        },
+                    },
+                    _id: 28,
+                    _parent: Some(
+                        27,
+                    ),
+                },
+            ),
+        ),
+        Token_PercentEqual(
+            Token_PercentEqual {
+                _range: Range {
+                    start_byte: 40,
+                    end_byte: 42,
+                    start_point: Point {
+                        row: 6,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 6,
+                        column: 4,
+                    },
+                },
+                _id: 29,
+                _parent: Some(
+                    27,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 43,
+                            end_byte: 44,
+                            start_point: Point {
+                                row: 6,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 6,
+                                column: 6,
+                            },
+                        },
+                        _id: 30,
+                        _parent: Some(
+                            27,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 33,
-                                            _parent: Some(
-                                                32,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_SlashEqual(
-                                    Token_SlashEqual {
-                                        [RANGE]
-                                        _id: 34,
-                                        _parent: Some(
-                                            32,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 35,
-                                                _parent: Some(
-                                                    32,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 32,
-                                _parent: Some(
-                                    31,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 32,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 45,
+                        end_byte: 51,
+                        start_point: Point {
+                            row: 7,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 7,
+                            column: 6,
+                        },
+                    },
                     _id: 31,
                     _parent: Some(
                         0,
@@ -389,54 +858,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 34,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 35,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 33,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 45,
+                    end_byte: 51,
+                    start_point: Point {
+                        row: 7,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 7,
+                        column: 6,
+                    },
+                },
+                _id: 32,
+                _parent: Some(
+                    31,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 45,
+                        end_byte: 46,
+                        start_point: Point {
+                            row: 7,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 7,
+                            column: 1,
+                        },
+                    },
+                    _id: 33,
+                    _parent: Some(
+                        32,
+                    ),
+                },
+            ),
+        ),
+        Token_SlashEqual(
+            Token_SlashEqual {
+                _range: Range {
+                    start_byte: 47,
+                    end_byte: 49,
+                    start_point: Point {
+                        row: 7,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 7,
+                        column: 4,
+                    },
+                },
+                _id: 34,
+                _parent: Some(
+                    32,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 50,
+                            end_byte: 51,
+                            start_point: Point {
+                                row: 7,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 7,
+                                column: 6,
+                            },
+                        },
+                        _id: 35,
+                        _parent: Some(
+                            32,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 38,
-                                            _parent: Some(
-                                                37,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_StarEqual(
-                                    Token_StarEqual {
-                                        [RANGE]
-                                        _id: 39,
-                                        _parent: Some(
-                                            37,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Float(
-                                            Float {
-                                                [RANGE]
-                                                _id: 40,
-                                                _parent: Some(
-                                                    37,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 37,
-                                _parent: Some(
-                                    36,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 37,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 52,
+                        end_byte: 60,
+                        start_point: Point {
+                            row: 8,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 8,
+                            column: 8,
+                        },
+                    },
                     _id: 36,
                     _parent: Some(
                         0,
@@ -444,54 +984,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 39,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 40,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 38,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 52,
+                    end_byte: 60,
+                    start_point: Point {
+                        row: 8,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 8,
+                        column: 8,
+                    },
+                },
+                _id: 37,
+                _parent: Some(
+                    36,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 52,
+                        end_byte: 53,
+                        start_point: Point {
+                            row: 8,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 8,
+                            column: 1,
+                        },
+                    },
+                    _id: 38,
+                    _parent: Some(
+                        37,
+                    ),
+                },
+            ),
+        ),
+        Token_StarEqual(
+            Token_StarEqual {
+                _range: Range {
+                    start_byte: 54,
+                    end_byte: 56,
+                    start_point: Point {
+                        row: 8,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 8,
+                        column: 4,
+                    },
+                },
+                _id: 39,
+                _parent: Some(
+                    37,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Float(
+                    Float {
+                        _range: Range {
+                            start_byte: 57,
+                            end_byte: 60,
+                            start_point: Point {
+                                row: 8,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 8,
+                                column: 8,
+                            },
+                        },
+                        _id: 40,
+                        _parent: Some(
+                            37,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 43,
-                                            _parent: Some(
-                                                42,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_AmpersandEqual(
-                                    Token_AmpersandEqual {
-                                        [RANGE]
-                                        _id: 44,
-                                        _parent: Some(
-                                            42,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 45,
-                                                _parent: Some(
-                                                    42,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 42,
-                                _parent: Some(
-                                    41,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 42,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 61,
+                        end_byte: 67,
+                        start_point: Point {
+                            row: 9,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 9,
+                            column: 6,
+                        },
+                    },
                     _id: 41,
                     _parent: Some(
                         0,
@@ -499,54 +1110,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 44,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 45,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 43,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 61,
+                    end_byte: 67,
+                    start_point: Point {
+                        row: 9,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 9,
+                        column: 6,
+                    },
+                },
+                _id: 42,
+                _parent: Some(
+                    41,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 61,
+                        end_byte: 62,
+                        start_point: Point {
+                            row: 9,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 9,
+                            column: 1,
+                        },
+                    },
+                    _id: 43,
+                    _parent: Some(
+                        42,
+                    ),
+                },
+            ),
+        ),
+        Token_AmpersandEqual(
+            Token_AmpersandEqual {
+                _range: Range {
+                    start_byte: 63,
+                    end_byte: 65,
+                    start_point: Point {
+                        row: 9,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 9,
+                        column: 4,
+                    },
+                },
+                _id: 44,
+                _parent: Some(
+                    42,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 66,
+                            end_byte: 67,
+                            start_point: Point {
+                                row: 9,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 9,
+                                column: 6,
+                            },
+                        },
+                        _id: 45,
+                        _parent: Some(
+                            42,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 48,
-                                            _parent: Some(
-                                                47,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_CaretEqual(
-                                    Token_CaretEqual {
-                                        [RANGE]
-                                        _id: 49,
-                                        _parent: Some(
-                                            47,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 50,
-                                                _parent: Some(
-                                                    47,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 47,
-                                _parent: Some(
-                                    46,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 47,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 68,
+                        end_byte: 74,
+                        start_point: Point {
+                            row: 10,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 10,
+                            column: 6,
+                        },
+                    },
                     _id: 46,
                     _parent: Some(
                         0,
@@ -554,54 +1236,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 49,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 50,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 48,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 68,
+                    end_byte: 74,
+                    start_point: Point {
+                        row: 10,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 10,
+                        column: 6,
+                    },
+                },
+                _id: 47,
+                _parent: Some(
+                    46,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 68,
+                        end_byte: 69,
+                        start_point: Point {
+                            row: 10,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 10,
+                            column: 1,
+                        },
+                    },
+                    _id: 48,
+                    _parent: Some(
+                        47,
+                    ),
+                },
+            ),
+        ),
+        Token_CaretEqual(
+            Token_CaretEqual {
+                _range: Range {
+                    start_byte: 70,
+                    end_byte: 72,
+                    start_point: Point {
+                        row: 10,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 10,
+                        column: 4,
+                    },
+                },
+                _id: 49,
+                _parent: Some(
+                    47,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 73,
+                            end_byte: 74,
+                            start_point: Point {
+                                row: 10,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 10,
+                                column: 6,
+                            },
+                        },
+                        _id: 50,
+                        _parent: Some(
+                            47,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 53,
-                                            _parent: Some(
-                                                52,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_LessLessEqual(
-                                    Token_LessLessEqual {
-                                        [RANGE]
-                                        _id: 54,
-                                        _parent: Some(
-                                            52,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 55,
-                                                _parent: Some(
-                                                    52,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 52,
-                                _parent: Some(
-                                    51,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 52,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 75,
+                        end_byte: 82,
+                        start_point: Point {
+                            row: 11,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 11,
+                            column: 7,
+                        },
+                    },
                     _id: 51,
                     _parent: Some(
                         0,
@@ -609,54 +1362,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 54,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 55,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 53,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 75,
+                    end_byte: 82,
+                    start_point: Point {
+                        row: 11,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 11,
+                        column: 7,
+                    },
+                },
+                _id: 52,
+                _parent: Some(
+                    51,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 75,
+                        end_byte: 76,
+                        start_point: Point {
+                            row: 11,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 11,
+                            column: 1,
+                        },
+                    },
+                    _id: 53,
+                    _parent: Some(
+                        52,
+                    ),
+                },
+            ),
+        ),
+        Token_LessLessEqual(
+            Token_LessLessEqual {
+                _range: Range {
+                    start_byte: 77,
+                    end_byte: 80,
+                    start_point: Point {
+                        row: 11,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 11,
+                        column: 5,
+                    },
+                },
+                _id: 54,
+                _parent: Some(
+                    52,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 81,
+                            end_byte: 82,
+                            start_point: Point {
+                                row: 11,
+                                column: 6,
+                            },
+                            end_point: Point {
+                                row: 11,
+                                column: 7,
+                            },
+                        },
+                        _id: 55,
+                        _parent: Some(
+                            52,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 58,
-                                            _parent: Some(
-                                                57,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_PipeEqual(
-                                    Token_PipeEqual {
-                                        [RANGE]
-                                        _id: 59,
-                                        _parent: Some(
-                                            57,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 60,
-                                                _parent: Some(
-                                                    57,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 57,
-                                _parent: Some(
-                                    56,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 57,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 83,
+                        end_byte: 89,
+                        start_point: Point {
+                            row: 12,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 12,
+                            column: 6,
+                        },
+                    },
                     _id: 56,
                     _parent: Some(
                         0,
@@ -664,54 +1488,125 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 59,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 60,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 58,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 83,
+                    end_byte: 89,
+                    start_point: Point {
+                        row: 12,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 12,
+                        column: 6,
+                    },
+                },
+                _id: 57,
+                _parent: Some(
+                    56,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 83,
+                        end_byte: 84,
+                        start_point: Point {
+                            row: 12,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 12,
+                            column: 1,
+                        },
+                    },
+                    _id: 58,
+                    _parent: Some(
+                        57,
+                    ),
+                },
+            ),
+        ),
+        Token_PipeEqual(
+            Token_PipeEqual {
+                _range: Range {
+                    start_byte: 85,
+                    end_byte: 87,
+                    start_point: Point {
+                        row: 12,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 12,
+                        column: 4,
+                    },
+                },
+                _id: 59,
+                _parent: Some(
+                    57,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 88,
+                            end_byte: 89,
+                            start_point: Point {
+                                row: 12,
+                                column: 5,
+                            },
+                            end_point: Point {
+                                row: 12,
+                                column: 6,
+                            },
+                        },
+                        _id: 60,
+                        _parent: Some(
+                            57,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        AugmentedAssignment(
-                            AugmentedAssignment {
-                                left: Pattern(
-                                    Identifier(
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 63,
-                                            _parent: Some(
-                                                62,
-                                            ),
-                                        },
-                                    ),
-                                ),
-                                operator: Token_StarStarEqual(
-                                    Token_StarStarEqual {
-                                        [RANGE]
-                                        _id: 64,
-                                        _parent: Some(
-                                            62,
-                                        ),
-                                    },
-                                ),
-                                right: Expression(
-                                    PrimaryExpression(
-                                        Integer(
-                                            Integer {
-                                                [RANGE]
-                                                _id: 65,
-                                                _parent: Some(
-                                                    62,
-                                                ),
-                                            },
-                                        ),
-                                    ),
-                                ),
-                                [RANGE]
-                                _id: 62,
-                                _parent: Some(
-                                    61,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 62,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 90,
+                        end_byte: 97,
+                        start_point: Point {
+                            row: 13,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 13,
+                            column: 7,
+                        },
+                    },
                     _id: 61,
                     _parent: Some(
                         0,
@@ -719,8 +1614,103 @@ Module {
                 },
             ),
         ),
+        AugmentedAssignment(
+            AugmentedAssignment {
+                operator: AstNodeId {
+                    id: 64,
+                    _marker: PhantomData<ast_python::generated::Operators_0>,
+                },
+                right: AstNodeId {
+                    id: 65,
+                    _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
+                },
+                left: AstNodeId {
+                    id: 63,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                _range: Range {
+                    start_byte: 90,
+                    end_byte: 97,
+                    start_point: Point {
+                        row: 13,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 13,
+                        column: 7,
+                    },
+                },
+                _id: 62,
+                _parent: Some(
+                    61,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 90,
+                        end_byte: 91,
+                        start_point: Point {
+                            row: 13,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 13,
+                            column: 1,
+                        },
+                    },
+                    _id: 63,
+                    _parent: Some(
+                        62,
+                    ),
+                },
+            ),
+        ),
+        Token_StarStarEqual(
+            Token_StarStarEqual {
+                _range: Range {
+                    start_byte: 92,
+                    end_byte: 95,
+                    start_point: Point {
+                        row: 13,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 13,
+                        column: 5,
+                    },
+                },
+                _id: 64,
+                _parent: Some(
+                    62,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 96,
+                            end_byte: 97,
+                            start_point: Point {
+                                row: 13,
+                                column: 6,
+                            },
+                            end_point: Point {
+                                row: 13,
+                                column: 7,
+                            },
+                        },
+                        _id: 65,
+                        _parent: Some(
+                            62,
+                        ),
+                    },
+                ),
+            ),
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

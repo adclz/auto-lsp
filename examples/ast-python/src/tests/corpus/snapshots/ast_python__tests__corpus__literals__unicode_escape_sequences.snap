@@ -1,86 +1,52 @@
 ---
 source: src/tests/corpus/literals.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 20,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 2,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                String(
-                                    String {
-                                        children: [
-                                            StringStart(
-                                                StringStart {
-                                                    [RANGE]
-                                                    _id: 3,
-                                                    _parent: Some(
-                                                        2,
-                                                    ),
-                                                },
-                                            ),
-                                            StringContent(
-                                                StringContent {
-                                                    children: [
-                                                        EscapeSequence(
-                                                            EscapeSequence {
-                                                                [RANGE]
-                                                                _id: 5,
-                                                                _parent: Some(
-                                                                    4,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        EscapeSequence(
-                                                            EscapeSequence {
-                                                                [RANGE]
-                                                                _id: 6,
-                                                                _parent: Some(
-                                                                    4,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        EscapeSequence(
-                                                            EscapeSequence {
-                                                                [RANGE]
-                                                                _id: 7,
-                                                                _parent: Some(
-                                                                    4,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ],
-                                                    [RANGE]
-                                                    _id: 4,
-                                                    _parent: Some(
-                                                        2,
-                                                    ),
-                                                },
-                                            ),
-                                            StringEnd(
-                                                StringEnd {
-                                                    [RANGE]
-                                                    _id: 8,
-                                                    _parent: Some(
-                                                        2,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 2,
-                                        _parent: Some(
-                                            1,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 19,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 18,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -88,8 +54,177 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                String(
+                    String {
+                        children: [
+                            AstNodeId {
+                                id: 3,
+                                _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                            },
+                            AstNodeId {
+                                id: 4,
+                                _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                            },
+                            AstNodeId {
+                                id: 8,
+                                _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                            },
+                        ],
+                        _range: Range {
+                            start_byte: 1,
+                            end_byte: 19,
+                            start_point: Point {
+                                row: 1,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 1,
+                                column: 18,
+                            },
+                        },
+                        _id: 2,
+                        _parent: Some(
+                            1,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        StringStart(
+            StringStart {
+                _range: Range {
+                    start_byte: 1,
+                    end_byte: 2,
+                    start_point: Point {
+                        row: 1,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                },
+                _id: 3,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        StringContent(
+            StringContent {
+                children: [
+                    AstNodeId {
+                        id: 5,
+                        _marker: PhantomData<ast_python::generated::EscapeInterpolation_EscapeSequence>,
+                    },
+                    AstNodeId {
+                        id: 6,
+                        _marker: PhantomData<ast_python::generated::EscapeInterpolation_EscapeSequence>,
+                    },
+                    AstNodeId {
+                        id: 7,
+                        _marker: PhantomData<ast_python::generated::EscapeInterpolation_EscapeSequence>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 2,
+                    end_byte: 18,
+                    start_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 17,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        EscapeSequence(
+            EscapeSequence {
+                _range: Range {
+                    start_byte: 2,
+                    end_byte: 6,
+                    start_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 5,
+                    },
+                },
+                _id: 5,
+                _parent: Some(
+                    4,
+                ),
+            },
+        ),
+        EscapeSequence(
+            EscapeSequence {
+                _range: Range {
+                    start_byte: 7,
+                    end_byte: 11,
+                    start_point: Point {
+                        row: 1,
+                        column: 6,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 10,
+                    },
+                },
+                _id: 6,
+                _parent: Some(
+                    4,
+                ),
+            },
+        ),
+        EscapeSequence(
+            EscapeSequence {
+                _range: Range {
+                    start_byte: 12,
+                    end_byte: 18,
+                    start_point: Point {
+                        row: 1,
+                        column: 11,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 17,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    4,
+                ),
+            },
+        ),
+        StringEnd(
+            StringEnd {
+                _range: Range {
+                    start_byte: 18,
+                    end_byte: 19,
+                    start_point: Point {
+                        row: 1,
+                        column: 17,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 18,
+                    },
+                },
+                _id: 8,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

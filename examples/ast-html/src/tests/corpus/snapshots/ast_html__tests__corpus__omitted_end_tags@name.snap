@@ -1,12 +1,49 @@
 ---
 source: src/tests/corpus/mod.rs
-expression: document
+expression: "get_ast(& db, file)"
 ---
-Document {
-    children: [
+ParsedAst {
+    nodes: [
+        Document {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_html::generated::Doctype_Element_Entity_ErroneousEndTag_ScriptElement_StyleElement_Text>,
+                },
+                AstNodeId {
+                    id: 2,
+                    _marker: PhantomData<ast_html::generated::Doctype_Element_Entity_ErroneousEndTag_ScriptElement_StyleElement_Text>,
+                },
+            ],
+            _range: Range {
+                start_byte: 0,
+                end_byte: 27,
+                start_point: Point {
+                    row: 0,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 0,
+                    column: 27,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         Doctype(
             Doctype {
-                [RANGE]
+                _range: Range {
+                    start_byte: 0,
+                    end_byte: 15,
+                    start_point: Point {
+                        row: 0,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 15,
+                    },
+                },
                 _id: 1,
                 _parent: Some(
                     0,
@@ -16,67 +53,150 @@ Document {
         Element(
             Element {
                 children: [
-                    StartTag(
-                        StartTag {
-                            children: [
-                                TagName(
-                                    TagName {
-                                        [RANGE]
-                                        _id: 4,
-                                        _parent: Some(
-                                            3,
-                                        ),
-                                    },
-                                ),
-                            ],
-                            [RANGE]
-                            _id: 3,
-                            _parent: Some(
-                                2,
-                            ),
-                        },
-                    ),
-                    Element(
-                        Element {
-                            children: [
-                                StartTag(
-                                    StartTag {
-                                        children: [
-                                            TagName(
-                                                TagName {
-                                                    [RANGE]
-                                                    _id: 7,
-                                                    _parent: Some(
-                                                        6,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 6,
-                                        _parent: Some(
-                                            5,
-                                        ),
-                                    },
-                                ),
-                            ],
-                            [RANGE]
-                            _id: 5,
-                            _parent: Some(
-                                2,
-                            ),
-                        },
-                    ),
+                    AstNodeId {
+                        id: 3,
+                        _marker: PhantomData<ast_html::generated::Doctype_Element_EndTag_Entity_ErroneousEndTag_ScriptElement_SelfClosingTag_StartTag_StyleElement_Text>,
+                    },
+                    AstNodeId {
+                        id: 5,
+                        _marker: PhantomData<ast_html::generated::Doctype_Element_EndTag_Entity_ErroneousEndTag_ScriptElement_SelfClosingTag_StartTag_StyleElement_Text>,
+                    },
                 ],
-                [RANGE]
+                _range: Range {
+                    start_byte: 15,
+                    end_byte: 27,
+                    start_point: Point {
+                        row: 0,
+                        column: 15,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 27,
+                    },
+                },
                 _id: 2,
                 _parent: Some(
                     0,
                 ),
             },
         ),
+        StartTag(
+            StartTag {
+                children: [
+                    AstNodeId {
+                        id: 4,
+                        _marker: PhantomData<ast_html::generated::Attribute_TagName>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 15,
+                    end_byte: 21,
+                    start_point: Point {
+                        row: 0,
+                        column: 15,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 21,
+                    },
+                },
+                _id: 3,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        TagName(
+            TagName {
+                _range: Range {
+                    start_byte: 16,
+                    end_byte: 20,
+                    start_point: Point {
+                        row: 0,
+                        column: 16,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 20,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    3,
+                ),
+            },
+        ),
+        Element(
+            Element {
+                children: [
+                    AstNodeId {
+                        id: 6,
+                        _marker: PhantomData<ast_html::generated::Doctype_Element_EndTag_Entity_ErroneousEndTag_ScriptElement_SelfClosingTag_StartTag_StyleElement_Text>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 21,
+                    end_byte: 27,
+                    start_point: Point {
+                        row: 0,
+                        column: 21,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 27,
+                    },
+                },
+                _id: 5,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        StartTag(
+            StartTag {
+                children: [
+                    AstNodeId {
+                        id: 7,
+                        _marker: PhantomData<ast_html::generated::Attribute_TagName>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 21,
+                    end_byte: 27,
+                    start_point: Point {
+                        row: 0,
+                        column: 21,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 27,
+                    },
+                },
+                _id: 6,
+                _parent: Some(
+                    5,
+                ),
+            },
+        ),
+        TagName(
+            TagName {
+                _range: Range {
+                    start_byte: 22,
+                    end_byte: 26,
+                    start_point: Point {
+                        row: 0,
+                        column: 22,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 26,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    6,
+                ),
+            },
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

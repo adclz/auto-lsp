@@ -1,68 +1,55 @@
 ---
 source: src/tests/corpus/statements.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 39,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 5,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         CompoundStatement(
             WhileStatement(
                 WhileStatement {
-                    condition: PrimaryExpression(
-                        Identifier(
-                            Identifier {
-                                [RANGE]
-                                _id: 2,
-                                _parent: Some(
-                                    1,
-                                ),
-                            },
-                        ),
-                    ),
-                    body: Block {
-                        alternative: [],
-                        children: [
-                            SimpleStatement(
-                                PassStatement(
-                                    PassStatement {
-                                        [RANGE]
-                                        _id: 4,
-                                        _parent: Some(
-                                            3,
-                                        ),
-                                    },
-                                ),
-                            ),
-                            SimpleStatement(
-                                BreakStatement(
-                                    BreakStatement {
-                                        [RANGE]
-                                        _id: 5,
-                                        _parent: Some(
-                                            3,
-                                        ),
-                                    },
-                                ),
-                            ),
-                            SimpleStatement(
-                                ContinueStatement(
-                                    ContinueStatement {
-                                        [RANGE]
-                                        _id: 6,
-                                        _parent: Some(
-                                            3,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ],
-                        [RANGE]
-                        _id: 3,
-                        _parent: Some(
-                            1,
-                        ),
+                    body: AstNodeId {
+                        id: 3,
+                        _marker: PhantomData<ast_python::generated::Block>,
+                    },
+                    condition: AstNodeId {
+                        id: 2,
+                        _marker: PhantomData<ast_python::generated::Expression>,
                     },
                     alternative: None,
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 38,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 10,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -70,8 +57,126 @@ Module {
                 },
             ),
         ),
+        PrimaryExpression(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 7,
+                        end_byte: 11,
+                        start_point: Point {
+                            row: 1,
+                            column: 6,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 10,
+                        },
+                    },
+                    _id: 2,
+                    _parent: Some(
+                        1,
+                    ),
+                },
+            ),
+        ),
+        Block {
+            alternative: [],
+            children: [
+                AstNodeId {
+                    id: 4,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 5,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 6,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 15,
+                end_byte: 38,
+                start_point: Point {
+                    row: 2,
+                    column: 2,
+                },
+                end_point: Point {
+                    row: 4,
+                    column: 10,
+                },
+            },
+            _id: 3,
+            _parent: Some(
+                1,
+            ),
+        },
+        SimpleStatement(
+            PassStatement(
+                PassStatement {
+                    _range: Range {
+                        start_byte: 15,
+                        end_byte: 19,
+                        start_point: Point {
+                            row: 2,
+                            column: 2,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 6,
+                        },
+                    },
+                    _id: 4,
+                    _parent: Some(
+                        3,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            BreakStatement(
+                BreakStatement {
+                    _range: Range {
+                        start_byte: 22,
+                        end_byte: 27,
+                        start_point: Point {
+                            row: 3,
+                            column: 2,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 7,
+                        },
+                    },
+                    _id: 5,
+                    _parent: Some(
+                        3,
+                    ),
+                },
+            ),
+        ),
+        SimpleStatement(
+            ContinueStatement(
+                ContinueStatement {
+                    _range: Range {
+                        start_byte: 30,
+                        end_byte: 38,
+                        start_point: Point {
+                            row: 4,
+                            column: 2,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 10,
+                        },
+                    },
+                    _id: 6,
+                    _parent: Some(
+                        3,
+                    ),
+                },
+            ),
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

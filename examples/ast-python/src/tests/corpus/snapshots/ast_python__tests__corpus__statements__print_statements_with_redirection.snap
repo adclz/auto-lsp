@@ -1,37 +1,104 @@
 ---
 source: src/tests/corpus/statements.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 4,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 33,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 3,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             PrintStatement(
                 PrintStatement {
                     argument: [],
                     children: Some(
-                        Chevron {
-                            children: PrimaryExpression(
-                                Identifier(
-                                    Identifier {
-                                        [RANGE]
-                                        _id: 3,
-                                        _parent: Some(
-                                            2,
-                                        ),
-                                    },
-                                ),
-                            ),
-                            [RANGE]
-                            _id: 2,
-                            _parent: Some(
-                                1,
-                            ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::Chevron>,
                         },
                     ),
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 11,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 10,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
+                    ),
+                },
+            ),
+        ),
+        Chevron {
+            children: AstNodeId {
+                id: 3,
+                _marker: PhantomData<ast_python::generated::Expression>,
+            },
+            _range: Range {
+                start_byte: 7,
+                end_byte: 11,
+                start_point: Point {
+                    row: 1,
+                    column: 6,
+                },
+                end_point: Point {
+                    row: 1,
+                    column: 10,
+                },
+            },
+            _id: 2,
+            _parent: Some(
+                1,
+            ),
+        },
+        PrimaryExpression(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 10,
+                        end_byte: 11,
+                        start_point: Point {
+                            row: 1,
+                            column: 9,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 10,
+                        },
+                    },
+                    _id: 3,
+                    _parent: Some(
+                        2,
                     ),
                 },
             ),
@@ -40,110 +107,33 @@ Module {
             PrintStatement(
                 PrintStatement {
                     argument: [
-                        PrimaryExpression(
-                            String(
-                                String {
-                                    children: [
-                                        StringStart(
-                                            StringStart {
-                                                [RANGE]
-                                                _id: 8,
-                                                _parent: Some(
-                                                    7,
-                                                ),
-                                            },
-                                        ),
-                                        StringContent(
-                                            StringContent {
-                                                children: [],
-                                                [RANGE]
-                                                _id: 9,
-                                                _parent: Some(
-                                                    7,
-                                                ),
-                                            },
-                                        ),
-                                        StringEnd(
-                                            StringEnd {
-                                                [RANGE]
-                                                _id: 10,
-                                                _parent: Some(
-                                                    7,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    [RANGE]
-                                    _id: 7,
-                                    _parent: Some(
-                                        4,
-                                    ),
-                                },
-                            ),
-                        ),
-                        PrimaryExpression(
-                            String(
-                                String {
-                                    children: [
-                                        StringStart(
-                                            StringStart {
-                                                [RANGE]
-                                                _id: 12,
-                                                _parent: Some(
-                                                    11,
-                                                ),
-                                            },
-                                        ),
-                                        StringContent(
-                                            StringContent {
-                                                children: [],
-                                                [RANGE]
-                                                _id: 13,
-                                                _parent: Some(
-                                                    11,
-                                                ),
-                                            },
-                                        ),
-                                        StringEnd(
-                                            StringEnd {
-                                                [RANGE]
-                                                _id: 14,
-                                                _parent: Some(
-                                                    11,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    [RANGE]
-                                    _id: 11,
-                                    _parent: Some(
-                                        4,
-                                    ),
-                                },
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 7,
+                            _marker: PhantomData<ast_python::generated::Expression>,
+                        },
+                        AstNodeId {
+                            id: 11,
+                            _marker: PhantomData<ast_python::generated::Expression>,
+                        },
                     ],
                     children: Some(
-                        Chevron {
-                            children: PrimaryExpression(
-                                Identifier(
-                                    Identifier {
-                                        [RANGE]
-                                        _id: 6,
-                                        _parent: Some(
-                                            5,
-                                        ),
-                                    },
-                                ),
-                            ),
-                            [RANGE]
-                            _id: 5,
-                            _parent: Some(
-                                4,
-                            ),
+                        AstNodeId {
+                            id: 5,
+                            _marker: PhantomData<ast_python::generated::Chevron>,
                         },
                     ),
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 12,
+                        end_byte: 32,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 20,
+                        },
+                    },
                     _id: 4,
                     _parent: Some(
                         0,
@@ -151,8 +141,243 @@ Module {
                 },
             ),
         ),
+        Chevron {
+            children: AstNodeId {
+                id: 6,
+                _marker: PhantomData<ast_python::generated::Expression>,
+            },
+            _range: Range {
+                start_byte: 18,
+                end_byte: 22,
+                start_point: Point {
+                    row: 2,
+                    column: 6,
+                },
+                end_point: Point {
+                    row: 2,
+                    column: 10,
+                },
+            },
+            _id: 5,
+            _parent: Some(
+                4,
+            ),
+        },
+        PrimaryExpression(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 21,
+                        end_byte: 22,
+                        start_point: Point {
+                            row: 2,
+                            column: 9,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 10,
+                        },
+                    },
+                    _id: 6,
+                    _parent: Some(
+                        5,
+                    ),
+                },
+            ),
+        ),
+        PrimaryExpression(
+            String(
+                String {
+                    children: [
+                        AstNodeId {
+                            id: 8,
+                            _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                        },
+                        AstNodeId {
+                            id: 9,
+                            _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                        },
+                        AstNodeId {
+                            id: 10,
+                            _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 24,
+                        end_byte: 27,
+                        start_point: Point {
+                            row: 2,
+                            column: 12,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 15,
+                        },
+                    },
+                    _id: 7,
+                    _parent: Some(
+                        4,
+                    ),
+                },
+            ),
+        ),
+        StringStart(
+            StringStart {
+                _range: Range {
+                    start_byte: 24,
+                    end_byte: 25,
+                    start_point: Point {
+                        row: 2,
+                        column: 12,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 13,
+                    },
+                },
+                _id: 8,
+                _parent: Some(
+                    7,
+                ),
+            },
+        ),
+        StringContent(
+            StringContent {
+                children: [],
+                _range: Range {
+                    start_byte: 25,
+                    end_byte: 26,
+                    start_point: Point {
+                        row: 2,
+                        column: 13,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 14,
+                    },
+                },
+                _id: 9,
+                _parent: Some(
+                    7,
+                ),
+            },
+        ),
+        StringEnd(
+            StringEnd {
+                _range: Range {
+                    start_byte: 26,
+                    end_byte: 27,
+                    start_point: Point {
+                        row: 2,
+                        column: 14,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 15,
+                    },
+                },
+                _id: 10,
+                _parent: Some(
+                    7,
+                ),
+            },
+        ),
+        PrimaryExpression(
+            String(
+                String {
+                    children: [
+                        AstNodeId {
+                            id: 12,
+                            _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                        },
+                        AstNodeId {
+                            id: 13,
+                            _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                        },
+                        AstNodeId {
+                            id: 14,
+                            _marker: PhantomData<ast_python::generated::Interpolation_StringContent_StringEnd_StringStart>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 29,
+                        end_byte: 32,
+                        start_point: Point {
+                            row: 2,
+                            column: 17,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 20,
+                        },
+                    },
+                    _id: 11,
+                    _parent: Some(
+                        4,
+                    ),
+                },
+            ),
+        ),
+        StringStart(
+            StringStart {
+                _range: Range {
+                    start_byte: 29,
+                    end_byte: 30,
+                    start_point: Point {
+                        row: 2,
+                        column: 17,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 18,
+                    },
+                },
+                _id: 12,
+                _parent: Some(
+                    11,
+                ),
+            },
+        ),
+        StringContent(
+            StringContent {
+                children: [],
+                _range: Range {
+                    start_byte: 30,
+                    end_byte: 31,
+                    start_point: Point {
+                        row: 2,
+                        column: 18,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 19,
+                    },
+                },
+                _id: 13,
+                _parent: Some(
+                    11,
+                ),
+            },
+        ),
+        StringEnd(
+            StringEnd {
+                _range: Range {
+                    start_byte: 31,
+                    end_byte: 32,
+                    start_point: Point {
+                        row: 2,
+                        column: 19,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 20,
+                    },
+                },
+                _id: 14,
+                _parent: Some(
+                    11,
+                ),
+            },
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }
