@@ -1,163 +1,52 @@
 ---
 source: src/tests/corpus/expressions.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 25,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 2,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                BinaryOperator(
-                                    BinaryOperator {
-                                        operator: Token_Pipe(
-                                            Token_Pipe {
-                                                [RANGE]
-                                                _id: 7,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        left: BinaryOperator(
-                                            BinaryOperator {
-                                                operator: Token_ShiftLeft(
-                                                    Token_ShiftLeft {
-                                                        [RANGE]
-                                                        _id: 5,
-                                                        _parent: Some(
-                                                            3,
-                                                        ),
-                                                    },
-                                                ),
-                                                left: Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 4,
-                                                        _parent: Some(
-                                                            3,
-                                                        ),
-                                                    },
-                                                ),
-                                                right: Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 6,
-                                                        _parent: Some(
-                                                            3,
-                                                        ),
-                                                    },
-                                                ),
-                                                [RANGE]
-                                                _id: 3,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        right: BinaryOperator(
-                                            BinaryOperator {
-                                                operator: Token_Ampersand(
-                                                    Token_Ampersand {
-                                                        [RANGE]
-                                                        _id: 13,
-                                                        _parent: Some(
-                                                            8,
-                                                        ),
-                                                    },
-                                                ),
-                                                left: BinaryOperator(
-                                                    BinaryOperator {
-                                                        operator: Token_ShiftRight(
-                                                            Token_ShiftRight {
-                                                                [RANGE]
-                                                                _id: 11,
-                                                                _parent: Some(
-                                                                    9,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        left: Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 10,
-                                                                _parent: Some(
-                                                                    9,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        right: Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 12,
-                                                                _parent: Some(
-                                                                    9,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        [RANGE]
-                                                        _id: 9,
-                                                        _parent: Some(
-                                                            8,
-                                                        ),
-                                                    },
-                                                ),
-                                                right: BinaryOperator(
-                                                    BinaryOperator {
-                                                        operator: Token_Caret(
-                                                            Token_Caret {
-                                                                [RANGE]
-                                                                _id: 16,
-                                                                _parent: Some(
-                                                                    14,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        left: Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 15,
-                                                                _parent: Some(
-                                                                    14,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        right: Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 17,
-                                                                _parent: Some(
-                                                                    14,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        [RANGE]
-                                                        _id: 14,
-                                                        _parent: Some(
-                                                            8,
-                                                        ),
-                                                    },
-                                                ),
-                                                [RANGE]
-                                                _id: 8,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        [RANGE]
-                                        _id: 2,
-                                        _parent: Some(
-                                            1,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 24,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 23,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -165,8 +54,389 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                BinaryOperator(
+                    BinaryOperator {
+                        operator: AstNodeId {
+                            id: 7,
+                            _marker: PhantomData<ast_python::generated::Operators_1>,
+                        },
+                        left: AstNodeId {
+                            id: 3,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        right: AstNodeId {
+                            id: 8,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        _range: Range {
+                            start_byte: 1,
+                            end_byte: 24,
+                            start_point: Point {
+                                row: 1,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 1,
+                                column: 23,
+                            },
+                        },
+                        _id: 2,
+                        _parent: Some(
+                            1,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        BinaryOperator(
+            BinaryOperator {
+                operator: AstNodeId {
+                    id: 5,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
+                },
+                left: AstNodeId {
+                    id: 4,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                right: AstNodeId {
+                    id: 6,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                _range: Range {
+                    start_byte: 1,
+                    end_byte: 7,
+                    start_point: Point {
+                        row: 1,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 6,
+                    },
+                },
+                _id: 3,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 1,
+                    end_byte: 2,
+                    start_point: Point {
+                        row: 1,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    3,
+                ),
+            },
+        ),
+        Token_ShiftLeft(
+            Token_ShiftLeft {
+                _range: Range {
+                    start_byte: 3,
+                    end_byte: 5,
+                    start_point: Point {
+                        row: 1,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 4,
+                    },
+                },
+                _id: 5,
+                _parent: Some(
+                    3,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 6,
+                    end_byte: 7,
+                    start_point: Point {
+                        row: 1,
+                        column: 5,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 6,
+                    },
+                },
+                _id: 6,
+                _parent: Some(
+                    3,
+                ),
+            },
+        ),
+        Token_Pipe(
+            Token_Pipe {
+                _range: Range {
+                    start_byte: 8,
+                    end_byte: 9,
+                    start_point: Point {
+                        row: 1,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 8,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        BinaryOperator(
+            BinaryOperator {
+                operator: AstNodeId {
+                    id: 13,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
+                },
+                left: AstNodeId {
+                    id: 9,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                right: AstNodeId {
+                    id: 14,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                _range: Range {
+                    start_byte: 10,
+                    end_byte: 24,
+                    start_point: Point {
+                        row: 1,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 23,
+                    },
+                },
+                _id: 8,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        BinaryOperator(
+            BinaryOperator {
+                operator: AstNodeId {
+                    id: 11,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
+                },
+                left: AstNodeId {
+                    id: 10,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                right: AstNodeId {
+                    id: 12,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                _range: Range {
+                    start_byte: 10,
+                    end_byte: 16,
+                    start_point: Point {
+                        row: 1,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 15,
+                    },
+                },
+                _id: 9,
+                _parent: Some(
+                    8,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 10,
+                    end_byte: 11,
+                    start_point: Point {
+                        row: 1,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 10,
+                    },
+                },
+                _id: 10,
+                _parent: Some(
+                    9,
+                ),
+            },
+        ),
+        Token_ShiftRight(
+            Token_ShiftRight {
+                _range: Range {
+                    start_byte: 12,
+                    end_byte: 14,
+                    start_point: Point {
+                        row: 1,
+                        column: 11,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 13,
+                    },
+                },
+                _id: 11,
+                _parent: Some(
+                    9,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 15,
+                    end_byte: 16,
+                    start_point: Point {
+                        row: 1,
+                        column: 14,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 15,
+                    },
+                },
+                _id: 12,
+                _parent: Some(
+                    9,
+                ),
+            },
+        ),
+        Token_Ampersand(
+            Token_Ampersand {
+                _range: Range {
+                    start_byte: 17,
+                    end_byte: 18,
+                    start_point: Point {
+                        row: 1,
+                        column: 16,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 17,
+                    },
+                },
+                _id: 13,
+                _parent: Some(
+                    8,
+                ),
+            },
+        ),
+        BinaryOperator(
+            BinaryOperator {
+                operator: AstNodeId {
+                    id: 16,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
+                },
+                left: AstNodeId {
+                    id: 15,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                right: AstNodeId {
+                    id: 17,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                _range: Range {
+                    start_byte: 19,
+                    end_byte: 24,
+                    start_point: Point {
+                        row: 1,
+                        column: 18,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 23,
+                    },
+                },
+                _id: 14,
+                _parent: Some(
+                    8,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 19,
+                    end_byte: 20,
+                    start_point: Point {
+                        row: 1,
+                        column: 18,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 19,
+                    },
+                },
+                _id: 15,
+                _parent: Some(
+                    14,
+                ),
+            },
+        ),
+        Token_Caret(
+            Token_Caret {
+                _range: Range {
+                    start_byte: 21,
+                    end_byte: 22,
+                    start_point: Point {
+                        row: 1,
+                        column: 20,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 21,
+                    },
+                },
+                _id: 16,
+                _parent: Some(
+                    14,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 23,
+                    end_byte: 24,
+                    start_point: Point {
+                        row: 1,
+                        column: 22,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 23,
+                    },
+                },
+                _id: 17,
+                _parent: Some(
+                    14,
+                ),
+            },
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

@@ -23,7 +23,7 @@ use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp::default::db::tracked::get_ast;
+use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 use auto_lsp::{anyhow, lsp_types};
@@ -41,10 +41,11 @@ pub fn document_symbols(
     let doc = file.document(db);
     let mut builder = DocumentSymbolsBuilder::default();
 
-    if let Some(node) = get_ast(db, file).get_root() {
+    let ast = get_ast(db, file);
+    if let Some(node) = ast.get_root() {
         dispatch!(node.lower(),
             [
-                Module => build_document_symbols(&doc, &mut builder)
+                Module => build_document_symbols(&doc, ast, &mut builder)
             ]
         );
     }
@@ -55,11 +56,12 @@ impl Module {
     pub(crate) fn build_document_symbols(
         &self,
         doc: &Document,
+        ast: &ParsedAst,
         builder: &mut DocumentSymbolsBuilder,
     ) -> anyhow::Result<()> {
         self.children
             .iter()
-            .try_for_each(|f| f.build_document_symbols(doc, builder))
+            .try_for_each(|f| f.cast(ast).build_document_symbols(doc, ast, builder))
     }
 }
 
@@ -67,12 +69,13 @@ impl CompoundStatement_SimpleStatement {
     fn build_document_symbols(
         &self,
         doc: &Document,
+        ast: &ParsedAst,
         acc: &mut DocumentSymbolsBuilder,
     ) -> anyhow::Result<()> {
         match self {
             CompoundStatement_SimpleStatement::CompoundStatement(
                 CompoundStatement::FunctionDefinition(f),
-            ) => f.build_document_symbols(doc, acc),
+            ) => f.build_document_symbols(doc, ast, acc),
             _ => Ok(()),
         }
     }
@@ -82,20 +85,21 @@ impl FunctionDefinition {
     fn build_document_symbols(
         &self,
         doc: &Document,
+        ast: &ParsedAst,
         builder: &mut DocumentSymbolsBuilder,
     ) -> anyhow::Result<()> {
         let mut nested_builder = DocumentSymbolsBuilder::default();
 
-        self.body
-            .children
-            .iter()
-            .try_for_each(|f| f.build_document_symbols(doc, &mut nested_builder))?;
+        self.body.cast(ast).children.iter().try_for_each(|f| {
+            f.cast(ast)
+                .build_document_symbols(doc, ast, &mut nested_builder)
+        })?;
 
         builder.push_symbol(lsp_types::DocumentSymbol {
-            name: self.name.get_text(doc.as_bytes())?.to_string(),
+            name: self.name.cast(ast).get_text(doc.as_bytes())?.to_string(),
             kind: lsp_types::SymbolKind::FUNCTION,
-            range: self.name.get_lsp_range(),
-            selection_range: self.name.get_lsp_range(),
+            range: self.name.cast(ast).get_lsp_range(),
+            selection_range: self.name.cast(ast).get_lsp_range(),
             tags: None,
             detail: None,
             deprecated: None,

@@ -1,71 +1,64 @@
 ---
 source: src/tests/corpus/expressions.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 7,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 13,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 19,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 36,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 5,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                Call(
-                                    Call {
-                                        function: Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 3,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        arguments: ArgumentList(
-                                            ArgumentList {
-                                                children: [
-                                                    ListSplat(
-                                                        ListSplat {
-                                                            children: Expression(
-                                                                PrimaryExpression(
-                                                                    Tuple(
-                                                                        Tuple {
-                                                                            children: [],
-                                                                            [RANGE]
-                                                                            _id: 6,
-                                                                            _parent: Some(
-                                                                                5,
-                                                                            ),
-                                                                        },
-                                                                    ),
-                                                                ),
-                                                            ),
-                                                            [RANGE]
-                                                            _id: 5,
-                                                            _parent: Some(
-                                                                4,
-                                                            ),
-                                                        },
-                                                    ),
-                                                ],
-                                                [RANGE]
-                                                _id: 4,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        [RANGE]
-                                        _id: 2,
-                                        _parent: Some(
-                                            1,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 7,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 6,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -73,66 +66,154 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                Call(
+                    Call {
+                        arguments: AstNodeId {
+                            id: 4,
+                            _marker: PhantomData<ast_python::generated::ArgumentList_GeneratorExpression>,
+                        },
+                        function: AstNodeId {
+                            id: 3,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        _range: Range {
+                            start_byte: 1,
+                            end_byte: 7,
+                            start_point: Point {
+                                row: 1,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 1,
+                                column: 6,
+                            },
+                        },
+                        _id: 2,
+                        _parent: Some(
+                            1,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 1,
+                    end_byte: 2,
+                    start_point: Point {
+                        row: 1,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                },
+                _id: 3,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        ArgumentList(
+            ArgumentList {
+                children: [
+                    AstNodeId {
+                        id: 5,
+                        _marker: PhantomData<ast_python::generated::DictionarySplat_Expression_KeywordArgument_ListSplat_ParenthesizedExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 2,
+                    end_byte: 7,
+                    start_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 6,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        ListSplat(
+            ListSplat {
+                children: AstNodeId {
+                    id: 6,
+                    _marker: PhantomData<ast_python::generated::Attribute_Expression_Identifier_Subscript>,
+                },
+                _range: Range {
+                    start_byte: 3,
+                    end_byte: 6,
+                    start_point: Point {
+                        row: 1,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 5,
+                    },
+                },
+                _id: 5,
+                _parent: Some(
+                    4,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Tuple(
+                    Tuple {
+                        children: [],
+                        _range: Range {
+                            start_byte: 4,
+                            end_byte: 6,
+                            start_point: Point {
+                                row: 1,
+                                column: 3,
+                            },
+                            end_point: Point {
+                                row: 1,
+                                column: 5,
+                            },
+                        },
+                        _id: 6,
+                        _parent: Some(
+                            5,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                Call(
-                                    Call {
-                                        function: Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 9,
-                                                _parent: Some(
-                                                    8,
-                                                ),
-                                            },
-                                        ),
-                                        arguments: ArgumentList(
-                                            ArgumentList {
-                                                children: [
-                                                    DictionarySplat(
-                                                        DictionarySplat {
-                                                            children: PrimaryExpression(
-                                                                Dictionary(
-                                                                    Dictionary {
-                                                                        children: [],
-                                                                        [RANGE]
-                                                                        _id: 12,
-                                                                        _parent: Some(
-                                                                            11,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                            [RANGE]
-                                                            _id: 11,
-                                                            _parent: Some(
-                                                                10,
-                                                            ),
-                                                        },
-                                                    ),
-                                                ],
-                                                [RANGE]
-                                                _id: 10,
-                                                _parent: Some(
-                                                    8,
-                                                ),
-                                            },
-                                        ),
-                                        [RANGE]
-                                        _id: 8,
-                                        _parent: Some(
-                                            7,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 8,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 8,
+                        end_byte: 15,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 7,
+                        },
+                    },
                     _id: 7,
                     _parent: Some(
                         0,
@@ -140,63 +221,152 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                Call(
+                    Call {
+                        arguments: AstNodeId {
+                            id: 10,
+                            _marker: PhantomData<ast_python::generated::ArgumentList_GeneratorExpression>,
+                        },
+                        function: AstNodeId {
+                            id: 9,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        _range: Range {
+                            start_byte: 8,
+                            end_byte: 15,
+                            start_point: Point {
+                                row: 2,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 2,
+                                column: 7,
+                            },
+                        },
+                        _id: 8,
+                        _parent: Some(
+                            7,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 8,
+                    end_byte: 9,
+                    start_point: Point {
+                        row: 2,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 1,
+                    },
+                },
+                _id: 9,
+                _parent: Some(
+                    8,
+                ),
+            },
+        ),
+        ArgumentList(
+            ArgumentList {
+                children: [
+                    AstNodeId {
+                        id: 11,
+                        _marker: PhantomData<ast_python::generated::DictionarySplat_Expression_KeywordArgument_ListSplat_ParenthesizedExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 9,
+                    end_byte: 15,
+                    start_point: Point {
+                        row: 2,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 7,
+                    },
+                },
+                _id: 10,
+                _parent: Some(
+                    8,
+                ),
+            },
+        ),
+        DictionarySplat(
+            DictionarySplat {
+                children: AstNodeId {
+                    id: 12,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
+                _range: Range {
+                    start_byte: 10,
+                    end_byte: 14,
+                    start_point: Point {
+                        row: 2,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 6,
+                    },
+                },
+                _id: 11,
+                _parent: Some(
+                    10,
+                ),
+            },
+        ),
+        PrimaryExpression(
+            Dictionary(
+                Dictionary {
+                    children: [],
+                    _range: Range {
+                        start_byte: 12,
+                        end_byte: 14,
+                        start_point: Point {
+                            row: 2,
+                            column: 4,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 6,
+                        },
+                    },
+                    _id: 12,
+                    _parent: Some(
+                        11,
+                    ),
+                },
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                Call(
-                                    Call {
-                                        function: Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 15,
-                                                _parent: Some(
-                                                    14,
-                                                ),
-                                            },
-                                        ),
-                                        arguments: ArgumentList(
-                                            ArgumentList {
-                                                children: [
-                                                    ListSplat(
-                                                        ListSplat {
-                                                            children: Identifier(
-                                                                Identifier {
-                                                                    [RANGE]
-                                                                    _id: 18,
-                                                                    _parent: Some(
-                                                                        17,
-                                                                    ),
-                                                                },
-                                                            ),
-                                                            [RANGE]
-                                                            _id: 17,
-                                                            _parent: Some(
-                                                                16,
-                                                            ),
-                                                        },
-                                                    ),
-                                                ],
-                                                [RANGE]
-                                                _id: 16,
-                                                _parent: Some(
-                                                    14,
-                                                ),
-                                            },
-                                        ),
-                                        [RANGE]
-                                        _id: 14,
-                                        _parent: Some(
-                                            13,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 14,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 16,
+                        end_byte: 21,
+                        start_point: Point {
+                            row: 3,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 5,
+                        },
+                    },
                     _id: 13,
                     _parent: Some(
                         0,
@@ -204,96 +374,149 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                Call(
+                    Call {
+                        arguments: AstNodeId {
+                            id: 16,
+                            _marker: PhantomData<ast_python::generated::ArgumentList_GeneratorExpression>,
+                        },
+                        function: AstNodeId {
+                            id: 15,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        _range: Range {
+                            start_byte: 16,
+                            end_byte: 21,
+                            start_point: Point {
+                                row: 3,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 5,
+                            },
+                        },
+                        _id: 14,
+                        _parent: Some(
+                            13,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 16,
+                    end_byte: 17,
+                    start_point: Point {
+                        row: 3,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 1,
+                    },
+                },
+                _id: 15,
+                _parent: Some(
+                    14,
+                ),
+            },
+        ),
+        ArgumentList(
+            ArgumentList {
+                children: [
+                    AstNodeId {
+                        id: 17,
+                        _marker: PhantomData<ast_python::generated::DictionarySplat_Expression_KeywordArgument_ListSplat_ParenthesizedExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 17,
+                    end_byte: 21,
+                    start_point: Point {
+                        row: 3,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 5,
+                    },
+                },
+                _id: 16,
+                _parent: Some(
+                    14,
+                ),
+            },
+        ),
+        ListSplat(
+            ListSplat {
+                children: AstNodeId {
+                    id: 18,
+                    _marker: PhantomData<ast_python::generated::Attribute_Expression_Identifier_Subscript>,
+                },
+                _range: Range {
+                    start_byte: 18,
+                    end_byte: 20,
+                    start_point: Point {
+                        row: 3,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 4,
+                    },
+                },
+                _id: 17,
+                _parent: Some(
+                    16,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 19,
+                    end_byte: 20,
+                    start_point: Point {
+                        row: 3,
+                        column: 3,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 4,
+                    },
+                },
+                _id: 18,
+                _parent: Some(
+                    17,
+                ),
+            },
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                Call(
-                                    Call {
-                                        function: Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 21,
-                                                _parent: Some(
-                                                    20,
-                                                ),
-                                            },
-                                        ),
-                                        arguments: ArgumentList(
-                                            ArgumentList {
-                                                children: [
-                                                    Expression(
-                                                        PrimaryExpression(
-                                                            Identifier(
-                                                                Identifier {
-                                                                    [RANGE]
-                                                                    _id: 23,
-                                                                    _parent: Some(
-                                                                        22,
-                                                                    ),
-                                                                },
-                                                            ),
-                                                        ),
-                                                    ),
-                                                    ListSplat(
-                                                        ListSplat {
-                                                            children: Identifier(
-                                                                Identifier {
-                                                                    [RANGE]
-                                                                    _id: 25,
-                                                                    _parent: Some(
-                                                                        24,
-                                                                    ),
-                                                                },
-                                                            ),
-                                                            [RANGE]
-                                                            _id: 24,
-                                                            _parent: Some(
-                                                                22,
-                                                            ),
-                                                        },
-                                                    ),
-                                                    DictionarySplat(
-                                                        DictionarySplat {
-                                                            children: PrimaryExpression(
-                                                                Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                        _id: 27,
-                                                                        _parent: Some(
-                                                                            26,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                            [RANGE]
-                                                            _id: 26,
-                                                            _parent: Some(
-                                                                22,
-                                                            ),
-                                                        },
-                                                    ),
-                                                ],
-                                                [RANGE]
-                                                _id: 22,
-                                                _parent: Some(
-                                                    20,
-                                                ),
-                                            },
-                                        ),
-                                        [RANGE]
-                                        _id: 20,
-                                        _parent: Some(
-                                            19,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 20,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 22,
+                        end_byte: 35,
+                        start_point: Point {
+                            row: 4,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 13,
+                        },
+                    },
                     _id: 19,
                     _parent: Some(
                         0,
@@ -301,8 +524,205 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                Call(
+                    Call {
+                        arguments: AstNodeId {
+                            id: 22,
+                            _marker: PhantomData<ast_python::generated::ArgumentList_GeneratorExpression>,
+                        },
+                        function: AstNodeId {
+                            id: 21,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        _range: Range {
+                            start_byte: 22,
+                            end_byte: 35,
+                            start_point: Point {
+                                row: 4,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 4,
+                                column: 13,
+                            },
+                        },
+                        _id: 20,
+                        _parent: Some(
+                            19,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 22,
+                    end_byte: 23,
+                    start_point: Point {
+                        row: 4,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 1,
+                    },
+                },
+                _id: 21,
+                _parent: Some(
+                    20,
+                ),
+            },
+        ),
+        ArgumentList(
+            ArgumentList {
+                children: [
+                    AstNodeId {
+                        id: 23,
+                        _marker: PhantomData<ast_python::generated::DictionarySplat_Expression_KeywordArgument_ListSplat_ParenthesizedExpression>,
+                    },
+                    AstNodeId {
+                        id: 24,
+                        _marker: PhantomData<ast_python::generated::DictionarySplat_Expression_KeywordArgument_ListSplat_ParenthesizedExpression>,
+                    },
+                    AstNodeId {
+                        id: 26,
+                        _marker: PhantomData<ast_python::generated::DictionarySplat_Expression_KeywordArgument_ListSplat_ParenthesizedExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 23,
+                    end_byte: 35,
+                    start_point: Point {
+                        row: 4,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 13,
+                    },
+                },
+                _id: 22,
+                _parent: Some(
+                    20,
+                ),
+            },
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 24,
+                            end_byte: 25,
+                            start_point: Point {
+                                row: 4,
+                                column: 2,
+                            },
+                            end_point: Point {
+                                row: 4,
+                                column: 3,
+                            },
+                        },
+                        _id: 23,
+                        _parent: Some(
+                            22,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        ListSplat(
+            ListSplat {
+                children: AstNodeId {
+                    id: 25,
+                    _marker: PhantomData<ast_python::generated::Attribute_Expression_Identifier_Subscript>,
+                },
+                _range: Range {
+                    start_byte: 27,
+                    end_byte: 29,
+                    start_point: Point {
+                        row: 4,
+                        column: 5,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 7,
+                    },
+                },
+                _id: 24,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 28,
+                    end_byte: 29,
+                    start_point: Point {
+                        row: 4,
+                        column: 6,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 7,
+                    },
+                },
+                _id: 25,
+                _parent: Some(
+                    24,
+                ),
+            },
+        ),
+        DictionarySplat(
+            DictionarySplat {
+                children: AstNodeId {
+                    id: 27,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
+                _range: Range {
+                    start_byte: 31,
+                    end_byte: 34,
+                    start_point: Point {
+                        row: 4,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 12,
+                    },
+                },
+                _id: 26,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        PrimaryExpression(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 33,
+                        end_byte: 34,
+                        start_point: Point {
+                            row: 4,
+                            column: 11,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 12,
+                        },
+                    },
+                    _id: 27,
+                    _parent: Some(
+                        26,
+                    ),
+                },
+            ),
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

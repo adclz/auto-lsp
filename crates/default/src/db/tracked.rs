@@ -56,7 +56,7 @@ pub fn get_ast<'db>(db: &'db dyn BaseDatabase, file: File) -> ParsedAst {
 /// The first node of the list is always the root node.
 #[derive(Debug, Default, Clone, Eq)]
 pub struct ParsedAst {
-    pub nodes: Arc<Vec<Arc<dyn AstNode>>>,
+    pub nodes: Arc<Vec<Box<dyn AstNode>>>,
 }
 
 impl PartialEq for ParsedAst {
@@ -66,7 +66,7 @@ impl PartialEq for ParsedAst {
 }
 
 impl Deref for ParsedAst {
-    type Target = Vec<Arc<dyn AstNode>>;
+    type Target = Vec<Box<dyn AstNode>>;
 
     fn deref(&self) -> &Self::Target {
         &self.nodes
@@ -74,7 +74,7 @@ impl Deref for ParsedAst {
 }
 
 impl ParsedAst {
-    pub fn new(mut nodes: Vec<Arc<dyn AstNode>>) -> Self {
+    pub fn new(mut nodes: Vec<Box<dyn AstNode>>) -> Self {
         nodes.sort_unstable();
         Self {
             nodes: Arc::new(nodes),
@@ -82,14 +82,14 @@ impl ParsedAst {
     }
 
     /// Returns the root node of the AST.
-    pub fn get_root(&self) -> Option<&Arc<dyn AstNode>> {
+    pub fn get_root(&self) -> Option<&Box<dyn AstNode>> {
         self.nodes.first()
     }
 
     /// Returns the first node that contains the given offset.
     ///
     /// This method uses binary search to find the node.
-    pub fn descendant_at(&self, offset: usize) -> Option<&Arc<dyn AstNode>> {
+    pub fn descendant_at(&self, offset: usize) -> Option<&Box<dyn AstNode>> {
         debug_assert!(self.nodes.is_sorted());
 
         let result = self

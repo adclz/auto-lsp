@@ -43,10 +43,11 @@ pub fn workspace_symbols(
 
         let mut builder = DocumentSymbolsBuilder::default();
 
-        if let Some(node) = get_ast(db, file).get_root() {
+        let ast = get_ast(db, file);
+        if let Some(node) = ast.get_root() {
             dispatch!(node.lower(),
                 [
-                    Module => build_document_symbols(&doc, &mut builder)
+                    Module => build_document_symbols(&doc, ast, &mut builder)
                 ]
             );
         };

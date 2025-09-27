@@ -1,129 +1,72 @@
 ---
 source: src/tests/corpus/expressions.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 14,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 26,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 31,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 36,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 47,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 94,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 7,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            ComparisonOperator(
-                                ComparisonOperator {
-                                    operators: [
-                                        Token_Less(
-                                            Token_Less {
-                                                [RANGE]
-                                                _id: 4,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Token_LessEqual(
-                                            Token_LessEqual {
-                                                [RANGE]
-                                                _id: 6,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Token_EqualEqual(
-                                            Token_EqualEqual {
-                                                [RANGE]
-                                                _id: 8,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Token_GreaterEqual(
-                                            Token_GreaterEqual {
-                                                [RANGE]
-                                                _id: 10,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Token_Greater(
-                                            Token_Greater {
-                                                [RANGE]
-                                                _id: 12,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    children: [
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 3,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 5,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 7,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 9,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 11,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 13,
-                                                _parent: Some(
-                                                    2,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    [RANGE]
-                                    _id: 2,
-                                    _parent: Some(
-                                        1,
-                                    ),
-                                },
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 25,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 24,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -131,121 +74,317 @@ Module {
                 },
             ),
         ),
+        Expression(
+            ComparisonOperator(
+                ComparisonOperator {
+                    operators: [
+                        AstNodeId {
+                            id: 4,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                        AstNodeId {
+                            id: 6,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                        AstNodeId {
+                            id: 8,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                        AstNodeId {
+                            id: 10,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                        AstNodeId {
+                            id: 12,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                    ],
+                    children: [
+                        AstNodeId {
+                            id: 3,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 5,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 7,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 9,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 11,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 13,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 25,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 24,
+                        },
+                    },
+                    _id: 2,
+                    _parent: Some(
+                        1,
+                    ),
+                },
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 1,
+                    end_byte: 2,
+                    start_point: Point {
+                        row: 1,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                },
+                _id: 3,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Token_Less(
+            Token_Less {
+                _range: Range {
+                    start_byte: 3,
+                    end_byte: 4,
+                    start_point: Point {
+                        row: 1,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 3,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 5,
+                    end_byte: 6,
+                    start_point: Point {
+                        row: 1,
+                        column: 4,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 5,
+                    },
+                },
+                _id: 5,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Token_LessEqual(
+            Token_LessEqual {
+                _range: Range {
+                    start_byte: 7,
+                    end_byte: 9,
+                    start_point: Point {
+                        row: 1,
+                        column: 6,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 8,
+                    },
+                },
+                _id: 6,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 10,
+                    end_byte: 11,
+                    start_point: Point {
+                        row: 1,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 10,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Token_EqualEqual(
+            Token_EqualEqual {
+                _range: Range {
+                    start_byte: 12,
+                    end_byte: 14,
+                    start_point: Point {
+                        row: 1,
+                        column: 11,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 13,
+                    },
+                },
+                _id: 8,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 15,
+                    end_byte: 16,
+                    start_point: Point {
+                        row: 1,
+                        column: 14,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 15,
+                    },
+                },
+                _id: 9,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Token_GreaterEqual(
+            Token_GreaterEqual {
+                _range: Range {
+                    start_byte: 17,
+                    end_byte: 19,
+                    start_point: Point {
+                        row: 1,
+                        column: 16,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 18,
+                    },
+                },
+                _id: 10,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 20,
+                    end_byte: 21,
+                    start_point: Point {
+                        row: 1,
+                        column: 19,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 20,
+                    },
+                },
+                _id: 11,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Token_Greater(
+            Token_Greater {
+                _range: Range {
+                    start_byte: 22,
+                    end_byte: 23,
+                    start_point: Point {
+                        row: 1,
+                        column: 21,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 22,
+                    },
+                },
+                _id: 12,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 24,
+                    end_byte: 25,
+                    start_point: Point {
+                        row: 1,
+                        column: 23,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 24,
+                    },
+                },
+                _id: 13,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            BooleanOperator(
-                                BooleanOperator {
-                                    operator: Token_Or(
-                                        Token_Or {
-                                            [RANGE]
-                                            _id: 21,
-                                            _parent: Some(
-                                                15,
-                                            ),
-                                        },
-                                    ),
-                                    right: ComparisonOperator(
-                                        ComparisonOperator {
-                                            operators: [
-                                                Token_EqualEqual(
-                                                    Token_EqualEqual {
-                                                        [RANGE]
-                                                        _id: 24,
-                                                        _parent: Some(
-                                                            22,
-                                                        ),
-                                                    },
-                                                ),
-                                            ],
-                                            children: [
-                                                Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 23,
-                                                        _parent: Some(
-                                                            22,
-                                                        ),
-                                                    },
-                                                ),
-                                                Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 25,
-                                                        _parent: Some(
-                                                            22,
-                                                        ),
-                                                    },
-                                                ),
-                                            ],
-                                            [RANGE]
-                                            _id: 22,
-                                            _parent: Some(
-                                                15,
-                                            ),
-                                        },
-                                    ),
-                                    left: NotOperator(
-                                        NotOperator {
-                                            argument: ComparisonOperator(
-                                                ComparisonOperator {
-                                                    operators: [
-                                                        Token_EqualEqual(
-                                                            Token_EqualEqual {
-                                                                [RANGE]
-                                                                _id: 19,
-                                                                _parent: Some(
-                                                                    17,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ],
-                                                    children: [
-                                                        Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 18,
-                                                                _parent: Some(
-                                                                    17,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 20,
-                                                                _parent: Some(
-                                                                    17,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ],
-                                                    [RANGE]
-                                                    _id: 17,
-                                                    _parent: Some(
-                                                        16,
-                                                    ),
-                                                },
-                                            ),
-                                            [RANGE]
-                                            _id: 16,
-                                            _parent: Some(
-                                                15,
-                                            ),
-                                        },
-                                    ),
-                                    [RANGE]
-                                    _id: 15,
-                                    _parent: Some(
-                                        14,
-                                    ),
-                                },
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 15,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 26,
+                        end_byte: 46,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 20,
+                        },
+                    },
                     _id: 14,
                     _parent: Some(
                         0,
@@ -253,54 +392,297 @@ Module {
                 },
             ),
         ),
+        Expression(
+            BooleanOperator(
+                BooleanOperator {
+                    operator: AstNodeId {
+                        id: 21,
+                        _marker: PhantomData<ast_python::generated::Operators_2>,
+                    },
+                    right: AstNodeId {
+                        id: 22,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    left: AstNodeId {
+                        id: 16,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    _range: Range {
+                        start_byte: 26,
+                        end_byte: 46,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 20,
+                        },
+                    },
+                    _id: 15,
+                    _parent: Some(
+                        14,
+                    ),
+                },
+            ),
+        ),
+        NotOperator(
+            NotOperator {
+                argument: AstNodeId {
+                    id: 17,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
+                _range: Range {
+                    start_byte: 26,
+                    end_byte: 36,
+                    start_point: Point {
+                        row: 2,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 10,
+                    },
+                },
+                _id: 16,
+                _parent: Some(
+                    15,
+                ),
+            },
+        ),
+        ComparisonOperator(
+            ComparisonOperator {
+                operators: [
+                    AstNodeId {
+                        id: 19,
+                        _marker: PhantomData<ast_python::generated::Operators_3>,
+                    },
+                ],
+                children: [
+                    AstNodeId {
+                        id: 18,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    AstNodeId {
+                        id: 20,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 30,
+                    end_byte: 36,
+                    start_point: Point {
+                        row: 2,
+                        column: 4,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 10,
+                    },
+                },
+                _id: 17,
+                _parent: Some(
+                    16,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 30,
+                    end_byte: 31,
+                    start_point: Point {
+                        row: 2,
+                        column: 4,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 5,
+                    },
+                },
+                _id: 18,
+                _parent: Some(
+                    17,
+                ),
+            },
+        ),
+        Token_EqualEqual(
+            Token_EqualEqual {
+                _range: Range {
+                    start_byte: 32,
+                    end_byte: 34,
+                    start_point: Point {
+                        row: 2,
+                        column: 6,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 8,
+                    },
+                },
+                _id: 19,
+                _parent: Some(
+                    17,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 35,
+                    end_byte: 36,
+                    start_point: Point {
+                        row: 2,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 10,
+                    },
+                },
+                _id: 20,
+                _parent: Some(
+                    17,
+                ),
+            },
+        ),
+        Token_or(
+            Token_or {
+                _range: Range {
+                    start_byte: 37,
+                    end_byte: 39,
+                    start_point: Point {
+                        row: 2,
+                        column: 11,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 13,
+                    },
+                },
+                _id: 21,
+                _parent: Some(
+                    15,
+                ),
+            },
+        ),
+        ComparisonOperator(
+            ComparisonOperator {
+                operators: [
+                    AstNodeId {
+                        id: 24,
+                        _marker: PhantomData<ast_python::generated::Operators_3>,
+                    },
+                ],
+                children: [
+                    AstNodeId {
+                        id: 23,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    AstNodeId {
+                        id: 25,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 40,
+                    end_byte: 46,
+                    start_point: Point {
+                        row: 2,
+                        column: 14,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 20,
+                    },
+                },
+                _id: 22,
+                _parent: Some(
+                    15,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 40,
+                    end_byte: 41,
+                    start_point: Point {
+                        row: 2,
+                        column: 14,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 15,
+                    },
+                },
+                _id: 23,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        Token_EqualEqual(
+            Token_EqualEqual {
+                _range: Range {
+                    start_byte: 42,
+                    end_byte: 44,
+                    start_point: Point {
+                        row: 2,
+                        column: 16,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 18,
+                    },
+                },
+                _id: 24,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 45,
+                    end_byte: 46,
+                    start_point: Point {
+                        row: 2,
+                        column: 19,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 20,
+                    },
+                },
+                _id: 25,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            ComparisonOperator(
-                                ComparisonOperator {
-                                    operators: [
-                                        Token_NotIn(
-                                            Token_NotIn {
-                                                [RANGE]
-                                                _id: 29,
-                                                _parent: Some(
-                                                    27,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    children: [
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 28,
-                                                _parent: Some(
-                                                    27,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 30,
-                                                _parent: Some(
-                                                    27,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    [RANGE]
-                                    _id: 27,
-                                    _parent: Some(
-                                        26,
-                                    ),
-                                },
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 27,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 47,
+                        end_byte: 57,
+                        start_point: Point {
+                            row: 3,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 10,
+                        },
+                    },
                     _id: 26,
                     _parent: Some(
                         0,
@@ -308,54 +690,125 @@ Module {
                 },
             ),
         ),
+        Expression(
+            ComparisonOperator(
+                ComparisonOperator {
+                    operators: [
+                        AstNodeId {
+                            id: 29,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                    ],
+                    children: [
+                        AstNodeId {
+                            id: 28,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 30,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 47,
+                        end_byte: 57,
+                        start_point: Point {
+                            row: 3,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 10,
+                        },
+                    },
+                    _id: 27,
+                    _parent: Some(
+                        26,
+                    ),
+                },
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 47,
+                    end_byte: 48,
+                    start_point: Point {
+                        row: 3,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 1,
+                    },
+                },
+                _id: 28,
+                _parent: Some(
+                    27,
+                ),
+            },
+        ),
+        Token_not_in(
+            Token_not_in {
+                _range: Range {
+                    start_byte: 49,
+                    end_byte: 55,
+                    start_point: Point {
+                        row: 3,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 8,
+                    },
+                },
+                _id: 29,
+                _parent: Some(
+                    27,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 56,
+                    end_byte: 57,
+                    start_point: Point {
+                        row: 3,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 10,
+                    },
+                },
+                _id: 30,
+                _parent: Some(
+                    27,
+                ),
+            },
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            ComparisonOperator(
-                                ComparisonOperator {
-                                    operators: [
-                                        Token_IsNot(
-                                            Token_IsNot {
-                                                [RANGE]
-                                                _id: 34,
-                                                _parent: Some(
-                                                    32,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    children: [
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 33,
-                                                _parent: Some(
-                                                    32,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 35,
-                                                _parent: Some(
-                                                    32,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    [RANGE]
-                                    _id: 32,
-                                    _parent: Some(
-                                        31,
-                                    ),
-                                },
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 32,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 58,
+                        end_byte: 68,
+                        start_point: Point {
+                            row: 4,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 10,
+                        },
+                    },
                     _id: 31,
                     _parent: Some(
                         0,
@@ -363,112 +816,125 @@ Module {
                 },
             ),
         ),
+        Expression(
+            ComparisonOperator(
+                ComparisonOperator {
+                    operators: [
+                        AstNodeId {
+                            id: 34,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                    ],
+                    children: [
+                        AstNodeId {
+                            id: 33,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 35,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 58,
+                        end_byte: 68,
+                        start_point: Point {
+                            row: 4,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 10,
+                        },
+                    },
+                    _id: 32,
+                    _parent: Some(
+                        31,
+                    ),
+                },
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 58,
+                    end_byte: 59,
+                    start_point: Point {
+                        row: 4,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 1,
+                    },
+                },
+                _id: 33,
+                _parent: Some(
+                    32,
+                ),
+            },
+        ),
+        Token_is_not(
+            Token_is_not {
+                _range: Range {
+                    start_byte: 60,
+                    end_byte: 66,
+                    start_point: Point {
+                        row: 4,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 8,
+                    },
+                },
+                _id: 34,
+                _parent: Some(
+                    32,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 67,
+                    end_byte: 68,
+                    start_point: Point {
+                        row: 4,
+                        column: 9,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 10,
+                    },
+                },
+                _id: 35,
+                _parent: Some(
+                    32,
+                ),
+            },
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            BooleanOperator(
-                                BooleanOperator {
-                                    operator: Token_And(
-                                        Token_And {
-                                            [RANGE]
-                                            _id: 42,
-                                            _parent: Some(
-                                                37,
-                                            ),
-                                        },
-                                    ),
-                                    right: ComparisonOperator(
-                                        ComparisonOperator {
-                                            operators: [
-                                                Token_NotEqual(
-                                                    Token_NotEqual {
-                                                        [RANGE]
-                                                        _id: 45,
-                                                        _parent: Some(
-                                                            43,
-                                                        ),
-                                                    },
-                                                ),
-                                            ],
-                                            children: [
-                                                Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 44,
-                                                        _parent: Some(
-                                                            43,
-                                                        ),
-                                                    },
-                                                ),
-                                                Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 46,
-                                                        _parent: Some(
-                                                            43,
-                                                        ),
-                                                    },
-                                                ),
-                                            ],
-                                            [RANGE]
-                                            _id: 43,
-                                            _parent: Some(
-                                                37,
-                                            ),
-                                        },
-                                    ),
-                                    left: ComparisonOperator(
-                                        ComparisonOperator {
-                                            operators: [
-                                                Token_Is(
-                                                    Token_Is {
-                                                        [RANGE]
-                                                        _id: 40,
-                                                        _parent: Some(
-                                                            38,
-                                                        ),
-                                                    },
-                                                ),
-                                            ],
-                                            children: [
-                                                Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 39,
-                                                        _parent: Some(
-                                                            38,
-                                                        ),
-                                                    },
-                                                ),
-                                                Identifier(
-                                                    Identifier {
-                                                        [RANGE]
-                                                        _id: 41,
-                                                        _parent: Some(
-                                                            38,
-                                                        ),
-                                                    },
-                                                ),
-                                            ],
-                                            [RANGE]
-                                            _id: 38,
-                                            _parent: Some(
-                                                37,
-                                            ),
-                                        },
-                                    ),
-                                    [RANGE]
-                                    _id: 37,
-                                    _parent: Some(
-                                        36,
-                                    ),
-                                },
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 37,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 69,
+                        end_byte: 86,
+                        start_point: Point {
+                            row: 5,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 5,
+                            column: 17,
+                        },
+                    },
                     _id: 36,
                     _parent: Some(
                         0,
@@ -476,54 +942,273 @@ Module {
                 },
             ),
         ),
+        Expression(
+            BooleanOperator(
+                BooleanOperator {
+                    operator: AstNodeId {
+                        id: 42,
+                        _marker: PhantomData<ast_python::generated::Operators_2>,
+                    },
+                    right: AstNodeId {
+                        id: 43,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    left: AstNodeId {
+                        id: 38,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    _range: Range {
+                        start_byte: 69,
+                        end_byte: 86,
+                        start_point: Point {
+                            row: 5,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 5,
+                            column: 17,
+                        },
+                    },
+                    _id: 37,
+                    _parent: Some(
+                        36,
+                    ),
+                },
+            ),
+        ),
+        ComparisonOperator(
+            ComparisonOperator {
+                operators: [
+                    AstNodeId {
+                        id: 40,
+                        _marker: PhantomData<ast_python::generated::Operators_3>,
+                    },
+                ],
+                children: [
+                    AstNodeId {
+                        id: 39,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    AstNodeId {
+                        id: 41,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 69,
+                    end_byte: 75,
+                    start_point: Point {
+                        row: 5,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 6,
+                    },
+                },
+                _id: 38,
+                _parent: Some(
+                    37,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 69,
+                    end_byte: 70,
+                    start_point: Point {
+                        row: 5,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 1,
+                    },
+                },
+                _id: 39,
+                _parent: Some(
+                    38,
+                ),
+            },
+        ),
+        Token_is(
+            Token_is {
+                _range: Range {
+                    start_byte: 71,
+                    end_byte: 73,
+                    start_point: Point {
+                        row: 5,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 4,
+                    },
+                },
+                _id: 40,
+                _parent: Some(
+                    38,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 74,
+                    end_byte: 75,
+                    start_point: Point {
+                        row: 5,
+                        column: 5,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 6,
+                    },
+                },
+                _id: 41,
+                _parent: Some(
+                    38,
+                ),
+            },
+        ),
+        Token_and(
+            Token_and {
+                _range: Range {
+                    start_byte: 76,
+                    end_byte: 79,
+                    start_point: Point {
+                        row: 5,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 10,
+                    },
+                },
+                _id: 42,
+                _parent: Some(
+                    37,
+                ),
+            },
+        ),
+        ComparisonOperator(
+            ComparisonOperator {
+                operators: [
+                    AstNodeId {
+                        id: 45,
+                        _marker: PhantomData<ast_python::generated::Operators_3>,
+                    },
+                ],
+                children: [
+                    AstNodeId {
+                        id: 44,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    AstNodeId {
+                        id: 46,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 80,
+                    end_byte: 86,
+                    start_point: Point {
+                        row: 5,
+                        column: 11,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 17,
+                    },
+                },
+                _id: 43,
+                _parent: Some(
+                    37,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 80,
+                    end_byte: 81,
+                    start_point: Point {
+                        row: 5,
+                        column: 11,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 12,
+                    },
+                },
+                _id: 44,
+                _parent: Some(
+                    43,
+                ),
+            },
+        ),
+        Token_NotEqual(
+            Token_NotEqual {
+                _range: Range {
+                    start_byte: 82,
+                    end_byte: 84,
+                    start_point: Point {
+                        row: 5,
+                        column: 13,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 15,
+                    },
+                },
+                _id: 45,
+                _parent: Some(
+                    43,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 85,
+                    end_byte: 86,
+                    start_point: Point {
+                        row: 5,
+                        column: 16,
+                    },
+                    end_point: Point {
+                        row: 5,
+                        column: 17,
+                    },
+                },
+                _id: 46,
+                _parent: Some(
+                    43,
+                ),
+            },
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            ComparisonOperator(
-                                ComparisonOperator {
-                                    operators: [
-                                        Token_LessGreater(
-                                            Token_LessGreater {
-                                                [RANGE]
-                                                _id: 50,
-                                                _parent: Some(
-                                                    48,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    children: [
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 49,
-                                                _parent: Some(
-                                                    48,
-                                                ),
-                                            },
-                                        ),
-                                        Identifier(
-                                            Identifier {
-                                                [RANGE]
-                                                _id: 51,
-                                                _parent: Some(
-                                                    48,
-                                                ),
-                                            },
-                                        ),
-                                    ],
-                                    [RANGE]
-                                    _id: 48,
-                                    _parent: Some(
-                                        47,
-                                    ),
-                                },
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 48,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 87,
+                        end_byte: 93,
+                        start_point: Point {
+                            row: 6,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 6,
+                            column: 6,
+                        },
+                    },
                     _id: 47,
                     _parent: Some(
                         0,
@@ -531,8 +1216,103 @@ Module {
                 },
             ),
         ),
+        Expression(
+            ComparisonOperator(
+                ComparisonOperator {
+                    operators: [
+                        AstNodeId {
+                            id: 50,
+                            _marker: PhantomData<ast_python::generated::Operators_3>,
+                        },
+                    ],
+                    children: [
+                        AstNodeId {
+                            id: 49,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        AstNodeId {
+                            id: 51,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 87,
+                        end_byte: 93,
+                        start_point: Point {
+                            row: 6,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 6,
+                            column: 6,
+                        },
+                    },
+                    _id: 48,
+                    _parent: Some(
+                        47,
+                    ),
+                },
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 87,
+                    end_byte: 88,
+                    start_point: Point {
+                        row: 6,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 6,
+                        column: 1,
+                    },
+                },
+                _id: 49,
+                _parent: Some(
+                    48,
+                ),
+            },
+        ),
+        Token_LessGreater(
+            Token_LessGreater {
+                _range: Range {
+                    start_byte: 89,
+                    end_byte: 91,
+                    start_point: Point {
+                        row: 6,
+                        column: 2,
+                    },
+                    end_point: Point {
+                        row: 6,
+                        column: 4,
+                    },
+                },
+                _id: 50,
+                _parent: Some(
+                    48,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 92,
+                    end_byte: 93,
+                    start_point: Point {
+                        row: 6,
+                        column: 5,
+                    },
+                    end_point: Point {
+                        row: 6,
+                        column: 6,
+                    },
+                },
+                _id: 51,
+                _parent: Some(
+                    48,
+                ),
+            },
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

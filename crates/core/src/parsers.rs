@@ -19,7 +19,6 @@ use crate::ast::AstNode;
 use crate::document::Document;
 use crate::errors::ParseError;
 use parking_lot::RwLock;
-use std::sync::Arc;
 use tree_sitter::{Language, Parser};
 
 pub struct Parsers {
@@ -40,4 +39,4 @@ impl std::fmt::Debug for Parsers {
 }
 
 pub type InvokeParserFn =
-    fn(&dyn salsa::Database, &Document) -> Result<Vec<Arc<dyn AstNode>>, ParseError>;
+    fn(&dyn salsa::Database, &Document) -> Result<Vec<Box<dyn AstNode>>, ParseError>;

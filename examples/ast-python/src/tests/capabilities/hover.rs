@@ -45,13 +45,14 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
     let file = foo_bar
         .get_file(&Url::parse("file:///test0.py").unwrap())
         .unwrap();
-    let root = get_ast(&foo_bar, file).get_root().unwrap();
+    let ast = get_ast(&foo_bar, file);
+    let root = ast.get_root().unwrap();
     let module = root.downcast_ref::<Module>().unwrap();
 
     let foo = &module.children[0];
     if let CompoundStatement_SimpleStatement::CompoundStatement(
         CompoundStatement::FunctionDefinition(foo),
-    ) = foo.as_ref()
+    ) = foo.cast(ast)
     {
         let foo_name = &foo.name;
 
@@ -62,7 +63,7 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
                     text_document: lsp_types::TextDocumentIdentifier {
                         uri: file.url(&foo_bar).clone(),
                     },
-                    position: foo_name.get_start_position(),
+                    position: foo_name.cast(ast).get_start_position(),
                 },
                 work_done_progress_params: Default::default(),
             },
@@ -84,7 +85,7 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
 
     if let CompoundStatement_SimpleStatement::CompoundStatement(
         CompoundStatement::FunctionDefinition(foo),
-    ) = bar.as_ref()
+    ) = bar.cast(ast)
     {
         let bar_name = &foo.name;
 
@@ -95,7 +96,7 @@ fn foo_bar_hover(foo_bar: impl BaseDatabase) {
                     text_document: lsp_types::TextDocumentIdentifier {
                         uri: file.url(&foo_bar).clone(),
                     },
-                    position: bar_name.get_start_position(),
+                    position: bar_name.cast(ast).get_start_position(),
                 },
                 work_done_progress_params: Default::default(),
             },

@@ -1,51 +1,64 @@
 ---
 source: src/tests/corpus/statements.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 6,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 12,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 42,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 4,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             ImportStatement(
                 ImportStatement {
                     name: [
-                        DottedName(
-                            DottedName {
-                                children: [
-                                    Identifier {
-                                        [RANGE]
-                                        _id: 3,
-                                        _parent: Some(
-                                            2,
-                                        ),
-                                    },
-                                ],
-                                [RANGE]
-                                _id: 2,
-                                _parent: Some(
-                                    1,
-                                ),
-                            },
-                        ),
-                        DottedName(
-                            DottedName {
-                                children: [
-                                    Identifier {
-                                        [RANGE]
-                                        _id: 5,
-                                        _parent: Some(
-                                            4,
-                                        ),
-                                    },
-                                ],
-                                [RANGE]
-                                _id: 4,
-                                _parent: Some(
-                                    1,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::AliasedImport_DottedName>,
+                        },
+                        AstNodeId {
+                            id: 4,
+                            _marker: PhantomData<ast_python::generated::AliasedImport_DottedName>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 12,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 11,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -53,51 +66,115 @@ Module {
                 },
             ),
         ),
+        DottedName(
+            DottedName {
+                children: [
+                    AstNodeId {
+                        id: 3,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 8,
+                    end_byte: 9,
+                    start_point: Point {
+                        row: 1,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 8,
+                    },
+                },
+                _id: 2,
+                _parent: Some(
+                    1,
+                ),
+            },
+        ),
+        Identifier {
+            _range: Range {
+                start_byte: 8,
+                end_byte: 9,
+                start_point: Point {
+                    row: 1,
+                    column: 7,
+                },
+                end_point: Point {
+                    row: 1,
+                    column: 8,
+                },
+            },
+            _id: 3,
+            _parent: Some(
+                2,
+            ),
+        },
+        DottedName(
+            DottedName {
+                children: [
+                    AstNodeId {
+                        id: 5,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 11,
+                    end_byte: 12,
+                    start_point: Point {
+                        row: 1,
+                        column: 10,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 11,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    1,
+                ),
+            },
+        ),
+        Identifier {
+            _range: Range {
+                start_byte: 11,
+                end_byte: 12,
+                start_point: Point {
+                    row: 1,
+                    column: 10,
+                },
+                end_point: Point {
+                    row: 1,
+                    column: 11,
+                },
+            },
+            _id: 5,
+            _parent: Some(
+                4,
+            ),
+        },
         SimpleStatement(
             ImportStatement(
                 ImportStatement {
                     name: [
-                        AliasedImport(
-                            AliasedImport {
-                                alias: Identifier {
-                                    [RANGE]
-                                    _id: 11,
-                                    _parent: Some(
-                                        7,
-                                    ),
-                                },
-                                name: DottedName {
-                                    children: [
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 9,
-                                            _parent: Some(
-                                                8,
-                                            ),
-                                        },
-                                        Identifier {
-                                            [RANGE]
-                                            _id: 10,
-                                            _parent: Some(
-                                                8,
-                                            ),
-                                        },
-                                    ],
-                                    [RANGE]
-                                    _id: 8,
-                                    _parent: Some(
-                                        7,
-                                    ),
-                                },
-                                [RANGE]
-                                _id: 7,
-                                _parent: Some(
-                                    6,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 7,
+                            _marker: PhantomData<ast_python::generated::AliasedImport_DottedName>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 13,
+                        end_byte: 28,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 15,
+                        },
+                    },
                     _id: 6,
                     _parent: Some(
                         0,
@@ -105,44 +182,137 @@ Module {
                 },
             ),
         ),
+        AliasedImport(
+            AliasedImport {
+                alias: AstNodeId {
+                    id: 11,
+                    _marker: PhantomData<ast_python::generated::Identifier>,
+                },
+                name: AstNodeId {
+                    id: 8,
+                    _marker: PhantomData<ast_python::generated::DottedName>,
+                },
+                _range: Range {
+                    start_byte: 20,
+                    end_byte: 28,
+                    start_point: Point {
+                        row: 2,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 15,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    6,
+                ),
+            },
+        ),
+        DottedName {
+            children: [
+                AstNodeId {
+                    id: 9,
+                    _marker: PhantomData<ast_python::generated::Identifier>,
+                },
+                AstNodeId {
+                    id: 10,
+                    _marker: PhantomData<ast_python::generated::Identifier>,
+                },
+            ],
+            _range: Range {
+                start_byte: 20,
+                end_byte: 23,
+                start_point: Point {
+                    row: 2,
+                    column: 7,
+                },
+                end_point: Point {
+                    row: 2,
+                    column: 10,
+                },
+            },
+            _id: 8,
+            _parent: Some(
+                7,
+            ),
+        },
+        Identifier {
+            _range: Range {
+                start_byte: 20,
+                end_byte: 21,
+                start_point: Point {
+                    row: 2,
+                    column: 7,
+                },
+                end_point: Point {
+                    row: 2,
+                    column: 8,
+                },
+            },
+            _id: 9,
+            _parent: Some(
+                8,
+            ),
+        },
+        Identifier {
+            _range: Range {
+                start_byte: 22,
+                end_byte: 23,
+                start_point: Point {
+                    row: 2,
+                    column: 9,
+                },
+                end_point: Point {
+                    row: 2,
+                    column: 10,
+                },
+            },
+            _id: 10,
+            _parent: Some(
+                8,
+            ),
+        },
+        Identifier {
+            _range: Range {
+                start_byte: 27,
+                end_byte: 28,
+                start_point: Point {
+                    row: 2,
+                    column: 14,
+                },
+                end_point: Point {
+                    row: 2,
+                    column: 15,
+                },
+            },
+            _id: 11,
+            _parent: Some(
+                7,
+            ),
+        },
         SimpleStatement(
             ImportStatement(
                 ImportStatement {
                     name: [
-                        DottedName(
-                            DottedName {
-                                children: [
-                                    Identifier {
-                                        [RANGE]
-                                        _id: 14,
-                                        _parent: Some(
-                                            13,
-                                        ),
-                                    },
-                                    Identifier {
-                                        [RANGE]
-                                        _id: 15,
-                                        _parent: Some(
-                                            13,
-                                        ),
-                                    },
-                                    Identifier {
-                                        [RANGE]
-                                        _id: 16,
-                                        _parent: Some(
-                                            13,
-                                        ),
-                                    },
-                                ],
-                                [RANGE]
-                                _id: 13,
-                                _parent: Some(
-                                    12,
-                                ),
-                            },
-                        ),
+                        AstNodeId {
+                            id: 13,
+                            _marker: PhantomData<ast_python::generated::AliasedImport_DottedName>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 29,
+                        end_byte: 41,
+                        start_point: Point {
+                            row: 3,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 12,
+                        },
+                    },
                     _id: 12,
                     _parent: Some(
                         0,
@@ -150,8 +320,93 @@ Module {
                 },
             ),
         ),
+        DottedName(
+            DottedName {
+                children: [
+                    AstNodeId {
+                        id: 14,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                    AstNodeId {
+                        id: 15,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                    AstNodeId {
+                        id: 16,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 36,
+                    end_byte: 41,
+                    start_point: Point {
+                        row: 3,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 12,
+                    },
+                },
+                _id: 13,
+                _parent: Some(
+                    12,
+                ),
+            },
+        ),
+        Identifier {
+            _range: Range {
+                start_byte: 36,
+                end_byte: 37,
+                start_point: Point {
+                    row: 3,
+                    column: 7,
+                },
+                end_point: Point {
+                    row: 3,
+                    column: 8,
+                },
+            },
+            _id: 14,
+            _parent: Some(
+                13,
+            ),
+        },
+        Identifier {
+            _range: Range {
+                start_byte: 38,
+                end_byte: 39,
+                start_point: Point {
+                    row: 3,
+                    column: 9,
+                },
+                end_point: Point {
+                    row: 3,
+                    column: 10,
+                },
+            },
+            _id: 15,
+            _parent: Some(
+                13,
+            ),
+        },
+        Identifier {
+            _range: Range {
+                start_byte: 40,
+                end_byte: 41,
+                start_point: Point {
+                    row: 3,
+                    column: 11,
+                },
+                end_point: Point {
+                    row: 3,
+                    column: 12,
+                },
+            },
+            _id: 16,
+            _parent: Some(
+                13,
+            ),
+        },
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

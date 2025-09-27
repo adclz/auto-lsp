@@ -59,7 +59,7 @@ macro_rules! configure_parsers {
                                 let root = $root::try_from((&document.tree.root_node(), db, &mut builder, 0, None))
                                     .map_err(|e| $crate::core::errors::ParseError::from(e))?;
                                 let mut nodes = builder.take_nodes();
-                                nodes.push(std::sync::Arc::new(root));
+                                nodes.push(Box::new(root));
                                 Ok(nodes)
                             }
                         }

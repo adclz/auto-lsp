@@ -25,21 +25,18 @@ macro_rules! snap {
         settings.set_snapshot_suffix(&format!("{}", stringify!(name)));
         let _guard = settings.bind_to_scope();
 
-        use ::auto_lsp::default::db::BaseDatabase;
         use ::auto_lsp::default::db::tracked::get_ast;
+        use ::auto_lsp::default::db::BaseDatabase;
 
         let db = $crate::db::create_html_db(&[$input]);
         let file = db
             .get_file(&::auto_lsp::lsp_types::Url::parse("file:///test0.html").unwrap())
             .unwrap();
-        let root = get_ast(&db, file).get_root();
 
-        let document = root.as_ref().unwrap(); ::insta::with_settings!({filters => vec![
-            (r"_range: Range \{\s+start_byte: \d+,\s+end_byte: \d+,\s+start_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+end_point: Point \{\s+row: \d+,\s+column: \d+,\s+\},\s+\},", "[RANGE]"),
-        ]}, {
-            insta::assert_debug_snapshot!(document);
-        });
-        let errors = get_ast::accumulated::<auto_lsp::core::errors::ParseErrorAccumulator>(&db, file);
+        insta::assert_debug_snapshot!(get_ast(&db, file));
+
+        let errors =
+            get_ast::accumulated::<auto_lsp::core::errors::ParseErrorAccumulator>(&db, file);
         if !errors.is_empty() {
             panic!("Errors found: {:#?}", errors);
         }

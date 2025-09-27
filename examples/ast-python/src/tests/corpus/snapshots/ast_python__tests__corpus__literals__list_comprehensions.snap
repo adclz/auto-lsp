@@ -1,127 +1,64 @@
 ---
 source: src/tests/corpus/literals.rs
-expression: module
+expression: "get_ast(& db, file)"
 ---
-Module {
-    children: [
+ParsedAst {
+    nodes: [
+        Module {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 12,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 21,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+                AstNodeId {
+                    id: 40,
+                    _marker: PhantomData<ast_python::generated::CompoundStatement_SimpleStatement>,
+                },
+            ],
+            _range: Range {
+                start_byte: 1,
+                end_byte: 153,
+                start_point: Point {
+                    row: 1,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 5,
+                    column: 0,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                ListComprehension(
-                                    ListComprehension {
-                                        body: PrimaryExpression(
-                                            BinaryOperator(
-                                                BinaryOperator {
-                                                    operator: Token_Plus(
-                                                        Token_Plus {
-                                                            [RANGE]
-                                                            _id: 5,
-                                                            _parent: Some(
-                                                                3,
-                                                            ),
-                                                        },
-                                                    ),
-                                                    left: Identifier(
-                                                        Identifier {
-                                                            [RANGE]
-                                                            _id: 4,
-                                                            _parent: Some(
-                                                                3,
-                                                            ),
-                                                        },
-                                                    ),
-                                                    right: Identifier(
-                                                        Identifier {
-                                                            [RANGE]
-                                                            _id: 6,
-                                                            _parent: Some(
-                                                                3,
-                                                            ),
-                                                        },
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 3,
-                                                    _parent: Some(
-                                                        2,
-                                                    ),
-                                                },
-                                            ),
-                                        ),
-                                        children: [
-                                            ForInClause(
-                                                ForInClause {
-                                                    right: [
-                                                        Expression(
-                                                            PrimaryExpression(
-                                                                Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                        _id: 11,
-                                                                        _parent: Some(
-                                                                            7,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ),
-                                                    ],
-                                                    left: Pattern(
-                                                        TuplePattern(
-                                                            TuplePattern {
-                                                                children: [
-                                                                    Pattern(
-                                                                        Identifier(
-                                                                            Identifier {
-                                                                                [RANGE]
-                                                                                _id: 9,
-                                                                                _parent: Some(
-                                                                                    8,
-                                                                                ),
-                                                                            },
-                                                                        ),
-                                                                    ),
-                                                                    Pattern(
-                                                                        Identifier(
-                                                                            Identifier {
-                                                                                [RANGE]
-                                                                                _id: 10,
-                                                                                _parent: Some(
-                                                                                    8,
-                                                                                ),
-                                                                            },
-                                                                        ),
-                                                                    ),
-                                                                ],
-                                                                [RANGE]
-                                                                _id: 8,
-                                                                _parent: Some(
-                                                                    7,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 7,
-                                                    _parent: Some(
-                                                        2,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 2,
-                                        _parent: Some(
-                                            1,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 2,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 1,
+                        end_byte: 28,
+                        start_point: Point {
+                            row: 1,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 27,
+                        },
+                    },
                     _id: 1,
                     _parent: Some(
                         0,
@@ -129,108 +66,285 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                ListComprehension(
+                    ListComprehension {
+                        body: AstNodeId {
+                            id: 3,
+                            _marker: PhantomData<ast_python::generated::Expression>,
+                        },
+                        children: [
+                            AstNodeId {
+                                id: 7,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                        ],
+                        _range: Range {
+                            start_byte: 1,
+                            end_byte: 28,
+                            start_point: Point {
+                                row: 1,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 1,
+                                column: 27,
+                            },
+                        },
+                        _id: 2,
+                        _parent: Some(
+                            1,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        PrimaryExpression(
+            BinaryOperator(
+                BinaryOperator {
+                    operator: AstNodeId {
+                        id: 5,
+                        _marker: PhantomData<ast_python::generated::Operators_1>,
+                    },
+                    left: AstNodeId {
+                        id: 4,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    right: AstNodeId {
+                        id: 6,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    _range: Range {
+                        start_byte: 2,
+                        end_byte: 7,
+                        start_point: Point {
+                            row: 1,
+                            column: 1,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 6,
+                        },
+                    },
+                    _id: 3,
+                    _parent: Some(
+                        2,
+                    ),
+                },
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 2,
+                    end_byte: 3,
+                    start_point: Point {
+                        row: 1,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 2,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    3,
+                ),
+            },
+        ),
+        Token_Plus(
+            Token_Plus {
+                _range: Range {
+                    start_byte: 4,
+                    end_byte: 5,
+                    start_point: Point {
+                        row: 1,
+                        column: 3,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 4,
+                    },
+                },
+                _id: 5,
+                _parent: Some(
+                    3,
+                ),
+            },
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 6,
+                    end_byte: 7,
+                    start_point: Point {
+                        row: 1,
+                        column: 5,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 6,
+                    },
+                },
+                _id: 6,
+                _parent: Some(
+                    3,
+                ),
+            },
+        ),
+        ForInClause(
+            ForInClause {
+                left: AstNodeId {
+                    id: 8,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                right: [
+                    AstNodeId {
+                        id: 11,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 8,
+                    end_byte: 27,
+                    start_point: Point {
+                        row: 1,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 1,
+                        column: 26,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Pattern(
+            TuplePattern(
+                TuplePattern {
+                    children: [
+                        AstNodeId {
+                            id: 9,
+                            _marker: PhantomData<ast_python::generated::CasePattern_Pattern>,
+                        },
+                        AstNodeId {
+                            id: 10,
+                            _marker: PhantomData<ast_python::generated::CasePattern_Pattern>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 12,
+                        end_byte: 18,
+                        start_point: Point {
+                            row: 1,
+                            column: 11,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 17,
+                        },
+                    },
+                    _id: 8,
+                    _parent: Some(
+                        7,
+                    ),
+                },
+            ),
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 13,
+                        end_byte: 14,
+                        start_point: Point {
+                            row: 1,
+                            column: 12,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 13,
+                        },
+                    },
+                    _id: 9,
+                    _parent: Some(
+                        8,
+                    ),
+                },
+            ),
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 16,
+                        end_byte: 17,
+                        start_point: Point {
+                            row: 1,
+                            column: 15,
+                        },
+                        end_point: Point {
+                            row: 1,
+                            column: 16,
+                        },
+                    },
+                    _id: 10,
+                    _parent: Some(
+                        8,
+                    ),
+                },
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 22,
+                            end_byte: 27,
+                            start_point: Point {
+                                row: 1,
+                                column: 21,
+                            },
+                            end_point: Point {
+                                row: 1,
+                                column: 26,
+                            },
+                        },
+                        _id: 11,
+                        _parent: Some(
+                            7,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                ListComprehension(
-                                    ListComprehension {
-                                        body: PrimaryExpression(
-                                            Identifier(
-                                                Identifier {
-                                                    [RANGE]
-                                                    _id: 14,
-                                                    _parent: Some(
-                                                        13,
-                                                    ),
-                                                },
-                                            ),
-                                        ),
-                                        children: [
-                                            ForInClause(
-                                                ForInClause {
-                                                    right: [
-                                                        Expression(
-                                                            PrimaryExpression(
-                                                                Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                        _id: 17,
-                                                                        _parent: Some(
-                                                                            15,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ),
-                                                    ],
-                                                    left: Pattern(
-                                                        Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 16,
-                                                                _parent: Some(
-                                                                    15,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 15,
-                                                    _parent: Some(
-                                                        13,
-                                                    ),
-                                                },
-                                            ),
-                                            ForInClause(
-                                                ForInClause {
-                                                    right: [
-                                                        Expression(
-                                                            PrimaryExpression(
-                                                                Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                        _id: 20,
-                                                                        _parent: Some(
-                                                                            18,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ),
-                                                    ],
-                                                    left: Pattern(
-                                                        Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 19,
-                                                                _parent: Some(
-                                                                    18,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 18,
-                                                    _parent: Some(
-                                                        13,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 13,
-                                        _parent: Some(
-                                            12,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 13,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 29,
+                        end_byte: 54,
+                        start_point: Point {
+                            row: 2,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 25,
+                        },
+                    },
                     _id: 12,
                     _parent: Some(
                         0,
@@ -238,238 +352,239 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                ListComprehension(
+                    ListComprehension {
+                        body: AstNodeId {
+                            id: 14,
+                            _marker: PhantomData<ast_python::generated::Expression>,
+                        },
+                        children: [
+                            AstNodeId {
+                                id: 15,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                            AstNodeId {
+                                id: 18,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                        ],
+                        _range: Range {
+                            start_byte: 29,
+                            end_byte: 54,
+                            start_point: Point {
+                                row: 2,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 2,
+                                column: 25,
+                            },
+                        },
+                        _id: 13,
+                        _parent: Some(
+                            12,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        PrimaryExpression(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 30,
+                        end_byte: 31,
+                        start_point: Point {
+                            row: 2,
+                            column: 1,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 2,
+                        },
+                    },
+                    _id: 14,
+                    _parent: Some(
+                        13,
+                    ),
+                },
+            ),
+        ),
+        ForInClause(
+            ForInClause {
+                left: AstNodeId {
+                    id: 16,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                right: [
+                    AstNodeId {
+                        id: 17,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 32,
+                    end_byte: 42,
+                    start_point: Point {
+                        row: 2,
+                        column: 3,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 13,
+                    },
+                },
+                _id: 15,
+                _parent: Some(
+                    13,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 36,
+                        end_byte: 37,
+                        start_point: Point {
+                            row: 2,
+                            column: 7,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 8,
+                        },
+                    },
+                    _id: 16,
+                    _parent: Some(
+                        15,
+                    ),
+                },
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 41,
+                            end_byte: 42,
+                            start_point: Point {
+                                row: 2,
+                                column: 12,
+                            },
+                            end_point: Point {
+                                row: 2,
+                                column: 13,
+                            },
+                        },
+                        _id: 17,
+                        _parent: Some(
+                            15,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        ForInClause(
+            ForInClause {
+                left: AstNodeId {
+                    id: 19,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                right: [
+                    AstNodeId {
+                        id: 20,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 43,
+                    end_byte: 53,
+                    start_point: Point {
+                        row: 2,
+                        column: 14,
+                    },
+                    end_point: Point {
+                        row: 2,
+                        column: 24,
+                    },
+                },
+                _id: 18,
+                _parent: Some(
+                    13,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 47,
+                        end_byte: 48,
+                        start_point: Point {
+                            row: 2,
+                            column: 18,
+                        },
+                        end_point: Point {
+                            row: 2,
+                            column: 19,
+                        },
+                    },
+                    _id: 19,
+                    _parent: Some(
+                        18,
+                    ),
+                },
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 52,
+                            end_byte: 53,
+                            start_point: Point {
+                                row: 2,
+                                column: 23,
+                            },
+                            end_point: Point {
+                                row: 2,
+                                column: 24,
+                            },
+                        },
+                        _id: 20,
+                        _parent: Some(
+                            18,
+                        ),
+                    },
+                ),
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                ListComprehension(
-                                    ListComprehension {
-                                        body: PrimaryExpression(
-                                            Tuple(
-                                                Tuple {
-                                                    children: [
-                                                        Expression(
-                                                            PrimaryExpression(
-                                                                Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                        _id: 24,
-                                                                        _parent: Some(
-                                                                            23,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ),
-                                                        Expression(
-                                                            PrimaryExpression(
-                                                                Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                        _id: 25,
-                                                                        _parent: Some(
-                                                                            23,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ),
-                                                    ],
-                                                    [RANGE]
-                                                    _id: 23,
-                                                    _parent: Some(
-                                                        22,
-                                                    ),
-                                                },
-                                            ),
-                                        ),
-                                        children: [
-                                            ForInClause(
-                                                ForInClause {
-                                                    right: [
-                                                        Expression(
-                                                            PrimaryExpression(
-                                                                List(
-                                                                    List {
-                                                                        children: [
-                                                                            Expression(
-                                                                                PrimaryExpression(
-                                                                                    Integer(
-                                                                                        Integer {
-                                                                                            [RANGE]
-                                                                                            _id: 29,
-                                                                                            _parent: Some(
-                                                                                                28,
-                                                                                            ),
-                                                                                        },
-                                                                                    ),
-                                                                                ),
-                                                                            ),
-                                                                            Expression(
-                                                                                PrimaryExpression(
-                                                                                    Integer(
-                                                                                        Integer {
-                                                                                            [RANGE]
-                                                                                            _id: 30,
-                                                                                            _parent: Some(
-                                                                                                28,
-                                                                                            ),
-                                                                                        },
-                                                                                    ),
-                                                                                ),
-                                                                            ),
-                                                                            Expression(
-                                                                                PrimaryExpression(
-                                                                                    Integer(
-                                                                                        Integer {
-                                                                                            [RANGE]
-                                                                                            _id: 31,
-                                                                                            _parent: Some(
-                                                                                                28,
-                                                                                            ),
-                                                                                        },
-                                                                                    ),
-                                                                                ),
-                                                                            ),
-                                                                        ],
-                                                                        [RANGE]
-                                                                        _id: 28,
-                                                                        _parent: Some(
-                                                                            26,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ),
-                                                    ],
-                                                    left: Pattern(
-                                                        Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 27,
-                                                                _parent: Some(
-                                                                    26,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 26,
-                                                    _parent: Some(
-                                                        22,
-                                                    ),
-                                                },
-                                            ),
-                                            ForInClause(
-                                                ForInClause {
-                                                    right: [
-                                                        Expression(
-                                                            PrimaryExpression(
-                                                                List(
-                                                                    List {
-                                                                        children: [
-                                                                            Expression(
-                                                                                PrimaryExpression(
-                                                                                    Integer(
-                                                                                        Integer {
-                                                                                            [RANGE]
-                                                                                            _id: 35,
-                                                                                            _parent: Some(
-                                                                                                34,
-                                                                                            ),
-                                                                                        },
-                                                                                    ),
-                                                                                ),
-                                                                            ),
-                                                                            Expression(
-                                                                                PrimaryExpression(
-                                                                                    Integer(
-                                                                                        Integer {
-                                                                                            [RANGE]
-                                                                                            _id: 36,
-                                                                                            _parent: Some(
-                                                                                                34,
-                                                                                            ),
-                                                                                        },
-                                                                                    ),
-                                                                                ),
-                                                                            ),
-                                                                            Expression(
-                                                                                PrimaryExpression(
-                                                                                    Integer(
-                                                                                        Integer {
-                                                                                            [RANGE]
-                                                                                            _id: 37,
-                                                                                            _parent: Some(
-                                                                                                34,
-                                                                                            ),
-                                                                                        },
-                                                                                    ),
-                                                                                ),
-                                                                            ),
-                                                                        ],
-                                                                        [RANGE]
-                                                                        _id: 34,
-                                                                        _parent: Some(
-                                                                            32,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ),
-                                                    ],
-                                                    left: Pattern(
-                                                        Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 33,
-                                                                _parent: Some(
-                                                                    32,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 32,
-                                                    _parent: Some(
-                                                        22,
-                                                    ),
-                                                },
-                                            ),
-                                            IfClause(
-                                                IfClause {
-                                                    children: PrimaryExpression(
-                                                        True(
-                                                            True {
-                                                                [RANGE]
-                                                                _id: 39,
-                                                                _parent: Some(
-                                                                    38,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 38,
-                                                    _parent: Some(
-                                                        22,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 22,
-                                        _parent: Some(
-                                            21,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 22,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 55,
+                        end_byte: 104,
+                        start_point: Point {
+                            row: 3,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 49,
+                        },
+                    },
                     _id: 21,
                     _parent: Some(
                         0,
@@ -477,154 +592,519 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                ListComprehension(
+                    ListComprehension {
+                        body: AstNodeId {
+                            id: 23,
+                            _marker: PhantomData<ast_python::generated::Expression>,
+                        },
+                        children: [
+                            AstNodeId {
+                                id: 26,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                            AstNodeId {
+                                id: 32,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                            AstNodeId {
+                                id: 38,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                        ],
+                        _range: Range {
+                            start_byte: 55,
+                            end_byte: 104,
+                            start_point: Point {
+                                row: 3,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 49,
+                            },
+                        },
+                        _id: 22,
+                        _parent: Some(
+                            21,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        PrimaryExpression(
+            Tuple(
+                Tuple {
+                    children: [
+                        AstNodeId {
+                            id: 24,
+                            _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                        },
+                        AstNodeId {
+                            id: 25,
+                            _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                        },
+                    ],
+                    _range: Range {
+                        start_byte: 56,
+                        end_byte: 61,
+                        start_point: Point {
+                            row: 3,
+                            column: 1,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 6,
+                        },
+                    },
+                    _id: 23,
+                    _parent: Some(
+                        22,
+                    ),
+                },
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 57,
+                            end_byte: 58,
+                            start_point: Point {
+                                row: 3,
+                                column: 2,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 3,
+                            },
+                        },
+                        _id: 24,
+                        _parent: Some(
+                            23,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Identifier(
+                    Identifier {
+                        _range: Range {
+                            start_byte: 59,
+                            end_byte: 60,
+                            start_point: Point {
+                                row: 3,
+                                column: 4,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 5,
+                            },
+                        },
+                        _id: 25,
+                        _parent: Some(
+                            23,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        ForInClause(
+            ForInClause {
+                left: AstNodeId {
+                    id: 27,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                right: [
+                    AstNodeId {
+                        id: 28,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 62,
+                    end_byte: 78,
+                    start_point: Point {
+                        row: 3,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 23,
+                    },
+                },
+                _id: 26,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 66,
+                        end_byte: 67,
+                        start_point: Point {
+                            row: 3,
+                            column: 11,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 12,
+                        },
+                    },
+                    _id: 27,
+                    _parent: Some(
+                        26,
+                    ),
+                },
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                List(
+                    List {
+                        children: [
+                            AstNodeId {
+                                id: 29,
+                                _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                            },
+                            AstNodeId {
+                                id: 30,
+                                _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                            },
+                            AstNodeId {
+                                id: 31,
+                                _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                            },
+                        ],
+                        _range: Range {
+                            start_byte: 71,
+                            end_byte: 78,
+                            start_point: Point {
+                                row: 3,
+                                column: 16,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 23,
+                            },
+                        },
+                        _id: 28,
+                        _parent: Some(
+                            26,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 72,
+                            end_byte: 73,
+                            start_point: Point {
+                                row: 3,
+                                column: 17,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 18,
+                            },
+                        },
+                        _id: 29,
+                        _parent: Some(
+                            28,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 74,
+                            end_byte: 75,
+                            start_point: Point {
+                                row: 3,
+                                column: 19,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 20,
+                            },
+                        },
+                        _id: 30,
+                        _parent: Some(
+                            28,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 76,
+                            end_byte: 77,
+                            start_point: Point {
+                                row: 3,
+                                column: 21,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 22,
+                            },
+                        },
+                        _id: 31,
+                        _parent: Some(
+                            28,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        ForInClause(
+            ForInClause {
+                left: AstNodeId {
+                    id: 33,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                right: [
+                    AstNodeId {
+                        id: 34,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 79,
+                    end_byte: 95,
+                    start_point: Point {
+                        row: 3,
+                        column: 24,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 40,
+                    },
+                },
+                _id: 32,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 83,
+                        end_byte: 84,
+                        start_point: Point {
+                            row: 3,
+                            column: 28,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 29,
+                        },
+                    },
+                    _id: 33,
+                    _parent: Some(
+                        32,
+                    ),
+                },
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                List(
+                    List {
+                        children: [
+                            AstNodeId {
+                                id: 35,
+                                _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                            },
+                            AstNodeId {
+                                id: 36,
+                                _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                            },
+                            AstNodeId {
+                                id: 37,
+                                _marker: PhantomData<ast_python::generated::Expression_ListSplat_ParenthesizedListSplat_Yield>,
+                            },
+                        ],
+                        _range: Range {
+                            start_byte: 88,
+                            end_byte: 95,
+                            start_point: Point {
+                                row: 3,
+                                column: 33,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 40,
+                            },
+                        },
+                        _id: 34,
+                        _parent: Some(
+                            32,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 89,
+                            end_byte: 90,
+                            start_point: Point {
+                                row: 3,
+                                column: 34,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 35,
+                            },
+                        },
+                        _id: 35,
+                        _parent: Some(
+                            34,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 91,
+                            end_byte: 92,
+                            start_point: Point {
+                                row: 3,
+                                column: 36,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 37,
+                            },
+                        },
+                        _id: 36,
+                        _parent: Some(
+                            34,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        Expression(
+            PrimaryExpression(
+                Integer(
+                    Integer {
+                        _range: Range {
+                            start_byte: 93,
+                            end_byte: 94,
+                            start_point: Point {
+                                row: 3,
+                                column: 38,
+                            },
+                            end_point: Point {
+                                row: 3,
+                                column: 39,
+                            },
+                        },
+                        _id: 37,
+                        _parent: Some(
+                            34,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        IfClause(
+            IfClause {
+                children: AstNodeId {
+                    id: 39,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
+                _range: Range {
+                    start_byte: 96,
+                    end_byte: 103,
+                    start_point: Point {
+                        row: 3,
+                        column: 41,
+                    },
+                    end_point: Point {
+                        row: 3,
+                        column: 48,
+                    },
+                },
+                _id: 38,
+                _parent: Some(
+                    22,
+                ),
+            },
+        ),
+        PrimaryExpression(
+            True(
+                True {
+                    _range: Range {
+                        start_byte: 99,
+                        end_byte: 103,
+                        start_point: Point {
+                            row: 3,
+                            column: 44,
+                        },
+                        end_point: Point {
+                            row: 3,
+                            column: 48,
+                        },
+                    },
+                    _id: 39,
+                    _parent: Some(
+                        38,
+                    ),
+                },
+            ),
+        ),
         SimpleStatement(
             ExpressionStatement(
                 ExpressionStatement {
                     children: [
-                        Expression(
-                            PrimaryExpression(
-                                ListComprehension(
-                                    ListComprehension {
-                                        body: PrimaryExpression(
-                                            Identifier(
-                                                Identifier {
-                                                    [RANGE]
-                                                    _id: 42,
-                                                    _parent: Some(
-                                                        41,
-                                                    ),
-                                                },
-                                            ),
-                                        ),
-                                        children: [
-                                            ForInClause(
-                                                ForInClause {
-                                                    right: [
-                                                        Expression(
-                                                            Lambda(
-                                                                Lambda {
-                                                                    body: PrimaryExpression(
-                                                                        True(
-                                                                            True {
-                                                                                [RANGE]
-                                                                                _id: 46,
-                                                                                _parent: Some(
-                                                                                    45,
-                                                                                ),
-                                                                            },
-                                                                        ),
-                                                                    ),
-                                                                    parameters: None,
-                                                                    [RANGE]
-                                                                    _id: 45,
-                                                                    _parent: Some(
-                                                                        43,
-                                                                    ),
-                                                                },
-                                                            ),
-                                                        ),
-                                                        Token_Comma(
-                                                            Token_Comma {
-                                                                [RANGE]
-                                                                _id: 47,
-                                                                _parent: Some(
-                                                                    43,
-                                                                ),
-                                                            },
-                                                        ),
-                                                        Expression(
-                                                            Lambda(
-                                                                Lambda {
-                                                                    body: PrimaryExpression(
-                                                                        False(
-                                                                            False {
-                                                                                [RANGE]
-                                                                                _id: 49,
-                                                                                _parent: Some(
-                                                                                    48,
-                                                                                ),
-                                                                            },
-                                                                        ),
-                                                                    ),
-                                                                    parameters: None,
-                                                                    [RANGE]
-                                                                    _id: 48,
-                                                                    _parent: Some(
-                                                                        43,
-                                                                    ),
-                                                                },
-                                                            ),
-                                                        ),
-                                                    ],
-                                                    left: Pattern(
-                                                        Identifier(
-                                                            Identifier {
-                                                                [RANGE]
-                                                                _id: 44,
-                                                                _parent: Some(
-                                                                    43,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 43,
-                                                    _parent: Some(
-                                                        41,
-                                                    ),
-                                                },
-                                            ),
-                                            IfClause(
-                                                IfClause {
-                                                    children: PrimaryExpression(
-                                                        Call(
-                                                            Call {
-                                                                function: Identifier(
-                                                                    Identifier {
-                                                                        [RANGE]
-                                                                        _id: 52,
-                                                                        _parent: Some(
-                                                                            51,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                                arguments: ArgumentList(
-                                                                    ArgumentList {
-                                                                        children: [],
-                                                                        [RANGE]
-                                                                        _id: 53,
-                                                                        _parent: Some(
-                                                                            51,
-                                                                        ),
-                                                                    },
-                                                                ),
-                                                                [RANGE]
-                                                                _id: 51,
-                                                                _parent: Some(
-                                                                    50,
-                                                                ),
-                                                            },
-                                                        ),
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 50,
-                                                    _parent: Some(
-                                                        41,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 41,
-                                        _parent: Some(
-                                            40,
-                                        ),
-                                    },
-                                ),
-                            ),
-                        ),
+                        AstNodeId {
+                            id: 41,
+                            _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_Yield>,
+                        },
                     ],
-                    [RANGE]
+                    _range: Range {
+                        start_byte: 105,
+                        end_byte: 152,
+                        start_point: Point {
+                            row: 4,
+                            column: 0,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 47,
+                        },
+                    },
                     _id: 40,
                     _parent: Some(
                         0,
@@ -632,8 +1112,338 @@ Module {
                 },
             ),
         ),
+        Expression(
+            PrimaryExpression(
+                ListComprehension(
+                    ListComprehension {
+                        body: AstNodeId {
+                            id: 42,
+                            _marker: PhantomData<ast_python::generated::Expression>,
+                        },
+                        children: [
+                            AstNodeId {
+                                id: 43,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                            AstNodeId {
+                                id: 50,
+                                _marker: PhantomData<ast_python::generated::ForInClause_IfClause>,
+                            },
+                        ],
+                        _range: Range {
+                            start_byte: 105,
+                            end_byte: 152,
+                            start_point: Point {
+                                row: 4,
+                                column: 0,
+                            },
+                            end_point: Point {
+                                row: 4,
+                                column: 47,
+                            },
+                        },
+                        _id: 41,
+                        _parent: Some(
+                            40,
+                        ),
+                    },
+                ),
+            ),
+        ),
+        PrimaryExpression(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 106,
+                        end_byte: 107,
+                        start_point: Point {
+                            row: 4,
+                            column: 1,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 2,
+                        },
+                    },
+                    _id: 42,
+                    _parent: Some(
+                        41,
+                    ),
+                },
+            ),
+        ),
+        ForInClause(
+            ForInClause {
+                left: AstNodeId {
+                    id: 44,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
+                right: [
+                    AstNodeId {
+                        id: 45,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                    AstNodeId {
+                        id: 47,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                    AstNodeId {
+                        id: 48,
+                        _marker: PhantomData<ast_python::generated::Comma_Expression>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 108,
+                    end_byte: 144,
+                    start_point: Point {
+                        row: 4,
+                        column: 3,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 39,
+                    },
+                },
+                _id: 43,
+                _parent: Some(
+                    41,
+                ),
+            },
+        ),
+        Pattern(
+            Identifier(
+                Identifier {
+                    _range: Range {
+                        start_byte: 112,
+                        end_byte: 113,
+                        start_point: Point {
+                            row: 4,
+                            column: 7,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 8,
+                        },
+                    },
+                    _id: 44,
+                    _parent: Some(
+                        43,
+                    ),
+                },
+            ),
+        ),
+        Expression(
+            Lambda(
+                Lambda {
+                    body: AstNodeId {
+                        id: 46,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    parameters: None,
+                    _range: Range {
+                        start_byte: 117,
+                        end_byte: 129,
+                        start_point: Point {
+                            row: 4,
+                            column: 12,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 24,
+                        },
+                    },
+                    _id: 45,
+                    _parent: Some(
+                        43,
+                    ),
+                },
+            ),
+        ),
+        PrimaryExpression(
+            True(
+                True {
+                    _range: Range {
+                        start_byte: 125,
+                        end_byte: 129,
+                        start_point: Point {
+                            row: 4,
+                            column: 20,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 24,
+                        },
+                    },
+                    _id: 46,
+                    _parent: Some(
+                        45,
+                    ),
+                },
+            ),
+        ),
+        Token_Comma(
+            Token_Comma {
+                _range: Range {
+                    start_byte: 129,
+                    end_byte: 130,
+                    start_point: Point {
+                        row: 4,
+                        column: 24,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 25,
+                    },
+                },
+                _id: 47,
+                _parent: Some(
+                    43,
+                ),
+            },
+        ),
+        Expression(
+            Lambda(
+                Lambda {
+                    body: AstNodeId {
+                        id: 49,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    parameters: None,
+                    _range: Range {
+                        start_byte: 131,
+                        end_byte: 144,
+                        start_point: Point {
+                            row: 4,
+                            column: 26,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 39,
+                        },
+                    },
+                    _id: 48,
+                    _parent: Some(
+                        43,
+                    ),
+                },
+            ),
+        ),
+        PrimaryExpression(
+            False(
+                False {
+                    _range: Range {
+                        start_byte: 139,
+                        end_byte: 144,
+                        start_point: Point {
+                            row: 4,
+                            column: 34,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 39,
+                        },
+                    },
+                    _id: 49,
+                    _parent: Some(
+                        48,
+                    ),
+                },
+            ),
+        ),
+        IfClause(
+            IfClause {
+                children: AstNodeId {
+                    id: 51,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
+                _range: Range {
+                    start_byte: 145,
+                    end_byte: 151,
+                    start_point: Point {
+                        row: 4,
+                        column: 40,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 46,
+                    },
+                },
+                _id: 50,
+                _parent: Some(
+                    41,
+                ),
+            },
+        ),
+        PrimaryExpression(
+            Call(
+                Call {
+                    arguments: AstNodeId {
+                        id: 53,
+                        _marker: PhantomData<ast_python::generated::ArgumentList_GeneratorExpression>,
+                    },
+                    function: AstNodeId {
+                        id: 52,
+                        _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    _range: Range {
+                        start_byte: 148,
+                        end_byte: 151,
+                        start_point: Point {
+                            row: 4,
+                            column: 43,
+                        },
+                        end_point: Point {
+                            row: 4,
+                            column: 46,
+                        },
+                    },
+                    _id: 51,
+                    _parent: Some(
+                        50,
+                    ),
+                },
+            ),
+        ),
+        Identifier(
+            Identifier {
+                _range: Range {
+                    start_byte: 148,
+                    end_byte: 149,
+                    start_point: Point {
+                        row: 4,
+                        column: 43,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 44,
+                    },
+                },
+                _id: 52,
+                _parent: Some(
+                    51,
+                ),
+            },
+        ),
+        ArgumentList(
+            ArgumentList {
+                children: [],
+                _range: Range {
+                    start_byte: 149,
+                    end_byte: 151,
+                    start_point: Point {
+                        row: 4,
+                        column: 44,
+                    },
+                    end_point: Point {
+                        row: 4,
+                        column: 46,
+                    },
+                },
+                _id: 53,
+                _parent: Some(
+                    51,
+                ),
+            },
+        ),
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

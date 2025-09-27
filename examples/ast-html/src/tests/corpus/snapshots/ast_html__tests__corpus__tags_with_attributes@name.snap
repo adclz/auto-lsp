@@ -1,145 +1,370 @@
 ---
 source: src/tests/corpus/mod.rs
-expression: document
+expression: "get_ast(& db, file)"
 ---
-Document {
-    children: [
+ParsedAst {
+    nodes: [
+        Document {
+            children: [
+                AstNodeId {
+                    id: 1,
+                    _marker: PhantomData<ast_html::generated::Doctype_Element_Entity_ErroneousEndTag_ScriptElement_StyleElement_Text>,
+                },
+            ],
+            _range: Range {
+                start_byte: 0,
+                end_byte: 45,
+                start_point: Point {
+                    row: 0,
+                    column: 0,
+                },
+                end_point: Point {
+                    row: 0,
+                    column: 45,
+                },
+            },
+            _id: 0,
+            _parent: None,
+        },
         Element(
             Element {
                 children: [
-                    StartTag(
-                        StartTag {
-                            children: [
-                                TagName(
-                                    TagName {
-                                        [RANGE]
-                                        _id: 3,
-                                        _parent: Some(
-                                            2,
-                                        ),
-                                    },
-                                ),
-                                Attribute(
-                                    Attribute {
-                                        children: [
-                                            AttributeName(
-                                                AttributeName {
-                                                    [RANGE]
-                                                    _id: 5,
-                                                    _parent: Some(
-                                                        4,
-                                                    ),
-                                                },
-                                            ),
-                                            AttributeValue(
-                                                AttributeValue {
-                                                    [RANGE]
-                                                    _id: 6,
-                                                    _parent: Some(
-                                                        4,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 4,
-                                        _parent: Some(
-                                            2,
-                                        ),
-                                    },
-                                ),
-                                Attribute(
-                                    Attribute {
-                                        children: [
-                                            AttributeName(
-                                                AttributeName {
-                                                    [RANGE]
-                                                    _id: 8,
-                                                    _parent: Some(
-                                                        7,
-                                                    ),
-                                                },
-                                            ),
-                                            QuotedAttributeValue(
-                                                QuotedAttributeValue {
-                                                    children: Some(
-                                                        AttributeValue {
-                                                            [RANGE]
-                                                            _id: 10,
-                                                            _parent: Some(
-                                                                9,
-                                                            ),
-                                                        },
-                                                    ),
-                                                    [RANGE]
-                                                    _id: 9,
-                                                    _parent: Some(
-                                                        7,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 7,
-                                        _parent: Some(
-                                            2,
-                                        ),
-                                    },
-                                ),
-                                Attribute(
-                                    Attribute {
-                                        children: [
-                                            AttributeName(
-                                                AttributeName {
-                                                    [RANGE]
-                                                    _id: 12,
-                                                    _parent: Some(
-                                                        11,
-                                                    ),
-                                                },
-                                            ),
-                                        ],
-                                        [RANGE]
-                                        _id: 11,
-                                        _parent: Some(
-                                            2,
-                                        ),
-                                    },
-                                ),
-                            ],
-                            [RANGE]
-                            _id: 2,
-                            _parent: Some(
-                                1,
-                            ),
-                        },
-                    ),
-                    EndTag(
-                        EndTag {
-                            children: TagName {
-                                [RANGE]
-                                _id: 14,
-                                _parent: Some(
-                                    13,
-                                ),
-                            },
-                            [RANGE]
-                            _id: 13,
-                            _parent: Some(
-                                1,
-                            ),
-                        },
-                    ),
+                    AstNodeId {
+                        id: 2,
+                        _marker: PhantomData<ast_html::generated::Doctype_Element_EndTag_Entity_ErroneousEndTag_ScriptElement_SelfClosingTag_StartTag_StyleElement_Text>,
+                    },
+                    AstNodeId {
+                        id: 13,
+                        _marker: PhantomData<ast_html::generated::Doctype_Element_EndTag_Entity_ErroneousEndTag_ScriptElement_SelfClosingTag_StartTag_StyleElement_Text>,
+                    },
                 ],
-                [RANGE]
+                _range: Range {
+                    start_byte: 0,
+                    end_byte: 45,
+                    start_point: Point {
+                        row: 0,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 45,
+                    },
+                },
                 _id: 1,
                 _parent: Some(
                     0,
                 ),
             },
         ),
+        StartTag(
+            StartTag {
+                children: [
+                    AstNodeId {
+                        id: 3,
+                        _marker: PhantomData<ast_html::generated::Attribute_TagName>,
+                    },
+                    AstNodeId {
+                        id: 4,
+                        _marker: PhantomData<ast_html::generated::Attribute_TagName>,
+                    },
+                    AstNodeId {
+                        id: 7,
+                        _marker: PhantomData<ast_html::generated::Attribute_TagName>,
+                    },
+                    AstNodeId {
+                        id: 11,
+                        _marker: PhantomData<ast_html::generated::Attribute_TagName>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 0,
+                    end_byte: 37,
+                    start_point: Point {
+                        row: 0,
+                        column: 0,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 37,
+                    },
+                },
+                _id: 2,
+                _parent: Some(
+                    1,
+                ),
+            },
+        ),
+        TagName(
+            TagName {
+                _range: Range {
+                    start_byte: 1,
+                    end_byte: 6,
+                    start_point: Point {
+                        row: 0,
+                        column: 1,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 6,
+                    },
+                },
+                _id: 3,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        Attribute(
+            Attribute {
+                children: [
+                    AstNodeId {
+                        id: 5,
+                        _marker: PhantomData<ast_html::generated::AttributeName_AttributeValue_QuotedAttributeValue>,
+                    },
+                    AstNodeId {
+                        id: 6,
+                        _marker: PhantomData<ast_html::generated::AttributeName_AttributeValue_QuotedAttributeValue>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 7,
+                    end_byte: 16,
+                    start_point: Point {
+                        row: 0,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 16,
+                    },
+                },
+                _id: 4,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        AttributeName(
+            AttributeName {
+                _range: Range {
+                    start_byte: 7,
+                    end_byte: 12,
+                    start_point: Point {
+                        row: 0,
+                        column: 7,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 12,
+                    },
+                },
+                _id: 5,
+                _parent: Some(
+                    4,
+                ),
+            },
+        ),
+        AttributeValue(
+            AttributeValue {
+                _range: Range {
+                    start_byte: 13,
+                    end_byte: 16,
+                    start_point: Point {
+                        row: 0,
+                        column: 13,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 16,
+                    },
+                },
+                _id: 6,
+                _parent: Some(
+                    4,
+                ),
+            },
+        ),
+        Attribute(
+            Attribute {
+                children: [
+                    AstNodeId {
+                        id: 8,
+                        _marker: PhantomData<ast_html::generated::AttributeName_AttributeValue_QuotedAttributeValue>,
+                    },
+                    AstNodeId {
+                        id: 9,
+                        _marker: PhantomData<ast_html::generated::AttributeName_AttributeValue_QuotedAttributeValue>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 17,
+                    end_byte: 26,
+                    start_point: Point {
+                        row: 0,
+                        column: 17,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 26,
+                    },
+                },
+                _id: 7,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        AttributeName(
+            AttributeName {
+                _range: Range {
+                    start_byte: 17,
+                    end_byte: 22,
+                    start_point: Point {
+                        row: 0,
+                        column: 17,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 22,
+                    },
+                },
+                _id: 8,
+                _parent: Some(
+                    7,
+                ),
+            },
+        ),
+        QuotedAttributeValue(
+            QuotedAttributeValue {
+                children: Some(
+                    AstNodeId {
+                        id: 10,
+                        _marker: PhantomData<ast_html::generated::AttributeValue>,
+                    },
+                ),
+                _range: Range {
+                    start_byte: 23,
+                    end_byte: 26,
+                    start_point: Point {
+                        row: 0,
+                        column: 23,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 26,
+                    },
+                },
+                _id: 9,
+                _parent: Some(
+                    7,
+                ),
+            },
+        ),
+        AttributeValue {
+            _range: Range {
+                start_byte: 24,
+                end_byte: 25,
+                start_point: Point {
+                    row: 0,
+                    column: 24,
+                },
+                end_point: Point {
+                    row: 0,
+                    column: 25,
+                },
+            },
+            _id: 10,
+            _parent: Some(
+                9,
+            ),
+        },
+        Attribute(
+            Attribute {
+                children: [
+                    AstNodeId {
+                        id: 12,
+                        _marker: PhantomData<ast_html::generated::AttributeName_AttributeValue_QuotedAttributeValue>,
+                    },
+                ],
+                _range: Range {
+                    start_byte: 27,
+                    end_byte: 36,
+                    start_point: Point {
+                        row: 0,
+                        column: 27,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 36,
+                    },
+                },
+                _id: 11,
+                _parent: Some(
+                    2,
+                ),
+            },
+        ),
+        AttributeName(
+            AttributeName {
+                _range: Range {
+                    start_byte: 27,
+                    end_byte: 36,
+                    start_point: Point {
+                        row: 0,
+                        column: 27,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 36,
+                    },
+                },
+                _id: 12,
+                _parent: Some(
+                    11,
+                ),
+            },
+        ),
+        EndTag(
+            EndTag {
+                children: AstNodeId {
+                    id: 14,
+                    _marker: PhantomData<ast_html::generated::TagName>,
+                },
+                _range: Range {
+                    start_byte: 37,
+                    end_byte: 45,
+                    start_point: Point {
+                        row: 0,
+                        column: 37,
+                    },
+                    end_point: Point {
+                        row: 0,
+                        column: 45,
+                    },
+                },
+                _id: 13,
+                _parent: Some(
+                    1,
+                ),
+            },
+        ),
+        TagName {
+            _range: Range {
+                start_byte: 39,
+                end_byte: 44,
+                start_point: Point {
+                    row: 0,
+                    column: 39,
+                },
+                end_point: Point {
+                    row: 0,
+                    column: 44,
+                },
+            },
+            _id: 14,
+            _parent: Some(
+                13,
+            ),
+        },
     ],
-    [RANGE]
-    _id: 0,
-    _parent: None,
 }

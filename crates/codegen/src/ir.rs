@@ -71,9 +71,9 @@ impl Field {
         let field_name = format_ident!("{}", &sanitize_string(&self.tree_sitter_type));
         let pascal_name = &self.field_name;
         let field_type = match self.kind {
-            Kind::Base => quote! { std::sync::Arc<#pascal_name> },
-            Kind::Vec => quote! { Vec<std::sync::Arc<#pascal_name>> },
-            Kind::Option => quote! { Option<std::sync::Arc<#pascal_name>> },
+            Kind::Base => quote! { auto_lsp::core::ast::AstNodeId<#pascal_name> },
+            Kind::Vec => quote! { Vec<auto_lsp::core::ast::AstNodeId<#pascal_name>> },
+            Kind::Option => quote! { Option<auto_lsp::core::ast::AstNodeId<#pascal_name>> },
         };
 
         quote! {
@@ -137,9 +137,9 @@ impl Child {
     fn generate_field(&self) -> TokenStream {
         let pascal_name = &self.field_name;
         let field_type = match self.kind {
-            Kind::Base => quote! { std::sync::Arc<#pascal_name> },
-            Kind::Vec => quote! { Vec<std::sync::Arc<#pascal_name>> },
-            Kind::Option => quote! { Option<std::sync::Arc<#pascal_name>> },
+            Kind::Base => quote! { auto_lsp::core::ast::AstNodeId<#pascal_name> },
+            Kind::Vec => quote! { Vec<auto_lsp::core::ast::AstNodeId<#pascal_name>> },
+            Kind::Option => quote! { Option<auto_lsp::core::ast::AstNodeId<#pascal_name>> },
         };
 
         quote! {
