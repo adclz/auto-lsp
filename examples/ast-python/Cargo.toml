@@ -1,11 +1,11 @@
 [package]
 name = "ast-python"
-authors = ["Clauzel Adrien"]
-license = "GPL-3.0"
-repository = "https://github.com/adclz/auto-lsp"
 version = "0.1.0"
-edition = "2021"
 publish = false
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
 auto-lsp = { path = "../.." }

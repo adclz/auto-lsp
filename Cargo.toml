@@ -1,16 +1,22 @@
-[package]
-name = "auto-lsp"
+[workspace.package]
 authors = ["Clauzel Adrien"]
 license = "GPL-3.0"
+edition = "2024"
 repository = "https://github.com/adclz/auto-lsp"
+
+[package]
+name = "auto-lsp"
 description = """
 A rust crate for creating AST and LSP servers powered by tree-sitter.
 """
 categories = ["parsing"]
 keywords = ["parser", "tree-sitter", "lsp"]
 version = "0.6.2"
-edition = "2021"
 readme = "README.MD"
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [workspace]
 members = [

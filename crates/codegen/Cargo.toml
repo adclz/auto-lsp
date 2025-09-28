@@ -1,14 +1,13 @@
 [package]
 name = "auto-lsp-codegen"
-authors = ["Clauzel Adrien"]
-license = "GPL-3.0"
-repository = "https://github.com/adclz/auto-lsp"
 description = """
 Codegen crate for `auto_lsp`.
 """
-version = "0.2.1"
-edition = "2021"
 readme = "README.md"
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }

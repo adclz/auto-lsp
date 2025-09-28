@@ -1,13 +1,13 @@
 [package]
 name = "auto-lsp-core"
-authors = ["Clauzel Adrien"]
-license = "GPL-3.0"
-repository = "https://github.com/adclz/auto-lsp"
 description = """
 Core crate for `auto_lsp`.
 """
 version = "0.7.0"
-edition = "2021"
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
 lsp-types = { workspace = true }
