@@ -58,8 +58,6 @@ use auto_lsp::server::notification_registry::NotificationRegistry;
 use auto_lsp::server::options::InitOptions;
 use auto_lsp::server::request_registry::RequestRegistry;
 use auto_lsp::server::Session;
-use fastrace::collector::Config;
-use fastrace::collector::ConsoleReporter;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
 
@@ -72,8 +70,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         .verbosity(4)
         .init()
         .unwrap();
-
-    fastrace::set_reporter(ConsoleReporter, Config::default());
 
     let (mut session, params) = Session::create(
         InitOptions {

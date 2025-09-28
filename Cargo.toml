@@ -19,6 +19,11 @@ members = [
     "crates/server",
     "crates/default",
     "crates/bench",
+    "examples/ast-python",
+    "examples/ast-html",
+    "examples/native",
+    "examples/vscode-wasi/server",
+    "examples/vscode-native/server",
 ]
 exclude = [
     "examples/vscode-wasi/server",
@@ -43,7 +48,9 @@ texter = { version = "0.2.0", default-features = false }
 lsp-types = "0.94.1"
 lsp-server = "0.7.8"
 crossbeam-channel = "0.5.15"
-tree-sitter = "0.25.5"
+tree-sitter = "0.25.10"
+tree-sitter-python = "0.23.6"
+tree-sitter-html = "0.23.2"
 downcast-rs = "2.0.1"
 streaming-iterator = "0.1.9"
 parking_lot = "0.12.4"
@@ -52,16 +59,22 @@ rayon = "1.10"
 anyhow = "1.0.98"
 regex = "1.11.1"
 rstest = "0.25.0"
-salsa = "0.22.0"
+salsa = "0.23.0"
 dashmap = "6.1.0"
 thiserror = "2.0.12"
 ariadne = "0.5.1"
 walkdir = "2.5.0"
 rayon-par-bridge = "0.1.0"
 bon = "3.6.4"
+insta = { version = "1.43.1", features = ["filters"] }
+escargot = "0.5.13"
+assert_cmd = "2.0.16"
+tokio = { version = "1.44.2", features = ["full"] }
+tree-sitter-language = "0.1.5"
+
 
 [dependencies]
-tree-sitter-language = "0.1.5"
+tree-sitter-language = { workspace = true }
 tree-sitter = { workspace = true }
 lsp-types = { workspace = true }
 anyhow = { workspace = true }

@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 auto-lsp = { path = "../../../", features = ["lsp_server", "wasm"] }
 ast-python = { path = "../../ast-python" }
-tree-sitter-python = "0.23.6"
+tree-sitter-python = { workspace = true }
