@@ -77,7 +77,7 @@ version = "0.1.0"
 dependencies = [
  "auto-lsp",
  "auto-lsp-codegen",
- "salsa 0.22.0",
+ "salsa",
  "tree-sitter-python",
 ]
 
@@ -92,7 +92,7 @@ dependencies = [
  "lsp-server",
  "lsp-types",
  "parking_lot",
- "salsa 0.23.0",
+ "salsa",
  "texter",
  "tree-sitter",
  "tree-sitter-language",
@@ -100,7 +100,7 @@ dependencies = [
 
 [[package]]
 name = "auto-lsp-codegen"
-version = "0.2.1"
+version = "0.0.0"
 dependencies = [
  "phf",
  "proc-macro2",
@@ -121,7 +121,7 @@ dependencies = [
  "lsp-types",
  "parking_lot",
  "regex",
- "salsa 0.23.0",
+ "salsa",
  "streaming-iterator",
  "texter",
  "thiserror",
@@ -142,7 +142,7 @@ dependencies = [
  "parking_lot",
  "rayon",
  "rayon-par-bridge",
- "salsa 0.23.0",
+ "salsa",
  "texter",
  "tree-sitter",
  "walkdir",
@@ -159,7 +159,7 @@ dependencies = [
  "lsp-server",
  "lsp-types",
  "rayon",
- "salsa 0.23.0",
+ "salsa",
  "serde",
  "serde_json",
  "texter",
@@ -527,12 +527,6 @@ checksum = "7382cf6263419f2d8df38c55d7da83da5c18aef87fc7a7fc1fb1e344edfe14c1"
 dependencies = [
  "hashbrown 0.15.2",
 ]
-
-[[package]]
-name = "heck"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "hermit-abi"
@@ -1092,9 +1086,9 @@ checksum = "ba39f3699c378cd8970968dcbff9c43159ea4cfbd88d43c00b22f2ef10a435d2"
 
 [[package]]
 name = "rstest"
-version = "0.24.0"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03e905296805ab93e13c1ec3a03f4b6c4f35e9498a3d5fa96dc626d22c03cd89"
+checksum = "6fc39292f8613e913f7df8fa892b8944ceb47c247b78e1b1ae2f09e019be789d"
 dependencies = [
  "futures-timer",
  "futures-util",
@@ -1104,9 +1098,9 @@ dependencies = [
 
 [[package]]
 name = "rstest_macros"
-version = "0.24.0"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef0053bbffce09062bee4bcc499b0fbe7a57b879f1efe088d6d8d4c7adcdef9b"
+checksum = "1f168d99749d307be9de54d23fd226628d99768225ef08f6ffb52e0182a27746"
 dependencies = [
  "cfg-if",
  "glob",
@@ -1155,29 +1149,6 @@ checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 
 [[package]]
 name = "salsa"
-version = "0.22.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8fff508e3d6ef42a32607f7538e17171a877a12015e32036f46e99d00c95781"
-dependencies = [
- "boxcar",
- "crossbeam-queue",
- "dashmap",
- "hashbrown 0.15.2",
- "hashlink",
- "indexmap",
- "parking_lot",
- "portable-atomic",
- "rayon",
- "rustc-hash",
- "salsa-macro-rules 0.22.0",
- "salsa-macros 0.22.0",
- "smallvec",
- "thin-vec",
- "tracing",
-]
-
-[[package]]
-name = "salsa"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e235afdb8e510f38a07138fbe5a0b64691894358a9c0cbd813b1aade110efc9"
@@ -1194,8 +1165,8 @@ dependencies = [
  "portable-atomic",
  "rayon",
  "rustc-hash",
- "salsa-macro-rules 0.23.0",
- "salsa-macros 0.23.0",
+ "salsa-macro-rules",
+ "salsa-macros",
  "smallvec",
  "thin-vec",
  "tracing",
@@ -1203,28 +1174,9 @@ dependencies = [
 
 [[package]]
 name = "salsa-macro-rules"
-version = "0.22.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ea72b3c06f2ce6350fe3a0eeb7aaaf842d1d8352b706973c19c4f02e298a87c"
-
-[[package]]
-name = "salsa-macro-rules"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2edb86a7e9c91f6d30c9ce054312721dbe773a162db27bbfae834d16177b30ce"
-
-[[package]]
-name = "salsa-macros"
-version = "0.22.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ce92025bc160b27814a207cb78d680973af17f863c7f4fc56cf3a535e22f378"
-dependencies = [
- "heck",
- "proc-macro2",
- "quote",
- "syn",
- "synstructure",
-]
 
 [[package]]
 name = "salsa-macros"

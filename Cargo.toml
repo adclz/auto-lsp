@@ -27,7 +27,6 @@ members = [
     "crates/bench",
     "examples/ast-python",
     "examples/ast-html",
-    "examples/native",
     "examples/vscode-wasi/server",
     "examples/vscode-native/server",
 ]
@@ -73,11 +72,7 @@ walkdir = "2.5.0"
 rayon-par-bridge = "0.1.0"
 bon = "3.6.4"
 insta = { version = "1.43.1", features = ["filters"] }
-escargot = "0.5.13"
-assert_cmd = "2.0.16"
-tokio = { version = "1.44.2", features = ["full"] }
 tree-sitter-language = "0.1.5"
-
 
 [dependencies]
 tree-sitter-language = { workspace = true }
