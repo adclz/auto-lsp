@@ -3,6 +3,7 @@ name = "vscode-lsp-server"
 version = "0.1.0"
 authors = { workspace = true }
 edition = { workspace = true }
+publish = false
 
 [dependencies]
 auto-lsp = { path = "../../../", features = ["lsp_server"] }
