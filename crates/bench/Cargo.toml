@@ -1,8 +1,10 @@
 [package]
 name = "auto-lsp-bench"
-authors = ["Clauzel Adrien"]
-license = "GPL-3.0"
 publish = false
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
 auto-lsp = { path = "../.." }
