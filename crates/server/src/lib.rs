@@ -27,6 +27,7 @@ pub mod notification_registry;
 pub mod options;
 pub mod request_registry;
 pub(crate) mod task_pool;
+pub mod vendored;
 
 pub(crate) type ReqHandler<Db> = fn(&mut Session<Db>, lsp_server::Response);
 type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
@@ -42,7 +43,7 @@ pub struct Session<Db: salsa::Database> {
     /// Language extensions to parser mappings.
     pub extensions: HashMap<String, String>,
     pub(crate) task_rx: crossbeam_channel::Receiver<Task>,
-    pub task_pool: task_pool::TaskPool<Task>,
+    pub task_pool: vendored::pool::Pool,
     /// Request queue for incoming requests
     pub req_queue: ReqQueue<Db>,
     pub connection: Connection,
