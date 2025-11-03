@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use super::{main_loop::Task, Session};
+use crate::{main_loop::Task, vendored::intent::ThreadIntent};
+
+use super::Session;
 use lsp_server::{Message, Notification};
 use serde::de::DeserializeOwned;
 use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
@@ -29,6 +31,8 @@ type Callback<Db> = Arc<
 /// Callback for synchronous mutable notifications
 type SyncMutCallback<Db> = Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<()>>;
 
+type CallbackWithIntent<Db> = (Callback<Db>, ThreadIntent);
+
 /// A registry for LSP notifications.
 ///
 /// This registry allows you to register handlers for LSP notifications.
@@ -38,7 +42,7 @@ type SyncMutCallback<Db> = Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> an
 /// The handlers are registered using the `on` and `on_mut` methods.
 #[derive(Default)]
 pub struct NotificationRegistry<Db: salsa::Database> {
-    handlers: HashMap<String, Callback<Db>>,
+    handlers: HashMap<String, CallbackWithIntent<Db>>,
     sync_mut_handlers: HashMap<String, SyncMutCallback<Db>>,
 }
 
@@ -48,7 +52,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db
     /// This handler is Cancelable and will be executed in a separate thread.
     ///
     /// Note that there is no retry mechanism for cancelled or failed notifications.
-    pub fn on<N, F>(&mut self, handler: F) -> &mut Self
+    pub fn on<N, F>(&mut self, intent: ThreadIntent, handler: F) -> &mut Self
     where
         N: lsp_types::notification::Notification,
         N::Params: DeserializeOwned,
@@ -61,7 +65,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db
             Ok(())
         });
 
-        self.handlers.insert(method, callback);
+        self.handlers.insert(method, (callback, intent));
         self
     }
 
@@ -83,7 +87,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db
         self
     }
 
-    pub(crate) fn get(&self, req: &Notification) -> Option<&Callback<Db>> {
+    pub(crate) fn get(&self, req: &Notification) -> Option<&CallbackWithIntent<Db>> {
         self.handlers.get(&req.method)
     }
 
@@ -92,21 +96,28 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db
     }
 
     /// Push a notification handler to the task pool.
-    pub(crate) fn exec(session: &Session<Db>, callback: &Callback<Db>, not: Notification) {
+    pub(crate) fn exec(
+        session: &Session<Db>,
+        callback: &CallbackWithIntent<Db>,
+        not: Notification,
+    ) {
         let params = not.params;
 
         let snapshot = session.snapshot();
-        let cb = Arc::clone(callback);
-        session
-            .task_pool
-            .spawn(move |sender| match snapshot.with_db(|db| cb(db, params)) {
+        let cb = Arc::clone(&callback.0);
+        let intent = callback.1;
+        let sender = session.task_sender.clone();
+        session.task_pool.spawn(
+            intent,
+            std::panic::AssertUnwindSafe(move || match snapshot.with_db(|db| cb(db, params)) {
                 Err(e) => log::warn!("Cancelled notification: {e}"),
                 Ok(result) => {
                     if let Err(e) = result {
                         sender.send(Task::NotificationError(e)).unwrap();
                     }
                 }
-            });
+            }),
+        );
     }
 
     /// Execute a synchronous mutable notification handler immediatly.

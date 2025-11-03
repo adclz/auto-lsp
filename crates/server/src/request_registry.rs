@@ -16,9 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use super::{main_loop::Task, Session};
+use crate::vendored::intent::ThreadIntent;
+
+use super::{Session, main_loop::Task};
 use lsp_server::{Message, Request, RequestId, Response};
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use std::{collections::HashMap, panic::RefUnwindSafe, sync::Arc};
 
 /// Callback for parallelized requests
@@ -34,6 +36,8 @@ type Callback<Db> = Arc<
 type SyncMutCallback<Db> =
     Box<dyn Fn(&mut Session<Db>, serde_json::Value) -> anyhow::Result<serde_json::Value>>;
 
+type CallbackWithIntent<Db> = (Callback<Db>, ThreadIntent);
+
 /// A registry for LSP requests.
 ///
 /// This registry allows you to register handlers for LSP requests.
@@ -43,12 +47,12 @@ type SyncMutCallback<Db> =
 /// The handlers are registered using the `on` and `on_mut` methods.
 #[derive(Default)]
 pub struct RequestRegistry<Db: salsa::Database> {
-    handlers: HashMap<String, Callback<Db>>,
+    handlers: HashMap<String, CallbackWithIntent<Db>>,
     sync_mut_handlers: HashMap<String, SyncMutCallback<Db>>,
 }
 
 impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
-    pub fn on<R, F>(&mut self, handler: F) -> &mut Self
+    pub fn on<R, F>(&mut self, intent: ThreadIntent, handler: F) -> &mut Self
     where
         R: lsp_types::request::Request,
         R::Params: DeserializeOwned,
@@ -62,7 +66,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
             Ok(serde_json::to_value(result)?)
         });
 
-        self.handlers.insert(method, callback);
+        self.handlers.insert(method, (callback, intent));
         self
     }
 
@@ -89,7 +93,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
         self
     }
 
-    pub(crate) fn get(&self, req: &Request) -> Option<&Callback<Db>> {
+    pub(crate) fn get(&self, req: &Request) -> Option<&CallbackWithIntent<Db>> {
         self.handlers.get(&req.method)
     }
 
@@ -98,34 +102,39 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
     }
 
     /// Push a request handler to the task pool.
-    pub(crate) fn exec(session: &Session<Db>, callback: &Callback<Db>, req: Request) {
+    pub(crate) fn exec(session: &Session<Db>, callback: &CallbackWithIntent<Db>, req: Request) {
         let params = req.params;
         let id = req.id.clone();
 
         let snapshot = session.snapshot();
-        let cb = Arc::clone(callback);
-        session.task_pool.spawn(move |sender| {
-            let cb = cb.clone();
-            match snapshot.with_db(|db| cb(db, params)) {
-                Err(e) => {
-                    log::warn!("Cancelled request: {e}");
-                }
-                Ok(result) => match result {
-                    Ok(result) => sender
-                        .send(Task::Response(Response {
-                            id,
-                            result: Some(result),
-                            error: None,
-                        }))
-                        .unwrap(),
+        let cb = Arc::clone(&callback.0);
+        let intent = callback.1;
+        let sender = session.task_sender.clone();
+        session.task_pool.spawn(
+            intent,
+            std::panic::AssertUnwindSafe(move || {
+                let cb = cb.clone();
+                match snapshot.with_db(|db| cb(db, params)) {
                     Err(e) => {
-                        sender
-                            .send(Task::Response(Self::response_error(id, e)))
-                            .unwrap();
+                        log::warn!("Cancelled request: {e}");
                     }
-                },
-            }
-        });
+                    Ok(result) => match result {
+                        Ok(result) => sender
+                            .send(Task::Response(Response {
+                                id,
+                                result: Some(result),
+                                error: None,
+                            }))
+                            .unwrap(),
+                        Err(e) => {
+                            sender
+                                .send(Task::Response(Self::response_error(id, e)))
+                                .unwrap();
+                        }
+                    },
+                }
+            }),
+        );
     }
 
     /// Execute a synchronous mutable request handler.
