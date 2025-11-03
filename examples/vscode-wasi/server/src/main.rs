@@ -26,14 +26,14 @@ use ast_python::capabilities::hover::hover;
 use ast_python::capabilities::inlay_hints::inlay_hints;
 use ast_python::capabilities::selection_ranges::selection_ranges;
 use ast_python::capabilities::semantic_tokens::{
-    semantic_tokens_full, SUPPORTED_MODIFIERS, SUPPORTED_TYPES,
+    SUPPORTED_MODIFIERS, SUPPORTED_TYPES, semantic_tokens_full,
 };
 use ast_python::capabilities::workspace_diagnostics::workspace_diagnostics;
 use ast_python::capabilities::workspace_symbols::workspace_symbols;
 use ast_python::db::PYTHON_PARSERS;
 use auto_lsp::default::db::{BaseDatabase, BaseDb};
 use auto_lsp::default::server::capabilities::{
-    semantic_tokens_provider, TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER,
+    TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER, semantic_tokens_provider,
 };
 use auto_lsp::default::server::file_events::{
     change_text_document, changed_watched_files, open_text_document,
@@ -54,10 +54,11 @@ use auto_lsp::lsp_types::{
     self, CodeActionProviderCapability, CodeLensOptions, CompletionOptions, DiagnosticOptions,
     DiagnosticServerCapabilities, HoverProviderCapability, OneOf, ServerCapabilities,
 };
+use auto_lsp::server::Session;
 use auto_lsp::server::notification_registry::NotificationRegistry;
 use auto_lsp::server::options::InitOptions;
 use auto_lsp::server::request_registry::RequestRegistry;
-use auto_lsp::server::Session;
+use auto_lsp::server::vendored::intent::ThreadIntent;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
 
@@ -133,18 +134,18 @@ fn on_requests<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut RequestRegistry<Db>,
 ) -> &mut RequestRegistry<Db> {
     registry
-        .on::<DocumentDiagnosticRequest, _>(diagnostics)
-        .on::<DocumentSymbolRequest, _>(document_symbols)
-        .on::<FoldingRangeRequest, _>(folding_ranges)
-        .on::<HoverRequest, _>(hover)
-        .on::<SemanticTokensFullRequest, _>(semantic_tokens_full)
-        .on::<SelectionRangeRequest, _>(selection_ranges)
-        .on::<WorkspaceSymbolRequest, _>(workspace_symbols)
-        .on::<WorkspaceDiagnosticRequest, _>(workspace_diagnostics)
-        .on::<InlayHintRequest, _>(inlay_hints)
-        .on::<CodeActionRequest, _>(code_actions)
-        .on::<CodeLensRequest, _>(code_lenses)
-        .on::<Completion, _>(completion_items)
+        .on::<DocumentDiagnosticRequest, _>(ThreadIntent::Worker, diagnostics)
+        .on::<DocumentSymbolRequest, _>(ThreadIntent::Worker, document_symbols)
+        .on::<FoldingRangeRequest, _>(ThreadIntent::Worker, folding_ranges)
+        .on::<HoverRequest, _>(ThreadIntent::Worker, hover)
+        .on::<SemanticTokensFullRequest, _>(ThreadIntent::Worker, semantic_tokens_full)
+        .on::<SelectionRangeRequest, _>(ThreadIntent::Worker, selection_ranges)
+        .on::<WorkspaceSymbolRequest, _>(ThreadIntent::Worker, workspace_symbols)
+        .on::<WorkspaceDiagnosticRequest, _>(ThreadIntent::Worker, workspace_diagnostics)
+        .on::<InlayHintRequest, _>(ThreadIntent::Worker, inlay_hints)
+        .on::<CodeActionRequest, _>(ThreadIntent::Worker, code_actions)
+        .on::<CodeLensRequest, _>(ThreadIntent::Worker, code_lenses)
+        .on::<Completion, _>(ThreadIntent::Worker, completion_items)
 }
 
 fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
@@ -164,8 +165,8 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
             }
             Ok(())
         })
-        .on::<DidSaveTextDocument, _>(|_s, _p| Ok(()))
-        .on::<DidCloseTextDocument, _>(|_s, _p| Ok(()))
-        .on::<SetTrace, _>(|_s, _p| Ok(()))
-        .on::<LogTrace, _>(|_s, _p| Ok(()))
+        .on::<DidSaveTextDocument, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
+        .on::<DidCloseTextDocument, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
+        .on::<SetTrace, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
+        .on::<LogTrace, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
 }
