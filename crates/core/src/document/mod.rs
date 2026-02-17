@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use lsp_types::PositionEncodingKind;
+use lsp_types::{Position, PositionEncodingKind};
 use std::ops::Range;
 use texter::core::text::Text;
 use texter_impl::{change::WrapChange, updateable::WrapTree};
@@ -114,16 +114,78 @@ impl Document {
         Ok(())
     }
 
+    /// Converts a tree-sitter [`Point`] (byte-offset column) to an LSP [`lsp_types::Position`],
+    /// adjusting the column to the document's encoding (UTF-8, UTF-16, or UTF-32).
+    pub fn ts_point_to_position(&self, point: Point) -> Option<Position> {
+        let line_str = self.texter.get_row(point.row)?;
+
+        let mut utf16_offset = 0;
+        let mut u8_offset = 0;
+        let mut u32_offset = 0;
+
+        for c in line_str.chars() {
+            if u8_offset >= point.column {
+                break;
+            }
+            utf16_offset += c.len_utf16();
+            u8_offset += c.len_utf8();
+            u32_offset += 1;
+        }
+
+        let character = match self.encoding {
+            Encoding::UTF8 => u8_offset,
+            Encoding::UTF16 => utf16_offset,
+            Encoding::UTF32 => u32_offset,
+        };
+
+        Some(lsp_types::Position {
+            line: point.row as u32,
+            character: character as u32,
+        })
+    }
+
+    /// Converts a tree-sitter [`tree_sitter::Range`] to an LSP [`lsp_types::Range`],
+    /// adjusting columns to the document's encoding.
+    pub fn ts_range_to_range(&self, range: &tree_sitter::Range) -> Option<lsp_types::Range> {
+        let start = self.ts_point_to_position(range.start_point)?;
+        let end = self.ts_point_to_position(range.end_point)?;
+        Some(lsp_types::Range { start, end })
+    }
+
+    /// Converts an LSP [`lsp_types::Position`] (encoded character offset) to a tree-sitter
+    /// [`Point`] (byte-offset column).
+    pub fn lsp_position_to_ts_point(&self, position: lsp_types::Position) -> Option<Point> {
+        let line_str = self.texter.get_row(position.line as usize)?;
+        let target = position.character as usize;
+
+        let mut u8_offset = 0;
+        let mut encoded_offset = 0;
+
+        for c in line_str.chars() {
+            if encoded_offset >= target {
+                break;
+            }
+            match self.encoding {
+                Encoding::UTF8 => encoded_offset += c.len_utf8(),
+                Encoding::UTF16 => encoded_offset += c.len_utf16(),
+                Encoding::UTF32 => encoded_offset += 1,
+            }
+            u8_offset += c.len_utf8();
+        }
+
+        Some(Point {
+            row: position.line as usize,
+            column: u8_offset,
+        })
+    }
+
     /// Retrieves the smallest syntax node that spans the given position in the document.
     pub fn node_at_position(&self, position: lsp_types::Position) -> Option<tree_sitter::Node<'_>> {
-        let position = Point {
-            row: position.line as usize,
-            column: position.character as usize,
-        };
+        let point = self.lsp_position_to_ts_point(position)?;
 
         self.tree
             .root_node()
-            .named_descendant_for_point_range(position, position)
+            .named_descendant_for_point_range(point, point)
     }
 
     /// Retrieves the range (start and end positions) of the smallest syntax node that spans the given byte offset.
@@ -131,16 +193,7 @@ impl Document {
         self.tree
             .root_node()
             .named_descendant_for_byte_range(offset, offset)
-            .map(|pos| lsp_types::Range {
-                start: lsp_types::Position {
-                    line: pos.start_position().row as u32,
-                    character: pos.start_position().column as u32,
-                },
-                end: lsp_types::Position {
-                    line: pos.end_position().row as u32,
-                    character: pos.end_position().column as u32,
-                },
-            })
+            .and_then(|node| self.ts_range_to_range(&node.range()))
     }
 
     /// Converts a byte offset in the document to its corresponding position (line and character).
@@ -623,5 +676,226 @@ mod test {
             }),
             None
         );
+    }
+
+    #[rstest]
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn ts_point_to_position_from_cst(mut parser: Parser, #[case] encoding: Encoding) {
+        // HTML with multi-byte content: tree-sitter reports byte-offset columns
+        // "<div>" = 5 bytes, "こんにちは" = 15 bytes (5 chars × 3), "</div>" = 6 bytes
+        let source = "<div>こんにちは</div>\n<p>hello</p>";
+        let tree = parser.parse(source, None).unwrap();
+        let document = Document::new(
+            source.into(),
+            tree.clone(),
+            Some(&match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            }),
+        );
+
+        let root = tree.root_node();
+        // fragment > element > text (the "こんにちは" node)
+        let first_element = root.named_child(0).expect("first element");
+        let text_node = first_element.named_child(1).expect("text node");
+
+        // tree-sitter reports: start (0, 5) end (0, 20) — byte offsets
+        assert_eq!(text_node.start_position(), Point { row: 0, column: 5 });
+        assert_eq!(text_node.end_position(), Point { row: 0, column: 20 });
+
+        // After encoding adjustment, the LSP positions differ
+        let start = document
+            .ts_point_to_position(text_node.start_position())
+            .unwrap();
+        let end = document
+            .ts_point_to_position(text_node.end_position())
+            .unwrap();
+
+        // Start is after "<div>" — pure ASCII, same for all encodings
+        assert_eq!(start, Position { line: 0, character: 5 });
+
+        // End is after "こんにちは" — encoding matters
+        assert_eq!(
+            end,
+            Position {
+                line: 0,
+                character: match encoding {
+                    Encoding::UTF8 => 20,   // 5 + 15 bytes
+                    Encoding::UTF16 => 10,  // 5 + 5 code units
+                    Encoding::UTF32 => 10,  // 5 + 5 code points
+                }
+            }
+        );
+
+        // The </div> end_tag starts right after the text
+        let end_tag = first_element.named_child(2).expect("end tag");
+        assert_eq!(end_tag.start_position(), Point { row: 0, column: 20 });
+        assert_eq!(end_tag.end_position(), Point { row: 0, column: 26 });
+
+        let end_tag_start = document
+            .ts_point_to_position(end_tag.start_position())
+            .unwrap();
+        let end_tag_end = document
+            .ts_point_to_position(end_tag.end_position())
+            .unwrap();
+
+        assert_eq!(
+            end_tag_start,
+            Position {
+                line: 0,
+                character: match encoding {
+                    Encoding::UTF8 => 20,
+                    Encoding::UTF16 => 10,
+                    Encoding::UTF32 => 10,
+                }
+            }
+        );
+        assert_eq!(
+            end_tag_end,
+            Position {
+                line: 0,
+                character: match encoding {
+                    Encoding::UTF8 => 26,
+                    Encoding::UTF16 => 16,
+                    Encoding::UTF32 => 16,
+                }
+            }
+        );
+
+        // Second line: pure ASCII "<p>hello</p>" — all encodings agree
+        let second_element = root.named_child(1).expect("second element");
+        let hello_text = second_element.named_child(1).expect("hello text");
+        let hello_start = document
+            .ts_point_to_position(hello_text.start_position())
+            .unwrap();
+        let hello_end = document
+            .ts_point_to_position(hello_text.end_position())
+            .unwrap();
+
+        assert_eq!(hello_start, Position { line: 1, character: 3 });
+        assert_eq!(hello_end, Position { line: 1, character: 8 });
+    }
+
+    #[rstest]
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn ts_range_to_range_from_cst(mut parser: Parser, #[case] encoding: Encoding) {
+        let source = "<div>こんにちは</div>";
+        let tree = parser.parse(source, None).unwrap();
+        let document = Document::new(
+            source.into(),
+            tree.clone(),
+            Some(&match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            }),
+        );
+
+        let root = tree.root_node();
+        let element = root.named_child(0).expect("element");
+        let text_node = element.named_child(1).expect("text node");
+
+        let lsp_range = document
+            .ts_range_to_range(&text_node.range())
+            .expect("range conversion");
+
+        assert_eq!(
+            lsp_range,
+            lsp_types::Range {
+                start: Position { line: 0, character: 5 },
+                end: Position {
+                    line: 0,
+                    character: match encoding {
+                        Encoding::UTF8 => 20,
+                        Encoding::UTF16 => 10,
+                        Encoding::UTF32 => 10,
+                    }
+                },
+            }
+        );
+    }
+
+    #[rstest]
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn cst_node_roundtrip(mut parser: Parser, #[case] encoding: Encoding) {
+        let source = "<div>こんにちは</div>\n<p>hello</p>";
+        let tree = parser.parse(source, None).unwrap();
+        let document = Document::new(
+            source.into(),
+            tree.clone(),
+            Some(&match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            }),
+        );
+
+        // Collect all named nodes from the CST
+        let root = tree.root_node();
+        let mut cursor = root.walk();
+        let nodes: Vec<_> = root.named_children(&mut cursor).collect();
+
+        for node in &nodes {
+            let start = node.start_position();
+            let end = node.end_position();
+
+            // ts_point → lsp_position → ts_point should be identity for all CST nodes
+            let lsp_start = document.ts_point_to_position(start).unwrap();
+            let back_start = document.lsp_position_to_ts_point(lsp_start).unwrap();
+            assert_eq!(
+                back_start, start,
+                "start roundtrip failed for {:?} (encoding: {encoding:?})",
+                node.kind()
+            );
+
+            let lsp_end = document.ts_point_to_position(end).unwrap();
+            let back_end = document.lsp_position_to_ts_point(lsp_end).unwrap();
+            assert_eq!(
+                back_end, end,
+                "end roundtrip failed for {:?} (encoding: {encoding:?})",
+                node.kind()
+            );
+        }
+    }
+
+    #[rstest]
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn node_at_position_with_encoding(mut parser: Parser, #[case] encoding: Encoding) {
+        let source = "<div>こんにちは</div>";
+        let document = Document::new(
+            source.into(),
+            parser.parse(source, None).unwrap(),
+            Some(&match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            }),
+        );
+
+        // Query the text node "こんにちは" using an LSP position in the middle of it
+        let mid_character = match encoding {
+            Encoding::UTF8 => 8,   // byte offset of "に"
+            Encoding::UTF16 => 7,  // "こん" = 2 code units + 5 ("<div>") = 7
+            Encoding::UTF32 => 7,  // same as UTF-16 for BMP chars
+        };
+
+        let node = document
+            .node_at_position(Position {
+                line: 0,
+                character: mid_character,
+            })
+            .expect("should find a node");
+
+        // The node encompassing that position is the text content
+        assert_eq!(node.kind(), "text");
     }
 }
