@@ -60,10 +60,6 @@ This example is the most complete one, it contains the generated AST from `tree_
 
 This example is a bit more minimal, it only contains the generated AST from `tree_sitter_html` and a database.
 
-- [vscode-wasi](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
-
-Runs the `ast-python` example in a vscode extension using the WASI SDK.
-
 - [vscode-native](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-native)
 
 Runs the `ast-python` example in a vscode extension using either Windows or Linux.

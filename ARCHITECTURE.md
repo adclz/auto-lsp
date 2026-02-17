@@ -60,10 +60,6 @@ This example is the most complete one, it contains the generated AST from `tree_
 
 This example is a bit more minimal, it only contains the generated AST from `tree_sitter_html` and a database.
 
-- [vscode-wasi](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
-
-Runs the `ast-python` example in a vscode extension using the WASI SDK.
-
 - [vscode-native](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-native)
 
 Runs the `ast-python` example in a vscode extension using either Windows or Linux.
@@ -81,14 +77,11 @@ we also test whether the generated ASTs are correct in the `corpus` folder using
 
 Workflows:
 
-- [codegen](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-wasi-p1-threads.yml): 
+- [codegen](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/codegen.yml): 
 Tests the `auto_lsp_codegen` crate.
 
 - [test-ast-native](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-native.yml): 
 Run main crate tests, ast-python and ast-html tests on Windows and Linux targets.
-
-- [test-ast-wasi-p1-threads](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/ast-gen-wasi-p1-threads.yml): 
-Same as above but for wasi-p1-threads target.
 
 - [lsp-server-native](https://github.com/adclz/auto-lsp/blob/main/.github/workflows/lsp-server-native.yml): 
 Runs a real LSP server with a client mock.

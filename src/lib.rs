@@ -58,12 +58,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 //! - [Python AST](https://github.com/adclz/auto-lsp/tree/main/examples/ast-python)
 //! - [Simple LSP Server](https://github.com/adclz/auto-lsp/tree/main/examples/native)
 //! - [Vscode extension](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-native)
-//! - [Vscode extension with WASI](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
 //!
 //! # Cargo Features
 //!
 //! - `lsp_server`: Enables the LSP server (uses [`lsp_server`]).
-//! - `wasm`: Enables wasm support (only compatible with `wasi-p1-threads`).
 //!
 //! # Inspirations / Similar projects
 //!

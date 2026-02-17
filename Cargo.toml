@@ -39,7 +39,7 @@ exclude = [
 [features]
 default = ["dep:auto-lsp-default"]
 lsp_server = ["dep:auto-lsp-server", "dep:lsp-server"]
-wasm = ["parking_lot/nightly", "auto-lsp-core/wasm"]
+wasm = ["parking_lot/nightly"]
 
 [workspace.dependencies]
 serde = "1.0.219"

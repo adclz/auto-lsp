@@ -1,5 +1,5 @@
 {
-    "name": "vscode-wasi",
+    "name": "vscode-ext",
     "description": ".",
     "author": "Adrien Clauzel",
     "license": "MIT",
@@ -14,9 +14,6 @@
     "browser": "./client/dist/web/extension",
     "activationEvents": [
         "*"
-    ],
-    "extensionDependencies": [
-        "ms-vscode.wasm-wasi-core"
     ],
     "contributes": {
         "languages": [

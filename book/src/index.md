@@ -39,12 +39,10 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for more information.
 - [Python AST](https://github.com/adclz/auto-lsp/tree/main/examples/ast-python)
 - [Simple LSP server](https://github.com/adclz/auto-lsp/tree/main/examples/native)
 - [VSCode extension](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-native)
-- [VSCode extension with WASI](https://github.com/adclz/auto-lsp/tree/main/examples/vscode-wasi)
 
 ## Cargo Features
 
 - `lsp_server`: Enables the LSP server (uses [lsp_server](https://docs.rs/lsp-server/latest/lsp_server/)).
-- `wasm`: Enables WASM support (compatible only with `wasi-p1-threads`).
 
 ## Inspirations / Similar Projects
 

@@ -27,8 +27,6 @@ use auto_lsp_core::errors::{ExtensionError, RuntimeError};
 use lsp_server::{Connection, ReqQueue};
 use lsp_types::{InitializeParams, InitializeResult, PositionEncodingKind};
 use serde::Deserialize;
-#[cfg(target_arch = "wasm32")]
-use std::fs;
 
 #[allow(non_snake_case, reason = "JSON")]
 #[derive(Debug, Deserialize)]
@@ -82,7 +80,7 @@ impl<Db: salsa::Database> Session<Db> {
         // This is a workaround for a deadlock issue in WASI libc.
         // See https://github.com/WebAssembly/wasi-libc/pull/491
         #[cfg(target_arch = "wasm32")]
-        fs::metadata("/workspace").unwrap();
+        std::fs::metadata("/workspace").unwrap();
 
         log::info!("Starting LSP server");
         log::info!("");
