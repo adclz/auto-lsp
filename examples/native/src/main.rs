@@ -35,7 +35,7 @@ use auto_lsp::server::notification_registry::NotificationRegistry;
 use auto_lsp::server::options::InitOptions;
 use auto_lsp::server::request_registry::RequestRegistry;
 use auto_lsp::server::vendored::intent::ThreadIntent;
-use native_lsp::requests::GetWorkspaceFiles;
+use native_lsp::requests::{GetWorkspaceFiles, TriggerError};
 use std::error::Error;
 use std::panic::RefUnwindSafe;
 
@@ -71,6 +71,13 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
     request_registry.on::<GetWorkspaceFiles, _>(ThreadIntent::Worker, |s, _| Ok(s.get_urls()));
+    request_registry.on::<TriggerError, _>(ThreadIntent::Worker, |_s, _| {
+        Err(auto_lsp::anyhow::anyhow!("test error"))
+    });
+
+    session.on_error = Some(|e| {
+        eprintln!("on_error callback: {e}");
+    });
 
     // Initialize the session with the client's initialization options.
     // This will also add all documents, parse and send diagnostics.
