@@ -31,6 +31,11 @@ pub mod vendored;
 pub(crate) type ReqHandler<Db> = fn(&mut Session<Db>, lsp_server::Response);
 type ReqQueue<Db> = lsp_server::ReqQueue<String, ReqHandler<Db>>;
 
+/// Callback for unhandled errors from `with_db` handlers.
+///
+/// Called before the default error handling (error response for requests, `window/showMessage` for notifications).
+pub type ErrorCallback = fn(&anyhow::Error);
+
 /// Main session object that holds both lsp server connection and initialization options.
 pub struct Session<Db: salsa::Database> {
     /// Initialization options provided by the library user.
@@ -48,28 +53,19 @@ pub struct Session<Db: salsa::Database> {
     pub req_queue: ReqQueue<Db>,
     pub connection: Connection,
     pub db: Db,
+    /// Optional callback for errors from `with_db` handlers that salsa does not handle.
+    pub on_error: Option<ErrorCallback>,
 }
 
-impl<Db: salsa::Database + Clone> Session<Db> {
-    pub(crate) fn snapshot(&self) -> DbSnapShot<Db> {
-        DbSnapShot {
-            db: self.db.clone(),
-        }
-    }
-}
-
-pub struct DbSnapShot<Db: salsa::Database + Send> {
-    db: Db,
-}
-
-/// Perform an operation on the database that may be cancelled.
+/// Perform an operation on a snapshot of the database that may be cancelled.
 ///
 /// From: https://github.com/rust-lang/rust-analyzer/blob/4e4aee41c969e86adefdb8c687e2e91bb101329a/crates/ide/src/lib.rs#L862
-impl<Db: salsa::Database + Clone + RefUnwindSafe> DbSnapShot<Db> {
+impl<Db: salsa::Database + RefUnwindSafe> Session<Db> {
     pub fn with_db<F, T>(&self, f: F) -> Result<T, salsa::Cancelled>
     where
         F: FnOnce(&Db) -> T + std::panic::UnwindSafe,
     {
-        salsa::Cancelled::catch(|| f(&self.db))
+        let db = &self.db;
+        salsa::Cancelled::catch(|| f(db))
     }
 }

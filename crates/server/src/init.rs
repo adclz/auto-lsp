@@ -66,6 +66,7 @@ impl<Db: salsa::Database> Session<Db> {
             task_receiver,
             task_sender,
             task_pool: Pool::new(max_threads),
+            on_error: None,
         }
     }
 
