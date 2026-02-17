@@ -29,6 +29,11 @@ use dashmap::{DashMap, Entry};
 use lsp_types::Url;
 use salsa::{Database, Storage};
 
+/// A callback function that is called when a file is added or removed from the database.
+///
+/// Returns a boolean indicating whether the file should be added/removed or not.
+pub type FileCallBack = fn(File) -> bool;
+
 /// Base database that stores files.
 ///
 /// Files are stored in a [`DashMap`] for concurrent access.
@@ -41,6 +46,8 @@ use salsa::{Database, Storage};
 pub struct BaseDb {
     storage: Storage<Self>,
     pub(crate) files: DashMap<Url, File>,
+    pub(crate) on_file_added: Option<FileCallBack>,
+    pub(crate) on_file_removed: Option<FileCallBack>,
 }
 
 impl BaseDb {
@@ -51,6 +58,7 @@ impl BaseDb {
         Self {
             storage: Storage::new(event_callback),
             files: DashMap::default(),
+            ..Default::default()
         }
     }
 }
@@ -65,6 +73,16 @@ pub trait BaseDatabase: Database {
     fn get_file(&self, url: &Url) -> Option<File> {
         self.get_files().get(url).map(|file| *file)
     }
+
+    fn on_file_added_cb(&self) -> Option<FileCallBack> {
+        None
+    }
+    fn on_file_removed_cb(&self) -> Option<FileCallBack> {
+        None
+    }
+
+    fn set_on_file_added_cb(&mut self, _callback: Option<FileCallBack>) {}
+    fn set_on_file_removed_cb(&mut self, _callback: Option<FileCallBack>) {}
 }
 
 /// Implementation of [`salsa::Database`] for [`BaseDb`].
@@ -78,6 +96,22 @@ impl BaseDatabase for BaseDb {
     fn get_files(&self) -> &DashMap<Url, File> {
         &self.files
     }
+
+    fn on_file_added_cb(&self) -> Option<FileCallBack> {
+        self.on_file_added
+    }
+
+    fn on_file_removed_cb(&self) -> Option<FileCallBack> {
+        self.on_file_removed
+    }
+
+    fn set_on_file_added_cb(&mut self, callback: Option<FileCallBack>) {
+        self.on_file_added = callback;
+    }
+
+    fn set_on_file_removed_cb(&mut self, callback: Option<FileCallBack>) {
+        self.on_file_removed = callback;
+    }
 }
 
 /// Trait for managing files in the database.
@@ -90,7 +124,16 @@ pub trait FileManager: BaseDatabase + salsa::Database {
                 uri: file.url(self).clone(),
             }),
             Entry::Vacant(entry) => {
-                entry.insert(file);
+                match self.on_file_added_cb() {
+                    Some(cb) => {
+                        if cb(file) {
+                            entry.insert(file);
+                        };
+                    }
+                    None => {
+                        entry.insert(file);
+                    }
+                };
                 Ok(())
             }
         }
@@ -99,7 +142,16 @@ pub trait FileManager: BaseDatabase + salsa::Database {
     fn remove_file(&mut self, url: &Url) -> Result<(), DataBaseError> {
         match self.get_files().entry(url.clone()) {
             Entry::Occupied(entry) => {
-                entry.remove();
+                match self.on_file_removed_cb() {
+                    Some(cb) => {
+                        if cb(*entry.get()) {
+                            entry.remove();
+                        };
+                    }
+                    None => {
+                        entry.remove();
+                    }
+                };
                 Ok(())
             }
             Entry::Vacant(_) => Err(DataBaseError::FileNotFound { uri: url.clone() }),
