@@ -206,7 +206,7 @@ pub(crate) fn generate_struct(
             TryFrom<auto_lsp::core::ast::TryFromParams<'a>> for #struct_name {
             type Error = auto_lsp::core::errors::AstError;
 
-            fn try_from((node, db, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
+            fn try_from((node, db, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, auto_lsp::core::errors::AstError> {
                 #(#struct_fields_init);*;
                 #init_builder
                 #struct_fields_finalize
@@ -365,7 +365,7 @@ pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> T
             TryFrom<auto_lsp::core::ast::TryFromParams<'a>> for #variant_name {
             type Error = auto_lsp::core::errors::AstError;
 
-            fn try_from((node, db, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, Self::Error> {
+            fn try_from((node, db, builder, id, parent_id): auto_lsp::core::ast::TryFromParams) -> Result<Self, auto_lsp::core::errors::AstError> {
                 match node.kind_id() {
                     #pattern_matching
                 }
