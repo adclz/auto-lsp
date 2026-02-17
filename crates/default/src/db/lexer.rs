@@ -51,7 +51,7 @@ fn format_error(node: &Node, source_code: &[u8]) -> LexerError {
     } else {
         let children_text: Vec<String> = (0..node.child_count())
             .map(|i| {
-                node.child(i)
+                node.child(i as u32)
                     .unwrap()
                     .utf8_text(source_code)
                     .unwrap()
