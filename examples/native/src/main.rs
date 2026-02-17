@@ -25,15 +25,16 @@ use auto_lsp::default::server::file_events::{
 use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
 use auto_lsp::lsp_types;
+use auto_lsp::lsp_types::ServerCapabilities;
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
-use auto_lsp::lsp_types::ServerCapabilities;
+use auto_lsp::server::Session;
 use auto_lsp::server::notification_registry::NotificationRegistry;
 use auto_lsp::server::options::InitOptions;
 use auto_lsp::server::request_registry::RequestRegistry;
-use auto_lsp::server::Session;
+use auto_lsp::server::vendored::intent::ThreadIntent;
 use native_lsp::requests::GetWorkspaceFiles;
 use std::error::Error;
 use std::panic::RefUnwindSafe;
@@ -69,7 +70,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let mut request_registry = RequestRegistry::<BaseDb>::default();
     let mut notification_registry = NotificationRegistry::<BaseDb>::default();
 
-    request_registry.on::<GetWorkspaceFiles, _>(|s, _| Ok(s.get_urls()));
+    request_registry.on::<GetWorkspaceFiles, _>(ThreadIntent::Worker, |s, _| Ok(s.get_urls()));
 
     // Initialize the session with the client's initialization options.
     // This will also add all documents, parse and send diagnostics.
@@ -111,8 +112,8 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
             }
             Ok(())
         })
-        .on::<DidSaveTextDocument, _>(|_s, _p| Ok(()))
-        .on::<DidCloseTextDocument, _>(|_s, _p| Ok(()))
-        .on::<SetTrace, _>(|_s, _p| Ok(()))
-        .on::<LogTrace, _>(|_s, _p| Ok(()))
+        .on::<DidSaveTextDocument, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
+        .on::<DidCloseTextDocument, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
+        .on::<SetTrace, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
+        .on::<LogTrace, _>(ThreadIntent::Worker, |_s, _p| Ok(()))
 }

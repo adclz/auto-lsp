@@ -19,7 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
 
-use super::task_pool::TaskPool;
+use crate::vendored::pool::Pool;
+
 use super::InitOptions;
 use super::Session;
 use auto_lsp_core::errors::{ExtensionError, RuntimeError};
@@ -41,7 +42,7 @@ struct InitializationOptions {
 
 impl<Db: salsa::Database> Session<Db> {
     pub(crate) fn new(init_options: InitOptions, connection: Connection, db: Db) -> Self {
-        let (sender, task_rx) = crossbeam_channel::unbounded();
+        let (task_sender, task_receiver) = crossbeam_channel::unbounded();
 
         let max_threads = std::thread::available_parallelism()
             .unwrap_or_else(|_| NonZeroUsize::new(1).unwrap())
@@ -64,8 +65,9 @@ impl<Db: salsa::Database> Session<Db> {
             extensions: HashMap::new(),
             req_queue: ReqQueue::default(),
             db,
-            task_rx,
-            task_pool: TaskPool::new_with_threads(sender, max_threads),
+            task_receiver,
+            task_sender,
+            task_pool: Pool::new(max_threads),
         }
     }
 
