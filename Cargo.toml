@@ -27,11 +27,9 @@ members = [
     "crates/bench",
     "examples/ast-python",
     "examples/ast-html",
-    "examples/vscode-wasi/server",
     "examples/vscode-native/server",
 ]
 exclude = [
-    "examples/vscode-wasi/server",
     "examples/vscode-native/server",
     "examples/native",
     "examples/ast-python",
