@@ -33,17 +33,3 @@ impl Request for GetWorkspaceFiles {
     type Result = Vec<String>;
     const METHOD: &'static str = "custom/getWorkspaceFiles";
 }
-
-pub struct TriggerError {}
-
-impl TriggerError {
-    pub fn request(id: u32) -> String {
-        format!(r#"{{"jsonrpc":"2.0","id":{id},"method":"custom/triggerError"}}"#)
-    }
-}
-
-impl Request for TriggerError {
-    type Params = ();
-    type Result = ();
-    const METHOD: &'static str = "custom/triggerError";
-}
