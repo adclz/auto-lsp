@@ -44,35 +44,35 @@ lsp_server = ["dep:auto-lsp-server", "dep:lsp-server"]
 wasm = ["parking_lot/nightly", "auto-lsp-core/wasm"]
 
 [workspace.dependencies]
-serde = "1.0.219"
-serde_json = "1.0.140"
+serde = "1.0.228"
+serde_json = "1.0.149"
 auto-lsp-core = { path = "./crates/core", version = "0.7.0" }
 auto-lsp-server = { path = "./crates/server", version = "0.1.2" }
 auto-lsp-default = { path = "./crates/default", version = "0.1.2" }
 texter = { version = "0.2.0", default-features = false }
 lsp-types = "0.94.1"
-lsp-server = "0.7.8"
+lsp-server = "0.7.9"
 crossbeam-channel = "0.5.15"
-tree-sitter = "0.25.10"
+tree-sitter = "0.26.5"
+tree-sitter-language = "0.1.7"
 tree-sitter-python = "0.23.6"
 tree-sitter-html = "0.23.2"
-downcast-rs = "2.0.1"
+downcast-rs = "2.0.2"
 streaming-iterator = "0.1.9"
-parking_lot = "0.12.4"
-log = "0.4.27"
-rayon = "1.10"
-anyhow = "1.0.98"
+parking_lot = "0.12.5"
+log = "0.4.29"
+rayon = "1.11.0"
+anyhow = "1.0.101"
 regex = "1.11.1"
 rstest = "0.25.0"
-salsa = "0.23.0"
+salsa = "0.26.0"
 dashmap = "6.1.0"
-thiserror = "2.0.12"
-ariadne = "0.5.1"
+thiserror = "2.0.18"
+ariadne = "0.6.0"
 walkdir = "2.5.0"
 rayon-par-bridge = "0.1.0"
 bon = "3.6.4"
 insta = { version = "1.43.1", features = ["filters"] }
-tree-sitter-language = "0.1.5"
 
 [dependencies]
 tree-sitter-language = { workspace = true }
