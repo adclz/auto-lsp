@@ -1,1 +1,0 @@
-CFLAGS="-DHAVE_ENDIAN_H" cargo test --features=wasm --target wasm32-wasip1-threads
