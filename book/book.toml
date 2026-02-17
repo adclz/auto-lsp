@@ -1,7 +1,6 @@
 [book]
 authors = ["Clauzel Adrien"]
 language = "en"
-multilingual = false
 src = "src"
 title = "Auto-LSP"
 
