@@ -106,15 +106,16 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
         let params = req.params;
         let id = req.id.clone();
 
-        let snapshot = session.snapshot();
+        let db = session.db.clone();
         let cb = Arc::clone(&callback.0);
         let intent = callback.1;
         let sender = session.task_sender.clone();
+        let on_error = session.on_error;
         session.task_pool.spawn(
             intent,
             std::panic::AssertUnwindSafe(move || {
                 let cb = cb.clone();
-                match snapshot.with_db(|db| cb(db, params)) {
+                match salsa::Cancelled::catch(|| cb(&db, params)) {
                     Err(e) => {
                         log::warn!("Cancelled request: {e}");
                     }
@@ -127,6 +128,9 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> RequestRegistry<Db> {
                             }))
                             .unwrap(),
                         Err(e) => {
+                            if let Some(on_error) = on_error {
+                                on_error(&e);
+                            }
                             sender
                                 .send(Task::Response(Self::response_error(id, e)))
                                 .unwrap();

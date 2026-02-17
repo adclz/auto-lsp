@@ -103,17 +103,23 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db
     ) {
         let params = not.params;
 
-        let snapshot = session.snapshot();
+        let db = session.db.clone();
         let cb = Arc::clone(&callback.0);
         let intent = callback.1;
         let sender = session.task_sender.clone();
+        let on_error = session.on_error;
         session.task_pool.spawn(
             intent,
-            std::panic::AssertUnwindSafe(move || match snapshot.with_db(|db| cb(db, params)) {
-                Err(e) => log::warn!("Cancelled notification: {e}"),
-                Ok(result) => {
-                    if let Err(e) = result {
-                        sender.send(Task::NotificationError(e)).unwrap();
+            std::panic::AssertUnwindSafe(move || {
+                match salsa::Cancelled::catch(|| cb(&db, params)) {
+                    Err(e) => log::warn!("Cancelled notification: {e}"),
+                    Ok(result) => {
+                        if let Err(e) = result {
+                            if let Some(on_error) = on_error {
+                                on_error(&e);
+                            }
+                            sender.send(Task::NotificationError(e)).unwrap();
+                        }
                     }
                 }
             }),

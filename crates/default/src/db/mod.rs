@@ -45,7 +45,7 @@ pub type FileCallBack = fn(File) -> bool;
 #[derive(Default, Clone)]
 pub struct BaseDb {
     storage: Storage<Self>,
-    pub(crate) files: DashMap<Url, File>,
+    pub files: DashMap<Url, File>,
     pub(crate) on_file_added: Option<FileCallBack>,
     pub(crate) on_file_removed: Option<FileCallBack>,
 }
