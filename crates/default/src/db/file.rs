@@ -67,6 +67,7 @@ impl File {
     pub fn from_fs(
         session: &Session<impl salsa::Database>,
         url: &Url,
+        durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
         let file_path = url.to_file_path().map_err(|_| {
             RuntimeError::from(FileSystemError::FileUrlToFilePath { path: url.clone() })
@@ -79,13 +80,11 @@ impl File {
         let tree = Self::ts_parse(parsers, &buffer, url)?;
         let document = Document::new(buffer, tree, Some(&session.encoding));
 
-        Ok(File::new(
-            &session.db,
-            url.clone(),
-            parsers,
-            Arc::new(document),
-            None,
-        ))
+        Ok(
+            File::builder(url.clone(), parsers, Arc::new(document), None)
+                .durability(durability.unwrap_or(salsa::Durability::default()))
+                .new(&session.db),
+        )
     }
 
     /// Creates a new file from a text document event.
@@ -93,6 +92,7 @@ impl File {
     pub fn from_text_doc(
         session: &Session<impl salsa::Database>,
         doc: &lsp_types::TextDocumentItem,
+        durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
         let url = &doc.uri;
 
@@ -100,13 +100,11 @@ impl File {
         let tree = Self::ts_parse(parsers, &doc.text, url)?;
         let document = Document::new(doc.text.clone(), tree, Some(&session.encoding));
 
-        Ok(File::new(
-            &session.db,
-            url.clone(),
-            parsers,
-            Arc::new(document),
-            Some(doc.version),
-        ))
+        Ok(
+            File::builder(url.clone(), parsers, Arc::new(document), None)
+                .durability(durability.unwrap_or(salsa::Durability::default()))
+                .new(&session.db),
+        )
     }
 
     /// Creates a new file from a string.
@@ -117,17 +115,16 @@ impl File {
         url: &Url,
         parsers: &'static Parsers,
         encoding: Option<&PositionEncodingKind>,
+        durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
         let tree = Self::ts_parse(parsers, &source, url)?;
         let document = Document::new(source, tree, encoding);
 
-        Ok(File::new(
-            db,
-            url.clone(),
-            parsers,
-            Arc::new(document),
-            None,
-        ))
+        Ok(
+            File::builder(url.clone(), parsers, Arc::new(document), None)
+                .durability(durability.unwrap_or(salsa::Durability::default()))
+                .new(db),
+        )
     }
 
     /// Updates the file from a [`DidChangeTextDocumentParams`] event.
