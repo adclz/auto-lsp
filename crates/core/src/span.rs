@@ -1,5 +1,7 @@
 use std::ops::Deref;
 
+use crate::document::Document;
+
 /// A newtype for [`tree_sitter::Range`].
 ///
 /// Useful for storing and converting ranges from Tree-sitter to LSP types.
@@ -7,16 +9,28 @@ use std::ops::Deref;
 /// This is typically used when storing positions in an intermediate representation (IR) of the AST.
 ///
 /// Tree-sitter ranges also retain byte offsets, which are not available in [`lsp_types::Range`].
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Span(pub(crate) tree_sitter::Range);
 
 impl Span {
+    /// Converts this span to an LSP-compatible range.
     pub fn lsp(&self) -> lsp_types::Range {
         self.into()
     }
 
+    /// Same as [`Self::lsp`] but adjusts the range according to the document's encoding.
+    pub fn lsp_with_enc(&self, document: &Document) -> Option<lsp_types::Range> {
+        document.ts_range_to_range(&self)
+    }
+
+    /// Returns the inner Tree-sitter range.
     pub fn ts(&self) -> &tree_sitter::Range {
         &self.0
+    }
+
+    /// Returns a new [`Span`] with columns adjusted to the document's encoding.
+    pub fn ts_with_enc(&self, document: &Document) -> Option<Span> {
+        document.ts_range_to_enc_range(&self).map(Span)
     }
 }
 
