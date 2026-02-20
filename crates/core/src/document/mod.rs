@@ -117,6 +117,24 @@ impl Document {
     /// Converts a tree-sitter [`Point`] (byte-offset column) to an LSP [`lsp_types::Position`],
     /// adjusting the column to the document's encoding (UTF-8, UTF-16, or UTF-32).
     pub fn ts_point_to_position(&self, point: Point) -> Option<Position> {
+        let enc = self.ts_point_to_enc_point(point)?;
+        Some(lsp_types::Position {
+            line: enc.row as u32,
+            character: enc.column as u32,
+        })
+    }
+
+    /// Converts a tree-sitter [`tree_sitter::Range`] to an LSP [`lsp_types::Range`],
+    /// adjusting columns to the document's encoding.
+    pub fn ts_range_to_range(&self, range: &tree_sitter::Range) -> Option<lsp_types::Range> {
+        let start = self.ts_point_to_position(range.start_point)?;
+        let end = self.ts_point_to_position(range.end_point)?;
+        Some(lsp_types::Range { start, end })
+    }
+
+    /// Converts a tree-sitter [`Point`] (byte-offset column) to another [`Point`]
+    /// with the column adjusted to the document's encoding.
+    pub fn ts_point_to_enc_point(&self, point: Point) -> Option<Point> {
         let line_str = self.texter.get_row(point.row)?;
 
         let mut utf16_offset = 0;
@@ -132,24 +150,32 @@ impl Document {
             u32_offset += 1;
         }
 
-        let character = match self.encoding {
+        let column = match self.encoding {
             Encoding::UTF8 => u8_offset,
             Encoding::UTF16 => utf16_offset,
             Encoding::UTF32 => u32_offset,
         };
 
-        Some(lsp_types::Position {
-            line: point.row as u32,
-            character: character as u32,
+        Some(Point {
+            row: point.row,
+            column,
         })
     }
 
-    /// Converts a tree-sitter [`tree_sitter::Range`] to an LSP [`lsp_types::Range`],
-    /// adjusting columns to the document's encoding.
-    pub fn ts_range_to_range(&self, range: &tree_sitter::Range) -> Option<lsp_types::Range> {
-        let start = self.ts_point_to_position(range.start_point)?;
-        let end = self.ts_point_to_position(range.end_point)?;
-        Some(lsp_types::Range { start, end })
+    /// Converts a tree-sitter [`tree_sitter::Range`] to another [`tree_sitter::Range`]
+    /// with columns adjusted to the document's encoding. Byte offsets are preserved.
+    pub fn ts_range_to_enc_range(
+        &self,
+        range: &tree_sitter::Range,
+    ) -> Option<tree_sitter::Range> {
+        let start_point = self.ts_point_to_enc_point(range.start_point)?;
+        let end_point = self.ts_point_to_enc_point(range.end_point)?;
+        Some(tree_sitter::Range {
+            start_byte: range.start_byte,
+            end_byte: range.end_byte,
+            start_point,
+            end_point,
+        })
     }
 
     /// Converts an LSP [`lsp_types::Position`] (encoded character offset) to a tree-sitter
@@ -897,5 +923,106 @@ mod test {
 
         // The node encompassing that position is the text content
         assert_eq!(node.kind(), "text");
+    }
+
+    #[rstest]
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn ts_range_to_enc_range_from_cst(mut parser: Parser, #[case] encoding: Encoding) {
+        // "<div>" = 5 bytes, "こんにちは" = 15 bytes (5 chars × 3), "</div>" = 6 bytes
+        let source = "<div>こんにちは</div>\n<p>hello</p>";
+        let tree = parser.parse(source, None).unwrap();
+        let document = Document::new(
+            source.into(),
+            tree.clone(),
+            Some(&match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            }),
+        );
+
+        let root = tree.root_node();
+        let first_element = root.named_child(0).expect("first element");
+        let text_node = first_element.named_child(1).expect("text node");
+
+        // Original ts range: start (0, 5) end (0, 20) — byte offsets
+        let original = text_node.range();
+        assert_eq!(original.start_point, Point { row: 0, column: 5 });
+        assert_eq!(original.end_point, Point { row: 0, column: 20 });
+
+        let enc_range = document
+            .ts_range_to_enc_range(&original)
+            .expect("enc range conversion");
+
+        // Byte offsets are preserved
+        assert_eq!(enc_range.start_byte, original.start_byte);
+        assert_eq!(enc_range.end_byte, original.end_byte);
+
+        // Start column: after "<div>" — pure ASCII, same for all encodings
+        assert_eq!(enc_range.start_point, Point { row: 0, column: 5 });
+
+        // End column: after "こんにちは" — encoding matters
+        assert_eq!(
+            enc_range.end_point,
+            Point {
+                row: 0,
+                column: match encoding {
+                    Encoding::UTF8 => 20,   // 5 + 15 bytes
+                    Encoding::UTF16 => 10,  // 5 + 5 code units
+                    Encoding::UTF32 => 10,  // 5 + 5 code points
+                }
+            }
+        );
+
+        // Second line: pure ASCII — all encodings agree
+        let second_element = root.named_child(1).expect("second element");
+        let hello_text = second_element.named_child(1).expect("hello text");
+        let hello_enc = document
+            .ts_range_to_enc_range(&hello_text.range())
+            .expect("hello enc range");
+
+        assert_eq!(hello_enc.start_point, Point { row: 1, column: 3 });
+        assert_eq!(hello_enc.end_point, Point { row: 1, column: 8 });
+        assert_eq!(hello_enc.start_byte, hello_text.range().start_byte);
+        assert_eq!(hello_enc.end_byte, hello_text.range().end_byte);
+    }
+
+    #[rstest]
+    #[case(Encoding::UTF8)]
+    #[case(Encoding::UTF16)]
+    #[case(Encoding::UTF32)]
+    fn ts_point_to_enc_point_from_cst(mut parser: Parser, #[case] encoding: Encoding) {
+        let source = "<div>こんにちは</div>";
+        let tree = parser.parse(source, None).unwrap();
+        let document = Document::new(
+            source.into(),
+            tree.clone(),
+            Some(&match encoding {
+                Encoding::UTF8 => PositionEncodingKind::UTF8,
+                Encoding::UTF16 => PositionEncodingKind::UTF16,
+                Encoding::UTF32 => PositionEncodingKind::UTF32,
+            }),
+        );
+
+        let root = tree.root_node();
+        let element = root.named_child(0).expect("element");
+        let end_tag = element.named_child(2).expect("end tag");
+
+        // end_tag starts at byte offset 20 (after "こんにちは")
+        let enc_point = document
+            .ts_point_to_enc_point(end_tag.start_position())
+            .expect("enc point conversion");
+
+        assert_eq!(enc_point.row, 0);
+        assert_eq!(
+            enc_point.column,
+            match encoding {
+                Encoding::UTF8 => 20,
+                Encoding::UTF16 => 10,
+                Encoding::UTF32 => 10,
+            }
+        );
     }
 }

@@ -19,13 +19,18 @@ impl Span {
     }
 
     /// Same as [`Self::lsp`] but adjusts the range according to the document's encoding.
-    pub fn lsp_with_enc(&self, document: Document) -> Option<lsp_types::Range> {
+    pub fn lsp_with_enc(&self, document: &Document) -> Option<lsp_types::Range> {
         document.ts_range_to_range(&self)
     }
 
     /// Returns the inner Tree-sitter range.
     pub fn ts(&self) -> &tree_sitter::Range {
         &self.0
+    }
+
+    /// Returns a new [`Span`] with columns adjusted to the document's encoding.
+    pub fn ts_with_enc(&self, document: &Document) -> Option<Span> {
+        document.ts_range_to_enc_range(&self).map(Span)
     }
 }
 
