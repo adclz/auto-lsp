@@ -259,11 +259,11 @@ mod utils;
 
 use crate::json::{NodeType, TypeInfo};
 use crate::output::{generate_enum, generate_struct};
-use crate::supertypes::{generate_super_type, SuperType};
+use crate::supertypes::{SuperType, generate_super_type};
 use crate::utils::{sanitize_string, sanitize_string_to_pascal};
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote, ToTokens};
-use std::collections::{HashMap, HashSet};
+use quote::{ToTokens, format_ident, quote};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::sync::{LazyLock, Mutex, RwLock};
 use utils::TOKENS;
 
@@ -276,31 +276,31 @@ pub(crate) struct OperatorList {
     operators: Vec<TypeInfo>,
 }
 
-pub(crate) static OPERATORS_RULES: LazyLock<Mutex<HashMap<String, OperatorList>>> =
+pub(crate) static OPERATORS_RULES: LazyLock<Mutex<BTreeMap<String, OperatorList>>> =
     LazyLock::new(Default::default);
 
 /// List of fields/children that are composed of multiple rules
-pub(crate) static INLINE_MULTIPLE_RULES: LazyLock<Mutex<HashMap<String, Vec<TypeInfo>>>> =
+pub(crate) static INLINE_MULTIPLE_RULES: LazyLock<Mutex<BTreeMap<String, Vec<TypeInfo>>>> =
     LazyLock::new(Default::default);
 
 /// List of anonymous rules (usually aliases created on the fly)
-pub(crate) static ANONYMOUS_TYPES: LazyLock<Mutex<HashSet<String>>> =
+pub(crate) static ANONYMOUS_TYPES: LazyLock<Mutex<BTreeSet<String>>> =
     LazyLock::new(Default::default);
 
 /// Map of node kind to  named node id
-pub(crate) static NODE_ID_FOR_NAMED_NODE: LazyLock<Mutex<HashMap<String, u16>>> =
+pub(crate) static NODE_ID_FOR_NAMED_NODE: LazyLock<Mutex<BTreeMap<String, u16>>> =
     LazyLock::new(Default::default);
 
 /// Map of node kind to unnamed node id
-pub(crate) static NODE_ID_FOR_UNNAMED_NODE: LazyLock<Mutex<HashMap<String, u16>>> =
+pub(crate) static NODE_ID_FOR_UNNAMED_NODE: LazyLock<Mutex<BTreeMap<String, u16>>> =
     LazyLock::new(Default::default);
 
 /// Map of field name to field id
-pub(crate) static FIELD_ID_FOR_NAME: LazyLock<Mutex<HashMap<String, u16>>> =
+pub(crate) static FIELD_ID_FOR_NAME: LazyLock<Mutex<BTreeMap<String, u16>>> =
     LazyLock::new(Default::default);
 
 /// List of super types
-pub(crate) static SUPER_TYPES: LazyLock<RwLock<HashMap<String, SuperType>>> =
+pub(crate) static SUPER_TYPES: LazyLock<RwLock<BTreeMap<String, SuperType>>> =
     LazyLock::new(Default::default);
 
 /// Generates the Rust code for a given Tree-sitter grammar
@@ -392,7 +392,7 @@ pub fn generate(
     // Super types may contains other super types
     // in this case we need to add the nested super types to the `types` field of the current super type
     let mut super_types_lock = SUPER_TYPES.write().unwrap();
-    let mut new_super_types = HashMap::new();
+    let mut new_super_types = BTreeMap::new();
 
     for (super_type_name, super_type) in super_types_lock.iter() {
         let mut new_super_type = SuperType::default();
