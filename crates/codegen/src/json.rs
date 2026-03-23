@@ -18,10 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use crate::ir::{Child, Field, FieldOrChildren, Kind};
 use crate::utils::sanitize_string_to_pascal;
-use crate::{OperatorList, ANONYMOUS_TYPES, INLINE_MULTIPLE_RULES, NAMED_RULES, OPERATORS_RULES};
+use crate::{ANONYMOUS_TYPES, INLINE_MULTIPLE_RULES, NAMED_RULES, OPERATORS_RULES, OperatorList};
 use quote::{format_ident, quote};
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,7 +29,7 @@ pub(crate) struct NodeType {
     #[serde(rename = "type")]
     pub(crate) kind: String,
     pub(crate) named: bool,
-    pub(crate) fields: Option<HashMap<String, FieldInfo>>,
+    pub(crate) fields: Option<BTreeMap<String, FieldInfo>>,
     #[serde(default)]
     pub(crate) children: Option<ChildInfo>,
     #[serde(default)]
