@@ -95,8 +95,9 @@ impl File {
         durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
         let url = &doc.uri;
+        let extension = get_extension(url)?;
 
-        let parsers = Self::get_ast_parser(session, &doc.language_id)?;
+        let parsers = Self::get_ast_parser(session, &extension)?;
         let tree = Self::ts_parse(parsers, &doc.text, url)?;
         let document = Document::new(doc.text.clone(), tree, Some(&session.encoding));
 
