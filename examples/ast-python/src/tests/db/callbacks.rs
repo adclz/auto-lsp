@@ -27,11 +27,7 @@ fn create_file(db: &BaseDb, name: &str, source: &str) -> File {
         .db(db)
         .source(source.to_string())
         .url(&url)
-        .parsers(
-            PYTHON_PARSERS
-                .get("python")
-                .expect("Python parser not found"),
-        )
+        .parsers(PYTHON_PARSERS.get("py").expect("Python parser not found"))
         .encoding(&lsp_types::PositionEncodingKind::UTF8)
         .call()
         .expect("Failed to create file")
@@ -54,7 +50,8 @@ fn on_file_added_vetoes() {
     db.set_on_file_added_cb(Some(|_| false));
 
     let file = create_file(&db, "test0", "def foo(): pass");
-    db.add_file(file).expect("add_file should return Ok even when vetoed");
+    db.add_file(file)
+        .expect("add_file should return Ok even when vetoed");
 
     assert_eq!(db.get_files().len(), 0);
 }

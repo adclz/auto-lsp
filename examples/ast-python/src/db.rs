@@ -25,7 +25,7 @@ use auto_lsp::{configure_parsers, lsp_types};
 
 configure_parsers!(
     PYTHON_PARSERS,
-    "python" => {
+    "py" => {
         language: tree_sitter_python::LANGUAGE,
         ast_root: Module
     }
@@ -42,7 +42,7 @@ pub fn create_python_db(source_code: &'static [&str]) -> impl BaseDatabase {
             .url(&url)
             .parsers(
                 PYTHON_PARSERS
-                    .get("python")
+                    .get("py")
                     .expect("Python parser not found"),
             )
             .encoding(&lsp_types::PositionEncodingKind::UTF8)
@@ -75,7 +75,7 @@ pub fn create_python_db_with_logger(
             .url(&url)
             .parsers(
                 PYTHON_PARSERS
-                    .get("python")
+                    .get("py")
                     .expect("Python parser not found"),
             )
             .encoding(&lsp_types::PositionEncodingKind::UTF8)
