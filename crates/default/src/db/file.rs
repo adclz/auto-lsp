@@ -95,8 +95,9 @@ impl File {
         durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
         let url = &doc.uri;
+        let extension = get_extension(url)?;
 
-        let parsers = Self::get_ast_parser(session, &doc.language_id)?;
+        let parsers = Self::get_ast_parser(session, &extension)?;
         let tree = Self::ts_parse(parsers, &doc.text, url)?;
         let document = Document::new(doc.text.clone(), tree, Some(&session.encoding));
 
@@ -278,22 +279,6 @@ impl File {
         session: &Session<impl salsa::Database>,
         extension: &str,
     ) -> Result<&'static Parsers, RuntimeError> {
-        // Check if the extension is registered
-        let extension = match session.extensions.get(extension) {
-            Some(extension) => extension,
-            None => {
-                if session.extensions.values().any(|x| x == extension) {
-                    extension
-                } else {
-                    return Err(ExtensionError::UnknownExtension {
-                        extension: extension.to_string(),
-                        available: session.extensions.clone(),
-                    }
-                    .into());
-                }
-            }
-        };
-
         // Check if the parser for this extension is available
         session.init_options.parsers.get(extension).ok_or_else(|| {
             RuntimeError::from(ExtensionError::UnknownParser {

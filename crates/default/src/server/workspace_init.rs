@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::db::file::File;
 use crate::db::FileManager;
+use crate::db::file::File;
 use auto_lsp_core::errors::{FileSystemError, RuntimeError};
 use auto_lsp_server::Session;
 use lsp_types::{InitializeParams, Url};
@@ -51,7 +51,7 @@ impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
                         .filter(|entry| {
                             entry.file_type().is_file()
                                 && entry.path().extension().is_some_and(|ext| {
-                                    self.extensions.contains_key(ext.to_string_lossy().as_ref())
+                                    self.parsers.contains_key(ext.to_string_lossy().as_ref())
                                 })
                         })
                 })

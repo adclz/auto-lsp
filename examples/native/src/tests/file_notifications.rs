@@ -79,18 +79,24 @@ async fn workspace_files(
     assert_eq!(workspace_response.id, 2);
     assert_eq!(workspace_response.result.len(), 3);
 
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file1.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file2.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/nested/file3.py")));
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file1.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file2.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/nested/file3.py"))
+    );
 
     Ok(())
 }
@@ -133,14 +139,18 @@ async fn remove_file_notification(
     assert_eq!(workspace_response.id, 2);
     assert_eq!(workspace_response.result.len(), 2);
 
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file2.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/nested/file3.py")));
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file2.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/nested/file3.py"))
+    );
 
     Ok(())
 }
@@ -187,18 +197,24 @@ async fn open_existing_document(
     assert_eq!(workspace_response.id, 2);
     assert_eq!(workspace_response.result.len(), 3);
 
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file1.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file2.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/nested/file3.py")));
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file1.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file2.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/nested/file3.py"))
+    );
 
     Ok(())
 }
@@ -224,7 +240,7 @@ async fn open_new_document(
         "params": {{
             "textDocument": {{
                 "uri":"file:{file4_path}",
-                "languageId":"py",
+                "languageId":"python",
                 "version":1,
                 "text": "def o(): pass"
             }}
@@ -245,22 +261,30 @@ async fn open_new_document(
     assert_eq!(workspace_response.id, 2);
     assert_eq!(workspace_response.result.len(), 4);
 
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file1.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file2.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/nested/file3.py")));
-    assert!(workspace_response
-        .result
-        .iter()
-        .any(|x| x.ends_with("testbed/file4.py")));
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file1.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file2.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/nested/file3.py"))
+    );
+    assert!(
+        workspace_response
+            .result
+            .iter()
+            .any(|x| x.ends_with("testbed/file4.py"))
+    );
 
     Ok(())
 }

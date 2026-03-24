@@ -5,7 +5,7 @@ extern crate divan;
 use ast_python::db::PYTHON_PARSERS;
 use auto_lsp::{
     core::errors::ParseErrorAccumulator,
-    default::db::{file::File, tracked::get_ast, BaseDatabase, BaseDb, FileManager},
+    default::db::{BaseDatabase, BaseDb, FileManager, file::File, tracked::get_ast},
     lsp_types::{
         DidChangeTextDocumentParams, Position, Range, TextDocumentContentChangeEvent, Url,
         VersionedTextDocumentIdentifier,
@@ -33,11 +33,7 @@ fn parse_ts(bencher: Bencher) {
             .db(&db)
             .source(DJANGO.to_string())
             .url(&url)
-            .parsers(
-                PYTHON_PARSERS
-                    .get("python")
-                    .expect("Python parser not found"),
-            )
+            .parsers(PYTHON_PARSERS.get("py").expect("Python parser not found"))
             .call()
             .expect("Failed to create file");
     });
@@ -52,11 +48,7 @@ fn build_ast(bencher: Bencher) {
         .db(&db)
         .source(DJANGO.to_string())
         .url(&url)
-        .parsers(
-            PYTHON_PARSERS
-                .get("python")
-                .expect("Python parser not found"),
-        )
+        .parsers(PYTHON_PARSERS.get("py").expect("Python parser not found"))
         .call()
         .expect("Failed to create file");
 
@@ -79,11 +71,7 @@ fn reparse(bencher: Bencher) {
         .db(&db)
         .source(DJANGO.to_string())
         .url(&url)
-        .parsers(
-            PYTHON_PARSERS
-                .get("python")
-                .expect("Python parser not found"),
-        )
+        .parsers(PYTHON_PARSERS.get("py").expect("Python parser not found"))
         .call()
         .expect("Failed to create file");
 
