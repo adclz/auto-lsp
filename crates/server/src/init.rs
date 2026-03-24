@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::collections::HashMap;
 use std::num::NonZeroUsize;
 
 use crate::vendored::pool::Pool;
@@ -44,11 +43,13 @@ impl<Db: salsa::Database> Session<Db> {
 
         log::info!("Position encoding: {encoding:?}");
 
+        let parsers = init_options.parsers;
+
         Self {
             init_options,
+            parsers,
             encoding,
             connection,
-            extensions: HashMap::new(),
             req_queue: ReqQueue::default(),
             db,
             task_receiver,
