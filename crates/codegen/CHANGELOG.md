@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.2.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-codegen-v0.2.1...auto-lsp-codegen-v0.2.2)
+
+### Bug Fixes
+
+- *(cd)* Add missing version field in codegen crate - ([b889a5e](https://github.com/adclz/auto-lsp/commit/b889a5e61696c95421e0be49cc10579b674da87c))
+- *(codegen)* Add numeric string sanitization to RUST_KEYWORDS - ([b1a2c7a](https://github.com/adclz/auto-lsp/commit/b1a2c7a96d2f2f8882c64842bd4969f502153ea6))
+- Ambiguous associated item conflicting with enum variant `Error` ([#32](https://github.com/adclz/auto-lsp/pull/32)) - ([fce63ef](https://github.com/adclz/auto-lsp/commit/fce63eff3e0d3d7bf11f31cfe1298196c680acb0))
+
+### Miscellaneous Tasks
+
+- Bump deps and use rust 2024 edition ([#28](https://github.com/adclz/auto-lsp/pull/28)) - ([981f658](https://github.com/adclz/auto-lsp/commit/981f6582466f1042b68f94872ae1649b8a0bdcb7))
+
+
 ## [0.2.1](https://github.com/adclz/auto-lsp/compare/auto-lsp-codegen-v0.2.0...auto-lsp-codegen-v0.2.1)
 
 ### Features

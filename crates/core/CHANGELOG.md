@@ -2,6 +2,37 @@
 
 ## [Unreleased]
 
+## [0.8.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.7.0...auto-lsp-core-v0.8.0)
+
+### Features
+
+- *(core)* Add lsp_with_enc method for encoding-aware range conversion - ([e676cc4](https://github.com/adclz/auto-lsp/commit/e676cc4e44dffa955c92546a9835e95b4bd03af0))
+- *(core)* Add Span newtype - ([1b80c3e](https://github.com/adclz/auto-lsp/commit/1b80c3eb8110687f8e367801d74d0f8cd7dece05))
+- *(document)* Adjust lsp_with_enc and add ts_with_enc with encoding-aware range conversion - ([90ba73b](https://github.com/adclz/auto-lsp/commit/90ba73b0c3f3ae684d7c62c7b180f238d087051c))
+- *(document)* Add conversion methods for tree-sitter points with encoding adjustments - ([268fea7](https://github.com/adclz/auto-lsp/commit/268fea77965d9057e1530b60047ad3d3adb0d798))
+- Add position encoding support to Document and Db - ([dd1f4e6](https://github.com/adclz/auto-lsp/commit/dd1f4e6a90451cdd8ee5b0b466650828e51bca2d))
+
+### Bug Fixes
+
+- *(test)* Fix stack overflow in span equality test - ([c151ffa](https://github.com/adclz/auto-lsp/commit/c151ffaf94e57d92168c175cc1c484409059caf5))
+
+### Refactor
+
+- *(document)* Update Document constructor to use source strings directly - ([8d639be](https://github.com/adclz/auto-lsp/commit/8d639be29c20302400b8e84921d980c4cd129e6a))
+- *(document)* Make encoding optional - ([037bb68](https://github.com/adclz/auto-lsp/commit/037bb6828f2eb517c5357ac040dbe619e2dbb444))
+- *(errors)* Replace lsp_types::Range with Span in ParseError and LexerError - ([121c8a5](https://github.com/adclz/auto-lsp/commit/121c8a5c761c290e1c6a39f3834ccd164e258132))
+- *(server)* Remove perFileParser handling from initialization - ([333da96](https://github.com/adclz/auto-lsp/commit/333da965d5e4a3ef4100c52123d6add5503e518d))
+- *(span)* Simplify Span struct by removing lifetime and Cow usage - ([1386547](https://github.com/adclz/auto-lsp/commit/13865470e6f6aec5ee8ad39bdd5e09b65e5bcc54))
+
+### Miscellaneous Tasks
+
+- Bump deps and use rust 2024 edition ([#28](https://github.com/adclz/auto-lsp/pull/28)) - ([981f658](https://github.com/adclz/auto-lsp/commit/981f6582466f1042b68f94872ae1649b8a0bdcb7))
+
+### Bench
+
+- Add codspeed + divan crate ([#24](https://github.com/adclz/auto-lsp/pull/24)) - ([9b98812](https://github.com/adclz/auto-lsp/commit/9b988120f4e086047c039c7a6c526c8348cd6054))
+
+
 ## [0.7.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.6.1...auto-lsp-core-v0.7.0)
 
 ### Features

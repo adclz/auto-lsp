@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-default-v0.1.2...auto-lsp-default-v0.2.0)
+
+### Features
+
+- *(db)* Add File struct with builders and update methods - ([df51762](https://github.com/adclz/auto-lsp/commit/df51762b814209842bfaf16d5b7af951a7c0e9e0))
+- *(default)* Add optional durability parameter to file creation methods - ([1be79e3](https://github.com/adclz/auto-lsp/commit/1be79e37ab78d06ac099dd7f89ff760eccc03d47))
+- *(default)* Add callback support for file addition and removal - ([b6c6b2c](https://github.com/adclz/auto-lsp/commit/b6c6b2ce3de0d1fc16c5ccac7ae7af0a82d1ab0a))
+- *(error)* Add optional error callback support in session when panic occurs in a request/notification - ([9fe1061](https://github.com/adclz/auto-lsp/commit/9fe1061f422a49d9b0420512c76c1ebe82d3ef5d))
+- Add position encoding support to Document and Db - ([dd1f4e6](https://github.com/adclz/auto-lsp/commit/dd1f4e6a90451cdd8ee5b0b466650828e51bca2d))
+
+### Bug Fixes
+
+- Update parser retrieval to use extension instead of language ID - ([c751684](https://github.com/adclz/auto-lsp/commit/c7516845e1c6468cc9c8598844c29f6c143cffa5))
+
+### Refactor
+
+- *(default)* Add debug on file input and replace obsolete outer attributes - ([4d6fc14](https://github.com/adclz/auto-lsp/commit/4d6fc146b5d0659332ba94363bdb7043fec2ef61))
+- *(default)* Update file input events - ([422a7e5](https://github.com/adclz/auto-lsp/commit/422a7e5715f8e377f595330dfb31a4f245744e39))
+- *(default)* Simplify file events and workspace init - ([97984f5](https://github.com/adclz/auto-lsp/commit/97984f5f6afa5b1330868a2b03596cefc1b5c253))
+- *(document)* Update Document constructor to use source strings directly - ([8d639be](https://github.com/adclz/auto-lsp/commit/8d639be29c20302400b8e84921d980c4cd129e6a))
+- *(errors)* Replace lsp_types::Range with Span in ParseError and LexerError - ([121c8a5](https://github.com/adclz/auto-lsp/commit/121c8a5c761c290e1c6a39f3834ccd164e258132))
+- *(file)* Remove redundant extension registration check - ([7c11599](https://github.com/adclz/auto-lsp/commit/7c115995dd481e9be13710af835c2be05193d21d))
+- Replace extensions with parsers in session initialization - ([bb0dd3b](https://github.com/adclz/auto-lsp/commit/bb0dd3bc12ba9062ce8f5c50c3af21fb326fa50e))
+
+### Testing
+
+- Add unit tests for file content comparison - ([2c7307c](https://github.com/adclz/auto-lsp/commit/2c7307c5afb1ec21c8b667a0827fe20f15bb670d))
+
+### Miscellaneous Tasks
+
+- Update dependencies - ([33b1858](https://github.com/adclz/auto-lsp/commit/33b185814bb510a9d00f3939ecdd0c485eaba1d1))
+- Bump deps and use rust 2024 edition ([#28](https://github.com/adclz/auto-lsp/pull/28)) - ([981f658](https://github.com/adclz/auto-lsp/commit/981f6582466f1042b68f94872ae1649b8a0bdcb7))
+
+### Bench
+
+- Add codspeed + divan crate ([#24](https://github.com/adclz/auto-lsp/pull/24)) - ([9b98812](https://github.com/adclz/auto-lsp/commit/9b988120f4e086047c039c7a6c526c8348cd6054))
+
+
 ## [0.1.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-default-v0.1.1...auto-lsp-default-v0.1.2)
 
 ### Features
