@@ -278,22 +278,6 @@ impl File {
         session: &Session<impl salsa::Database>,
         extension: &str,
     ) -> Result<&'static Parsers, RuntimeError> {
-        // Check if the extension is registered
-        let extension = match session.extensions.get(extension) {
-            Some(extension) => extension,
-            None => {
-                if session.extensions.values().any(|x| x == extension) {
-                    extension
-                } else {
-                    return Err(ExtensionError::UnknownExtension {
-                        extension: extension.to_string(),
-                        available: session.extensions.clone(),
-                    }
-                    .into());
-                }
-            }
-        };
-
         // Check if the parser for this extension is available
         session.init_options.parsers.get(extension).ok_or_else(|| {
             RuntimeError::from(ExtensionError::UnknownParser {
