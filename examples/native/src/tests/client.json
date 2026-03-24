@@ -36,11 +36,6 @@
                 "workspaceFolders": true
             }
         },
-        "initializationOptions": {
-            "perFileParser": {
-                "py": "python"
-            }
-        },
         "rootUri": "file:///testbed",
         "trace": "off",
         "workspaceFolders": [

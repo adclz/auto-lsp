@@ -5,13 +5,10 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, RequestType, Exec
 
 
 let client: LanguageClient;
-interface InitializationOptions {
-    perFileParser: Record<string, string>;
-}
 
 export async function activate(context: ExtensionContext) {
     const serverModule = Uri.joinPath(context.extensionUri,
-        "server", "target", ...(
+        "..", "..", "target", ...(
             process.platform === "win32" ? ["x86_64-pc-windows-gnu", "release", "vscode-lsp-server.exe"]
                 : ["x86_64-unknown-linux-gnu", "release", "vscode-lsp-server"])
     );
@@ -26,19 +23,12 @@ export async function activate(context: ExtensionContext) {
         debug: run,
     };
 
-    const initializationOptions: InitializationOptions = {
-        perFileParser: {
-            "py": "python"
-        }
-    }
-
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ language: "python" }],
         synchronize: {
             fileEvents: workspace.createFileSystemWatcher('**/*.py')
         },
         outputChannel: channel,
-        initializationOptions
     };
 
     client = new LanguageClient('lspClient', 'LSP Client',
