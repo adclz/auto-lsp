@@ -239,8 +239,6 @@ pub enum RuntimeError {
     },
     #[error("Missing initialization options from client")]
     MissingOptions,
-    #[error("Missing perFileParser object from initialization options")]
-    MissingPerFileParser,
     #[error(transparent)]
     DataBaseError(#[from] DataBaseError),
     #[error(transparent)]

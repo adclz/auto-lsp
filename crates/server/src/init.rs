@@ -23,20 +23,8 @@ use crate::vendored::pool::Pool;
 
 use super::InitOptions;
 use super::Session;
-use auto_lsp_core::errors::{ExtensionError, RuntimeError};
 use lsp_server::{Connection, ReqQueue};
 use lsp_types::{InitializeParams, InitializeResult, PositionEncodingKind};
-use serde::Deserialize;
-
-#[allow(non_snake_case, reason = "JSON")]
-#[derive(Debug, Deserialize)]
-struct InitializationOptions {
-    /// Maps file extensions to parser names.
-    ///
-    /// Example: { "rs": "rust", "py": "python" }
-    /// This option is provided by the client to define how different file types should be parsed.
-    perFileParser: HashMap<String, String>,
-}
 
 impl<Db: salsa::Database> Session<Db> {
     pub(crate) fn new(init_options: InitOptions, connection: Connection, db: Db) -> Self {
@@ -99,30 +87,6 @@ impl<Db: salsa::Database> Session<Db> {
 
         connection.initialize_finish(id, server_capabilities)?;
 
-        let mut session = Session::new(init_options, connection, db);
-
-        let options = InitializationOptions::deserialize(
-            params
-                .clone()
-                .initialization_options
-                .ok_or(RuntimeError::MissingPerFileParser)?,
-        )
-        .unwrap();
-
-        // Validate that the parsers provided by the client exist
-        for (file_extension, parser) in &options.perFileParser {
-            if !session.init_options.parsers.contains_key(parser.as_str()) {
-                return Err(RuntimeError::from(ExtensionError::UnknownParser {
-                    extension: file_extension.clone(),
-                    available: session.init_options.parsers.keys().cloned().collect(),
-                })
-                .into());
-            }
-        }
-
-        // Store the client's per file parser options
-        session.extensions = options.perFileParser;
-
-        Ok((session, params))
+        Ok((Session::new(init_options, connection, db), params))
     }
 }
