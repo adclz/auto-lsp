@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use rstest::{fixture, rstest};
+use std::time::Duration;
 
 use crate::requests::GetWorkspaceFiles;
 use crate::server::{JsonRpcResponse, TestServer};
@@ -285,6 +286,44 @@ async fn open_new_document(
             .iter()
             .any(|x| x.ends_with("testbed/file4.py"))
     );
+
+    Ok(())
+}
+
+#[rstest]
+#[tokio::test]
+async fn server_shuts_down_cleanly(
+    #[future] mut stdio_server: TestServer,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut stdio_server = stdio_server.await;
+
+    // Send shutdown request
+    stdio_server
+        .write_message(r#"{"jsonrpc":"2.0","id":99,"method":"shutdown","params":null}"#)
+        .await?;
+
+    stdio_server.wait_for_messages(1).await;
+
+    // Send exit notification
+    stdio_server
+        .write_message(r#"{"jsonrpc":"2.0","method":"exit","params":null}"#)
+        .await?;
+
+    // The server process should terminate within a reasonable time
+    let result = tokio::time::timeout(Duration::from_secs(5), stdio_server.child.wait()).await;
+
+    match result {
+        Ok(Ok(status)) => {
+            assert!(
+                status.success(),
+                "Server exited with non-zero status: {status}"
+            );
+        }
+        Ok(Err(e)) => panic!("Failed to wait on server process: {e}"),
+        Err(_) => panic!(
+            "Server failed to shut down within 5 seconds - io_threads.join() is likely hanging"
+        ),
+    }
 
     Ok(())
 }

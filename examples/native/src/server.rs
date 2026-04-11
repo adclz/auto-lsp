@@ -37,6 +37,7 @@ pub struct TestServer {
     writer_tx: tokio::sync::mpsc::Sender<String>,
     notify_rx: tokio::sync::mpsc::Receiver<()>,
     pub responses: Arc<tokio::sync::RwLock<Vec<String>>>,
+    pub child: Child,
 }
 
 impl TestServer {
@@ -99,6 +100,7 @@ impl TestServer {
             notify_rx,
             writer_tx,
             responses,
+            child,
         })
     }
 
