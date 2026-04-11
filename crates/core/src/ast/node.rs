@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use crate::errors::PositionError;
 use crate::span::Span;
-use downcast_rs::{impl_downcast, DowncastSync};
+use downcast_rs::{DowncastSync, impl_downcast};
 use std::cmp::Ordering;
 use tree_sitter::Node;
 
@@ -74,6 +74,11 @@ pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
 
     /// Returns the [`tree_sitter::Range`] of this node.
     fn get_range(&self) -> &tree_sitter::Range;
+
+    /// Returns `true` if this node is a MISSING node.
+    ///
+    /// Mirrors [is_missing](https://docs.rs/tree-sitter/latest/tree_sitter/struct.Node.html#method.is_missing)
+    fn is_missing(&self) -> bool;
 
     /// Returns the LSP-compatible range of this node.
     fn get_lsp_range(&self) -> lsp_types::Range {
