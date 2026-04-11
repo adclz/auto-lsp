@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,10 +25,12 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             WhileStatement(
                 WhileStatement {
+                    alternative: None,
                     body: AstNodeId {
                         id: 3,
                         _marker: PhantomData<ast_python::generated::Block>,
@@ -37,7 +39,6 @@ ParsedAst {
                         id: 2,
                         _marker: PhantomData<ast_python::generated::Expression>,
                     },
-                    alternative: None,
                     _range: Range {
                         start_byte: 1,
                         end_byte: 38,
@@ -54,6 +55,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -76,6 +78,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -111,6 +114,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -131,6 +135,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -153,6 +158,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -175,6 +181,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),

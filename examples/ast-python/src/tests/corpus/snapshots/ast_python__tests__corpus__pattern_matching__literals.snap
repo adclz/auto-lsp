@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/pattern_matching.rs
+source: examples/ast-python/src/tests/corpus/pattern_matching.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,20 +25,21 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             MatchStatement(
                 MatchStatement {
+                    body: AstNodeId {
+                        id: 3,
+                        _marker: PhantomData<ast_python::generated::Block>,
+                    },
                     subject: [
                         AstNodeId {
                             id: 2,
                             _marker: PhantomData<ast_python::generated::Expression>,
                         },
                     ],
-                    body: AstNodeId {
-                        id: 3,
-                        _marker: PhantomData<ast_python::generated::Block>,
-                    },
                     _range: Range {
                         start_byte: 1,
                         end_byte: 204,
@@ -55,6 +56,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -77,6 +79,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -124,6 +127,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         CaseClause {
             consequence: AstNodeId {
@@ -153,6 +157,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -177,6 +182,7 @@ ParsedAst {
             _parent: Some(
                 4,
             ),
+            _is_missing: false,
         },
         UnionPattern(
             UnionPattern {
@@ -206,6 +212,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         Integer(
@@ -226,6 +233,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         Integer(
@@ -246,6 +254,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -272,6 +281,7 @@ ParsedAst {
             _parent: Some(
                 4,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -292,6 +302,7 @@ ParsedAst {
                     _parent: Some(
                         9,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -323,6 +334,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -347,6 +359,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         String(
             String {
@@ -380,6 +393,7 @@ ParsedAst {
                 _parent: Some(
                     12,
                 ),
+                _is_missing: false,
             },
         ),
         StringStart(
@@ -400,6 +414,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -421,6 +436,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -441,6 +457,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -467,6 +484,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -487,6 +505,7 @@ ParsedAst {
                     _parent: Some(
                         17,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -518,6 +537,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -542,6 +562,7 @@ ParsedAst {
             _parent: Some(
                 19,
             ),
+            _is_missing: false,
         },
         ConcatenatedString(
             ConcatenatedString {
@@ -571,6 +592,7 @@ ParsedAst {
                 _parent: Some(
                     20,
                 ),
+                _is_missing: false,
             },
         ),
         String {
@@ -604,6 +626,7 @@ ParsedAst {
             _parent: Some(
                 21,
             ),
+            _is_missing: false,
         },
         StringStart(
             StringStart {
@@ -623,6 +646,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -644,6 +668,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -664,6 +689,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         String {
@@ -697,6 +723,7 @@ ParsedAst {
             _parent: Some(
                 21,
             ),
+            _is_missing: false,
         },
         StringStart(
             StringStart {
@@ -716,6 +743,7 @@ ParsedAst {
                 _parent: Some(
                     26,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -737,6 +765,7 @@ ParsedAst {
                 _parent: Some(
                     26,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -757,6 +786,7 @@ ParsedAst {
                 _parent: Some(
                     26,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -783,6 +813,7 @@ ParsedAst {
             _parent: Some(
                 19,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -803,6 +834,7 @@ ParsedAst {
                     _parent: Some(
                         30,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -834,6 +866,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -858,6 +891,7 @@ ParsedAst {
             _parent: Some(
                 32,
             ),
+            _is_missing: false,
         },
         UnionPattern(
             UnionPattern {
@@ -887,6 +921,7 @@ ParsedAst {
                 _parent: Some(
                     33,
                 ),
+                _is_missing: false,
             },
         ),
         Float(
@@ -907,6 +942,7 @@ ParsedAst {
                 _parent: Some(
                     34,
                 ),
+                _is_missing: false,
             },
         ),
         Float(
@@ -927,6 +963,7 @@ ParsedAst {
                 _parent: Some(
                     34,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -953,6 +990,7 @@ ParsedAst {
             _parent: Some(
                 32,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -973,6 +1011,7 @@ ParsedAst {
                     _parent: Some(
                         37,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1004,6 +1043,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -1028,6 +1068,7 @@ ParsedAst {
             _parent: Some(
                 39,
             ),
+            _is_missing: false,
         },
         UnionPattern(
             UnionPattern {
@@ -1057,6 +1098,7 @@ ParsedAst {
                 _parent: Some(
                     40,
                 ),
+                _is_missing: false,
             },
         ),
         True(
@@ -1077,6 +1119,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         False(
@@ -1097,6 +1140,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -1123,6 +1167,7 @@ ParsedAst {
             _parent: Some(
                 39,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -1143,6 +1188,7 @@ ParsedAst {
                     _parent: Some(
                         44,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1174,6 +1220,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -1198,6 +1245,7 @@ ParsedAst {
             _parent: Some(
                 46,
             ),
+            _is_missing: false,
         },
         None(
             None {
@@ -1217,6 +1265,7 @@ ParsedAst {
                 _parent: Some(
                     47,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -1243,6 +1292,7 @@ ParsedAst {
             _parent: Some(
                 46,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -1263,6 +1313,7 @@ ParsedAst {
                     _parent: Some(
                         49,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),

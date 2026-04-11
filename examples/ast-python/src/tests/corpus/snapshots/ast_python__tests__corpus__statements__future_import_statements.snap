@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -33,6 +33,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             FutureImportStatement(
@@ -59,6 +60,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -86,6 +88,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -105,6 +108,7 @@ ParsedAst {
             _parent: Some(
                 2,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             FutureImportStatement(
@@ -131,6 +135,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -158,6 +163,7 @@ ParsedAst {
                 _parent: Some(
                     4,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -177,6 +183,7 @@ ParsedAst {
             _parent: Some(
                 5,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             FutureImportStatement(
@@ -215,6 +222,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -242,6 +250,7 @@ ParsedAst {
                 _parent: Some(
                     7,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -261,6 +270,7 @@ ParsedAst {
             _parent: Some(
                 8,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -286,6 +296,7 @@ ParsedAst {
                 _parent: Some(
                     7,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -305,6 +316,7 @@ ParsedAst {
             _parent: Some(
                 10,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -330,6 +342,7 @@ ParsedAst {
                 _parent: Some(
                     7,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -349,6 +362,7 @@ ParsedAst {
             _parent: Some(
                 12,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -374,6 +388,7 @@ ParsedAst {
                 _parent: Some(
                     7,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -393,6 +408,7 @@ ParsedAst {
             _parent: Some(
                 14,
             ),
+            _is_missing: false,
         },
     ],
 }

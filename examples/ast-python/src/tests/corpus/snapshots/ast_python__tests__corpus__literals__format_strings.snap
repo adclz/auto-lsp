@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/literals.rs
+source: examples/ast-python/src/tests/corpus/literals.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -73,6 +73,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -99,6 +100,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -144,6 +146,7 @@ ParsedAst {
                         _parent: Some(
                             1,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -166,6 +169,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -187,6 +191,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -195,8 +200,8 @@ ParsedAst {
                     id: 6,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 15,
                     end_byte: 30,
@@ -213,6 +218,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -243,6 +249,7 @@ ParsedAst {
                         _parent: Some(
                             5,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -265,6 +272,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -291,6 +299,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -335,6 +344,7 @@ ParsedAst {
                         _parent: Some(
                             8,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -357,6 +367,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -378,6 +389,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -386,8 +398,8 @@ ParsedAst {
                     id: 13,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 22,
                     end_byte: 25,
@@ -404,6 +416,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -426,6 +439,7 @@ ParsedAst {
                         _parent: Some(
                             12,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -449,6 +463,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -469,6 +484,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -490,6 +506,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -510,6 +527,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -537,6 +555,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -582,6 +601,7 @@ ParsedAst {
                         _parent: Some(
                             18,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -604,6 +624,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -625,6 +646,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -633,8 +655,8 @@ ParsedAst {
                     id: 23,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 40,
                     end_byte: 43,
@@ -651,6 +673,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -673,6 +696,7 @@ ParsedAst {
                         _parent: Some(
                             22,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -696,6 +720,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -716,6 +741,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -743,6 +769,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -788,6 +815,7 @@ ParsedAst {
                         _parent: Some(
                             26,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -810,6 +838,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -831,6 +860,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -839,8 +869,8 @@ ParsedAst {
                     id: 31,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 55,
                     end_byte: 58,
@@ -857,6 +887,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -879,6 +910,7 @@ ParsedAst {
                         _parent: Some(
                             30,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -902,6 +934,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -922,6 +955,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -949,6 +983,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -986,6 +1021,7 @@ ParsedAst {
                         _parent: Some(
                             34,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1008,6 +1044,7 @@ ParsedAst {
                 _parent: Some(
                     35,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -1038,6 +1075,7 @@ ParsedAst {
                 _parent: Some(
                     35,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1058,6 +1096,7 @@ ParsedAst {
                 _parent: Some(
                     37,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1078,6 +1117,7 @@ ParsedAst {
                 _parent: Some(
                     37,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -1098,6 +1138,7 @@ ParsedAst {
                 _parent: Some(
                     35,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1125,6 +1166,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1170,6 +1212,7 @@ ParsedAst {
                         _parent: Some(
                             41,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1192,6 +1235,7 @@ ParsedAst {
                 _parent: Some(
                     42,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -1213,6 +1257,7 @@ ParsedAst {
                 _parent: Some(
                     42,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -1221,8 +1266,8 @@ ParsedAst {
                     id: 46,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 79,
                     end_byte: 82,
@@ -1239,6 +1284,7 @@ ParsedAst {
                 _parent: Some(
                     42,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1261,6 +1307,7 @@ ParsedAst {
                         _parent: Some(
                             45,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1289,6 +1336,7 @@ ParsedAst {
                 _parent: Some(
                     42,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1309,6 +1357,7 @@ ParsedAst {
                 _parent: Some(
                     47,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -1329,6 +1378,7 @@ ParsedAst {
                 _parent: Some(
                     42,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1356,6 +1406,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1397,6 +1448,7 @@ ParsedAst {
                         _parent: Some(
                             50,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1419,6 +1471,7 @@ ParsedAst {
                 _parent: Some(
                     51,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -1445,6 +1498,7 @@ ParsedAst {
                 _parent: Some(
                     51,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1465,6 +1519,7 @@ ParsedAst {
                 _parent: Some(
                     53,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -1473,8 +1528,8 @@ ParsedAst {
                     id: 56,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 92,
                     end_byte: 95,
@@ -1491,6 +1546,7 @@ ParsedAst {
                 _parent: Some(
                     51,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1513,6 +1569,7 @@ ParsedAst {
                         _parent: Some(
                             55,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1535,6 +1592,7 @@ ParsedAst {
                 _parent: Some(
                     51,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1562,6 +1620,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1599,6 +1658,7 @@ ParsedAst {
                         _parent: Some(
                             58,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1621,6 +1681,7 @@ ParsedAst {
                 _parent: Some(
                     59,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -1651,6 +1712,7 @@ ParsedAst {
                 _parent: Some(
                     59,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1671,6 +1733,7 @@ ParsedAst {
                 _parent: Some(
                     61,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1691,6 +1754,7 @@ ParsedAst {
                 _parent: Some(
                     61,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -1711,6 +1775,7 @@ ParsedAst {
                 _parent: Some(
                     59,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1738,6 +1803,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1783,6 +1849,7 @@ ParsedAst {
                         _parent: Some(
                             65,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1805,6 +1872,7 @@ ParsedAst {
                 _parent: Some(
                     66,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -1831,6 +1899,7 @@ ParsedAst {
                 _parent: Some(
                     66,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1851,6 +1920,7 @@ ParsedAst {
                 _parent: Some(
                     68,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -1859,8 +1929,8 @@ ParsedAst {
                     id: 71,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 114,
                     end_byte: 117,
@@ -1877,6 +1947,7 @@ ParsedAst {
                 _parent: Some(
                     66,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1899,6 +1970,7 @@ ParsedAst {
                         _parent: Some(
                             70,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1927,6 +1999,7 @@ ParsedAst {
                 _parent: Some(
                     66,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeInterpolation(
@@ -1947,6 +2020,7 @@ ParsedAst {
                 _parent: Some(
                     72,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -1967,6 +2041,7 @@ ParsedAst {
                 _parent: Some(
                     66,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1994,6 +2069,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2031,6 +2107,7 @@ ParsedAst {
                         _parent: Some(
                             75,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -2053,6 +2130,7 @@ ParsedAst {
                 _parent: Some(
                     76,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -2061,8 +2139,8 @@ ParsedAst {
                     id: 79,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 123,
                     end_byte: 127,
@@ -2079,6 +2157,7 @@ ParsedAst {
                 _parent: Some(
                     76,
                 ),
+                _is_missing: false,
             },
         ),
         ExpressionList(
@@ -2105,6 +2184,7 @@ ParsedAst {
                 _parent: Some(
                     78,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -2126,6 +2206,7 @@ ParsedAst {
                     _parent: Some(
                         79,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2147,6 +2228,7 @@ ParsedAst {
                 _parent: Some(
                     76,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -2174,6 +2256,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2211,6 +2294,7 @@ ParsedAst {
                         _parent: Some(
                             82,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -2233,6 +2317,7 @@ ParsedAst {
                 _parent: Some(
                     83,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -2241,8 +2326,8 @@ ParsedAst {
                     id: 86,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 131,
                     end_byte: 140,
@@ -2259,6 +2344,7 @@ ParsedAst {
                 _parent: Some(
                     83,
                 ),
+                _is_missing: false,
             },
         ),
         Yield(
@@ -2285,6 +2371,7 @@ ParsedAst {
                 _parent: Some(
                     85,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -2307,6 +2394,7 @@ ParsedAst {
                         _parent: Some(
                             86,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -2329,6 +2417,7 @@ ParsedAst {
                 _parent: Some(
                     83,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -2356,6 +2445,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2393,6 +2483,7 @@ ParsedAst {
                         _parent: Some(
                             89,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -2415,6 +2506,7 @@ ParsedAst {
                 _parent: Some(
                     90,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -2423,8 +2515,8 @@ ParsedAst {
                     id: 93,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 144,
                     end_byte: 149,
@@ -2441,6 +2533,7 @@ ParsedAst {
                 _parent: Some(
                     90,
                 ),
+                _is_missing: false,
             },
         ),
         ExpressionList(
@@ -2467,6 +2560,7 @@ ParsedAst {
                 _parent: Some(
                     92,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -2492,6 +2586,7 @@ ParsedAst {
                     _parent: Some(
                         93,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2513,6 +2608,7 @@ ParsedAst {
                 _parent: Some(
                     94,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -2533,25 +2629,26 @@ ParsedAst {
                 _parent: Some(
                     90,
                 ),
+                _is_missing: false,
             },
         ),
         CompoundStatement(
             FunctionDefinition(
                 FunctionDefinition {
-                    parameters: AstNodeId {
-                        id: 99,
-                        _marker: PhantomData<ast_python::generated::Parameters>,
-                    },
-                    type_parameters: None,
-                    name: AstNodeId {
-                        id: 98,
-                        _marker: PhantomData<ast_python::generated::Identifier>,
-                    },
-                    return_type: None,
                     body: AstNodeId {
                         id: 100,
                         _marker: PhantomData<ast_python::generated::Block>,
                     },
+                    name: AstNodeId {
+                        id: 98,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                    parameters: AstNodeId {
+                        id: 99,
+                        _marker: PhantomData<ast_python::generated::Parameters>,
+                    },
+                    return_type: None,
+                    type_parameters: None,
                     _range: Range {
                         start_byte: 152,
                         end_byte: 222,
@@ -2568,6 +2665,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2588,6 +2686,7 @@ ParsedAst {
             _parent: Some(
                 97,
             ),
+            _is_missing: false,
         },
         Parameters {
             children: [],
@@ -2607,6 +2706,7 @@ ParsedAst {
             _parent: Some(
                 97,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -2632,6 +2732,7 @@ ParsedAst {
             _parent: Some(
                 97,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ReturnStatement(
@@ -2658,6 +2759,7 @@ ParsedAst {
                     _parent: Some(
                         100,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2699,6 +2801,7 @@ ParsedAst {
                         _parent: Some(
                             101,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -2721,6 +2824,7 @@ ParsedAst {
                 _parent: Some(
                     102,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -2742,6 +2846,7 @@ ParsedAst {
                 _parent: Some(
                     102,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -2750,8 +2855,8 @@ ParsedAst {
                     id: 106,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 184,
                     end_byte: 219,
@@ -2768,6 +2873,7 @@ ParsedAst {
                 _parent: Some(
                     102,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -2803,6 +2909,7 @@ ParsedAst {
                     _parent: Some(
                         105,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2839,6 +2946,7 @@ ParsedAst {
                     _parent: Some(
                         106,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2860,6 +2968,7 @@ ParsedAst {
                 _parent: Some(
                     107,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -2881,6 +2990,7 @@ ParsedAst {
                 _parent: Some(
                     107,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -2901,6 +3011,7 @@ ParsedAst {
                 _parent: Some(
                     107,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -2922,6 +3033,7 @@ ParsedAst {
                     _parent: Some(
                         106,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2958,6 +3070,7 @@ ParsedAst {
                     _parent: Some(
                         106,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2979,6 +3092,7 @@ ParsedAst {
                 _parent: Some(
                     112,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -3000,6 +3114,7 @@ ParsedAst {
                 _parent: Some(
                     112,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -3020,6 +3135,7 @@ ParsedAst {
                 _parent: Some(
                     112,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -3040,25 +3156,26 @@ ParsedAst {
                 _parent: Some(
                     102,
                 ),
+                _is_missing: false,
             },
         ),
         CompoundStatement(
             FunctionDefinition(
                 FunctionDefinition {
-                    parameters: AstNodeId {
-                        id: 119,
-                        _marker: PhantomData<ast_python::generated::Parameters>,
-                    },
-                    type_parameters: None,
-                    name: AstNodeId {
-                        id: 118,
-                        _marker: PhantomData<ast_python::generated::Identifier>,
-                    },
-                    return_type: None,
                     body: AstNodeId {
                         id: 121,
                         _marker: PhantomData<ast_python::generated::Block>,
                     },
+                    name: AstNodeId {
+                        id: 118,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                    parameters: AstNodeId {
+                        id: 119,
+                        _marker: PhantomData<ast_python::generated::Parameters>,
+                    },
+                    return_type: None,
+                    type_parameters: None,
                     _range: Range {
                         start_byte: 224,
                         end_byte: 320,
@@ -3075,6 +3192,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -3095,6 +3213,7 @@ ParsedAst {
             _parent: Some(
                 117,
             ),
+            _is_missing: false,
         },
         Parameters {
             children: [
@@ -3119,6 +3238,7 @@ ParsedAst {
             _parent: Some(
                 117,
             ),
+            _is_missing: false,
         },
         Identifier(
             Identifier {
@@ -3138,6 +3258,7 @@ ParsedAst {
                 _parent: Some(
                     119,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -3164,6 +3285,7 @@ ParsedAst {
             _parent: Some(
                 117,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -3190,6 +3312,7 @@ ParsedAst {
                     _parent: Some(
                         121,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -3221,19 +3344,20 @@ ParsedAst {
                         _parent: Some(
                             122,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
         ),
         Attribute(
             Attribute {
-                object: AstNodeId {
-                    id: 125,
-                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
-                },
                 attribute: AstNodeId {
                     id: 126,
                     _marker: PhantomData<ast_python::generated::Identifier>,
+                },
+                object: AstNodeId {
+                    id: 125,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
                 },
                 _range: Range {
                     start_byte: 244,
@@ -3251,6 +3375,7 @@ ParsedAst {
                 _parent: Some(
                     123,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -3271,6 +3396,7 @@ ParsedAst {
                 _parent: Some(
                     124,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -3290,6 +3416,7 @@ ParsedAst {
             _parent: Some(
                 124,
             ),
+            _is_missing: false,
         },
         ArgumentList(
             ArgumentList {
@@ -3319,6 +3446,7 @@ ParsedAst {
                 _parent: Some(
                     123,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -3359,6 +3487,7 @@ ParsedAst {
                         _parent: Some(
                             127,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -3381,6 +3510,7 @@ ParsedAst {
                 _parent: Some(
                     128,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -3402,6 +3532,7 @@ ParsedAst {
                 _parent: Some(
                     128,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -3410,8 +3541,8 @@ ParsedAst {
                     id: 132,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 282,
                     end_byte: 294,
@@ -3428,6 +3559,7 @@ ParsedAst {
                 _parent: Some(
                     128,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -3450,6 +3582,7 @@ ParsedAst {
                         _parent: Some(
                             131,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -3472,6 +3605,7 @@ ParsedAst {
                 _parent: Some(
                     128,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -3508,6 +3642,7 @@ ParsedAst {
                         _parent: Some(
                             127,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -3530,6 +3665,7 @@ ParsedAst {
                 _parent: Some(
                     134,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -3551,6 +3687,7 @@ ParsedAst {
                 _parent: Some(
                     134,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -3571,6 +3708,7 @@ ParsedAst {
                 _parent: Some(
                     134,
                 ),
+                _is_missing: false,
             },
         ),
     ],

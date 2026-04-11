@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -41,6 +41,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             PrintStatement(
@@ -68,6 +69,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -90,6 +92,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -123,6 +126,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -145,6 +149,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -167,6 +172,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -200,21 +206,22 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         BooleanOperator(
             BooleanOperator {
+                left: AstNodeId {
+                    id: 8,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
                 operator: AstNodeId {
                     id: 9,
                     _marker: PhantomData<ast_python::generated::Operators_2>,
                 },
                 right: AstNodeId {
                     id: 10,
-                    _marker: PhantomData<ast_python::generated::Expression>,
-                },
-                left: AstNodeId {
-                    id: 8,
                     _marker: PhantomData<ast_python::generated::Expression>,
                 },
                 _range: Range {
@@ -233,6 +240,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -254,6 +262,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -275,6 +284,7 @@ ParsedAst {
                 _parent: Some(
                     7,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -296,21 +306,22 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         BooleanOperator(
             BooleanOperator {
+                left: AstNodeId {
+                    id: 12,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
                 operator: AstNodeId {
                     id: 13,
                     _marker: PhantomData<ast_python::generated::Operators_2>,
                 },
                 right: AstNodeId {
                     id: 14,
-                    _marker: PhantomData<ast_python::generated::Expression>,
-                },
-                left: AstNodeId {
-                    id: 12,
                     _marker: PhantomData<ast_python::generated::Expression>,
                 },
                 _range: Range {
@@ -329,6 +340,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -350,6 +362,7 @@ ParsedAst {
                     _parent: Some(
                         11,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -371,6 +384,7 @@ ParsedAst {
                 _parent: Some(
                     11,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -392,6 +406,7 @@ ParsedAst {
                     _parent: Some(
                         11,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -421,21 +436,22 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         BooleanOperator(
             BooleanOperator {
+                left: AstNodeId {
+                    id: 17,
+                    _marker: PhantomData<ast_python::generated::Expression>,
+                },
                 operator: AstNodeId {
                     id: 18,
                     _marker: PhantomData<ast_python::generated::Operators_2>,
                 },
                 right: AstNodeId {
                     id: 19,
-                    _marker: PhantomData<ast_python::generated::Expression>,
-                },
-                left: AstNodeId {
-                    id: 17,
                     _marker: PhantomData<ast_python::generated::Expression>,
                 },
                 _range: Range {
@@ -454,6 +470,7 @@ ParsedAst {
                 _parent: Some(
                     15,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -475,6 +492,7 @@ ParsedAst {
                     _parent: Some(
                         16,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -496,6 +514,7 @@ ParsedAst {
                 _parent: Some(
                     16,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -517,6 +536,7 @@ ParsedAst {
                     _parent: Some(
                         16,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -546,6 +566,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -571,6 +592,7 @@ ParsedAst {
                 _parent: Some(
                     20,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -592,6 +614,7 @@ ParsedAst {
                     _parent: Some(
                         21,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),

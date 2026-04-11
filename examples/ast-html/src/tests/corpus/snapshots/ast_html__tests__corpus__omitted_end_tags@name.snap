@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/mod.rs
+source: examples/ast-html/src/tests/corpus/mod.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -29,6 +29,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         Doctype(
             Doctype {
@@ -48,6 +49,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         Element(
@@ -78,6 +80,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -104,6 +107,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -124,6 +128,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Element(
@@ -150,6 +155,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -176,6 +182,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -196,6 +203,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
     ],

@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/pattern_matching.rs
+source: examples/ast-python/src/tests/corpus/pattern_matching.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,20 +25,21 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             MatchStatement(
                 MatchStatement {
+                    body: AstNodeId {
+                        id: 6,
+                        _marker: PhantomData<ast_python::generated::Block>,
+                    },
                     subject: [
                         AstNodeId {
                             id: 2,
                             _marker: PhantomData<ast_python::generated::Expression>,
                         },
                     ],
-                    body: AstNodeId {
-                        id: 6,
-                        _marker: PhantomData<ast_python::generated::Block>,
-                    },
                     _range: Range {
                         start_byte: 1,
                         end_byte: 75,
@@ -55,6 +56,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -91,6 +93,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -114,6 +117,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -138,6 +142,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -162,6 +167,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -194,6 +200,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         CaseClause {
             consequence: AstNodeId {
@@ -227,6 +234,7 @@ ParsedAst {
             _parent: Some(
                 6,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -251,6 +259,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         Integer(
             Integer {
@@ -270,6 +279,7 @@ ParsedAst {
                 _parent: Some(
                     8,
                 ),
+                _is_missing: false,
             },
         ),
         CasePattern {
@@ -295,6 +305,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         Integer(
             Integer {
@@ -314,6 +325,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -340,6 +352,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -366,21 +379,22 @@ ParsedAst {
                     _parent: Some(
                         12,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         Assignment(
             Assignment {
+                left: AstNodeId {
+                    id: 15,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 right: Some(
                     AstNodeId {
                         id: 16,
                         _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
                     },
                 ),
-                left: AstNodeId {
-                    id: 15,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
-                },
                 Type: None,
                 _range: Range {
                     start_byte: 40,
@@ -398,6 +412,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -419,6 +434,7 @@ ParsedAst {
                     _parent: Some(
                         14,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -442,6 +458,7 @@ ParsedAst {
                         _parent: Some(
                             14,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -478,6 +495,7 @@ ParsedAst {
             _parent: Some(
                 6,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -502,6 +520,7 @@ ParsedAst {
             _parent: Some(
                 17,
             ),
+            _is_missing: false,
         },
         Integer(
             Integer {
@@ -521,6 +540,7 @@ ParsedAst {
                 _parent: Some(
                     18,
                 ),
+                _is_missing: false,
             },
         ),
         CasePattern {
@@ -546,6 +566,7 @@ ParsedAst {
             _parent: Some(
                 17,
             ),
+            _is_missing: false,
         },
         SplatPattern(
             SplatPattern {
@@ -571,6 +592,7 @@ ParsedAst {
                 _parent: Some(
                     20,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -590,6 +612,7 @@ ParsedAst {
             _parent: Some(
                 21,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -615,6 +638,7 @@ ParsedAst {
             _parent: Some(
                 17,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -641,21 +665,22 @@ ParsedAst {
                     _parent: Some(
                         23,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         Assignment(
             Assignment {
+                left: AstNodeId {
+                    id: 26,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 right: Some(
                     AstNodeId {
                         id: 27,
                         _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
                     },
                 ),
-                left: AstNodeId {
-                    id: 26,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
-                },
                 Type: None,
                 _range: Range {
                     start_byte: 70,
@@ -673,6 +698,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -694,6 +720,7 @@ ParsedAst {
                     _parent: Some(
                         25,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -717,6 +744,7 @@ ParsedAst {
                         _parent: Some(
                             25,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),

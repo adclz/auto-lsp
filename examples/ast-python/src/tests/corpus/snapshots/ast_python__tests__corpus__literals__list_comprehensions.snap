@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/literals.rs
+source: examples/ast-python/src/tests/corpus/literals.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -37,6 +37,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -63,6 +64,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -96,6 +98,7 @@ ParsedAst {
                         _parent: Some(
                             1,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -103,13 +106,13 @@ ParsedAst {
         PrimaryExpression(
             BinaryOperator(
                 BinaryOperator {
-                    operator: AstNodeId {
-                        id: 5,
-                        _marker: PhantomData<ast_python::generated::Operators_1>,
-                    },
                     left: AstNodeId {
                         id: 4,
                         _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                    },
+                    operator: AstNodeId {
+                        id: 5,
+                        _marker: PhantomData<ast_python::generated::Operators_1>,
                     },
                     right: AstNodeId {
                         id: 6,
@@ -131,6 +134,7 @@ ParsedAst {
                     _parent: Some(
                         2,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -152,6 +156,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Token_Plus(
@@ -172,6 +177,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -192,6 +198,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         ForInClause(
@@ -222,6 +229,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -253,6 +261,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -275,6 +284,7 @@ ParsedAst {
                     _parent: Some(
                         8,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -297,6 +307,7 @@ ParsedAst {
                     _parent: Some(
                         8,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -320,6 +331,7 @@ ParsedAst {
                         _parent: Some(
                             7,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -349,6 +361,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -386,6 +399,7 @@ ParsedAst {
                         _parent: Some(
                             12,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -409,6 +423,7 @@ ParsedAst {
                     _parent: Some(
                         13,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -440,6 +455,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -461,6 +477,7 @@ ParsedAst {
                     _parent: Some(
                         15,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -484,6 +501,7 @@ ParsedAst {
                         _parent: Some(
                             15,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -516,6 +534,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -537,6 +556,7 @@ ParsedAst {
                     _parent: Some(
                         18,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -560,6 +580,7 @@ ParsedAst {
                         _parent: Some(
                             18,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -589,6 +610,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -630,6 +652,7 @@ ParsedAst {
                         _parent: Some(
                             21,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -663,6 +686,7 @@ ParsedAst {
                     _parent: Some(
                         22,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -686,6 +710,7 @@ ParsedAst {
                         _parent: Some(
                             23,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -710,6 +735,7 @@ ParsedAst {
                         _parent: Some(
                             23,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -742,6 +768,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -763,6 +790,7 @@ ParsedAst {
                     _parent: Some(
                         26,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -800,6 +828,7 @@ ParsedAst {
                         _parent: Some(
                             26,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -824,6 +853,7 @@ ParsedAst {
                         _parent: Some(
                             28,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -848,6 +878,7 @@ ParsedAst {
                         _parent: Some(
                             28,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -872,6 +903,7 @@ ParsedAst {
                         _parent: Some(
                             28,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -904,6 +936,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -925,6 +958,7 @@ ParsedAst {
                     _parent: Some(
                         32,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -962,6 +996,7 @@ ParsedAst {
                         _parent: Some(
                             32,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -986,6 +1021,7 @@ ParsedAst {
                         _parent: Some(
                             34,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1010,6 +1046,7 @@ ParsedAst {
                         _parent: Some(
                             34,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1034,6 +1071,7 @@ ParsedAst {
                         _parent: Some(
                             34,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1060,6 +1098,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -1081,6 +1120,7 @@ ParsedAst {
                     _parent: Some(
                         38,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1109,6 +1149,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1146,6 +1187,7 @@ ParsedAst {
                         _parent: Some(
                             40,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1169,6 +1211,7 @@ ParsedAst {
                     _parent: Some(
                         41,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1208,6 +1251,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -1229,6 +1273,7 @@ ParsedAst {
                     _parent: Some(
                         43,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1256,6 +1301,7 @@ ParsedAst {
                     _parent: Some(
                         43,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1278,6 +1324,7 @@ ParsedAst {
                     _parent: Some(
                         45,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1299,6 +1346,7 @@ ParsedAst {
                 _parent: Some(
                     43,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1325,6 +1373,7 @@ ParsedAst {
                     _parent: Some(
                         43,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1347,6 +1396,7 @@ ParsedAst {
                     _parent: Some(
                         48,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1372,6 +1422,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -1401,6 +1452,7 @@ ParsedAst {
                     _parent: Some(
                         50,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1422,6 +1474,7 @@ ParsedAst {
                 _parent: Some(
                     51,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -1443,6 +1496,7 @@ ParsedAst {
                 _parent: Some(
                     51,
                 ),
+                _is_missing: false,
             },
         ),
     ],

@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/literals.rs
+source: examples/ast-python/src/tests/corpus/literals.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -49,6 +49,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -75,6 +76,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -112,6 +114,7 @@ ParsedAst {
                         _parent: Some(
                             1,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -134,6 +137,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -160,6 +164,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeSequence(
@@ -180,6 +185,7 @@ ParsedAst {
                 _parent: Some(
                     4,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -200,6 +206,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -227,6 +234,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -264,6 +272,7 @@ ParsedAst {
                         _parent: Some(
                             7,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -286,6 +295,7 @@ ParsedAst {
                 _parent: Some(
                     8,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -312,6 +322,7 @@ ParsedAst {
                 _parent: Some(
                     8,
                 ),
+                _is_missing: false,
             },
         ),
         EscapeSequence(
@@ -332,6 +343,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -352,6 +364,7 @@ ParsedAst {
                 _parent: Some(
                     8,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -379,6 +392,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -416,6 +430,7 @@ ParsedAst {
                         _parent: Some(
                             13,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -438,6 +453,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -459,6 +475,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -479,6 +496,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -506,6 +524,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -543,6 +562,7 @@ ParsedAst {
                         _parent: Some(
                             18,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -565,6 +585,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -586,6 +607,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -606,6 +628,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -633,6 +656,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -674,6 +698,7 @@ ParsedAst {
                         _parent: Some(
                             23,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -696,6 +721,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -717,6 +743,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         Interpolation(
@@ -725,8 +752,8 @@ ParsedAst {
                     id: 28,
                     _marker: PhantomData<ast_python::generated::Expression_ExpressionList_PatternList_Yield>,
                 },
-                type_conversion: None,
                 format_specifier: None,
+                type_conversion: None,
                 _range: Range {
                     start_byte: 88,
                     end_byte: 91,
@@ -743,6 +770,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -765,6 +793,7 @@ ParsedAst {
                         _parent: Some(
                             27,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -787,6 +816,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -814,6 +844,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -847,6 +878,7 @@ ParsedAst {
                         _parent: Some(
                             30,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -869,6 +901,7 @@ ParsedAst {
                 _parent: Some(
                     31,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -889,6 +922,7 @@ ParsedAst {
                 _parent: Some(
                     31,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -916,6 +950,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -953,6 +988,7 @@ ParsedAst {
                         _parent: Some(
                             34,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -975,6 +1011,7 @@ ParsedAst {
                 _parent: Some(
                     35,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -996,6 +1033,7 @@ ParsedAst {
                 _parent: Some(
                     35,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -1016,6 +1054,7 @@ ParsedAst {
                 _parent: Some(
                     35,
                 ),
+                _is_missing: false,
             },
         ),
     ],

@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/expressions.rs
+source: examples/ast-python/src/tests/corpus/expressions.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -45,6 +45,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -71,6 +72,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -141,6 +143,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -162,6 +165,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Token_Less(
@@ -182,6 +186,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -202,6 +207,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Token_LessEqual(
@@ -222,6 +228,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -242,6 +249,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Token_EqualEqual(
@@ -262,6 +270,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -282,6 +291,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Token_GreaterEqual(
@@ -302,6 +312,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -322,6 +333,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Token_Greater(
@@ -342,6 +354,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -362,6 +375,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -389,22 +403,23 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         Expression(
             BooleanOperator(
                 BooleanOperator {
+                    left: AstNodeId {
+                        id: 16,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
                     operator: AstNodeId {
                         id: 21,
                         _marker: PhantomData<ast_python::generated::Operators_2>,
                     },
                     right: AstNodeId {
                         id: 22,
-                        _marker: PhantomData<ast_python::generated::Expression>,
-                    },
-                    left: AstNodeId {
-                        id: 16,
                         _marker: PhantomData<ast_python::generated::Expression>,
                     },
                     _range: Range {
@@ -423,6 +438,7 @@ ParsedAst {
                     _parent: Some(
                         14,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -448,6 +464,7 @@ ParsedAst {
                 _parent: Some(
                     15,
                 ),
+                _is_missing: false,
             },
         ),
         ComparisonOperator(
@@ -484,6 +501,7 @@ ParsedAst {
                 _parent: Some(
                     16,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -504,6 +522,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         Token_EqualEqual(
@@ -524,6 +543,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -544,6 +564,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         Token_or(
@@ -564,6 +585,7 @@ ParsedAst {
                 _parent: Some(
                     15,
                 ),
+                _is_missing: false,
             },
         ),
         ComparisonOperator(
@@ -600,6 +622,7 @@ ParsedAst {
                 _parent: Some(
                     15,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -620,6 +643,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Token_EqualEqual(
@@ -640,6 +664,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -660,6 +685,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -687,6 +713,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -725,6 +752,7 @@ ParsedAst {
                     _parent: Some(
                         26,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -746,6 +774,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         Token_not_in(
@@ -766,6 +795,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -786,6 +816,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -813,6 +844,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -851,6 +883,7 @@ ParsedAst {
                     _parent: Some(
                         31,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -872,6 +905,7 @@ ParsedAst {
                 _parent: Some(
                     32,
                 ),
+                _is_missing: false,
             },
         ),
         Token_is_not(
@@ -892,6 +926,7 @@ ParsedAst {
                 _parent: Some(
                     32,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -912,6 +947,7 @@ ParsedAst {
                 _parent: Some(
                     32,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -939,22 +975,23 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         Expression(
             BooleanOperator(
                 BooleanOperator {
+                    left: AstNodeId {
+                        id: 38,
+                        _marker: PhantomData<ast_python::generated::Expression>,
+                    },
                     operator: AstNodeId {
                         id: 42,
                         _marker: PhantomData<ast_python::generated::Operators_2>,
                     },
                     right: AstNodeId {
                         id: 43,
-                        _marker: PhantomData<ast_python::generated::Expression>,
-                    },
-                    left: AstNodeId {
-                        id: 38,
                         _marker: PhantomData<ast_python::generated::Expression>,
                     },
                     _range: Range {
@@ -973,6 +1010,7 @@ ParsedAst {
                     _parent: Some(
                         36,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1010,6 +1048,7 @@ ParsedAst {
                 _parent: Some(
                     37,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1030,6 +1069,7 @@ ParsedAst {
                 _parent: Some(
                     38,
                 ),
+                _is_missing: false,
             },
         ),
         Token_is(
@@ -1050,6 +1090,7 @@ ParsedAst {
                 _parent: Some(
                     38,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1070,6 +1111,7 @@ ParsedAst {
                 _parent: Some(
                     38,
                 ),
+                _is_missing: false,
             },
         ),
         Token_and(
@@ -1090,6 +1132,7 @@ ParsedAst {
                 _parent: Some(
                     37,
                 ),
+                _is_missing: false,
             },
         ),
         ComparisonOperator(
@@ -1126,6 +1169,7 @@ ParsedAst {
                 _parent: Some(
                     37,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1146,6 +1190,7 @@ ParsedAst {
                 _parent: Some(
                     43,
                 ),
+                _is_missing: false,
             },
         ),
         Token_NotEqual(
@@ -1166,6 +1211,7 @@ ParsedAst {
                 _parent: Some(
                     43,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1186,6 +1232,7 @@ ParsedAst {
                 _parent: Some(
                     43,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1213,6 +1260,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1251,6 +1299,7 @@ ParsedAst {
                     _parent: Some(
                         47,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1272,6 +1321,7 @@ ParsedAst {
                 _parent: Some(
                     48,
                 ),
+                _is_missing: false,
             },
         ),
         Token_LessGreater(
@@ -1292,6 +1342,7 @@ ParsedAst {
                 _parent: Some(
                     48,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1312,6 +1363,7 @@ ParsedAst {
                 _parent: Some(
                     48,
                 ),
+                _is_missing: false,
             },
         ),
     ],

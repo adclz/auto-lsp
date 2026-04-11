@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/pattern_matching.rs
+source: examples/ast-python/src/tests/corpus/pattern_matching.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,20 +25,21 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             MatchStatement(
                 MatchStatement {
+                    body: AstNodeId {
+                        id: 7,
+                        _marker: PhantomData<ast_python::generated::Block>,
+                    },
                     subject: [
                         AstNodeId {
                             id: 2,
                             _marker: PhantomData<ast_python::generated::Expression>,
                         },
                     ],
-                    body: AstNodeId {
-                        id: 7,
-                        _marker: PhantomData<ast_python::generated::Block>,
-                    },
                     _range: Range {
                         start_byte: 1,
                         end_byte: 171,
@@ -55,6 +56,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -85,18 +87,19 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         Attribute(
             Attribute {
-                object: AstNodeId {
-                    id: 4,
-                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
-                },
                 attribute: AstNodeId {
                     id: 5,
                     _marker: PhantomData<ast_python::generated::Identifier>,
+                },
+                object: AstNodeId {
+                    id: 4,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
                 },
                 _range: Range {
                     start_byte: 7,
@@ -114,6 +117,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -134,6 +138,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -153,6 +158,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         ArgumentList(
             ArgumentList {
@@ -173,6 +179,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -203,6 +210,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         CaseClause {
             consequence: AstNodeId {
@@ -232,6 +240,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -256,6 +265,7 @@ ParsedAst {
             _parent: Some(
                 8,
             ),
+            _is_missing: false,
         },
         ClassPattern(
             ClassPattern {
@@ -289,6 +299,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -315,6 +326,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -334,6 +346,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         CasePattern(
             CasePattern {
@@ -359,6 +372,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         TuplePattern(
@@ -389,6 +403,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         CasePattern(
@@ -415,6 +430,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -441,6 +457,7 @@ ParsedAst {
                 _parent: Some(
                     15,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -460,6 +477,7 @@ ParsedAst {
             _parent: Some(
                 16,
             ),
+            _is_missing: false,
         },
         CasePattern(
             CasePattern {
@@ -485,6 +503,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -511,6 +530,7 @@ ParsedAst {
                 _parent: Some(
                     18,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -530,6 +550,7 @@ ParsedAst {
             _parent: Some(
                 19,
             ),
+            _is_missing: false,
         },
         CasePattern(
             CasePattern {
@@ -555,6 +576,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         KeywordPattern(
@@ -585,6 +607,7 @@ ParsedAst {
                 _parent: Some(
                     21,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -605,6 +628,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -635,6 +659,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -654,6 +679,7 @@ ParsedAst {
             _parent: Some(
                 24,
             ),
+            _is_missing: false,
         },
         Identifier {
             _range: Range {
@@ -672,6 +698,7 @@ ParsedAst {
             _parent: Some(
                 24,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -697,6 +724,7 @@ ParsedAst {
             _parent: Some(
                 8,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -723,6 +751,7 @@ ParsedAst {
                     _parent: Some(
                         27,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -754,6 +783,7 @@ ParsedAst {
                         _parent: Some(
                             28,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -776,6 +806,7 @@ ParsedAst {
                 _parent: Some(
                     29,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -806,6 +837,7 @@ ParsedAst {
                 _parent: Some(
                     29,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -828,6 +860,7 @@ ParsedAst {
                         _parent: Some(
                             31,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -852,6 +885,7 @@ ParsedAst {
                         _parent: Some(
                             31,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -884,6 +918,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         CasePattern {
             children: Some(
@@ -908,6 +943,7 @@ ParsedAst {
             _parent: Some(
                 34,
             ),
+            _is_missing: false,
         },
         ClassPattern(
             ClassPattern {
@@ -933,6 +969,7 @@ ParsedAst {
                 _parent: Some(
                     35,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -959,6 +996,7 @@ ParsedAst {
                 _parent: Some(
                     36,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -978,6 +1016,7 @@ ParsedAst {
             _parent: Some(
                 37,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -1003,6 +1042,7 @@ ParsedAst {
             _parent: Some(
                 34,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PassStatement(
@@ -1023,6 +1063,7 @@ ParsedAst {
                     _parent: Some(
                         39,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),

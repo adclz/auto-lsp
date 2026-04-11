@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,18 +25,19 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             IfStatement(
                 IfStatement {
                     alternative: [],
-                    consequence: AstNodeId {
-                        id: 3,
-                        _marker: PhantomData<ast_python::generated::Block>,
-                    },
                     condition: AstNodeId {
                         id: 2,
                         _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    consequence: AstNodeId {
+                        id: 3,
+                        _marker: PhantomData<ast_python::generated::Block>,
                     },
                     _range: Range {
                         start_byte: 1,
@@ -54,6 +55,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -76,6 +78,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -107,6 +110,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -133,6 +137,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -156,6 +161,7 @@ ParsedAst {
                         _parent: Some(
                             4,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -185,6 +191,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -208,6 +215,7 @@ ParsedAst {
                         _parent: Some(
                             6,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),

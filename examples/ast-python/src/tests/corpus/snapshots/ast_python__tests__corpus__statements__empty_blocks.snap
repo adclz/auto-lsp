@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -29,24 +29,25 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             FunctionDefinition(
                 FunctionDefinition {
-                    parameters: AstNodeId {
-                        id: 3,
-                        _marker: PhantomData<ast_python::generated::Parameters>,
-                    },
-                    type_parameters: None,
-                    name: AstNodeId {
-                        id: 2,
-                        _marker: PhantomData<ast_python::generated::Identifier>,
-                    },
-                    return_type: None,
                     body: AstNodeId {
                         id: 6,
                         _marker: PhantomData<ast_python::generated::Block>,
                     },
+                    name: AstNodeId {
+                        id: 2,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                    parameters: AstNodeId {
+                        id: 3,
+                        _marker: PhantomData<ast_python::generated::Parameters>,
+                    },
+                    return_type: None,
+                    type_parameters: None,
                     _range: Range {
                         start_byte: 182,
                         end_byte: 194,
@@ -63,6 +64,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -83,6 +85,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         Parameters {
             children: [
@@ -111,6 +114,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         Identifier(
             Identifier {
@@ -130,6 +134,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -150,6 +155,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -171,18 +177,19 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         CompoundStatement(
             IfStatement(
                 IfStatement {
                     alternative: [],
-                    consequence: AstNodeId {
-                        id: 9,
-                        _marker: PhantomData<ast_python::generated::Block>,
-                    },
                     condition: AstNodeId {
                         id: 8,
                         _marker: PhantomData<ast_python::generated::Expression>,
+                    },
+                    consequence: AstNodeId {
+                        id: 9,
+                        _marker: PhantomData<ast_python::generated::Block>,
                     },
                     _range: Range {
                         start_byte: 196,
@@ -200,6 +207,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -222,6 +230,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -253,6 +262,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             PrintStatement(
@@ -280,6 +290,7 @@ ParsedAst {
                     _parent: Some(
                         9,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -302,12 +313,14 @@ ParsedAst {
                     _parent: Some(
                         10,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         CompoundStatement(
             WhileStatement(
                 WhileStatement {
+                    alternative: None,
                     body: AstNodeId {
                         id: 16,
                         _marker: PhantomData<ast_python::generated::Block>,
@@ -316,7 +329,6 @@ ParsedAst {
                         id: 13,
                         _marker: PhantomData<ast_python::generated::Expression>,
                     },
-                    alternative: None,
                     _range: Range {
                         start_byte: 214,
                         end_byte: 224,
@@ -333,6 +345,7 @@ ParsedAst {
                     _parent: Some(
                         9,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -363,6 +376,7 @@ ParsedAst {
                     _parent: Some(
                         12,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -384,6 +398,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -405,6 +420,7 @@ ParsedAst {
                 _parent: Some(
                     13,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -426,6 +442,7 @@ ParsedAst {
             _parent: Some(
                 12,
             ),
+            _is_missing: false,
         },
     ],
 }

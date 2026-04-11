@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -29,10 +29,12 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             WhileStatement(
                 WhileStatement {
+                    alternative: None,
                     body: AstNodeId {
                         id: 3,
                         _marker: PhantomData<ast_python::generated::Block>,
@@ -41,7 +43,6 @@ ParsedAst {
                         id: 2,
                         _marker: PhantomData<ast_python::generated::Expression>,
                     },
-                    alternative: None,
                     _range: Range {
                         start_byte: 1,
                         end_byte: 13,
@@ -58,6 +59,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -80,6 +82,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -107,6 +110,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -133,6 +137,7 @@ ParsedAst {
                     _parent: Some(
                         3,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -156,6 +161,7 @@ ParsedAst {
                         _parent: Some(
                             4,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -163,6 +169,12 @@ ParsedAst {
         CompoundStatement(
             WhileStatement(
                 WhileStatement {
+                    alternative: Some(
+                        AstNodeId {
+                            id: 11,
+                            _marker: PhantomData<ast_python::generated::ElseClause>,
+                        },
+                    ),
                     body: AstNodeId {
                         id: 8,
                         _marker: PhantomData<ast_python::generated::Block>,
@@ -171,12 +183,6 @@ ParsedAst {
                         id: 7,
                         _marker: PhantomData<ast_python::generated::Expression>,
                     },
-                    alternative: Some(
-                        AstNodeId {
-                            id: 11,
-                            _marker: PhantomData<ast_python::generated::ElseClause>,
-                        },
-                    ),
                     _range: Range {
                         start_byte: 15,
                         end_byte: 41,
@@ -193,6 +199,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -215,6 +222,7 @@ ParsedAst {
                     _parent: Some(
                         6,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -242,6 +250,7 @@ ParsedAst {
             _parent: Some(
                 6,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -268,6 +277,7 @@ ParsedAst {
                     _parent: Some(
                         8,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -291,6 +301,7 @@ ParsedAst {
                         _parent: Some(
                             9,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -316,6 +327,7 @@ ParsedAst {
             _parent: Some(
                 6,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -345,6 +357,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -371,6 +384,7 @@ ParsedAst {
                     _parent: Some(
                         12,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -394,6 +408,7 @@ ParsedAst {
                         _parent: Some(
                             13,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -423,6 +438,7 @@ ParsedAst {
                     _parent: Some(
                         12,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -446,6 +462,7 @@ ParsedAst {
                         _parent: Some(
                             15,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
