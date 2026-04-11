@@ -27,6 +27,7 @@ members = [
     "crates/bench",
     "examples/ast-python",
     "examples/ast-html",
+    "examples/ast-json",
     "examples/vscode-native/server",
 ]
 exclude = [
@@ -34,6 +35,7 @@ exclude = [
     "examples/native",
     "examples/ast-python",
     "examples/ast-html",
+    "examples/ast-json",
 ]
 
 [features]
@@ -55,6 +57,7 @@ tree-sitter = "0.26.5"
 tree-sitter-language = "0.1.7"
 tree-sitter-python = "0.23.6"
 tree-sitter-html = "0.23.2"
+tree-sitter-json = "0.24.8"
 downcast-rs = "2.0.2"
 streaming-iterator = "0.1.9"
 parking_lot = "0.12.5"

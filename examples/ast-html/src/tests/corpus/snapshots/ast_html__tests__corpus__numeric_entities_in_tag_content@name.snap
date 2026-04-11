@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/mod.rs
+source: examples/ast-html/src/tests/corpus/mod.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,6 +25,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         Element(
             Element {
@@ -74,6 +75,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -100,6 +102,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -120,6 +123,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -140,6 +144,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Entity(
@@ -160,6 +165,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -180,6 +186,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Entity(
@@ -200,6 +207,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -220,6 +228,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         EndTag(
@@ -244,6 +253,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         TagName {
@@ -263,6 +273,7 @@ ParsedAst {
             _parent: Some(
                 9,
             ),
+            _is_missing: false,
         },
     ],
 }

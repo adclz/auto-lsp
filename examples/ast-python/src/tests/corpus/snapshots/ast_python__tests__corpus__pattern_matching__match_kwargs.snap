@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/pattern_matching.rs
+source: examples/ast-python/src/tests/corpus/pattern_matching.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,6 +25,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -51,21 +52,22 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         Assignment(
             Assignment {
+                left: AstNodeId {
+                    id: 3,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 right: Some(
                     AstNodeId {
                         id: 4,
                         _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
                     },
                 ),
-                left: AstNodeId {
-                    id: 3,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
-                },
                 Type: None,
                 _range: Range {
                     start_byte: 1,
@@ -83,6 +85,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -104,6 +107,7 @@ ParsedAst {
                     _parent: Some(
                         2,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -135,6 +139,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -157,6 +162,7 @@ ParsedAst {
                 _parent: Some(
                     4,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -183,6 +189,7 @@ ParsedAst {
                 _parent: Some(
                     4,
                 ),
+                _is_missing: false,
             },
         ),
         KeywordArgument(
@@ -211,6 +218,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -230,6 +238,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             String(
@@ -264,6 +273,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -285,6 +295,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -306,6 +317,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -326,6 +338,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
     ],

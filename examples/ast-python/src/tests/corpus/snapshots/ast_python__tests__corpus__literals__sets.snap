@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/literals.rs
+source: examples/ast-python/src/tests/corpus/literals.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -29,6 +29,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -55,6 +56,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -92,6 +94,7 @@ ParsedAst {
                         _parent: Some(
                             1,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -116,6 +119,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -140,6 +144,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -164,6 +169,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -193,6 +199,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -222,6 +229,7 @@ ParsedAst {
                         _parent: Some(
                             6,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -248,6 +256,7 @@ ParsedAst {
                 _parent: Some(
                     7,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -271,6 +280,7 @@ ParsedAst {
                         _parent: Some(
                             8,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),

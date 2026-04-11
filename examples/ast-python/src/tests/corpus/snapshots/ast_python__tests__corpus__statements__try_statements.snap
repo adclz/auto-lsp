@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -33,6 +33,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             TryStatement(
@@ -75,6 +76,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -102,6 +104,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -128,6 +131,7 @@ ParsedAst {
                     _parent: Some(
                         2,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -151,6 +155,7 @@ ParsedAst {
                         _parent: Some(
                             3,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -184,6 +189,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -205,6 +211,7 @@ ParsedAst {
                     _parent: Some(
                         5,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -232,6 +239,7 @@ ParsedAst {
             _parent: Some(
                 5,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -258,6 +266,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -281,6 +290,7 @@ ParsedAst {
                         _parent: Some(
                             8,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -314,6 +324,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         AsPattern(
@@ -346,6 +357,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -366,6 +378,7 @@ ParsedAst {
                 _parent: Some(
                     11,
                 ),
+                _is_missing: false,
             },
         ),
         AsPatternTarget {
@@ -385,6 +398,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -410,6 +424,7 @@ ParsedAst {
             _parent: Some(
                 10,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -436,6 +451,7 @@ ParsedAst {
                     _parent: Some(
                         14,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -459,6 +475,7 @@ ParsedAst {
                         _parent: Some(
                             15,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -497,6 +514,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -518,6 +536,7 @@ ParsedAst {
                     _parent: Some(
                         17,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -540,6 +559,7 @@ ParsedAst {
                     _parent: Some(
                         17,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -567,6 +587,7 @@ ParsedAst {
             _parent: Some(
                 17,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -593,6 +614,7 @@ ParsedAst {
                     _parent: Some(
                         20,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -616,6 +638,7 @@ ParsedAst {
                         _parent: Some(
                             21,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -644,6 +667,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -670,6 +694,7 @@ ParsedAst {
             _parent: Some(
                 23,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -696,6 +721,7 @@ ParsedAst {
                     _parent: Some(
                         24,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -719,6 +745,7 @@ ParsedAst {
                         _parent: Some(
                             25,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -760,6 +787,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -787,6 +815,7 @@ ParsedAst {
             _parent: Some(
                 27,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -813,6 +842,7 @@ ParsedAst {
                     _parent: Some(
                         28,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -836,6 +866,7 @@ ParsedAst {
                         _parent: Some(
                             29,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -869,6 +900,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -890,6 +922,7 @@ ParsedAst {
                     _parent: Some(
                         31,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -921,6 +954,7 @@ ParsedAst {
             _parent: Some(
                 31,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -947,6 +981,7 @@ ParsedAst {
                     _parent: Some(
                         33,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -970,6 +1005,7 @@ ParsedAst {
                         _parent: Some(
                             34,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -999,6 +1035,7 @@ ParsedAst {
                     _parent: Some(
                         33,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1022,6 +1059,7 @@ ParsedAst {
                         _parent: Some(
                             36,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1048,6 +1086,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -1074,6 +1113,7 @@ ParsedAst {
             _parent: Some(
                 38,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -1100,6 +1140,7 @@ ParsedAst {
                     _parent: Some(
                         39,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1123,6 +1164,7 @@ ParsedAst {
                         _parent: Some(
                             40,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1149,6 +1191,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -1175,6 +1218,7 @@ ParsedAst {
             _parent: Some(
                 42,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -1201,6 +1245,7 @@ ParsedAst {
                     _parent: Some(
                         43,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1224,6 +1269,7 @@ ParsedAst {
                         _parent: Some(
                             44,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1269,6 +1315,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1296,6 +1343,7 @@ ParsedAst {
             _parent: Some(
                 46,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -1322,6 +1370,7 @@ ParsedAst {
                     _parent: Some(
                         47,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1345,6 +1394,7 @@ ParsedAst {
                         _parent: Some(
                             48,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1377,6 +1427,7 @@ ParsedAst {
                 _parent: Some(
                     46,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1399,6 +1450,7 @@ ParsedAst {
                         _parent: Some(
                             50,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1428,6 +1480,7 @@ ParsedAst {
                 _parent: Some(
                     50,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1455,6 +1508,7 @@ ParsedAst {
                     _parent: Some(
                         52,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1478,6 +1532,7 @@ ParsedAst {
                         _parent: Some(
                             53,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1510,6 +1565,7 @@ ParsedAst {
                 _parent: Some(
                     46,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1543,6 +1599,7 @@ ParsedAst {
                     _parent: Some(
                         55,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1564,6 +1621,7 @@ ParsedAst {
                 _parent: Some(
                     56,
                 ),
+                _is_missing: false,
             },
         ),
         AsPatternTarget {
@@ -1583,6 +1641,7 @@ ParsedAst {
             _parent: Some(
                 56,
             ),
+            _is_missing: false,
         },
         Block(
             Block {
@@ -1609,6 +1668,7 @@ ParsedAst {
                 _parent: Some(
                     55,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1636,6 +1696,7 @@ ParsedAst {
                     _parent: Some(
                         59,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1659,6 +1720,7 @@ ParsedAst {
                         _parent: Some(
                             60,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1685,6 +1747,7 @@ ParsedAst {
                 _parent: Some(
                     46,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -1711,6 +1774,7 @@ ParsedAst {
             _parent: Some(
                 62,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -1737,6 +1801,7 @@ ParsedAst {
                     _parent: Some(
                         63,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1760,6 +1825,7 @@ ParsedAst {
                         _parent: Some(
                             64,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1786,6 +1852,7 @@ ParsedAst {
                 _parent: Some(
                     46,
                 ),
+                _is_missing: false,
             },
         ),
         Block {
@@ -1812,6 +1879,7 @@ ParsedAst {
             _parent: Some(
                 66,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -1838,6 +1906,7 @@ ParsedAst {
                     _parent: Some(
                         67,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1861,6 +1930,7 @@ ParsedAst {
                         _parent: Some(
                             68,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),

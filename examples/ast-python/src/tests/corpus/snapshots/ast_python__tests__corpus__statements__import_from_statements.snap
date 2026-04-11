@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -53,6 +53,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -84,6 +85,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -111,6 +113,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -130,6 +133,7 @@ ParsedAst {
             _parent: Some(
                 2,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -155,6 +159,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -174,6 +179,7 @@ ParsedAst {
             _parent: Some(
                 4,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -205,6 +211,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -232,6 +239,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -251,6 +259,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         WildcardImport {
             _range: Range {
@@ -269,6 +278,7 @@ ParsedAst {
             _parent: Some(
                 6,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -304,6 +314,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -331,6 +342,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -350,6 +362,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -375,6 +388,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -394,6 +408,7 @@ ParsedAst {
             _parent: Some(
                 13,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -419,6 +434,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -438,6 +454,7 @@ ParsedAst {
             _parent: Some(
                 15,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -469,6 +486,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -500,6 +518,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -519,6 +538,7 @@ ParsedAst {
             _parent: Some(
                 18,
             ),
+            _is_missing: false,
         },
         Identifier {
             _range: Range {
@@ -537,6 +557,7 @@ ParsedAst {
             _parent: Some(
                 18,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -562,6 +583,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -581,6 +603,7 @@ ParsedAst {
             _parent: Some(
                 21,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -612,6 +635,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -639,6 +663,7 @@ ParsedAst {
                 _parent: Some(
                     23,
                 ),
+                _is_missing: false,
             },
         ),
         ImportPrefix(
@@ -659,6 +684,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -685,6 +711,7 @@ ParsedAst {
                 _parent: Some(
                     23,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -704,6 +731,7 @@ ParsedAst {
             _parent: Some(
                 26,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -735,6 +763,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -762,6 +791,7 @@ ParsedAst {
                 _parent: Some(
                     28,
                 ),
+                _is_missing: false,
             },
         ),
         ImportPrefix(
@@ -782,6 +812,7 @@ ParsedAst {
                 _parent: Some(
                     29,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -808,6 +839,7 @@ ParsedAst {
                 _parent: Some(
                     28,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -827,6 +859,7 @@ ParsedAst {
             _parent: Some(
                 31,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -858,6 +891,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -889,6 +923,7 @@ ParsedAst {
                 _parent: Some(
                     33,
                 ),
+                _is_missing: false,
             },
         ),
         ImportPrefix(
@@ -909,6 +944,7 @@ ParsedAst {
                 _parent: Some(
                     34,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -935,6 +971,7 @@ ParsedAst {
                 _parent: Some(
                     34,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -954,6 +991,7 @@ ParsedAst {
             _parent: Some(
                 36,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -979,6 +1017,7 @@ ParsedAst {
                 _parent: Some(
                     33,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -998,6 +1037,7 @@ ParsedAst {
             _parent: Some(
                 38,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ImportFromStatement(
@@ -1029,6 +1069,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1060,6 +1101,7 @@ ParsedAst {
                 _parent: Some(
                     40,
                 ),
+                _is_missing: false,
             },
         ),
         ImportPrefix(
@@ -1080,6 +1122,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         DottedName(
@@ -1106,6 +1149,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -1125,6 +1169,7 @@ ParsedAst {
             _parent: Some(
                 43,
             ),
+            _is_missing: false,
         },
         DottedName(
             DottedName {
@@ -1150,6 +1195,7 @@ ParsedAst {
                 _parent: Some(
                     40,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -1169,6 +1215,7 @@ ParsedAst {
             _parent: Some(
                 45,
             ),
+            _is_missing: false,
         },
     ],
 }

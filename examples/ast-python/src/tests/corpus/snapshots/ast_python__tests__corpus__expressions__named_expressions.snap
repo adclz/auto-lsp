@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/expressions.rs
+source: examples/ast-python/src/tests/corpus/expressions.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -53,6 +53,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -79,6 +80,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -109,6 +111,7 @@ ParsedAst {
                     _parent: Some(
                         1,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -129,6 +132,7 @@ ParsedAst {
             _parent: Some(
                 2,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Identifier(
@@ -149,6 +153,7 @@ ParsedAst {
                     _parent: Some(
                         2,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -177,6 +182,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -204,6 +210,7 @@ ParsedAst {
                         _parent: Some(
                             5,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -235,6 +242,7 @@ ParsedAst {
                     _parent: Some(
                         6,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -255,6 +263,7 @@ ParsedAst {
             _parent: Some(
                 7,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Call(
@@ -283,6 +292,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -304,6 +314,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -330,6 +341,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -352,6 +364,7 @@ ParsedAst {
                         _parent: Some(
                             11,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -381,6 +394,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -412,6 +426,7 @@ ParsedAst {
                         _parent: Some(
                             13,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -434,6 +449,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -460,6 +476,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         KeywordArgument(
@@ -488,6 +505,7 @@ ParsedAst {
                 _parent: Some(
                     16,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -507,6 +525,7 @@ ParsedAst {
             _parent: Some(
                 17,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             ParenthesizedExpression(
@@ -531,6 +550,7 @@ ParsedAst {
                     _parent: Some(
                         17,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -561,6 +581,7 @@ ParsedAst {
                     _parent: Some(
                         19,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -581,6 +602,7 @@ ParsedAst {
             _parent: Some(
                 20,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Call(
@@ -609,6 +631,7 @@ ParsedAst {
                     _parent: Some(
                         20,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -630,6 +653,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -656,6 +680,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -678,6 +703,7 @@ ParsedAst {
                         _parent: Some(
                             24,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -707,21 +733,22 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         Assignment(
             Assignment {
+                left: AstNodeId {
+                    id: 28,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 right: Some(
                     AstNodeId {
                         id: 29,
                         _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
                     },
                 ),
-                left: AstNodeId {
-                    id: 28,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
-                },
                 Type: None,
                 _range: Range {
                     start_byte: 39,
@@ -739,6 +766,7 @@ ParsedAst {
                 _parent: Some(
                     26,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -760,6 +788,7 @@ ParsedAst {
                     _parent: Some(
                         27,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -787,6 +816,7 @@ ParsedAst {
                         _parent: Some(
                             27,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -818,6 +848,7 @@ ParsedAst {
                     _parent: Some(
                         29,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -838,6 +869,7 @@ ParsedAst {
             _parent: Some(
                 30,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Call(
@@ -866,6 +898,7 @@ ParsedAst {
                     _parent: Some(
                         30,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -887,6 +920,7 @@ ParsedAst {
                 _parent: Some(
                     32,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -913,6 +947,7 @@ ParsedAst {
                 _parent: Some(
                     32,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -935,6 +970,7 @@ ParsedAst {
                         _parent: Some(
                             34,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -942,20 +978,20 @@ ParsedAst {
         CompoundStatement(
             FunctionDefinition(
                 FunctionDefinition {
-                    parameters: AstNodeId {
-                        id: 38,
-                        _marker: PhantomData<ast_python::generated::Parameters>,
-                    },
-                    type_parameters: None,
-                    name: AstNodeId {
-                        id: 37,
-                        _marker: PhantomData<ast_python::generated::Identifier>,
-                    },
-                    return_type: None,
                     body: AstNodeId {
                         id: 45,
                         _marker: PhantomData<ast_python::generated::Block>,
                     },
+                    name: AstNodeId {
+                        id: 37,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                    parameters: AstNodeId {
+                        id: 38,
+                        _marker: PhantomData<ast_python::generated::Parameters>,
+                    },
+                    return_type: None,
+                    type_parameters: None,
                     _range: Range {
                         start_byte: 57,
                         end_byte: 100,
@@ -972,6 +1008,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -992,6 +1029,7 @@ ParsedAst {
             _parent: Some(
                 36,
             ),
+            _is_missing: false,
         },
         Parameters {
             children: [
@@ -1016,16 +1054,17 @@ ParsedAst {
             _parent: Some(
                 36,
             ),
+            _is_missing: false,
         },
         DefaultParameter(
             DefaultParameter {
-                value: AstNodeId {
-                    id: 41,
-                    _marker: PhantomData<ast_python::generated::Expression>,
-                },
                 name: AstNodeId {
                     id: 40,
                     _marker: PhantomData<ast_python::generated::Identifier_TuplePattern>,
+                },
+                value: AstNodeId {
+                    id: 41,
+                    _marker: PhantomData<ast_python::generated::Expression>,
                 },
                 _range: Range {
                     start_byte: 65,
@@ -1043,6 +1082,7 @@ ParsedAst {
                 _parent: Some(
                     38,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1063,6 +1103,7 @@ ParsedAst {
                 _parent: Some(
                     39,
                 ),
+                _is_missing: false,
             },
         ),
         PrimaryExpression(
@@ -1088,6 +1129,7 @@ ParsedAst {
                     _parent: Some(
                         39,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1118,6 +1160,7 @@ ParsedAst {
                     _parent: Some(
                         41,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1138,6 +1181,7 @@ ParsedAst {
             _parent: Some(
                 42,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Integer(
@@ -1158,6 +1202,7 @@ ParsedAst {
                     _parent: Some(
                         42,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1185,6 +1230,7 @@ ParsedAst {
             _parent: Some(
                 36,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ReturnStatement(
@@ -1211,6 +1257,7 @@ ParsedAst {
                     _parent: Some(
                         45,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1234,6 +1281,7 @@ ParsedAst {
                         _parent: Some(
                             46,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1241,20 +1289,20 @@ ParsedAst {
         CompoundStatement(
             FunctionDefinition(
                 FunctionDefinition {
-                    parameters: AstNodeId {
-                        id: 50,
-                        _marker: PhantomData<ast_python::generated::Parameters>,
-                    },
-                    type_parameters: None,
-                    name: AstNodeId {
-                        id: 49,
-                        _marker: PhantomData<ast_python::generated::Identifier>,
-                    },
-                    return_type: None,
                     body: AstNodeId {
                         id: 59,
                         _marker: PhantomData<ast_python::generated::Block>,
                     },
+                    name: AstNodeId {
+                        id: 49,
+                        _marker: PhantomData<ast_python::generated::Identifier>,
+                    },
+                    parameters: AstNodeId {
+                        id: 50,
+                        _marker: PhantomData<ast_python::generated::Parameters>,
+                    },
+                    return_type: None,
+                    type_parameters: None,
                     _range: Range {
                         start_byte: 101,
                         end_byte: 149,
@@ -1271,6 +1319,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1291,6 +1340,7 @@ ParsedAst {
             _parent: Some(
                 48,
             ),
+            _is_missing: false,
         },
         Parameters {
             children: [
@@ -1315,6 +1365,7 @@ ParsedAst {
             _parent: Some(
                 48,
             ),
+            _is_missing: false,
         },
         TypedDefaultParameter(
             TypedDefaultParameter {
@@ -1346,6 +1397,7 @@ ParsedAst {
                 _parent: Some(
                     50,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -1365,6 +1417,7 @@ ParsedAst {
             _parent: Some(
                 51,
             ),
+            _is_missing: false,
         },
         Type {
             children: AstNodeId {
@@ -1387,6 +1440,7 @@ ParsedAst {
             _parent: Some(
                 51,
             ),
+            _is_missing: false,
         },
         Expression(
             PrimaryExpression(
@@ -1412,6 +1466,7 @@ ParsedAst {
                         _parent: Some(
                             53,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1443,6 +1498,7 @@ ParsedAst {
                     _parent: Some(
                         54,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1463,6 +1519,7 @@ ParsedAst {
             _parent: Some(
                 55,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Integer(
@@ -1483,6 +1540,7 @@ ParsedAst {
                     _parent: Some(
                         55,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1505,6 +1563,7 @@ ParsedAst {
                     _parent: Some(
                         51,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1532,6 +1591,7 @@ ParsedAst {
             _parent: Some(
                 48,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ReturnStatement(
@@ -1558,6 +1618,7 @@ ParsedAst {
                     _parent: Some(
                         59,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1581,6 +1642,7 @@ ParsedAst {
                         _parent: Some(
                             60,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1610,6 +1672,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1641,6 +1704,7 @@ ParsedAst {
                         _parent: Some(
                             62,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1663,6 +1727,7 @@ ParsedAst {
                 _parent: Some(
                     63,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -1693,6 +1758,7 @@ ParsedAst {
                 _parent: Some(
                     63,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1722,6 +1788,7 @@ ParsedAst {
                     _parent: Some(
                         65,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1742,6 +1809,7 @@ ParsedAst {
             _parent: Some(
                 66,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Integer(
@@ -1762,6 +1830,7 @@ ParsedAst {
                     _parent: Some(
                         66,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1791,6 +1860,7 @@ ParsedAst {
                 _parent: Some(
                     65,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -1810,6 +1880,7 @@ ParsedAst {
             _parent: Some(
                 69,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             String(
@@ -1844,6 +1915,7 @@ ParsedAst {
                     _parent: Some(
                         69,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1865,6 +1937,7 @@ ParsedAst {
                 _parent: Some(
                     71,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -1886,6 +1959,7 @@ ParsedAst {
                 _parent: Some(
                     71,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -1906,6 +1980,7 @@ ParsedAst {
                 _parent: Some(
                     71,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -1933,6 +2008,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1960,6 +2036,7 @@ ParsedAst {
                         _parent: Some(
                             75,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1991,6 +2068,7 @@ ParsedAst {
                     _parent: Some(
                         76,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2011,6 +2089,7 @@ ParsedAst {
             _parent: Some(
                 77,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             ParenthesizedExpression(
@@ -2035,6 +2114,7 @@ ParsedAst {
                     _parent: Some(
                         77,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2065,6 +2145,7 @@ ParsedAst {
                     _parent: Some(
                         79,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2085,6 +2166,7 @@ ParsedAst {
             _parent: Some(
                 80,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             ParenthesizedExpression(
@@ -2109,6 +2191,7 @@ ParsedAst {
                     _parent: Some(
                         80,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2139,6 +2222,7 @@ ParsedAst {
                     _parent: Some(
                         82,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -2159,6 +2243,7 @@ ParsedAst {
             _parent: Some(
                 83,
             ),
+            _is_missing: false,
         },
         PrimaryExpression(
             Integer(
@@ -2179,6 +2264,7 @@ ParsedAst {
                     _parent: Some(
                         83,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),

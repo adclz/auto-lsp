@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/mod.rs
+source: examples/ast-html/src/tests/corpus/mod.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -41,6 +41,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         Element(
             Element {
@@ -70,6 +71,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -96,6 +98,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -116,6 +119,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -136,6 +140,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Element(
@@ -170,6 +175,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -196,6 +202,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -216,6 +223,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -236,6 +244,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         EndTag(
@@ -260,6 +269,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         TagName {
@@ -279,6 +289,7 @@ ParsedAst {
             _parent: Some(
                 9,
             ),
+            _is_missing: false,
         },
         Element(
             Element {
@@ -308,6 +319,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -334,6 +346,7 @@ ParsedAst {
                 _parent: Some(
                     11,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -354,6 +367,7 @@ ParsedAst {
                 _parent: Some(
                     12,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -374,6 +388,7 @@ ParsedAst {
                 _parent: Some(
                     11,
                 ),
+                _is_missing: false,
             },
         ),
         Element(
@@ -404,6 +419,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -430,6 +446,7 @@ ParsedAst {
                 _parent: Some(
                     15,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -450,6 +467,7 @@ ParsedAst {
                 _parent: Some(
                     16,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -470,6 +488,7 @@ ParsedAst {
                 _parent: Some(
                     15,
                 ),
+                _is_missing: false,
             },
         ),
         Element(
@@ -504,6 +523,7 @@ ParsedAst {
                 _parent: Some(
                     0,
                 ),
+                _is_missing: false,
             },
         ),
         StartTag(
@@ -530,6 +550,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         TagName(
@@ -550,6 +571,7 @@ ParsedAst {
                 _parent: Some(
                     20,
                 ),
+                _is_missing: false,
             },
         ),
         Text(
@@ -570,6 +592,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         EndTag(
@@ -594,6 +617,7 @@ ParsedAst {
                 _parent: Some(
                     19,
                 ),
+                _is_missing: false,
             },
         ),
         TagName {
@@ -613,6 +637,7 @@ ParsedAst {
             _parent: Some(
                 23,
             ),
+            _is_missing: false,
         },
     ],
 }

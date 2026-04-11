@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/expressions.rs
+source: examples/ast-python/src/tests/corpus/expressions.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -29,6 +29,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -55,6 +56,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -62,13 +64,13 @@ ParsedAst {
             PrimaryExpression(
                 BinaryOperator(
                     BinaryOperator {
-                        operator: AstNodeId {
-                            id: 4,
-                            _marker: PhantomData<ast_python::generated::Operators_1>,
-                        },
                         left: AstNodeId {
                             id: 3,
                             _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        operator: AstNodeId {
+                            id: 4,
+                            _marker: PhantomData<ast_python::generated::Operators_1>,
                         },
                         right: AstNodeId {
                             id: 5,
@@ -90,6 +92,7 @@ ParsedAst {
                         _parent: Some(
                             1,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -112,6 +115,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Token_StarStar(
@@ -132,17 +136,18 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         BinaryOperator(
             BinaryOperator {
-                operator: AstNodeId {
-                    id: 7,
-                    _marker: PhantomData<ast_python::generated::Operators_1>,
-                },
                 left: AstNodeId {
                     id: 6,
                     _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                operator: AstNodeId {
+                    id: 7,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
                 },
                 right: AstNodeId {
                     id: 8,
@@ -164,6 +169,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Integer(
@@ -184,6 +190,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         Token_StarStar(
@@ -204,6 +211,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         Integer(
@@ -224,6 +232,7 @@ ParsedAst {
                 _parent: Some(
                     5,
                 ),
+                _is_missing: false,
             },
         ),
         SimpleStatement(
@@ -251,6 +260,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -258,13 +268,13 @@ ParsedAst {
             PrimaryExpression(
                 UnaryOperator(
                     UnaryOperator {
-                        operator: AstNodeId {
-                            id: 11,
-                            _marker: PhantomData<ast_python::generated::Operators_4>,
-                        },
                         argument: AstNodeId {
                             id: 12,
                             _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        operator: AstNodeId {
+                            id: 11,
+                            _marker: PhantomData<ast_python::generated::Operators_4>,
                         },
                         _range: Range {
                             start_byte: 9,
@@ -282,6 +292,7 @@ ParsedAst {
                         _parent: Some(
                             9,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -304,17 +315,18 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         BinaryOperator(
             BinaryOperator {
-                operator: AstNodeId {
-                    id: 14,
-                    _marker: PhantomData<ast_python::generated::Operators_1>,
-                },
                 left: AstNodeId {
                     id: 13,
                     _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                operator: AstNodeId {
+                    id: 14,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
                 },
                 right: AstNodeId {
                     id: 15,
@@ -336,6 +348,7 @@ ParsedAst {
                 _parent: Some(
                     10,
                 ),
+                _is_missing: false,
             },
         ),
         Integer(
@@ -356,6 +369,7 @@ ParsedAst {
                 _parent: Some(
                     12,
                 ),
+                _is_missing: false,
             },
         ),
         Token_StarStar(
@@ -376,6 +390,7 @@ ParsedAst {
                 _parent: Some(
                     12,
                 ),
+                _is_missing: false,
             },
         ),
         Integer(
@@ -396,6 +411,7 @@ ParsedAst {
                 _parent: Some(
                     12,
                 ),
+                _is_missing: false,
             },
         ),
     ],

@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/statements.rs
+source: examples/ast-python/src/tests/corpus/statements.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -33,6 +33,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         CompoundStatement(
             WithStatement(
@@ -61,6 +62,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -87,6 +89,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         WithItem {
             value: AstNodeId {
@@ -109,6 +112,7 @@ ParsedAst {
             _parent: Some(
                 2,
             ),
+            _is_missing: false,
         },
         AsPattern(
             AsPattern {
@@ -140,6 +144,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -160,6 +165,7 @@ ParsedAst {
                 _parent: Some(
                     4,
                 ),
+                _is_missing: false,
             },
         ),
         AsPatternTarget {
@@ -179,6 +185,7 @@ ParsedAst {
             _parent: Some(
                 4,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -204,6 +211,7 @@ ParsedAst {
             _parent: Some(
                 1,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -230,6 +238,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -253,6 +262,7 @@ ParsedAst {
                         _parent: Some(
                             8,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -284,6 +294,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -314,6 +325,7 @@ ParsedAst {
             _parent: Some(
                 10,
             ),
+            _is_missing: false,
         },
         WithItem {
             value: AstNodeId {
@@ -336,6 +348,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         AsPattern(
             AsPattern {
@@ -367,6 +380,7 @@ ParsedAst {
                 _parent: Some(
                     12,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -397,6 +411,7 @@ ParsedAst {
                         _parent: Some(
                             13,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -419,6 +434,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -445,6 +461,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -481,6 +498,7 @@ ParsedAst {
                         _parent: Some(
                             16,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -503,6 +521,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -524,6 +543,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -544,6 +564,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         AsPatternTarget {
@@ -563,6 +584,7 @@ ParsedAst {
             _parent: Some(
                 13,
             ),
+            _is_missing: false,
         },
         WithItem {
             value: AstNodeId {
@@ -585,6 +607,7 @@ ParsedAst {
             _parent: Some(
                 11,
             ),
+            _is_missing: false,
         },
         AsPattern(
             AsPattern {
@@ -616,6 +639,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -646,6 +670,7 @@ ParsedAst {
                         _parent: Some(
                             23,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -668,6 +693,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         ArgumentList(
@@ -694,6 +720,7 @@ ParsedAst {
                 _parent: Some(
                     24,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -730,6 +757,7 @@ ParsedAst {
                         _parent: Some(
                             26,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -752,6 +780,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         StringContent(
@@ -773,6 +802,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         StringEnd(
@@ -793,6 +823,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         AsPatternTarget {
@@ -812,6 +843,7 @@ ParsedAst {
             _parent: Some(
                 23,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -837,6 +869,7 @@ ParsedAst {
             _parent: Some(
                 10,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -863,6 +896,7 @@ ParsedAst {
                     _parent: Some(
                         32,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -886,6 +920,7 @@ ParsedAst {
                         _parent: Some(
                             33,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -917,6 +952,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -947,6 +983,7 @@ ParsedAst {
             _parent: Some(
                 35,
             ),
+            _is_missing: false,
         },
         WithItem {
             value: AstNodeId {
@@ -969,6 +1006,7 @@ ParsedAst {
             _parent: Some(
                 36,
             ),
+            _is_missing: false,
         },
         AsPattern(
             AsPattern {
@@ -1000,6 +1038,7 @@ ParsedAst {
                 _parent: Some(
                     37,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1020,6 +1059,7 @@ ParsedAst {
                 _parent: Some(
                     38,
                 ),
+                _is_missing: false,
             },
         ),
         AsPatternTarget {
@@ -1039,6 +1079,7 @@ ParsedAst {
             _parent: Some(
                 38,
             ),
+            _is_missing: false,
         },
         WithItem {
             value: AstNodeId {
@@ -1061,6 +1102,7 @@ ParsedAst {
             _parent: Some(
                 36,
             ),
+            _is_missing: false,
         },
         AsPattern(
             AsPattern {
@@ -1092,6 +1134,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -1112,6 +1155,7 @@ ParsedAst {
                 _parent: Some(
                     42,
                 ),
+                _is_missing: false,
             },
         ),
         AsPatternTarget {
@@ -1131,6 +1175,7 @@ ParsedAst {
             _parent: Some(
                 42,
             ),
+            _is_missing: false,
         },
         Block {
             alternative: [],
@@ -1156,6 +1201,7 @@ ParsedAst {
             _parent: Some(
                 35,
             ),
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -1182,6 +1228,7 @@ ParsedAst {
                     _parent: Some(
                         45,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1205,6 +1252,7 @@ ParsedAst {
                         _parent: Some(
                             46,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),

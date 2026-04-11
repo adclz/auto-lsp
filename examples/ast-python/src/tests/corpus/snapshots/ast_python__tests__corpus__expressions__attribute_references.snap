@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/expressions.rs
+source: examples/ast-python/src/tests/corpus/expressions.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,6 +25,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -51,6 +52,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -58,13 +60,13 @@ ParsedAst {
             PrimaryExpression(
                 Attribute(
                     Attribute {
-                        object: AstNodeId {
-                            id: 3,
-                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
-                        },
                         attribute: AstNodeId {
                             id: 6,
                             _marker: PhantomData<ast_python::generated::Identifier>,
+                        },
+                        object: AstNodeId {
+                            id: 3,
+                            _marker: PhantomData<ast_python::generated::PrimaryExpression>,
                         },
                         _range: Range {
                             start_byte: 1,
@@ -82,19 +84,20 @@ ParsedAst {
                         _parent: Some(
                             1,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
         ),
         Attribute(
             Attribute {
-                object: AstNodeId {
-                    id: 4,
-                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
-                },
                 attribute: AstNodeId {
                     id: 5,
                     _marker: PhantomData<ast_python::generated::Identifier>,
+                },
+                object: AstNodeId {
+                    id: 4,
+                    _marker: PhantomData<ast_python::generated::PrimaryExpression>,
                 },
                 _range: Range {
                     start_byte: 1,
@@ -112,6 +115,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -132,6 +136,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier {
@@ -151,6 +156,7 @@ ParsedAst {
             _parent: Some(
                 3,
             ),
+            _is_missing: false,
         },
         Identifier {
             _range: Range {
@@ -169,6 +175,7 @@ ParsedAst {
             _parent: Some(
                 2,
             ),
+            _is_missing: false,
         },
     ],
 }

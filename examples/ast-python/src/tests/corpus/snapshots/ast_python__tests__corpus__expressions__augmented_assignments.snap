@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/expressions.rs
+source: examples/ast-python/src/tests/corpus/expressions.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -73,6 +73,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -99,11 +100,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 3,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 4,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -111,10 +117,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 5,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 3,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 1,
@@ -132,6 +134,7 @@ ParsedAst {
                 _parent: Some(
                     1,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -153,6 +156,7 @@ ParsedAst {
                     _parent: Some(
                         2,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -174,6 +178,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -196,6 +201,7 @@ ParsedAst {
                         _parent: Some(
                             2,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -225,11 +231,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 8,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 9,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -237,10 +248,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 10,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 8,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 8,
@@ -258,6 +265,7 @@ ParsedAst {
                 _parent: Some(
                     6,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -279,6 +287,7 @@ ParsedAst {
                     _parent: Some(
                         7,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -300,6 +309,7 @@ ParsedAst {
                 _parent: Some(
                     7,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -322,6 +332,7 @@ ParsedAst {
                         _parent: Some(
                             7,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -351,11 +362,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 13,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 14,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -363,10 +379,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 15,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 13,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 16,
@@ -384,6 +396,7 @@ ParsedAst {
                 _parent: Some(
                     11,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -405,6 +418,7 @@ ParsedAst {
                     _parent: Some(
                         12,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -426,6 +440,7 @@ ParsedAst {
                 _parent: Some(
                     12,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -448,6 +463,7 @@ ParsedAst {
                         _parent: Some(
                             12,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -477,11 +493,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 18,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 19,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -489,10 +510,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 20,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 18,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 24,
@@ -510,6 +527,7 @@ ParsedAst {
                 _parent: Some(
                     16,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -531,6 +549,7 @@ ParsedAst {
                     _parent: Some(
                         17,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -552,6 +571,7 @@ ParsedAst {
                 _parent: Some(
                     17,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -574,6 +594,7 @@ ParsedAst {
                         _parent: Some(
                             17,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -603,11 +624,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 23,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 24,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -615,10 +641,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 25,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 23,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 31,
@@ -636,6 +658,7 @@ ParsedAst {
                 _parent: Some(
                     21,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -657,6 +680,7 @@ ParsedAst {
                     _parent: Some(
                         22,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -678,6 +702,7 @@ ParsedAst {
                 _parent: Some(
                     22,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -700,6 +725,7 @@ ParsedAst {
                         _parent: Some(
                             22,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -729,11 +755,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 28,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 29,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -741,10 +772,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 30,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 28,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 38,
@@ -762,6 +789,7 @@ ParsedAst {
                 _parent: Some(
                     26,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -783,6 +811,7 @@ ParsedAst {
                     _parent: Some(
                         27,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -804,6 +833,7 @@ ParsedAst {
                 _parent: Some(
                     27,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -826,6 +856,7 @@ ParsedAst {
                         _parent: Some(
                             27,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -855,11 +886,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 33,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 34,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -867,10 +903,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 35,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 33,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 45,
@@ -888,6 +920,7 @@ ParsedAst {
                 _parent: Some(
                     31,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -909,6 +942,7 @@ ParsedAst {
                     _parent: Some(
                         32,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -930,6 +964,7 @@ ParsedAst {
                 _parent: Some(
                     32,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -952,6 +987,7 @@ ParsedAst {
                         _parent: Some(
                             32,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -981,11 +1017,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 38,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 39,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -993,10 +1034,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 40,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 38,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 52,
@@ -1014,6 +1051,7 @@ ParsedAst {
                 _parent: Some(
                     36,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -1035,6 +1073,7 @@ ParsedAst {
                     _parent: Some(
                         37,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1056,6 +1095,7 @@ ParsedAst {
                 _parent: Some(
                     37,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1078,6 +1118,7 @@ ParsedAst {
                         _parent: Some(
                             37,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1107,11 +1148,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 43,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 44,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -1119,10 +1165,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 45,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 43,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 61,
@@ -1140,6 +1182,7 @@ ParsedAst {
                 _parent: Some(
                     41,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -1161,6 +1204,7 @@ ParsedAst {
                     _parent: Some(
                         42,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1182,6 +1226,7 @@ ParsedAst {
                 _parent: Some(
                     42,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1204,6 +1249,7 @@ ParsedAst {
                         _parent: Some(
                             42,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1233,11 +1279,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 48,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 49,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -1245,10 +1296,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 50,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 48,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 68,
@@ -1266,6 +1313,7 @@ ParsedAst {
                 _parent: Some(
                     46,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -1287,6 +1335,7 @@ ParsedAst {
                     _parent: Some(
                         47,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1308,6 +1357,7 @@ ParsedAst {
                 _parent: Some(
                     47,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1330,6 +1380,7 @@ ParsedAst {
                         _parent: Some(
                             47,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1359,11 +1410,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 53,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 54,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -1371,10 +1427,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 55,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 53,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 75,
@@ -1392,6 +1444,7 @@ ParsedAst {
                 _parent: Some(
                     51,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -1413,6 +1466,7 @@ ParsedAst {
                     _parent: Some(
                         52,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1434,6 +1488,7 @@ ParsedAst {
                 _parent: Some(
                     52,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1456,6 +1511,7 @@ ParsedAst {
                         _parent: Some(
                             52,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1485,11 +1541,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 58,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 59,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -1497,10 +1558,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 60,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 58,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 83,
@@ -1518,6 +1575,7 @@ ParsedAst {
                 _parent: Some(
                     56,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -1539,6 +1597,7 @@ ParsedAst {
                     _parent: Some(
                         57,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1560,6 +1619,7 @@ ParsedAst {
                 _parent: Some(
                     57,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1582,6 +1642,7 @@ ParsedAst {
                         _parent: Some(
                             57,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
@@ -1611,11 +1672,16 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
         AugmentedAssignment(
             AugmentedAssignment {
+                left: AstNodeId {
+                    id: 63,
+                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
+                },
                 operator: AstNodeId {
                     id: 64,
                     _marker: PhantomData<ast_python::generated::Operators_0>,
@@ -1623,10 +1689,6 @@ ParsedAst {
                 right: AstNodeId {
                     id: 65,
                     _marker: PhantomData<ast_python::generated::Assignment_AugmentedAssignment_Expression_ExpressionList_PatternList_Yield>,
-                },
-                left: AstNodeId {
-                    id: 63,
-                    _marker: PhantomData<ast_python::generated::Pattern_PatternList>,
                 },
                 _range: Range {
                     start_byte: 90,
@@ -1644,6 +1706,7 @@ ParsedAst {
                 _parent: Some(
                     61,
                 ),
+                _is_missing: false,
             },
         ),
         Pattern(
@@ -1665,6 +1728,7 @@ ParsedAst {
                     _parent: Some(
                         62,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -1686,6 +1750,7 @@ ParsedAst {
                 _parent: Some(
                     62,
                 ),
+                _is_missing: false,
             },
         ),
         Expression(
@@ -1708,6 +1773,7 @@ ParsedAst {
                         _parent: Some(
                             62,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),

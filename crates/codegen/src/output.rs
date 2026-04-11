@@ -142,25 +142,27 @@ pub(crate) fn generate_struct(
     };
 
     let struct_fields = if struct_fields.is_empty() {
-        quote! { _range: auto_lsp::tree_sitter::Range, _id: usize, _parent: Option<usize>, }
+        quote! { _range: auto_lsp::tree_sitter::Range, _id: usize, _parent: Option<usize>, _is_missing: bool, }
     } else {
         quote! {
             #(#struct_fields),*,
              _range: auto_lsp::tree_sitter::Range,
             _id: usize,
-            _parent: Option<usize>
+            _parent: Option<usize>,
+            _is_missing: bool
         }
     };
 
     let struct_fields_finalize = if struct_fields_finalize.is_empty() {
-        quote! { Ok(Self { _range: node.range(), _id: id, _parent: parent_id }) }
+        quote! { Ok(Self { _range: node.range(), _id: id, _parent: parent_id, _is_missing: node.is_missing() }) }
     } else {
         quote! {
            Ok(Self {
                 #(#struct_fields_finalize),*,
                  _range: node.range(),
                 _id: id,
-                _parent: parent_id
+                _parent: parent_id,
+                _is_missing: node.is_missing()
             })
         }
     };
@@ -199,6 +201,10 @@ pub(crate) fn generate_struct(
 
             fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
                 &self._range
+            }
+
+            fn is_missing(&self) -> bool {
+                self._is_missing
             }
         }
 
@@ -357,6 +363,12 @@ pub(crate) fn generate_enum(variant_name: &Ident, variants: &Vec<TypeInfo>) -> T
             fn get_range(&self) -> &auto_lsp::tree_sitter::Range {
                 match self {
                     #(Self::#r_variants(node) => node.get_range()),*
+                }
+            }
+
+            fn is_missing(&self) -> bool {
+                match self {
+                    #(Self::#r_variants(node) => node.is_missing()),*
                 }
             }
         }

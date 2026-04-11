@@ -1,5 +1,5 @@
 ---
-source: src/tests/corpus/expressions.rs
+source: examples/ast-python/src/tests/corpus/expressions.rs
 expression: "get_ast(& db, file)"
 ---
 ParsedAst {
@@ -25,6 +25,7 @@ ParsedAst {
             },
             _id: 0,
             _parent: None,
+            _is_missing: false,
         },
         SimpleStatement(
             ExpressionStatement(
@@ -51,6 +52,7 @@ ParsedAst {
                     _parent: Some(
                         0,
                     ),
+                    _is_missing: false,
                 },
             ),
         ),
@@ -58,13 +60,13 @@ ParsedAst {
             PrimaryExpression(
                 BinaryOperator(
                     BinaryOperator {
-                        operator: AstNodeId {
-                            id: 7,
-                            _marker: PhantomData<ast_python::generated::Operators_1>,
-                        },
                         left: AstNodeId {
                             id: 3,
                             _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                        },
+                        operator: AstNodeId {
+                            id: 7,
+                            _marker: PhantomData<ast_python::generated::Operators_1>,
                         },
                         right: AstNodeId {
                             id: 8,
@@ -86,19 +88,20 @@ ParsedAst {
                         _parent: Some(
                             1,
                         ),
+                        _is_missing: false,
                     },
                 ),
             ),
         ),
         BinaryOperator(
             BinaryOperator {
-                operator: AstNodeId {
-                    id: 5,
-                    _marker: PhantomData<ast_python::generated::Operators_1>,
-                },
                 left: AstNodeId {
                     id: 4,
                     _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                operator: AstNodeId {
+                    id: 5,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
                 },
                 right: AstNodeId {
                     id: 6,
@@ -120,6 +123,7 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -140,6 +144,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Token_ShiftLeft(
@@ -160,6 +165,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -180,6 +186,7 @@ ParsedAst {
                 _parent: Some(
                     3,
                 ),
+                _is_missing: false,
             },
         ),
         Token_Pipe(
@@ -200,17 +207,18 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         BinaryOperator(
             BinaryOperator {
-                operator: AstNodeId {
-                    id: 13,
-                    _marker: PhantomData<ast_python::generated::Operators_1>,
-                },
                 left: AstNodeId {
                     id: 9,
                     _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                operator: AstNodeId {
+                    id: 13,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
                 },
                 right: AstNodeId {
                     id: 14,
@@ -232,17 +240,18 @@ ParsedAst {
                 _parent: Some(
                     2,
                 ),
+                _is_missing: false,
             },
         ),
         BinaryOperator(
             BinaryOperator {
-                operator: AstNodeId {
-                    id: 11,
-                    _marker: PhantomData<ast_python::generated::Operators_1>,
-                },
                 left: AstNodeId {
                     id: 10,
                     _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                operator: AstNodeId {
+                    id: 11,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
                 },
                 right: AstNodeId {
                     id: 12,
@@ -264,6 +273,7 @@ ParsedAst {
                 _parent: Some(
                     8,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -284,6 +294,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         Token_ShiftRight(
@@ -304,6 +315,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -324,6 +336,7 @@ ParsedAst {
                 _parent: Some(
                     9,
                 ),
+                _is_missing: false,
             },
         ),
         Token_Ampersand(
@@ -344,17 +357,18 @@ ParsedAst {
                 _parent: Some(
                     8,
                 ),
+                _is_missing: false,
             },
         ),
         BinaryOperator(
             BinaryOperator {
-                operator: AstNodeId {
-                    id: 16,
-                    _marker: PhantomData<ast_python::generated::Operators_1>,
-                },
                 left: AstNodeId {
                     id: 15,
                     _marker: PhantomData<ast_python::generated::PrimaryExpression>,
+                },
+                operator: AstNodeId {
+                    id: 16,
+                    _marker: PhantomData<ast_python::generated::Operators_1>,
                 },
                 right: AstNodeId {
                     id: 17,
@@ -376,6 +390,7 @@ ParsedAst {
                 _parent: Some(
                     8,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -396,6 +411,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         Token_Caret(
@@ -416,6 +432,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
         Identifier(
@@ -436,6 +453,7 @@ ParsedAst {
                 _parent: Some(
                     14,
                 ),
+                _is_missing: false,
             },
         ),
     ],
