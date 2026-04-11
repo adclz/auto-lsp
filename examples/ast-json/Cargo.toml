@@ -1,0 +1,25 @@
+[package]
+name = "ast-json"
+version = "0.1.0"
+publish = false
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+tree-sitter-json = { workspace = true }
+auto-lsp = { path = "../.." }
+
+[dev-dependencies]
+insta = { workspace = true, features = ["filters"] }
+rstest = { workspace = true }
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
+
+[build-dependencies]
+tree-sitter-json = { workspace = true }
+auto-lsp = { path = "../.." }
+auto-lsp-codegen = { path = "../../crates/codegen" }
