@@ -33,10 +33,10 @@ pub enum Task {
 
 impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> Session<Db> {
     /// Main loop of the LSP server, backed by [`lsp-server`] and [`crossbeam-channel`] crates.
-    pub fn main_loop<'a>(
-        &'a mut self,
-        req_registry: &'a RequestRegistry<Db>,
-        not_registry: &'a NotificationRegistry<Db>,
+    pub fn main_loop(
+        mut self,
+        req_registry: &RequestRegistry<Db>,
+        not_registry: &NotificationRegistry<Db>,
     ) -> anyhow::Result<()> {
         loop {
             select! {
@@ -50,22 +50,22 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> Session<Db> {
                             self.req_queue.incoming.register(req.id.clone(), req.method.clone());
 
                             if let Some(method) = req_registry.get(&req) {
-                                RequestRegistry::exec(self, method, req);
+                                RequestRegistry::exec(&self, method, req);
                             } else if let Some(method) = req_registry.get_sync_mut(&req) {
-                                RequestRegistry::exec_sync_mut(self, method, req)?;
+                                RequestRegistry::exec_sync_mut(&mut self, method, req)?;
                             } else {
-                                RequestRegistry::complete(self,
+                                RequestRegistry::complete(&mut self,
                                     RequestRegistry::<Db>::request_mismatch(req.id.clone(), anyhow::format_err!("Unknown request: {}", req.method))
                                 )?
                             }
                         }
                         Message::Notification(not) => {
                             if let Some(method) = not_registry.get(&not) {
-                                NotificationRegistry::exec(self, method, not);
+                                NotificationRegistry::exec(&self, method, not);
                             } else if let Some(method) = not_registry.get_sync_mut(&not) {
-                                NotificationRegistry::exec_sync_mut(self, method, not)?;
+                                NotificationRegistry::exec_sync_mut(&mut self, method, not)?;
                             } else {
-                                NotificationRegistry::handle_error(self, anyhow::format_err!("Unknown notification: {}", not.method))?
+                                NotificationRegistry::handle_error(&self, anyhow::format_err!("Unknown notification: {}", not.method))?
                             }
                         }
                         Message::Response(_) => {}
@@ -73,8 +73,8 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> Session<Db> {
                 },
                 recv(self.task_receiver) -> task => {
                     match task? {
-                        Task::Response(resp) => RequestRegistry::complete(self, resp)?,
-                        Task::NotificationError(err) => NotificationRegistry::handle_error(self, err)?,
+                        Task::Response(resp) => RequestRegistry::complete(&mut self, resp)?,
+                        Task::NotificationError(err) => NotificationRegistry::handle_error(&self, err)?,
                     }
                 }
             }
