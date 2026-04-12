@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use lsp_types::{Position, PositionEncodingKind};
 use std::ops::Range;
-use texter::core::text::Text;
+use texter::{change::GridIndex, core::text::Text};
 use texter_impl::{change::WrapChange, updateable::WrapTree};
 use tree_sitter::{Point, Tree};
 
@@ -134,40 +134,25 @@ impl Document {
 
     /// Converts a tree-sitter [`Point`] (byte-offset column) to another [`Point`]
     /// with the column adjusted to the document's encoding.
+    ///
+    /// Uses texter's [`GridIndex::denormalize`] to convert from UTF-8 to the document's encoding.
     pub fn ts_point_to_enc_point(&self, point: Point) -> Option<Point> {
-        let line_str = self.texter.get_row(point.row)?;
-
-        let mut utf16_offset = 0;
-        let mut u8_offset = 0;
-        let mut u32_offset = 0;
-
-        for c in line_str.chars() {
-            if u8_offset >= point.column {
-                break;
-            }
-            utf16_offset += c.len_utf16();
-            u8_offset += c.len_utf8();
-            u32_offset += 1;
-        }
-
-        let column = match self.encoding {
-            Encoding::UTF8 => u8_offset,
-            Encoding::UTF16 => utf16_offset,
-            Encoding::UTF32 => u32_offset,
-        };
-
-        Some(Point {
+        // same as https://github.com/airblast-dev/texter/blob/2f4927d33682596e5d84d6497642d73ec2ed4eb3/src/change.rs#L70
+        //
+        let mut grid = GridIndex {
             row: point.row,
-            column,
+            col: point.column,
+        };
+        grid.denormalize(&self.texter).ok()?;
+        Some(Point {
+            row: grid.row,
+            column: grid.col,
         })
     }
 
     /// Converts a tree-sitter [`tree_sitter::Range`] to another [`tree_sitter::Range`]
     /// with columns adjusted to the document's encoding. Byte offsets are preserved.
-    pub fn ts_range_to_enc_range(
-        &self,
-        range: &tree_sitter::Range,
-    ) -> Option<tree_sitter::Range> {
+    pub fn ts_range_to_enc_range(&self, range: &tree_sitter::Range) -> Option<tree_sitter::Range> {
         let start_point = self.ts_point_to_enc_point(range.start_point)?;
         let end_point = self.ts_point_to_enc_point(range.end_point)?;
         Some(tree_sitter::Range {
@@ -741,7 +726,13 @@ mod test {
             .unwrap();
 
         // Start is after "<div>" — pure ASCII, same for all encodings
-        assert_eq!(start, Position { line: 0, character: 5 });
+        assert_eq!(
+            start,
+            Position {
+                line: 0,
+                character: 5
+            }
+        );
 
         // End is after "こんにちは" — encoding matters
         assert_eq!(
@@ -749,9 +740,9 @@ mod test {
             Position {
                 line: 0,
                 character: match encoding {
-                    Encoding::UTF8 => 20,   // 5 + 15 bytes
-                    Encoding::UTF16 => 10,  // 5 + 5 code units
-                    Encoding::UTF32 => 10,  // 5 + 5 code points
+                    Encoding::UTF8 => 20,  // 5 + 15 bytes
+                    Encoding::UTF16 => 10, // 5 + 5 code units
+                    Encoding::UTF32 => 10, // 5 + 5 code points
                 }
             }
         );
@@ -801,8 +792,20 @@ mod test {
             .ts_point_to_position(hello_text.end_position())
             .unwrap();
 
-        assert_eq!(hello_start, Position { line: 1, character: 3 });
-        assert_eq!(hello_end, Position { line: 1, character: 8 });
+        assert_eq!(
+            hello_start,
+            Position {
+                line: 1,
+                character: 3
+            }
+        );
+        assert_eq!(
+            hello_end,
+            Position {
+                line: 1,
+                character: 8
+            }
+        );
     }
 
     #[rstest]
@@ -833,7 +836,10 @@ mod test {
         assert_eq!(
             lsp_range,
             lsp_types::Range {
-                start: Position { line: 0, character: 5 },
+                start: Position {
+                    line: 0,
+                    character: 5
+                },
                 end: Position {
                     line: 0,
                     character: match encoding {
@@ -876,7 +882,8 @@ mod test {
             let lsp_start = document.ts_point_to_position(start).unwrap();
             let back_start = document.lsp_position_to_ts_point(lsp_start).unwrap();
             assert_eq!(
-                back_start, start,
+                back_start,
+                start,
                 "start roundtrip failed for {:?} (encoding: {encoding:?})",
                 node.kind()
             );
@@ -884,7 +891,8 @@ mod test {
             let lsp_end = document.ts_point_to_position(end).unwrap();
             let back_end = document.lsp_position_to_ts_point(lsp_end).unwrap();
             assert_eq!(
-                back_end, end,
+                back_end,
+                end,
                 "end roundtrip failed for {:?} (encoding: {encoding:?})",
                 node.kind()
             );
@@ -909,9 +917,9 @@ mod test {
 
         // Query the text node "こんにちは" using an LSP position in the middle of it
         let mid_character = match encoding {
-            Encoding::UTF8 => 8,   // byte offset of "に"
-            Encoding::UTF16 => 7,  // "こん" = 2 code units + 5 ("<div>") = 7
-            Encoding::UTF32 => 7,  // same as UTF-16 for BMP chars
+            Encoding::UTF8 => 8,  // byte offset of "に"
+            Encoding::UTF16 => 7, // "こん" = 2 code units + 5 ("<div>") = 7
+            Encoding::UTF32 => 7, // same as UTF-16 for BMP chars
         };
 
         let node = document
@@ -969,9 +977,9 @@ mod test {
             Point {
                 row: 0,
                 column: match encoding {
-                    Encoding::UTF8 => 20,   // 5 + 15 bytes
-                    Encoding::UTF16 => 10,  // 5 + 5 code units
-                    Encoding::UTF32 => 10,  // 5 + 5 code points
+                    Encoding::UTF8 => 20,  // 5 + 15 bytes
+                    Encoding::UTF16 => 10, // 5 + 5 code units
+                    Encoding::UTF32 => 10, // 5 + 5 code points
                 }
             }
         );
