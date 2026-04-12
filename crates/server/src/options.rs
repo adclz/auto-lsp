@@ -18,14 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::collections::HashMap;
 
-use auto_lsp_core::parsers::Parsers;
-use lsp_types::{
-    ServerCapabilities, ServerInfo,
-};
+use auto_lsp_core::parsers::Parser;
+use lsp_types::{ServerCapabilities, ServerInfo};
 
 /// Initialization options for the LSP server
 pub struct InitOptions {
-    pub parsers: &'static HashMap<&'static str, Parsers>,
+    pub parsers: &'static HashMap<&'static str, Parser>,
     pub capabilities: ServerCapabilities,
     pub server_info: Option<ServerInfo>,
 }
