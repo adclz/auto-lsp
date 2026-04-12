@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use auto_lsp_core::parsers::Parsers;
+use auto_lsp_core::parsers::Parser;
 use lsp_server::Connection;
 use main_loop::Task;
 use options::InitOptions;
@@ -46,7 +46,7 @@ pub struct Session<Db: salsa::Database> {
     /// The client is responsible for providing the encoding at initialization (UTF-8, 16 or 32).
     pub encoding: lsp_types::PositionEncodingKind,
     /// Language extensions to parser mappings.
-    pub parsers: &'static HashMap<&'static str, Parsers>,
+    pub parsers: &'static HashMap<&'static str, Parser>,
     pub(crate) task_receiver: crossbeam_channel::Receiver<Task>,
     pub(crate) task_sender: crossbeam_channel::Sender<Task>,
     pub task_pool: vendored::pool::Pool,

@@ -7,7 +7,7 @@ use std::{
 use auto_lsp_core::{
     document::Document,
     errors::{DataBaseError, ExtensionError, FileSystemError, RuntimeError, TreeSitterError},
-    parsers::Parsers,
+    parsers::Parser,
 };
 use auto_lsp_server::Session;
 use bon::bon;
@@ -51,7 +51,7 @@ pub struct File {
     #[returns(ref)]
     pub url: Url,
 
-    pub parsers: &'static Parsers,
+    pub parsers: &'static Parser,
 
     #[returns(ref)]
     pub document: Arc<Document>,
@@ -114,7 +114,7 @@ impl File {
         db: &impl salsa::Database,
         source: String,
         url: &Url,
-        parsers: &'static Parsers,
+        parsers: &'static Parser,
         encoding: Option<&PositionEncodingKind>,
         durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
@@ -266,8 +266,8 @@ impl File {
     }
 
     /// Utility function to parse a tree sitter tree.
-    fn ts_parse(parsers: &'static Parsers, source: &str, url: &Url) -> Result<Tree, DataBaseError> {
-        parsers
+    fn ts_parse(parser: &'static Parser, source: &str, url: &Url) -> Result<Tree, DataBaseError> {
+        parser
             .parser
             .write()
             .parse(source.as_bytes(), None)
@@ -278,7 +278,7 @@ impl File {
     fn get_ast_parser(
         session: &Session<impl salsa::Database>,
         extension: &str,
-    ) -> Result<&'static Parsers, RuntimeError> {
+    ) -> Result<&'static Parser, RuntimeError> {
         // Check if the parser for this extension is available
         session.init_options.parsers.get(extension).ok_or_else(|| {
             RuntimeError::from(ExtensionError::UnknownParser {

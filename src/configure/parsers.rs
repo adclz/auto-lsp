@@ -42,14 +42,14 @@ macro_rules! configure_parsers {
             language: $language: path,
             ast_root: $root: ident
         }),*) => {
-           pub static $parser_list_name: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::parsers::Parsers>> =
+           pub static $parser_list_name: std::sync::LazyLock<std::collections::HashMap<&str, $crate::core::parsers::Parser>> =
                std::sync::LazyLock::new(|| {
                let mut map = std::collections::HashMap::new();
                $(
                   let data = $crate::configure::parsers::create_parser($language);
                   map.insert(
                       $extension,
-                      $crate::core::parsers::Parsers {
+                      $crate::core::parsers::Parser {
                           parser: data.0,
                           language: data.1,
                           ast_parser: |
