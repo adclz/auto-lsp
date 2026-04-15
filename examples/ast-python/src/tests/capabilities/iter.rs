@@ -17,8 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use crate::db::create_python_db;
 use crate::generated::{CompoundStatement_SimpleStatement, PassStatement, SimpleStatement};
-use auto_lsp::default::db::tracked::get_ast;
 use auto_lsp::default::db::BaseDatabase;
+use auto_lsp::default::db::tracked::get_ast;
 use auto_lsp::lsp_types::Url;
 use rstest::{fixture, rstest};
 
@@ -145,4 +145,57 @@ fn parents(foo_bar: impl BaseDatabase) {
 
     // Parent id should be inferior to the child id
     assert!(pass_statement.get_id() > pass_statement_parent.get_id());
+}
+
+/// Regression test for https://github.com/adclz/auto-lsp/issues/39
+///
+/// When an offset falls between two siblings but still within their parent,
+/// the old binary search would miss the parent node due to broken monotonicity.
+#[rstest]
+fn descendant_at_between_siblings(foo_bar: impl BaseDatabase) {
+    let file = foo_bar
+        .get_file(&Url::parse("file:///test0.py").unwrap())
+        .unwrap();
+    let document = file.document(&foo_bar);
+    let source_code = document.as_bytes();
+    let ast = get_ast(&foo_bar, file);
+
+    // Offset 70 is the blank line between foo and bar, between two siblings
+    // but still within the Module parent. The old binary search could miss this.
+    let node = ast.descendant_at(70).unwrap();
+    let text = node.get_text(source_code).unwrap();
+    assert!(
+        text.contains("def foo") && text.contains("def bar"),
+        "Expected Module node containing both functions, got: {:?}",
+        text
+    );
+
+    // Offset 14 is at the start of "def foo", should find foo, not the comment
+    let node = ast.descendant_at(14).unwrap();
+    assert_eq!(
+        node.get_text(source_code).unwrap(),
+        "def foo(param1, param2: int, param3: int = 5):\n    pass"
+    );
+
+    // Offset 0 is the start of the comment, should find the module
+    let node = ast.descendant_at(0).unwrap();
+    let text = node.get_text(source_code).unwrap();
+    assert!(
+        text.contains("# foo comment"),
+        "Expected Module node at offset 0, got: {:?}",
+        text
+    );
+
+    // Last byte of the file, should still find a node
+    let last = source_code.len().saturating_sub(1);
+    assert!(
+        ast.descendant_at(last).is_some(),
+        "descendant_at should find a node at the last byte"
+    );
+
+    // Past the end, should return None
+    assert!(
+        ast.descendant_at(source_code.len() + 100).is_none(),
+        "descendant_at should return None past the end"
+    );
 }
