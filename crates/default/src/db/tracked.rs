@@ -86,25 +86,20 @@ impl ParsedAst {
         self.nodes.first()
     }
 
-    /// Returns the first node that contains the given offset.
-    ///
-    /// This method uses binary search to find the node.
+    /// Returns the deepest node that contains the given offset.
     pub fn descendant_at(&self, offset: usize) -> Option<&Box<dyn AstNode>> {
         debug_assert!(self.nodes.is_sorted());
 
-        let result = self
+        // Uses partition_point to find all nodes with `start_byte <= offset`,
+        let idx = self
             .nodes
-            .binary_search_by(|f| {
-                let range = f.get_range();
-                if range.start_byte <= offset && offset <= range.end_byte {
-                    std::cmp::Ordering::Equal
-                } else if range.start_byte > offset {
-                    std::cmp::Ordering::Greater
-                } else {
-                    std::cmp::Ordering::Less
-                }
-            })
-            .ok()?;
-        self.nodes.get(result)
+            .partition_point(|f| f.get_range().start_byte <= offset);
+
+        // then walks backward to find the deepest one whose `end_byte >= offset`.
+        // so the first match is the most specific (deepest) node.
+        self.nodes[..idx]
+            .iter()
+            .rev()
+            .find(|f| f.get_range().end_byte >= offset)
     }
 }
