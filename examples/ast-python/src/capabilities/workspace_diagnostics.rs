@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 use auto_lsp::core::errors::ParseErrorAccumulator;
-use auto_lsp::default::db::tracked::get_ast;
 use auto_lsp::default::db::BaseDatabase;
+use auto_lsp::default::db::tracked::get_ast;
 use auto_lsp::lsp_types::{
     FullDocumentDiagnosticReport, WorkspaceDiagnosticParams, WorkspaceDiagnosticReport,
     WorkspaceDiagnosticReportResult, WorkspaceDocumentDiagnosticReport,
@@ -37,7 +37,7 @@ pub fn workspace_diagnostics(
             let file = *file;
             let errors = get_ast::accumulated::<ParseErrorAccumulator>(db, file)
                 .into_iter()
-                .map(|d| d.into())
+                .map(|d| d.to_lsp_diagnostic(file.document(db)).unwrap())
                 .collect();
             WorkspaceDocumentDiagnosticReport::Full(WorkspaceFullDocumentDiagnosticReport {
                 version: None,
