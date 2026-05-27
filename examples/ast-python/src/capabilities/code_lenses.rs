@@ -18,9 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::FunctionDefinition;
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
-use auto_lsp::default::db::file::File;
-use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
+use auto_lsp::default::db::file::File;
+use auto_lsp::default::db::tracked::{ParsedAst, get_ast};
 use auto_lsp::lsp_types::{CodeLens, CodeLensParams};
 use auto_lsp::{anyhow, lsp_types};
 
@@ -52,13 +52,13 @@ pub fn code_lenses(
 impl FunctionDefinition {
     fn build_code_lenses(
         &self,
-        _db: &impl BaseDatabase,
-        _file: File,
+        db: &impl BaseDatabase,
+        file: File,
         ast: &ParsedAst,
         acc: &mut Vec<lsp_types::CodeLens>,
     ) -> anyhow::Result<()> {
         acc.push(lsp_types::CodeLens {
-            range: self.name.cast(ast).get_lsp_range(),
+            range: self.name.cast(ast).get_lsp_range(file.document(db))?,
             command: None,
             data: None,
         });

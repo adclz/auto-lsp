@@ -23,8 +23,8 @@ use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
 use auto_lsp::core::document::Document;
 use auto_lsp::core::document_symbols_builder::DocumentSymbolsBuilder;
-use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
+use auto_lsp::default::db::tracked::{ParsedAst, get_ast};
 use auto_lsp::lsp_types::{DocumentSymbolParams, DocumentSymbolResponse};
 use auto_lsp::{anyhow, lsp_types};
 
@@ -98,8 +98,8 @@ impl FunctionDefinition {
         builder.push_symbol(lsp_types::DocumentSymbol {
             name: self.name.cast(ast).get_text(doc.as_bytes())?.to_string(),
             kind: lsp_types::SymbolKind::FUNCTION,
-            range: self.name.cast(ast).get_lsp_range(),
-            selection_range: self.name.cast(ast).get_lsp_range(),
+            range: self.name.cast(ast).get_lsp_range(doc)?,
+            selection_range: self.name.cast(ast).get_lsp_range(doc)?,
             tags: None,
             detail: None,
             deprecated: None,

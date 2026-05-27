@@ -22,9 +22,9 @@ use crate::generated::{
 };
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::document::Document;
-use auto_lsp::default::db::file::File;
-use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
+use auto_lsp::default::db::file::File;
+use auto_lsp::default::db::tracked::{ParsedAst, get_ast};
 use auto_lsp::lsp_types::{DidChangeTextDocumentParams, Url};
 use auto_lsp::salsa::Accumulator;
 use auto_lsp::{lsp_types, salsa};
@@ -102,7 +102,7 @@ impl TypedDefaultParameter {
     fn type_error_message(&self, document: &Document, ast: &ParsedAst) -> CheckErrorAccumulator {
         let source_code = document.as_bytes();
         CheckErrorAccumulator(lsp_types::Diagnostic {
-            range: self.get_lsp_range(),
+            range: self.get_lsp_range(document).unwrap(),
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),
             code: None,
             code_description: None,
