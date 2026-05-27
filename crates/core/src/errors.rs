@@ -206,19 +206,9 @@ impl From<AstError> for ParseErrorAccumulator {
 
 /// Error type for position errors.
 ///
-/// Only emitted by methods of the [`crate::document::Document`] struct.
+/// Emitted by [`crate::ast::AstNode::get_text`] when slicing source code.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum PositionError {
-    #[error("Failed to find position of offset {offset}, max line length is {length}")]
-    LineOutOfBound { offset: usize, length: usize },
-    #[error("Failed to get position of offset {offset}")]
-    WrongPosition { offset: usize },
-    #[error("Failed to get range of {range:?}: {position_error}")]
-    WrongRange {
-        range: std::ops::Range<usize>,
-        #[source]
-        position_error: Box<PositionError>,
-    },
     #[error("Failed to get text in {range:?}")]
     WrongTextRange { range: std::ops::Range<usize> },
     #[error("Failed to get text in {range:?}: Encountered UTF-8 error {utf8_error}")]
@@ -363,4 +353,13 @@ pub enum TreeSitterError {
 pub enum TexterError {
     #[error("Texter failed to handle document")]
     TexterError(#[from] texter::error::Error),
+}
+
+// thiserror's `#[from]` only generates direct From impls, so it does not chain
+// `texter::error::Error` → `TexterError` → `DocumentError` automatically. Add the shortcut
+// explicitly so `?` propagates raw texter errors straight into `Result<_, DocumentError>`.
+impl From<texter::error::Error> for DocumentError {
+    fn from(error: texter::error::Error) -> Self {
+        DocumentError::Texter(TexterError::from(error))
+    }
 }
