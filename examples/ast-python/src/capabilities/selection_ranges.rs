@@ -59,9 +59,11 @@ pub fn selection_ranges(
 
         let mut parent: Option<SelectionRange> = None;
         for _node in stack {
-            let range = match document.node_range_at(offset) {
-                Some(range) => range,
-                None => continue,
+            let Some(node) = root_node.named_descendant_for_byte_range(offset, offset) else {
+                continue;
+            };
+            let Ok(range) = document.ts_range_to_range(&node.range()) else {
+                continue;
             };
             let range = SelectionRange {
                 range,

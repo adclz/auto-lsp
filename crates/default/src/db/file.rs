@@ -190,12 +190,15 @@ impl File {
     }
 
     /// Resets the file to an empty document.
+    ///
+    /// The empty document is constructed with the default UTF-8 encoding; `reset` is only used
+    /// when a watched file is deleted and the entry is removed immediately after, so no encoded
+    /// position queries hit this document.
     pub fn reset(&self, db: &mut impl salsa::Database) -> Result<(), DataBaseError> {
         let tree = Self::ts_parse(self.parsers(db), &"", &self.url(db))?;
         let document = Document {
             texter: Text::new("".into()),
             tree,
-            encoding: self.document(db).encoding,
         };
 
         self.set_document(db).to(Arc::new(document));

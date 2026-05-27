@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::document::Document;
+use crate::{document::Document, errors::DocumentError};
 
 /// A newtype for [`tree_sitter::Range`].
 ///
@@ -19,7 +19,7 @@ impl Span {
     }
 
     /// Same as [`Self::lsp`] but adjusts the range according to the document's encoding.
-    pub fn lsp_with_enc(&self, document: &Document) -> Option<lsp_types::Range> {
+    pub fn lsp_with_enc(&self, document: &Document) -> Result<lsp_types::Range, DocumentError> {
         document.ts_range_to_range(&self)
     }
 
@@ -29,7 +29,7 @@ impl Span {
     }
 
     /// Returns a new [`Span`] with columns adjusted to the document's encoding.
-    pub fn ts_with_enc(&self, document: &Document) -> Option<Span> {
+    pub fn ts_with_enc(&self, document: &Document) -> Result<Span, DocumentError> {
         document.ts_range_to_enc_range(&self).map(Span)
     }
 }
@@ -50,7 +50,7 @@ impl From<tree_sitter::Range> for Span {
 
 impl<'a> From<&'a tree_sitter::Range> for Span {
     fn from(range: &'a tree_sitter::Range) -> Self {
-        Span(range.clone())
+        Span(*range)
     }
 }
 
@@ -77,7 +77,7 @@ impl From<Span> for lsp_types::Range {
 
 impl PartialEq<tree_sitter::Range> for Span {
     fn eq(&self, other: &tree_sitter::Range) -> bool {
-        self == other
+        self.0 == *other
     }
 }
 

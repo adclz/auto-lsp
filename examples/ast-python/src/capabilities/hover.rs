@@ -36,9 +36,9 @@ pub fn hover(db: &impl BaseDatabase, params: HoverParams) -> anyhow::Result<Opti
 
     let position = document
         .offset_at(params.text_document_position_params.position)
-        .ok_or_else(|| {
+        .map_err(|e| {
             anyhow::format_err!(
-                "Invalid position, {:?}",
+                "Invalid position, {:?}: {e}",
                 params.text_document_position_params.position
             )
         })?;
