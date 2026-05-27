@@ -134,22 +134,6 @@ impl Document {
         })
     }
 
-    /// Converts a tree-sitter [`tree_sitter::Range`] to another [`tree_sitter::Range`] with
-    /// columns in the document's negotiated encoding. Byte offsets are preserved.
-    pub fn ts_range_to_enc_range(
-        &self,
-        range: &tree_sitter::Range,
-    ) -> Result<tree_sitter::Range, DocumentError> {
-        let start_point = self.encoded_point(range.start_point)?;
-        let end_point = self.encoded_point(range.end_point)?;
-        Ok(tree_sitter::Range {
-            start_byte: range.start_byte,
-            end_byte: range.end_byte,
-            start_point,
-            end_point,
-        })
-    }
-
     fn encoded_point(&self, point: Point) -> Result<Point, DocumentError> {
         let mut grid = GridIndex::from(point);
         grid.denormalize(&self.texter)?;
@@ -289,38 +273,6 @@ mod test {
                     line: 0,
                     character: end_character,
                 },
-            }
-        );
-    }
-
-    #[rstest]
-    #[case(Encoding::UTF8, 20)]
-    #[case(Encoding::UTF16, 10)]
-    #[case(Encoding::UTF32, 10)]
-    fn ts_range_to_enc_range_from_cst(
-        mut parser: Parser,
-        #[case] encoding: Encoding,
-        #[case] end_column: usize,
-    ) {
-        let source = "<div>こんにちは</div>\n<p>hello</p>";
-        let tree = parser.parse(source, None).unwrap();
-        let document = Document::new(source.into(), tree.clone(), Some(&encoding.kind()));
-
-        let first_element = tree.root_node().named_child(0).expect("first element");
-        let text_node = first_element.named_child(1).expect("text node");
-        let original = text_node.range();
-
-        let enc_range = document.ts_range_to_enc_range(&original).unwrap();
-
-        // Byte offsets are preserved
-        assert_eq!(enc_range.start_byte, original.start_byte);
-        assert_eq!(enc_range.end_byte, original.end_byte);
-        assert_eq!(enc_range.start_point, Point { row: 0, column: 5 });
-        assert_eq!(
-            enc_range.end_point,
-            Point {
-                row: 0,
-                column: end_column,
             }
         );
     }
