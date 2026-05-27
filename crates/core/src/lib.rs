@@ -33,5 +33,4 @@ pub mod document;
 pub mod errors;
 pub mod parsers;
 pub mod regex;
-pub mod span;
 pub mod utils;

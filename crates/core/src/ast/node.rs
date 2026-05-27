@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 use crate::errors::DocumentError;
-use crate::span::Span;
 use crate::{document::Document, errors::PositionError};
 use downcast_rs::{DowncastSync, impl_downcast};
 use std::cmp::Ordering;
@@ -102,11 +101,6 @@ pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
             line: range.end_point.row as u32,
             character: range.end_point.column as u32,
         }
-    }
-
-    /// Returns the range of this node as a [`Span`].
-    fn get_span(&self) -> Span {
-        Span(*self.get_range())
     }
 
     /// Returns the UTF-8 text slice corresponding to this node.
