@@ -18,10 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use std::{collections::HashMap, path::PathBuf, str::Utf8Error};
 
-use crate::span::Span;
 use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
 use lsp_types::Url;
 use thiserror::Error;
+
+use crate::document::Document;
 
 /// Error type coming from either tree-sitter or ast parsing.
 ///
@@ -34,41 +35,36 @@ use thiserror::Error;
 pub enum ParseError {
     #[error("{error}")]
     LexerError {
-        span: Span,
+        span: tree_sitter::Range,
         #[source]
         error: LexerError,
     },
     #[error("{error}")]
     AstError {
-        span: Span,
+        span: tree_sitter::Range,
         #[source]
         error: AstError,
     },
 }
 
-impl From<ParseError> for lsp_types::Diagnostic {
-    fn from(error: ParseError) -> Self {
-        (&error).into()
-    }
-}
-
-impl From<&ParseError> for lsp_types::Diagnostic {
-    fn from(error: &ParseError) -> Self {
-        let (range, message) = match error {
+impl ParseError {
+    pub fn to_lsp_diagnostic(
+        &self,
+        doc: &Document,
+    ) -> Result<lsp_types::Diagnostic, DocumentError> {
+        let (range, message) = match self {
             ParseError::AstError { span: range, error } => (range, error.to_string()),
             ParseError::LexerError { span: range, error } => (range, error.to_string()),
         };
-        lsp_types::Diagnostic {
-            range: range.into(),
+        Ok(lsp_types::Diagnostic {
+            range: doc.ts_range_to_range(range)?,
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),
             message,
             code: Some(lsp_types::NumberOrString::String("AUTO_LSP".into())),
             ..Default::default()
-        }
+        })
     }
-}
 
-impl ParseError {
     /// Creates a label for the error using ariadne.
     pub fn to_label(
         &self,
@@ -77,13 +73,13 @@ impl ParseError {
         report: &mut ReportBuilder<'_, std::ops::Range<usize>>,
     ) {
         let range = match self {
-            ParseError::LexerError { span: range, .. } => range.lsp(),
-            ParseError::AstError { span: range, .. } => range.lsp(),
+            ParseError::LexerError { span: range, .. } => range,
+            ParseError::AstError { span: range, .. } => range,
         };
-        let start_line = source.line(range.start.line as usize).unwrap().offset();
-        let end_line = source.line(range.end.line as usize).unwrap().offset();
-        let start = start_line + range.start.character as usize;
-        let end = end_line + range.end.character as usize;
+        let start_line = source.line(range.start_point.column).unwrap().offset();
+        let end_line = source.line(range.end_point.row).unwrap().offset();
+        let start = start_line + range.start_point.column;
+        let end = end_line + range.end_point.column;
         let curr_color = colors.next();
 
         report.add_label(
@@ -158,6 +154,13 @@ impl From<LexerError> for ParseError {
 pub struct ParseErrorAccumulator(pub ParseError);
 
 impl ParseErrorAccumulator {
+    pub fn to_lsp_diagnostic(
+        &self,
+        doc: &Document,
+    ) -> Result<lsp_types::Diagnostic, DocumentError> {
+        self.0.to_lsp_diagnostic(doc)
+    }
+
     pub fn to_label(
         &self,
         source: &Source<&str>,
@@ -165,12 +168,6 @@ impl ParseErrorAccumulator {
         report: &mut ReportBuilder<'_, std::ops::Range<usize>>,
     ) {
         self.0.to_label(source, colors, report);
-    }
-}
-
-impl From<&ParseErrorAccumulator> for lsp_types::Diagnostic {
-    fn from(error: &ParseErrorAccumulator) -> Self {
-        Self::from(&error.0)
     }
 }
 
@@ -206,19 +203,9 @@ impl From<AstError> for ParseErrorAccumulator {
 
 /// Error type for position errors.
 ///
-/// Only emitted by methods of the [`crate::document::Document`] struct.
+/// Emitted by [`crate::ast::AstNode::get_text`] when slicing source code.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum PositionError {
-    #[error("Failed to find position of offset {offset}, max line length is {length}")]
-    LineOutOfBound { offset: usize, length: usize },
-    #[error("Failed to get position of offset {offset}")]
-    WrongPosition { offset: usize },
-    #[error("Failed to get range of {range:?}: {position_error}")]
-    WrongRange {
-        range: std::ops::Range<usize>,
-        #[source]
-        position_error: Box<PositionError>,
-    },
     #[error("Failed to get text in {range:?}")]
     WrongTextRange { range: std::ops::Range<usize> },
     #[error("Failed to get text in {range:?}: Encountered UTF-8 error {utf8_error}")]
@@ -363,4 +350,13 @@ pub enum TreeSitterError {
 pub enum TexterError {
     #[error("Texter failed to handle document")]
     TexterError(#[from] texter::error::Error),
+}
+
+// thiserror's `#[from]` only generates direct From impls, so it does not chain
+// `texter::error::Error` → `TexterError` → `DocumentError` automatically. Add the shortcut
+// explicitly so `?` propagates raw texter errors straight into `Result<_, DocumentError>`.
+impl From<texter::error::Error> for DocumentError {
+    fn from(error: texter::error::Error) -> Self {
+        DocumentError::Texter(TexterError::from(error))
+    }
 }

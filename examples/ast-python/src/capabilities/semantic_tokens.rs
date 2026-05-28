@@ -19,9 +19,9 @@ use crate::generated::FunctionDefinition;
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch;
 use auto_lsp::core::semantic_tokens_builder::SemanticTokensBuilder;
-use auto_lsp::default::db::file::File;
-use auto_lsp::default::db::tracked::{get_ast, ParsedAst};
 use auto_lsp::default::db::BaseDatabase;
+use auto_lsp::default::db::file::File;
+use auto_lsp::default::db::tracked::{ParsedAst, get_ast};
 use auto_lsp::lsp_types::{SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensResult};
 use auto_lsp::{anyhow, define_semantic_token_modifiers, define_semantic_token_types};
 
@@ -80,10 +80,11 @@ pub fn semantic_tokens_range(
 
     let ast = get_ast(db, file);
     for node in ast.iter() {
-        if node.get_lsp_range().end <= params.range.start {
+        let range = node.get_lsp_range(file.document(db))?;
+        if range.end <= params.range.start {
             continue;
         }
-        if node.get_lsp_range().start >= params.range.end {
+        if range.start >= params.range.end {
             break;
         }
         dispatch!(node.lower(),
@@ -99,13 +100,13 @@ pub fn semantic_tokens_range(
 impl FunctionDefinition {
     fn build_semantic_tokens(
         &self,
-        _db: &impl BaseDatabase,
-        _file: File,
+        db: &impl BaseDatabase,
+        file: File,
         ast: &ParsedAst,
         builder: &mut SemanticTokensBuilder,
     ) -> anyhow::Result<()> {
         builder.push(
-            self.name.cast(ast).get_lsp_range(),
+            self.name.cast(ast).get_lsp_range(file.document(db))?,
             SUPPORTED_TYPES.iter().position(|x| *x == FUNCTION).unwrap() as u32,
             SUPPORTED_MODIFIERS
                 .iter()

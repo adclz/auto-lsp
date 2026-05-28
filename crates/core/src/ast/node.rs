@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::errors::PositionError;
-use crate::span::Span;
+use crate::errors::DocumentError;
+use crate::{document::Document, errors::PositionError};
 use downcast_rs::{DowncastSync, impl_downcast};
 use std::cmp::Ordering;
 use tree_sitter::Node;
@@ -75,25 +75,15 @@ pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
     /// Returns the [`tree_sitter::Range`] of this node.
     fn get_range(&self) -> &tree_sitter::Range;
 
+    /// Returns the LSP-compatible range of this node.
+    fn get_lsp_range(&self, document: &Document) -> Result<lsp_types::Range, DocumentError> {
+        document.ts_range_to_range(self.get_range())
+    }
+
     /// Returns `true` if this node is a MISSING node.
     ///
     /// Mirrors [is_missing](https://docs.rs/tree-sitter/latest/tree_sitter/struct.Node.html#method.is_missing)
     fn is_missing(&self) -> bool;
-
-    /// Returns the LSP-compatible range of this node.
-    fn get_lsp_range(&self) -> lsp_types::Range {
-        let range = self.get_range();
-        lsp_types::Range {
-            start: lsp_types::Position {
-                line: range.start_point.row as u32,
-                character: range.start_point.column as u32,
-            },
-            end: lsp_types::Position {
-                line: range.end_point.row as u32,
-                character: range.end_point.column as u32,
-            },
-        }
-    }
 
     /// Returns the start position in LSP format.
     fn get_start_position(&self) -> lsp_types::Position {
@@ -111,11 +101,6 @@ pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
             line: range.end_point.row as u32,
             character: range.end_point.column as u32,
         }
-    }
-
-    /// Returns the range of this node as a [`Span`].
-    fn get_span(&self) -> Span {
-        Span(*self.get_range())
     }
 
     /// Returns the UTF-8 text slice corresponding to this node.
