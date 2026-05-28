@@ -57,7 +57,7 @@ impl ParseError {
             ParseError::LexerError { span: range, error } => (range, error.to_string()),
         };
         Ok(lsp_types::Diagnostic {
-            range: doc.ts_range_to_range(range)?,
+            range: doc.denormalize_range(range)?,
             severity: Some(lsp_types::DiagnosticSeverity::ERROR),
             message,
             code: Some(lsp_types::NumberOrString::String("AUTO_LSP".into())),

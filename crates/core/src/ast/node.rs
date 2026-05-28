@@ -77,7 +77,7 @@ pub trait AstNode: std::fmt::Debug + Send + Sync + DowncastSync {
 
     /// Returns the LSP-compatible range of this node.
     fn get_lsp_range(&self, document: &Document) -> Result<lsp_types::Range, DocumentError> {
-        document.ts_range_to_range(self.get_range())
+        document.denormalize_range(self.get_range())
     }
 
     /// Returns `true` if this node is a MISSING node.
