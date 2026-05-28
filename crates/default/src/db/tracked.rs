@@ -18,7 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use super::lexer::get_tree_sitter_errors;
 use super::{BaseDatabase, File};
 use auto_lsp_core::ast::AstNode;
+use auto_lsp_core::document::Document;
 use auto_lsp_core::errors::ParseErrorAccumulator;
+use lsp_types::Position;
 use salsa::Accumulator;
 use std::ops::Deref;
 use std::sync::Arc;
@@ -86,20 +88,29 @@ impl ParsedAst {
         self.nodes.first()
     }
 
-    /// Returns the deepest node that contains the given offset.
-    pub fn descendant_at(&self, offset: usize) -> Option<&Box<dyn AstNode>> {
+    /// Returns the deepest node that contains the given LSP position.
+    ///
+    /// The position is interpreted in the client's negotiated encoding and normalized
+    /// (via [`Document::normalize_position`]) before being matched against node ranges.
+    /// Returns`None` if the position is out of bounds.
+    pub fn descendant_for_position(
+        &self,
+        doc: &Document,
+        position: &Position,
+    ) -> Option<&Box<dyn AstNode>> {
         debug_assert!(self.nodes.is_sorted());
 
-        // Uses partition_point to find all nodes with `start_byte <= offset`,
-        let idx = self
-            .nodes
-            .partition_point(|f| f.get_range().start_byte <= offset);
+        let position = doc.normalize_position(position).ok()?;
+        let position = (position.line as usize, position.character as usize);
 
-        // then walks backward to find the deepest one whose `end_byte >= offset`.
-        // so the first match is the most specific (deepest) node.
-        self.nodes[..idx]
-            .iter()
-            .rev()
-            .find(|f| f.get_range().end_byte >= offset)
+        let idx = self.nodes.partition_point(|f| {
+            let s = f.get_range().start_point;
+            (s.row, s.column) <= position
+        });
+
+        self.nodes[..idx].iter().rev().find(|f| {
+            let e = f.get_range().end_point;
+            (e.row, e.column) >= position
+        })
     }
 }
