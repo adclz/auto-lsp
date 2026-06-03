@@ -41,12 +41,16 @@ pub fn selection_ranges(
 
     for position in params.positions.iter() {
         let mut stack: Vec<tree_sitter::Node> = vec![];
-        let offset = document.offset_at(*position).unwrap();
+        let position = document.normalize_position(position).unwrap();
+        let point = tree_sitter::Point {
+            row: position.line as usize,
+            column: position.character as usize,
+        };
 
         let mut node = root_node;
         loop {
             let child = node.named_children(&mut query_cursor).find(|candidate| {
-                candidate.start_byte() <= offset && candidate.end_byte() > offset
+                candidate.start_position() <= point && candidate.end_position() > point
             });
 
             if let Some(child) = child {
@@ -58,11 +62,8 @@ pub fn selection_ranges(
         }
 
         let mut parent: Option<SelectionRange> = None;
-        for _node in stack {
-            let Some(node) = root_node.named_descendant_for_byte_range(offset, offset) else {
-                continue;
-            };
-            let Ok(range) = document.ts_range_to_range(&node.range()) else {
+        for node in stack {
+            let Ok(range) = document.denormalize_range(&node.range()) else {
                 continue;
             };
             let range = SelectionRange {

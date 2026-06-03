@@ -19,9 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use crate::generated::{Identifier, PassStatement};
 use auto_lsp::core::ast::AstNode;
 use auto_lsp::core::dispatch_once;
+use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::default::db::file::File;
 use auto_lsp::default::db::tracked::get_ast;
-use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::{Hover, HoverParams};
 use auto_lsp::{anyhow, lsp_types};
 
@@ -32,18 +32,9 @@ pub fn hover(db: &impl BaseDatabase, params: HoverParams) -> anyhow::Result<Opti
         .get_file(uri)
         .ok_or_else(|| anyhow::format_err!("File not found in workspace"))?;
 
-    let document = file.document(db);
+    let position = params.text_document_position_params.position;
 
-    let position = document
-        .offset_at(params.text_document_position_params.position)
-        .map_err(|e| {
-            anyhow::format_err!(
-                "Invalid position, {:?}: {e}",
-                params.text_document_position_params.position
-            )
-        })?;
-
-    if let Some(node) = get_ast(db, file).descendant_at(position) {
+    if let Some(node) = get_ast(db, file).descendant_for_position(file.document(db), &position) {
         dispatch_once!(node.lower(), [
             PassStatement => get_hover(db, file),
             Identifier => get_hover(db, file)

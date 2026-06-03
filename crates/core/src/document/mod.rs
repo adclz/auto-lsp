@@ -16,13 +16,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-// `texter` 0.3.0 made `GridIndex::normalize`/`denormalize` take `&Text` (instead of `&mut Text`),
-// which finally lets us route all encoding-aware position conversions through texter without
-// invalidating salsa queries. This module is now a thin wrapper around `Text` and `Tree`:
-// what used to be a handful of manual UTF-8/16/32 loops and a duplicated `Encoding` enum is
-// gone, and the public surface is reduced to what consumers actually call. Callers receive
-// LSP positions in the negotiated encoding and never see `GridIndex` or normalization itself.
-
 use lsp_types::PositionEncodingKind;
 use texter::{change::GridIndex, core::text::Text};
 use texter_impl::{change::WrapChange, updateable::WrapTree};
@@ -95,33 +88,45 @@ impl Document {
         Ok(())
     }
 
-    /// Converts an LSP [`lsp_types::Position`] (in the negotiated encoding) to a byte offset.
-    ///
-    /// Uses texter's [`GridIndex::normalize`] to convert the encoded column to a UTF-8 column,
-    /// then adds the row's start byte. An out-of-bounds row surfaces as a
-    /// [`texter::error::Error::OutOfBoundsRow`] wrapped in [`DocumentError::Texter`].
-    pub fn offset_at(&self, position: lsp_types::Position) -> Result<usize, DocumentError> {
+    /// Converts an LSP [`lsp_types::Range`] from the client encoding to UTF-8, returning a new range.
+    /// Mirrors texter's own [`GridIndex::normalize`].
+    pub fn normalize_range(
+        &self,
+        position: &lsp_types::Range,
+    ) -> Result<lsp_types::Range, DocumentError> {
+        let start = self.normalize_position(&position.start)?;
+        let end = self.normalize_position(&position.end)?;
+
+        Ok(lsp_types::Range { start, end })
+    }
+
+    /// Converts an LSP [`lsp_types::Position`] from the client encoding to UTF-8, returning a new position.
+    /// Mirrors texter's own [`GridIndex::normalize`].
+    pub fn normalize_position(
+        &self,
+        position: &lsp_types::Position,
+    ) -> Result<lsp_types::Position, DocumentError> {
         let mut grid = GridIndex {
             row: position.line as usize,
             col: position.character as usize,
         };
         grid.normalize(&self.texter)?;
-        let row_start = self
-            .texter
-            .br_indexes
-            .row_start(grid.row)
-            .expect("row validated by normalize");
-        Ok(row_start + grid.col)
+
+        Ok(lsp_types::Position {
+            line: grid.row as u32,
+            character: grid.col as u32,
+        })
     }
 
     /// Converts a tree-sitter [`tree_sitter::Range`] to an LSP [`lsp_types::Range`],
-    /// adjusting columns to the document's negotiated encoding.
-    pub fn ts_range_to_range(
+    /// adjusting columns to the LSP client encoding.
+    /// Mirrors texter's own [`GridIndex::denormalize`].
+    pub fn denormalize_range(
         &self,
         range: &tree_sitter::Range,
     ) -> Result<lsp_types::Range, DocumentError> {
-        let start = self.encoded_point(range.start_point)?;
-        let end = self.encoded_point(range.end_point)?;
+        let start = self.denormalize_point(range.start_point)?;
+        let end = self.denormalize_point(range.end_point)?;
         Ok(lsp_types::Range {
             start: lsp_types::Position {
                 line: start.row as u32,
@@ -134,7 +139,10 @@ impl Document {
         })
     }
 
-    fn encoded_point(&self, point: Point) -> Result<Point, DocumentError> {
+    /// Converts a tree-sitter [`tree_sitter::Point`] to an LSP [`lsp_types::Position`],
+    /// adjusting columns to the LSP client encoding.
+    /// Mirrors texter's own [`GridIndex::denormalize`].
+    pub fn denormalize_point(&self, point: Point) -> Result<Point, DocumentError> {
         let mut grid = GridIndex::from(point);
         grid.denormalize(&self.texter)?;
         Ok(Point::from(grid))
@@ -176,7 +184,8 @@ mod test {
     }
 
     #[rstest]
-    fn offset_at(mut parser: Parser) {
+    fn normalize(mut parser: Parser) {
+        // All-ASCII source, so encoded columns equal UTF-8 columns.
         let source = "Apples\nBashdjad\nashdkasdh\nasdsad";
         let document = Document::new(
             source.into(),
@@ -186,63 +195,59 @@ mod test {
 
         assert_eq!(&document.texter.br_indexes.0, &[0, 6, 15, 25]);
 
+        let normalized = |line, character| {
+            let pos = Position { line, character };
+            document.normalize_position(&pos).unwrap()
+        };
+
         assert_eq!(
-            document
-                .offset_at(Position {
-                    line: 0,
-                    character: 0
-                })
-                .unwrap(),
-            0
+            normalized(0, 0),
+            Position {
+                line: 0,
+                character: 0
+            }
         );
         assert_eq!(
-            document
-                .offset_at(Position {
-                    line: 0,
-                    character: 5
-                })
-                .unwrap(),
-            5
+            normalized(0, 5),
+            Position {
+                line: 0,
+                character: 5
+            }
         );
         assert_eq!(
-            document
-                .offset_at(Position {
-                    line: 1,
-                    character: 3
-                })
-                .unwrap(),
-            10
+            normalized(1, 3),
+            Position {
+                line: 1,
+                character: 3
+            }
         );
         assert_eq!(
-            document
-                .offset_at(Position {
-                    line: 3,
-                    character: 5
-                })
-                .unwrap(),
-            31
+            normalized(3, 5),
+            Position {
+                line: 3,
+                character: 5
+            }
         );
 
         // Line out of bounds surfaces as a texter error wrapped in DocumentError.
+        let oob = Position {
+            line: 10,
+            character: 0,
+        };
         assert!(matches!(
-            document.offset_at(Position {
-                line: 10,
-                character: 0
-            }),
+            document.normalize_position(&oob),
             Err(DocumentError::Texter(TexterError::TexterError(
                 texter::error::Error::OutOfBoundsRow { .. }
             )))
         ));
 
-        // Column past encoded line length is clamped by texter to the end of the line.
+        // Column past the line length is clamped by texter to the end of the line ("Bashdjad").
         assert_eq!(
-            document
-                .offset_at(Position {
-                    line: 1,
-                    character: 100
-                })
-                .unwrap(),
-            15
+            normalized(1, 100),
+            Position {
+                line: 1,
+                character: 8
+            }
         );
     }
 
@@ -263,7 +268,7 @@ mod test {
         let text_node = element.named_child(1).expect("text node");
 
         assert_eq!(
-            document.ts_range_to_range(&text_node.range()).unwrap(),
+            document.denormalize_range(&text_node.range()).unwrap(),
             lsp_types::Range {
                 start: Position {
                     line: 0,
