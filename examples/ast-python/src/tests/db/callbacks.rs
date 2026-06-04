@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::db::PYTHON_PARSERS;
+use crate::db::PYTHON;
 use auto_lsp::default::db::file::File;
 use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_types::{self, Url};
@@ -27,7 +27,7 @@ fn create_file(db: &BaseDb, name: &str, source: &str) -> File {
         .db(db)
         .source(source.to_string())
         .url(&url)
-        .parsers(PYTHON_PARSERS.get("py").expect("Python parser not found"))
+        .parsers(&PYTHON)
         .encoding(&lsp_types::PositionEncodingKind::UTF8)
         .call()
         .expect("Failed to create file")

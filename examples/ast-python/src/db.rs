@@ -21,14 +21,12 @@ use crate::generated::Module;
 use auto_lsp::default::db::file::File;
 use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_types::Url;
-use auto_lsp::{configure_parsers, lsp_types};
+use auto_lsp::{configure_parser, lsp_types};
 
-configure_parsers!(
-    PYTHON_PARSERS,
-    "py" => {
+configure_parser!(
+    PYTHON,
         language: tree_sitter_python::LANGUAGE,
         ast_root: Module
-    }
 );
 
 pub fn create_python_db(source_code: &'static [&str]) -> impl BaseDatabase {
@@ -40,11 +38,7 @@ pub fn create_python_db(source_code: &'static [&str]) -> impl BaseDatabase {
             .db(&db)
             .source(source_code.to_string())
             .url(&url)
-            .parsers(
-                PYTHON_PARSERS
-                    .get("py")
-                    .expect("Python parser not found"),
-            )
+            .parsers(&PYTHON)
             .encoding(&lsp_types::PositionEncodingKind::UTF8)
             .call()
             .expect("Failed to create file");
@@ -73,11 +67,7 @@ pub fn create_python_db_with_logger(
             .db(&db)
             .source(source_code.to_string())
             .url(&url)
-            .parsers(
-                PYTHON_PARSERS
-                    .get("py")
-                    .expect("Python parser not found"),
-            )
+            .parsers(&PYTHON)
             .encoding(&lsp_types::PositionEncodingKind::UTF8)
             .call()
             .expect("Failed to create file");
