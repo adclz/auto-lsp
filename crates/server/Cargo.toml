@@ -18,7 +18,6 @@ lsp-types = { workspace = true }
 salsa = { workspace = true }
 texter = { workspace = true }
 log = { workspace = true }
-rayon = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
