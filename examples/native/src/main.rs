@@ -105,7 +105,7 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
 ) -> &mut NotificationRegistry<Db> {
     registry
         .on_mut::<DidOpenTextDocument, _>(|s, p| match p.text_document.language_id.as_str() {
-            "py" => Ok(open_text_document(s, p, &PYTHON)?),
+            "python" => Ok(open_text_document(s, p, &PYTHON)?),
             _ => Ok(()),
         })
         .on_mut::<DidChangeTextDocument, _>(|s, p| Ok(change_text_document(s, p)?))
