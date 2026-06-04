@@ -73,12 +73,18 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     // Initialize the session with the client's initialization options.
     // This will also add all documents, parse and send diagnostics.
-    let init_results = session.init_workspace(params)?;
+    let init_results = session.init_workspace(params, |entry| {
+        if !entry.file_type().is_file() {
+            return None;
+        }
+        entry
+            .path()
+            .extension()
+            .and_then(|ext| (ext == "py").then(|| &*PYTHON))
+    });
     if !init_results.is_empty() {
         init_results.into_iter().for_each(|result| {
-            if let Err(err) = result {
-                eprintln!("{}", err);
-            }
+            eprintln!("{}", result);
         });
     };
 

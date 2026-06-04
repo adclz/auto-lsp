@@ -18,166 +18,57 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 use crate::db::FileManager;
 use crate::db::file::File;
-use auto_lsp_core::errors::{FileSystemError, RuntimeError};
+use auto_lsp_core::{errors::RuntimeError, parsers::Parser};
 use auto_lsp_server::Session;
 use lsp_types::{InitializeParams, Url};
-use rayon::prelude::*;
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 
 use crate::db::BaseDatabase;
 
 pub trait WorkspaceInit {
-    fn init_workspace(
+    fn init_workspace<F: Fn(&DirEntry) -> Option<&'static Parser>>(
         &mut self,
         params: InitializeParams,
-    ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError>;
+        add_file: F,
+    ) -> Vec<RuntimeError>;
 }
 
 impl<Db: BaseDatabase> WorkspaceInit for Session<Db> {
     /// Initializes the workspace by loading files and associating them with parsers.
-    fn init_workspace(
+    fn init_workspace<F: Fn(&DirEntry) -> Option<&'static Parser>>(
         &mut self,
         params: InitializeParams,
-    ) -> Result<Vec<Result<(), RuntimeError>>, RuntimeError> {
-        let mut errors: Vec<Result<(), RuntimeError>> = vec![];
+        add_file: F,
+    ) -> Vec<RuntimeError> {
+        let mut errors: Vec<RuntimeError> = vec![];
 
         if let Some(folders) = params.workspace_folders {
-            let files = folders
-                .into_iter()
-                .flat_map(|folder| {
-                    WalkDir::new(folder.uri.path())
-                        .into_iter()
-                        .filter_map(Result::ok)
-                        .filter(|entry| {
-                            entry.file_type().is_file()
-                                && entry.path().extension().is_some_and(|ext| {
-                                    self.parsers.contains_key(ext.to_string_lossy().as_ref())
-                                })
-                        })
-                })
-                .collect::<Vec<_>>();
-
-            errors.extend(rayon_par_bridge::par_bridge(
-                4,
-                files.into_par_iter(),
-                |file_iter| {
-                    file_iter
-                        .map(|file| {
-                            let f = File::from_fs()
-                                .session(self)
-                                .url(&Url::from_file_path(file.into_path()).unwrap())
-                                .call()?;
-                            self.db.add_file(f)?;
-                            Ok(())
-                        })
-                        .collect::<Vec<_>>()
-                },
-            ));
-        }
-
-        Ok(errors)
-    }
-}
-
-/// Get the extension of a file from a [`Url`] path
-#[cfg(windows)]
-pub(crate) fn get_extension(path: &Url) -> Result<String, FileSystemError> {
-    // Ensure the host is either empty or "localhost" on Windows
-    if let Some(host) = path.host_str() {
-        if !host.is_empty() && host != "localhost" {
-            return Err(FileSystemError::FileUrlHost {
-                host: host.to_string(),
-                path: path.clone(),
+            folders.into_iter().for_each(|folder| {
+                WalkDir::new(folder.uri.path())
+                    .into_iter()
+                    .filter_map(Result::ok)
+                    .filter_map(|entry| add_file(&entry).map(|parser| (entry, parser)))
+                    .for_each(|(entry, parser)| {
+                        let url = Url::from_file_path(entry.into_path()).unwrap();
+                        let f = match File::from_fs()
+                            .session(self)
+                            .url(&url)
+                            .parser(parser)
+                            .call()
+                        {
+                            Ok(f) => f,
+                            Err(e) => {
+                                errors.push(e);
+                                return;
+                            }
+                        };
+                        if let Err(e) = self.db.add_file(f) {
+                            errors.push(e.into());
+                        }
+                    });
             });
         }
-    }
 
-    path.to_file_path()
-        .map_err(|_| FileSystemError::FileUrlToFilePath { path: path.clone() })?
-        .extension()
-        .map_or_else(
-            || Err(FileSystemError::FileExtension { path: path.clone() }),
-            |ext| Ok(ext.to_string_lossy().to_string()),
-        )
-}
-
-#[cfg(not(windows))]
-pub(crate) fn get_extension(path: &Url) -> Result<String, FileSystemError> {
-    path.to_file_path()
-        .map_err(|_| FileSystemError::FileUrlToFilePath { path: path.clone() })?
-        .extension()
-        .map_or_else(
-            || Err(FileSystemError::FileExtension { path: path.clone() }),
-            |ext| Ok(ext.to_string_lossy().to_string()),
-        )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::get_extension;
-    use auto_lsp_core::errors::FileSystemError;
-    use lsp_types::Url;
-
-    #[cfg(windows)]
-    #[test]
-    fn test_get_extension_windows() {
-        // Valid Windows paths
-        assert_eq!(
-            get_extension(&Url::parse("file:///C:/path/to/file.rs").unwrap())
-                .unwrap()
-                .as_str(),
-            "rs"
-        );
-
-        assert_eq!(
-            get_extension(&Url::parse("file:///C:/path/to/file.with.multiple.dots").unwrap())
-                .unwrap()
-                .as_str(),
-            "dots"
-        );
-
-        // Empty extension
-        assert_eq!(
-            get_extension(&Url::parse("file:///C:/path/to/file").unwrap()),
-            Err(FileSystemError::FileExtension {
-                path: Url::parse("file:///C:/path/to/file").unwrap()
-            })
-        );
-    }
-
-    #[cfg(not(windows))]
-    #[test]
-    fn test_get_extension_non_windows() {
-        // Valid Linux/Unix paths
-
-        assert_eq!(
-            get_extension(&Url::parse("file:///path/to/file.rs").unwrap())
-                .unwrap()
-                .as_str(),
-            "rs"
-        );
-
-        assert_eq!(
-            get_extension(&Url::parse("file:///path/to/file.with.multiple.dots").unwrap())
-                .unwrap()
-                .as_str(),
-            "dots"
-        );
-
-        // Empty extension
-        assert_eq!(
-            get_extension(&Url::parse("file:///path/to/file").unwrap()),
-            Err(FileSystemError::FileExtension {
-                path: Url::parse("file:///path/to/file").unwrap()
-            })
-        );
-
-        // Note: On non-Windows systems, the host is typically ignored, so this should work
-        assert_eq!(
-            get_extension(&Url::parse("file://localhost/path/to/file.rs").unwrap())
-                .unwrap()
-                .as_str(),
-            "rs"
-        );
+        errors
     }
 }

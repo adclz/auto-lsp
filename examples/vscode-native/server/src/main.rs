@@ -30,7 +30,7 @@ use ast_python::capabilities::semantic_tokens::{
 };
 use ast_python::capabilities::workspace_diagnostics::workspace_diagnostics;
 use ast_python::capabilities::workspace_symbols::workspace_symbols;
-use ast_python::db::PYTHON_PARSERS;
+use ast_python::db::PYTHON;
 use auto_lsp::default::db::{BaseDatabase, BaseDb};
 use auto_lsp::default::server::capabilities::{
     TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER, semantic_tokens_provider,
@@ -111,12 +111,18 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     // Initialize the session with the client's initialization options.
     // This will also add all documents, parse and send diagnostics.
-    let init_results = session.init_workspace(params)?;
+    let init_results = session.init_workspace(params, |entry| {
+        if !entry.file_type().is_file() {
+            return None;
+        }
+        entry
+            .path()
+            .extension()
+            .and_then(|ext| (ext == "py").then(|| &*PYTHON))
+    });
     if !init_results.is_empty() {
         init_results.into_iter().for_each(|result| {
-            if let Err(err) = result {
-                eprintln!("{}", err);
-            }
+            eprintln!("{}", result);
         });
     };
 

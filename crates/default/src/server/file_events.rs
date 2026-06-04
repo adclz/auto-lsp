@@ -19,15 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 use auto_lsp_core::errors::DataBaseError;
 use auto_lsp_core::errors::FileSystemError;
 use auto_lsp_core::errors::RuntimeError;
+use auto_lsp_core::parsers::Parser;
 use auto_lsp_server::Session;
 use lsp_types::DidChangeTextDocumentParams;
 use lsp_types::DidChangeWatchedFilesParams;
 use lsp_types::DidOpenTextDocumentParams;
 use lsp_types::FileChangeType;
+use lsp_types::Url;
 use salsa::Setter;
 
 use crate::db::BaseDatabase;
-use crate::db::{file::File, FileManager};
+use crate::db::{FileManager, file::File};
 
 /// Handles a [`DidOpenTextDocument`] request.
 ///
@@ -37,6 +39,7 @@ use crate::db::{file::File, FileManager};
 pub fn open_text_document<Db: BaseDatabase>(
     session: &mut Session<Db>,
     params: DidOpenTextDocumentParams,
+    parser: &'static Parser,
 ) -> Result<(), RuntimeError> {
     let url = &params.text_document.uri;
 
@@ -51,6 +54,7 @@ pub fn open_text_document<Db: BaseDatabase>(
             let file = File::from_text_doc()
                 .doc(&params.text_document)
                 .session(session)
+                .parser(parser)
                 .call()?;
 
             log::info!("Did Open Text Document: Created - {url}");
@@ -76,9 +80,10 @@ pub fn change_text_document<Db: BaseDatabase>(
 }
 
 /// Handle the watched files change notification.
-pub fn changed_watched_files<Db: BaseDatabase>(
+pub fn changed_watched_files<Db: BaseDatabase, F: Fn(&Url) -> Option<&'static Parser>>(
     session: &mut Session<Db>,
     params: DidChangeWatchedFilesParams,
+    get_parser: F,
 ) -> Result<(), RuntimeError> {
     params.changes.iter().try_for_each(|file| {
         if file.uri.scheme() != "file" {
@@ -92,10 +97,17 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                     // We can ignore this change
                     return Ok(());
                 }
-                let file = File::from_fs().session(session).url(&url).call()?;
+                if let Some(parser) = get_parser(url) {
+                    let file = File::from_fs()
+                        .session(session)
+                        .url(&url)
+                        .parser(parser)
+                        .call()?;
 
-                log::info!("Watched Files: Created - {url}");
-                session.db.add_file(file).map_err(RuntimeError::from)
+                    log::info!("Watched Files: Created - {url}");
+                    session.db.add_file(file).map_err(RuntimeError::from)?;
+                }
+                Ok(())
             }
             FileChangeType::CHANGED => {
                 let url: &lsp_types::Url = &file.uri;
@@ -103,8 +115,12 @@ pub fn changed_watched_files<Db: BaseDatabase>(
                     RuntimeError::from(FileSystemError::FileUrlToFilePath { path: url.clone() })
                 })?;
 
-                log::info!("Watched Files: Changed - {url}");
-                file.update_full_fs(session).map_err(RuntimeError::from)
+                if let Some(parser) = get_parser(url) {
+                    file.update_full_fs(session, parser)
+                        .map_err(RuntimeError::from)?;
+                    log::info!("Watched Files: Changed - {url}");
+                }
+                Ok(())
             }
             FileChangeType::DELETED => {
                 let url = &file.uri;
