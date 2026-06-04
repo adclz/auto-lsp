@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use std::{collections::HashMap, path::PathBuf, str::Utf8Error};
+use std::{path::PathBuf, str::Utf8Error};
 
 use ariadne::{ColorGenerator, Fmt, Label, ReportBuilder, Source};
 use lsp_types::Url;
@@ -230,8 +230,6 @@ pub enum RuntimeError {
     DataBaseError(#[from] DataBaseError),
     #[error(transparent)]
     FileSystemError(#[from] FileSystemError),
-    #[error(transparent)]
-    ExtensionError(#[from] ExtensionError),
 }
 
 impl From<(&Url, DocumentError)> for RuntimeError {
@@ -264,36 +262,14 @@ impl From<(&Url, TexterError)> for RuntimeError {
 /// Error types produced by the server when performing file system operations.
 #[derive(Error, Clone, Debug, PartialEq, Eq)]
 pub enum FileSystemError {
-    #[cfg(windows)]
-    #[error("Invalid host '{host}' for file path: {path}")]
-    FileUrlHost { host: String, path: Url },
     #[error("Failed to convert url {path} to file path")]
     FileUrlToFilePath { path: Url },
     #[error("Failed to convert file path {path} to url")]
     FilePathToUrl { path: PathBuf },
-    #[error("Failed to get extension of file {path}")]
-    FileExtension { path: Url },
     #[error("Failed to open file {path}: {error}")]
     FileOpen { path: Url, error: String },
     #[error("Failed to read file {path}: {error}")]
     FileRead { path: Url, error: String },
-    #[error(transparent)]
-    ExtensionError(#[from] ExtensionError),
-}
-
-/// Error type for file extensions and parsers associated with them.
-#[derive(Error, Clone, Debug, PartialEq, Eq)]
-pub enum ExtensionError {
-    #[error("Unknown file extension {extension}, available extensions are: {available:?}")]
-    UnknownExtension {
-        extension: String,
-        available: HashMap<String, String>,
-    },
-    #[error("No parser found for extension {extension}, available parsers are: {available:?}")]
-    UnknownParser {
-        extension: String,
-        available: Vec<&'static str>,
-    },
 }
 
 /// Error type triggered by the database.
@@ -352,9 +328,6 @@ pub enum TexterError {
     TexterError(#[from] texter::error::Error),
 }
 
-// thiserror's `#[from]` only generates direct From impls, so it does not chain
-// `texter::error::Error` → `TexterError` → `DocumentError` automatically. Add the shortcut
-// explicitly so `?` propagates raw texter errors straight into `Result<_, DocumentError>`.
 impl From<texter::error::Error> for DocumentError {
     fn from(error: texter::error::Error) -> Self {
         DocumentError::Texter(TexterError::from(error))

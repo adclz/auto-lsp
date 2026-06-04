@@ -6,7 +6,7 @@ use std::{
 
 use auto_lsp_core::{
     document::Document,
-    errors::{DataBaseError, ExtensionError, FileSystemError, RuntimeError, TreeSitterError},
+    errors::{DataBaseError, FileSystemError, RuntimeError, TreeSitterError},
     parsers::Parser,
 };
 use auto_lsp_server::Session;
@@ -15,8 +15,6 @@ use lsp_types::{DidChangeTextDocumentParams, PositionEncodingKind, Url};
 use salsa::Setter;
 use texter::core::text::Text;
 use tree_sitter::Tree;
-
-use crate::server::workspace_init::get_extension;
 
 /// A salsa input that represents a file in the database.
 ///
@@ -67,6 +65,7 @@ impl File {
     pub fn from_fs(
         session: &Session<impl salsa::Database>,
         url: &Url,
+        parser: &'static Parser,
         durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
         let file_path = url.to_file_path().map_err(|_| {
@@ -75,16 +74,12 @@ impl File {
 
         let (_file, buffer) = Self::read_file_content(&file_path).map_err(RuntimeError::from)?;
 
-        let extension = get_extension(&url)?;
-        let parsers = Self::get_ast_parser(session, &extension)?;
-        let tree = Self::ts_parse(parsers, &buffer, url)?;
+        let tree = Self::ts_parse(parser, &buffer, url)?;
         let document = Document::new(buffer, tree, Some(&session.encoding));
 
-        Ok(
-            File::builder(url.clone(), parsers, Arc::new(document), None)
-                .durability(durability.unwrap_or(salsa::Durability::default()))
-                .new(&session.db),
-        )
+        Ok(File::builder(url.clone(), parser, Arc::new(document), None)
+            .durability(durability.unwrap_or(salsa::Durability::default()))
+            .new(&session.db))
     }
 
     /// Creates a new file from a text document event.
@@ -92,20 +87,17 @@ impl File {
     pub fn from_text_doc(
         session: &Session<impl salsa::Database>,
         doc: &lsp_types::TextDocumentItem,
+        parser: &'static Parser,
         durability: Option<salsa::Durability>,
     ) -> Result<Self, RuntimeError> {
         let url = &doc.uri;
-        let extension = get_extension(url)?;
 
-        let parsers = Self::get_ast_parser(session, &extension)?;
-        let tree = Self::ts_parse(parsers, &doc.text, url)?;
+        let tree = Self::ts_parse(parser, &doc.text, url)?;
         let document = Document::new(doc.text.clone(), tree, Some(&session.encoding));
 
-        Ok(
-            File::builder(url.clone(), parsers, Arc::new(document), None)
-                .durability(durability.unwrap_or(salsa::Durability::default()))
-                .new(&session.db),
-        )
+        Ok(File::builder(url.clone(), parser, Arc::new(document), None)
+            .durability(durability.unwrap_or(salsa::Durability::default()))
+            .new(&session.db))
     }
 
     /// Creates a new file from a string.
@@ -149,6 +141,7 @@ impl File {
     pub fn update_full_fs(
         &self,
         session: &mut Session<impl salsa::Database>,
+        parser: &'static Parser,
     ) -> Result<(), RuntimeError> {
         let url = self.url(&session.db).clone();
 
@@ -163,10 +156,7 @@ impl File {
             return Ok(());
         }
 
-        let extension = get_extension(&url)?;
-
-        let parsers = Self::get_ast_parser(session, &extension)?;
-        let tree = Self::ts_parse(parsers, &buffer, &url)?;
+        let tree = Self::ts_parse(parser, &buffer, &url)?;
         let document = Document::new(buffer, tree, Some(&session.encoding));
 
         let db = &mut session.db;
@@ -275,19 +265,5 @@ impl File {
             .write()
             .parse(source.as_bytes(), None)
             .ok_or_else(|| DataBaseError::from((url, TreeSitterError::TreeSitterParser)))
-    }
-
-    /// Utility function to get the AST parser for an extension.
-    fn get_ast_parser(
-        session: &Session<impl salsa::Database>,
-        extension: &str,
-    ) -> Result<&'static Parser, RuntimeError> {
-        // Check if the parser for this extension is available
-        session.init_options.parsers.get(extension).ok_or_else(|| {
-            RuntimeError::from(ExtensionError::UnknownParser {
-                extension: extension.to_string(),
-                available: session.init_options.parsers.keys().cloned().collect(),
-            })
-        })
     }
 }

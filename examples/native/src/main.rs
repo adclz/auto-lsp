@@ -24,12 +24,12 @@ use auto_lsp::default::server::file_events::{
 };
 use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
-use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::ServerCapabilities;
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
+use auto_lsp::lsp_types::{self};
 use auto_lsp::server::Session;
 use auto_lsp::server::notification_registry::NotificationRegistry;
 use auto_lsp::server::options::InitOptions;
@@ -104,9 +104,18 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
+        .on_mut::<DidOpenTextDocument, _>(|s, p| match p.text_document.language_id.as_str() {
+            "py" => Ok(open_text_document(s, p, &PYTHON)?),
+            _ => Ok(()),
+        })
         .on_mut::<DidChangeTextDocument, _>(|s, p| Ok(change_text_document(s, p)?))
-        .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
+        .on_mut::<DidChangeWatchedFiles, _>(|s, p| {
+            Ok(changed_watched_files(s, p, |url| {
+                let path = url.to_file_path().ok()?;
+                let ext = path.extension()?.to_str()?;
+                (ext == "py").then(|| &*PYTHON)
+            })?)
+        })
         .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 lsp_types::NumberOrString::Number(id) => id.into(),
