@@ -74,7 +74,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     let (mut session, params) = Session::create(
         InitOptions {
-            parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
                 text_document_sync: TEXT_DOCUMENT_SYNC.clone(),
                 workspace: WORKSPACE_PROVIDER.clone(),

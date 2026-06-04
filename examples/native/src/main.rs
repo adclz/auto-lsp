@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use ast_python::db::PYTHON_PARSERS;
+use ast_python::db::PYTHON;
 use auto_lsp::default::db::{BaseDatabase, BaseDb};
 use auto_lsp::default::server::capabilities::WORKSPACE_PROVIDER;
 use auto_lsp::default::server::file_events::{
@@ -56,7 +56,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     let (mut session, params) = Session::create(
         InitOptions {
-            parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
                 workspace: WORKSPACE_PROVIDER.clone(),
                 ..Default::default()
