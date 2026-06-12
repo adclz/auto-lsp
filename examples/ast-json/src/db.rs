@@ -19,14 +19,12 @@ use crate::generated::Document;
 use auto_lsp::default::db::file::File;
 use auto_lsp::default::db::{BaseDatabase, BaseDb, FileManager};
 use auto_lsp::lsp_types::Url;
-use auto_lsp::{configure_parsers, lsp_types};
+use auto_lsp::{configure_parser, lsp_types};
 
-configure_parsers!(
-    JSON_PARSERS,
-    "json" => {
+configure_parser!(
+    JSON_PARSER,
         language: tree_sitter_json::LANGUAGE,
         ast_root: Document
-    }
 );
 
 pub fn create_json_db(source_code: &'static [&str]) -> impl BaseDatabase {
@@ -38,7 +36,7 @@ pub fn create_json_db(source_code: &'static [&str]) -> impl BaseDatabase {
             .db(&db)
             .source(source_code.to_string())
             .url(&url)
-            .parsers(JSON_PARSERS.get("json").expect("JSON parser not found"))
+            .parsers(&JSON_PARSER)
             .encoding(&lsp_types::PositionEncodingKind::UTF8)
             .call()
             .expect("Failed to create file");

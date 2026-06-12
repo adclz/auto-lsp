@@ -30,7 +30,7 @@ use ast_python::capabilities::semantic_tokens::{
 };
 use ast_python::capabilities::workspace_diagnostics::workspace_diagnostics;
 use ast_python::capabilities::workspace_symbols::workspace_symbols;
-use ast_python::db::PYTHON_PARSERS;
+use ast_python::db::PYTHON;
 use auto_lsp::default::db::{BaseDatabase, BaseDb};
 use auto_lsp::default::server::capabilities::{
     TEXT_DOCUMENT_SYNC, WORKSPACE_PROVIDER, semantic_tokens_provider,
@@ -74,7 +74,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     let (mut session, params) = Session::create(
         InitOptions {
-            parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
                 text_document_sync: TEXT_DOCUMENT_SYNC.clone(),
                 workspace: WORKSPACE_PROVIDER.clone(),
@@ -112,12 +111,18 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     // Initialize the session with the client's initialization options.
     // This will also add all documents, parse and send diagnostics.
-    let init_results = session.init_workspace(params)?;
+    let init_results = session.init_workspace(params, |entry| {
+        if !entry.file_type().is_file() {
+            return None;
+        }
+        entry
+            .path()
+            .extension()
+            .and_then(|ext| (ext == "py").then(|| &*PYTHON))
+    });
     if !init_results.is_empty() {
         init_results.into_iter().for_each(|result| {
-            if let Err(err) = result {
-                eprintln!("{}", err);
-            }
+            eprintln!("{}", result);
         });
     };
 
@@ -158,9 +163,18 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
+        .on_mut::<DidOpenTextDocument, _>(|s, p| match p.text_document.language_id.as_str() {
+            "python" => Ok(open_text_document(s, p, &PYTHON)?),
+            _ => Ok(()),
+        })
         .on_mut::<DidChangeTextDocument, _>(|s, p| Ok(change_text_document(s, p)?))
-        .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
+        .on_mut::<DidChangeWatchedFiles, _>(|s, p| {
+            Ok(changed_watched_files(s, p, |url| {
+                let path = url.to_file_path().ok()?;
+                let ext = path.extension()?.to_str()?;
+                (ext == "py").then(|| &*PYTHON)
+            })?)
+        })
         .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 auto_lsp::lsp_types::NumberOrString::Number(id) => id.into(),

@@ -10,11 +10,7 @@ mod tests {
             .maybe_encoding(None)
             .source(content.to_string())
             .url(&url)
-            .parsers(
-                crate::db::HTML_PARSERS
-                    .get("html")
-                    .expect("Html parser not found"),
-            )
+            .parsers(&crate::db::HTML_PARSER)
             .call()
             .expect("Failed to create file")
     }

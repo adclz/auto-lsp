@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use crate::db::{create_html_db, HTML_PARSERS};
+use crate::db::{HTML_PARSER, create_html_db};
 use auto_lsp::core::regex::find_all_with_regex;
 use auto_lsp::default::db::BaseDatabase;
 use auto_lsp::lsp_types::Url;
@@ -39,9 +39,7 @@ fn comments_with_link() -> impl BaseDatabase {
 
 #[rstest]
 fn document_links(comments_with_link: impl BaseDatabase) {
-    let comment_query =
-        tree_sitter::Query::new(&HTML_PARSERS.get("html").unwrap().language, COMMENT_QUERY)
-            .unwrap();
+    let comment_query = tree_sitter::Query::new(&HTML_PARSER.language, COMMENT_QUERY).unwrap();
 
     let file = comments_with_link
         .get_file(&Url::parse("file:///test0.html").unwrap())
@@ -71,9 +69,7 @@ fn multiline_comment_with_links() -> impl BaseDatabase {
 
 #[rstest]
 fn multiline_document_links(multiline_comment_with_links: impl BaseDatabase) {
-    let comment_query =
-        tree_sitter::Query::new(&HTML_PARSERS.get("html").unwrap().language, COMMENT_QUERY)
-            .unwrap();
+    let comment_query = tree_sitter::Query::new(&HTML_PARSER.language, COMMENT_QUERY).unwrap();
 
     let file = multiline_comment_with_links
         .get_file(&Url::parse("file:///test0.html").unwrap())

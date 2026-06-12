@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-use ast_python::db::PYTHON_PARSERS;
+use ast_python::db::PYTHON;
 use auto_lsp::default::db::{BaseDatabase, BaseDb};
 use auto_lsp::default::server::capabilities::WORKSPACE_PROVIDER;
 use auto_lsp::default::server::file_events::{
@@ -24,12 +24,12 @@ use auto_lsp::default::server::file_events::{
 };
 use auto_lsp::default::server::workspace_init::WorkspaceInit;
 use auto_lsp::lsp_server::{self, Connection};
-use auto_lsp::lsp_types;
 use auto_lsp::lsp_types::ServerCapabilities;
 use auto_lsp::lsp_types::notification::{
     Cancel, DidChangeTextDocument, DidChangeWatchedFiles, DidCloseTextDocument,
     DidOpenTextDocument, DidSaveTextDocument, LogTrace, SetTrace,
 };
+use auto_lsp::lsp_types::{self};
 use auto_lsp::server::Session;
 use auto_lsp::server::notification_registry::NotificationRegistry;
 use auto_lsp::server::options::InitOptions;
@@ -56,7 +56,6 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     let (mut session, params) = Session::create(
         InitOptions {
-            parsers: &PYTHON_PARSERS,
             capabilities: ServerCapabilities {
                 workspace: WORKSPACE_PROVIDER.clone(),
                 ..Default::default()
@@ -74,12 +73,18 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     // Initialize the session with the client's initialization options.
     // This will also add all documents, parse and send diagnostics.
-    let init_results = session.init_workspace(params)?;
+    let init_results = session.init_workspace(params, |entry| {
+        if !entry.file_type().is_file() {
+            return None;
+        }
+        entry
+            .path()
+            .extension()
+            .and_then(|ext| (ext == "py").then(|| &*PYTHON))
+    });
     if !init_results.is_empty() {
         init_results.into_iter().for_each(|result| {
-            if let Err(err) = result {
-                eprintln!("{}", err);
-            }
+            eprintln!("{}", result);
         });
     };
 
@@ -99,9 +104,18 @@ fn on_notifications<Db: BaseDatabase + Clone + RefUnwindSafe>(
     registry: &mut NotificationRegistry<Db>,
 ) -> &mut NotificationRegistry<Db> {
     registry
-        .on_mut::<DidOpenTextDocument, _>(|s, p| Ok(open_text_document(s, p)?))
+        .on_mut::<DidOpenTextDocument, _>(|s, p| match p.text_document.language_id.as_str() {
+            "python" => Ok(open_text_document(s, p, &PYTHON)?),
+            _ => Ok(()),
+        })
         .on_mut::<DidChangeTextDocument, _>(|s, p| Ok(change_text_document(s, p)?))
-        .on_mut::<DidChangeWatchedFiles, _>(|s, p| Ok(changed_watched_files(s, p)?))
+        .on_mut::<DidChangeWatchedFiles, _>(|s, p| {
+            Ok(changed_watched_files(s, p, |url| {
+                let path = url.to_file_path().ok()?;
+                let ext = path.extension()?.to_str()?;
+                (ext == "py").then(|| &*PYTHON)
+            })?)
+        })
         .on_mut::<Cancel, _>(|s, p| {
             let id: lsp_server::RequestId = match p.id {
                 lsp_types::NumberOrString::Number(id) => id.into(),

@@ -19,10 +19,7 @@ walkdir = { workspace = true }
 salsa = { workspace = true }
 dashmap = { workspace = true }
 texter = { workspace = true }
-parking_lot = { workspace = true }
 log = { workspace = true }
-rayon = { workspace = true }
-rayon-par-bridge = { workspace = true }
 bon = { workspace = true }
 anyhow = { workspace = true }
 

@@ -43,11 +43,8 @@ impl<Db: salsa::Database> Session<Db> {
 
         log::info!("Position encoding: {encoding:?}");
 
-        let parsers = init_options.parsers;
-
         Self {
             init_options,
-            parsers,
             encoding,
             connection,
             req_queue: ReqQueue::default(),
