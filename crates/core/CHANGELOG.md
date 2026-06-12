@@ -2,6 +2,47 @@
 
 ## [Unreleased]
 
+## [0.8.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.7.0...auto-lsp-core-v0.8.0)
+
+### Features
+
+- *(core)* Add normalize/denormalize fns - ([c7a3828](https://github.com/adclz/auto-lsp/commit/c7a3828452f2a30690ed269a9cf879e20335d06a))
+- *(core)* Add is_missing fn to AstNode trait - ([31a06f8](https://github.com/adclz/auto-lsp/commit/31a06f85ab4b76856b921e54235de055cae70195))
+- *(core)* Add lsp_with_enc method for encoding-aware range conversion - ([e676cc4](https://github.com/adclz/auto-lsp/commit/e676cc4e44dffa955c92546a9835e95b4bd03af0))
+- *(core)* Add Span newtype - ([1b80c3e](https://github.com/adclz/auto-lsp/commit/1b80c3eb8110687f8e367801d74d0f8cd7dece05))
+- *(document)* Adjust lsp_with_enc and add ts_with_enc with encoding-aware range conversion - ([90ba73b](https://github.com/adclz/auto-lsp/commit/90ba73b0c3f3ae684d7c62c7b180f238d087051c))
+- *(document)* Add conversion methods for tree-sitter points with encoding adjustments - ([268fea7](https://github.com/adclz/auto-lsp/commit/268fea77965d9057e1530b60047ad3d3adb0d798))
+- Add position encoding support to Document and Db - ([dd1f4e6](https://github.com/adclz/auto-lsp/commit/dd1f4e6a90451cdd8ee5b0b466650828e51bca2d))
+
+### Bug Fixes
+
+- *(test)* Fix stack overflow in span equality test - ([c151ffa](https://github.com/adclz/auto-lsp/commit/c151ffaf94e57d92168c175cc1c484409059caf5))
+- Correct plural -> singular - ([227c726](https://github.com/adclz/auto-lsp/commit/227c7260a55ec698f478a408bb32ae32204e007a))
+
+### Refactor
+
+- *(core)* Remove Span module - ([8e7c360](https://github.com/adclz/auto-lsp/commit/8e7c360230bd96fcc35a6ff722feb7dac98325ee))
+- *(core)* Remove ts_range_to_enc_range fn - ([4500446](https://github.com/adclz/auto-lsp/commit/450044685285c4279546a0785473cb1be5de25e7))
+- *(core)* Remove deprecated Document errors - ([32dde87](https://github.com/adclz/auto-lsp/commit/32dde871ef15a5606b25572731a4351e92613419))
+- *(core)* Use new nomalize and denomalize fns from texter 0.3.0 - ([8af7712](https://github.com/adclz/auto-lsp/commit/8af77125e9713aea63bb326b2a97af2262b0c4a9))
+- *(default)* Pass parser reference directly to file fns - ([692102c](https://github.com/adclz/auto-lsp/commit/692102ce032fe816bfa90efa3d98627af0b57a50))
+- *(document)* Use denormalize for ts_point_to_enc_point - ([d7cc221](https://github.com/adclz/auto-lsp/commit/d7cc221881cd32ca9150e9b9cffbab8460b9dc60))
+- *(document)* Update Document constructor to use source strings directly - ([8d639be](https://github.com/adclz/auto-lsp/commit/8d639be29c20302400b8e84921d980c4cd129e6a))
+- *(document)* Make encoding optional - ([037bb68](https://github.com/adclz/auto-lsp/commit/037bb6828f2eb517c5357ac040dbe619e2dbb444))
+- *(errors)* Replace lsp_types::Range with Span in ParseError and LexerError - ([121c8a5](https://github.com/adclz/auto-lsp/commit/121c8a5c761c290e1c6a39f3834ccd164e258132))
+- *(server)* Remove perFileParser handling from initialization - ([333da96](https://github.com/adclz/auto-lsp/commit/333da965d5e4a3ef4100c52123d6add5503e518d))
+- *(span)* Simplify Span struct by removing lifetime and Cow usage - ([1386547](https://github.com/adclz/auto-lsp/commit/13865470e6f6aec5ee8ad39bdd5e09b65e5bcc54))
+- Get_lsp_range now takes a &Document and returns the denormalized range wrapped in a Result - ([bb0bdf6](https://github.com/adclz/auto-lsp/commit/bb0bdf600ccbcbb90469ed5463efb7287e348f41))
+
+### Miscellaneous Tasks
+
+- Bump deps and use rust 2024 edition ([#28](https://github.com/adclz/auto-lsp/pull/28)) - ([981f658](https://github.com/adclz/auto-lsp/commit/981f6582466f1042b68f94872ae1649b8a0bdcb7))
+
+### Bench
+
+- Add codspeed + divan crate ([#24](https://github.com/adclz/auto-lsp/pull/24)) - ([9b98812](https://github.com/adclz/auto-lsp/commit/9b988120f4e086047c039c7a6c526c8348cd6054))
+
+
 ## [0.7.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-core-v0.6.1...auto-lsp-core-v0.7.0)
 
 ### Features

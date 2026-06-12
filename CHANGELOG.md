@@ -2,6 +2,98 @@
 
 ## [Unreleased]
 
+## [0.7.0](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.6.2...auto-lsp-v0.7.0)
+
+### Features
+
+- *(codegen)* Add is_missing field to node codegen - ([f532143](https://github.com/adclz/auto-lsp/commit/f5321439a44107b31033fd77fa417e0ad0c6824b))
+- *(core)* Add normalize/denormalize fns - ([c7a3828](https://github.com/adclz/auto-lsp/commit/c7a3828452f2a30690ed269a9cf879e20335d06a))
+- *(core)* Add is_missing fn to AstNode trait - ([31a06f8](https://github.com/adclz/auto-lsp/commit/31a06f85ab4b76856b921e54235de055cae70195))
+- *(core)* Add lsp_with_enc method for encoding-aware range conversion - ([e676cc4](https://github.com/adclz/auto-lsp/commit/e676cc4e44dffa955c92546a9835e95b4bd03af0))
+- *(core)* Add Span newtype - ([1b80c3e](https://github.com/adclz/auto-lsp/commit/1b80c3eb8110687f8e367801d74d0f8cd7dece05))
+- *(db)* Add File struct with builders and update methods - ([df51762](https://github.com/adclz/auto-lsp/commit/df51762b814209842bfaf16d5b7af951a7c0e9e0))
+- *(default)* Add optional durability parameter to file creation methods - ([1be79e3](https://github.com/adclz/auto-lsp/commit/1be79e37ab78d06ac099dd7f89ff760eccc03d47))
+- *(default)* Add callback support for file addition and removal - ([b6c6b2c](https://github.com/adclz/auto-lsp/commit/b6c6b2ce3de0d1fc16c5ccac7ae7af0a82d1ab0a))
+- *(document)* Adjust lsp_with_enc and add ts_with_enc with encoding-aware range conversion - ([90ba73b](https://github.com/adclz/auto-lsp/commit/90ba73b0c3f3ae684d7c62c7b180f238d087051c))
+- *(document)* Add conversion methods for tree-sitter points with encoding adjustments - ([268fea7](https://github.com/adclz/auto-lsp/commit/268fea77965d9057e1530b60047ad3d3adb0d798))
+- *(error)* Add optional error callback support in session when panic occurs in a request/notification - ([9fe1061](https://github.com/adclz/auto-lsp/commit/9fe1061f422a49d9b0420512c76c1ebe82d3ef5d))
+- *(examples)* Add ast-json crate with MISSING nodes tests - ([cacbd51](https://github.com/adclz/auto-lsp/commit/cacbd51e40682a533e470af19b2ae2f6d7c3156e))
+- Add position encoding support to Document and Db - ([dd1f4e6](https://github.com/adclz/auto-lsp/commit/dd1f4e6a90451cdd8ee5b0b466650828e51bca2d))
+
+### Bug Fixes
+
+- *(book)* Use mdbook 0.4 instead of 0.5 - ([d291057](https://github.com/adclz/auto-lsp/commit/d29105768cbfae4d129a0443dd7dc8627ecfc828))
+- *(book)* Remove deprecated multilingual field - ([a0e429b](https://github.com/adclz/auto-lsp/commit/a0e429bbb050e40e780d47936771d8c1ff12f1d5))
+- *(cd)* Add publish = false in examples - ([1e559ab](https://github.com/adclz/auto-lsp/commit/1e559abe21fd19b0b48ac097d21262c713548902))
+- *(cd)* Add missing version field in codegen crate - ([b889a5e](https://github.com/adclz/auto-lsp/commit/b889a5e61696c95421e0be49cc10579b674da87c))
+- *(codegen)* Add numeric string sanitization to RUST_KEYWORDS - ([b1a2c7a](https://github.com/adclz/auto-lsp/commit/b1a2c7a96d2f2f8882c64842bd4969f502153ea6))
+- *(default)* Use partition_point for descendant_at - ([7419fa8](https://github.com/adclz/auto-lsp/commit/7419fa837f16a312c8d7fb9d36d57626e1364e32))
+- *(server)* Main_loop now consumes session - ([64c1d4e](https://github.com/adclz/auto-lsp/commit/64c1d4e029a1e95e44686c95c4a68e0c03c2dc23))
+- *(test)* Remove TriggerError request and associated tests - ([5e6c5b7](https://github.com/adclz/auto-lsp/commit/5e6c5b791632d7b720775f114d88500fc81e1963))
+- *(test)* Fix stack overflow in span equality test - ([c151ffa](https://github.com/adclz/auto-lsp/commit/c151ffaf94e57d92168c175cc1c484409059caf5))
+- *(vscode)* Use correct language_id for python again - ([c145a77](https://github.com/adclz/auto-lsp/commit/c145a776236ac84f20d5ba4751d2e4e649cc2e90))
+- *(vscode)* Use correct language_id for python - ([7d80135](https://github.com/adclz/auto-lsp/commit/7d801352d512542a198bea7757cce20e625427b0))
+- Update examples for fallible to_lsp_diagnostic fn - ([b27f7d4](https://github.com/adclz/auto-lsp/commit/b27f7d4365451ca033e74c6a19a499f135b17e10))
+- Correct plural -> singular - ([227c726](https://github.com/adclz/auto-lsp/commit/227c7260a55ec698f478a408bb32ae32204e007a))
+- Update parser retrieval to use extension instead of language ID - ([c751684](https://github.com/adclz/auto-lsp/commit/c7516845e1c6468cc9c8598844c29f6c143cffa5))
+- Update Python parser key from "python" to "py" across multiple files - ([e878f0e](https://github.com/adclz/auto-lsp/commit/e878f0e9ea963dc9eca8e043203ae5f882884ba9))
+- Ambiguous associated item conflicting with enum variant `Error` ([#32](https://github.com/adclz/auto-lsp/pull/32)) - ([fce63ef](https://github.com/adclz/auto-lsp/commit/fce63eff3e0d3d7bf11f31cfe1298196c680acb0))
+
+### Refactor
+
+- *(core)* Remove Span module - ([8e7c360](https://github.com/adclz/auto-lsp/commit/8e7c360230bd96fcc35a6ff722feb7dac98325ee))
+- *(core)* Remove ts_range_to_enc_range fn - ([4500446](https://github.com/adclz/auto-lsp/commit/450044685285c4279546a0785473cb1be5de25e7))
+- *(core)* Remove deprecated Document errors - ([32dde87](https://github.com/adclz/auto-lsp/commit/32dde871ef15a5606b25572731a4351e92613419))
+- *(core)* Use new nomalize and denomalize fns from texter 0.3.0 - ([8af7712](https://github.com/adclz/auto-lsp/commit/8af77125e9713aea63bb326b2a97af2262b0c4a9))
+- *(default)* Pass parser reference directly to file fns - ([692102c](https://github.com/adclz/auto-lsp/commit/692102ce032fe816bfa90efa3d98627af0b57a50))
+- *(default)* Pass closure to decide if file should be handled to workspace_init fn - ([f186743](https://github.com/adclz/auto-lsp/commit/f186743ef0e1c0c3943a433f4b3daded23e5e8a0))
+- *(default)* Remove parsers field from init_options struct - ([11adc55](https://github.com/adclz/auto-lsp/commit/11adc558efb474f0b008441b3c710a7b8c07f221))
+- *(default)* Refactor descendant_at to descendant_for_position - ([58615ff](https://github.com/adclz/auto-lsp/commit/58615ff066494bf94d5a80ad15e30d43791673d6))
+- *(default)* Add debug on file input and replace obsolete outer attributes - ([4d6fc14](https://github.com/adclz/auto-lsp/commit/4d6fc146b5d0659332ba94363bdb7043fec2ef61))
+- *(default)* Update file input events - ([422a7e5](https://github.com/adclz/auto-lsp/commit/422a7e5715f8e377f595330dfb31a4f245744e39))
+- *(default)* Simplify file events and workspace init - ([97984f5](https://github.com/adclz/auto-lsp/commit/97984f5f6afa5b1330868a2b03596cefc1b5c253))
+- *(document)* Use denormalize for ts_point_to_enc_point - ([d7cc221](https://github.com/adclz/auto-lsp/commit/d7cc221881cd32ca9150e9b9cffbab8460b9dc60))
+- *(document)* Update Document constructor to use source strings directly - ([8d639be](https://github.com/adclz/auto-lsp/commit/8d639be29c20302400b8e84921d980c4cd129e6a))
+- *(document)* Make encoding optional - ([037bb68](https://github.com/adclz/auto-lsp/commit/037bb6828f2eb517c5357ac040dbe619e2dbb444))
+- *(errors)* Replace lsp_types::Range with Span in ParseError and LexerError - ([121c8a5](https://github.com/adclz/auto-lsp/commit/121c8a5c761c290e1c6a39f3834ccd164e258132))
+- *(examples)* Update examples with new normalize/denormalize idioms - ([af17c21](https://github.com/adclz/auto-lsp/commit/af17c219ac3d2dc25f3dae69b1ba456c6c417a0c))
+- *(examples)* Update all examples with new file struct and events - ([94aaf6b](https://github.com/adclz/auto-lsp/commit/94aaf6bf3c669a83ee869565c7022dd32032ab82))
+- *(file)* Remove redundant extension registration check - ([7c11599](https://github.com/adclz/auto-lsp/commit/7c115995dd481e9be13710af835c2be05193d21d))
+- *(server)* Remove perFileParser handling from initialization - ([333da96](https://github.com/adclz/auto-lsp/commit/333da965d5e4a3ef4100c52123d6add5503e518d))
+- *(server)* Make TaskPool and Task public - ([6308ab8](https://github.com/adclz/auto-lsp/commit/6308ab848167f6cadab397e8e38594a5df832568))
+- *(span)* Simplify Span struct by removing lifetime and Cow usage - ([1386547](https://github.com/adclz/auto-lsp/commit/13865470e6f6aec5ee8ad39bdd5e09b65e5bcc54))
+- Configure_parser now generates a single parser - ([844103f](https://github.com/adclz/auto-lsp/commit/844103fae8dd31a3bb255d0cc71b78e6614101dc))
+- Get_lsp_range now takes a &Document and returns the denormalized range wrapped in a Result - ([bb0bdf6](https://github.com/adclz/auto-lsp/commit/bb0bdf600ccbcbb90469ed5463efb7287e348f41))
+- Remove perFileParser initialization options from client - ([a6950c7](https://github.com/adclz/auto-lsp/commit/a6950c79eebf5e735d52beb6db0fe609f146a87a))
+- Replace extensions with parsers in session initialization - ([bb0dd3b](https://github.com/adclz/auto-lsp/commit/bb0dd3bc12ba9062ce8f5c50c3af21fb326fa50e))
+
+### Testing
+
+- *(native)* Add test to check if the server hangs on shutdown - ([6cbed8e](https://github.com/adclz/auto-lsp/commit/6cbed8eb50913cf9f23969f7fa6abf0e682cb4f8))
+- Add descendant_at_between_siblings test case - ([f72c202](https://github.com/adclz/auto-lsp/commit/f72c2021a79b83fe205b0bcae5c41b76bc7eb1ba))
+- Add tests for callbacks in native and astt-python crates - ([92444ca](https://github.com/adclz/auto-lsp/commit/92444ca0a740cf07f4a7f3266e20471eb062bc03))
+- Add unit tests for file content comparison - ([2c7307c](https://github.com/adclz/auto-lsp/commit/2c7307c5afb1ec21c8b667a0827fe20f15bb670d))
+
+### Miscellaneous Tasks
+
+- Remove unnecessary deps - ([c8148d4](https://github.com/adclz/auto-lsp/commit/c8148d45beaa4d8f5f7796e0f020f8ed8b0f240b))
+- Update generated ast and snapshots for html and python - ([7a7e9f9](https://github.com/adclz/auto-lsp/commit/7a7e9f962e07e9981bf1741319c7ed175a8945ac))
+- Update dependencies - ([33b1858](https://github.com/adclz/auto-lsp/commit/33b185814bb510a9d00f3939ecdd0c485eaba1d1))
+- Remove vscode-wasi references and related configurations - ([2c056d5](https://github.com/adclz/auto-lsp/commit/2c056d5bbc8e229214ee360e027f36995c10bd96))
+- Remove vscode-wasi references from Cargo.toml, vscode settings and tasks - ([a0cceb0](https://github.com/adclz/auto-lsp/commit/a0cceb0e1af0e85dc3a5f161299c0c3dd11d9b99))
+- Remove vscode-wasi example - ([26848c3](https://github.com/adclz/auto-lsp/commit/26848c35d7e07ce868181815a782448aa1417f3f))
+- Remove obsolete WASI test workflow and script - ([00cb001](https://github.com/adclz/auto-lsp/commit/00cb0010664019ea2fd934e30fb0b2b8cd39ba2b))
+- Remove previous Cargo.lock files - ([497ac2a](https://github.com/adclz/auto-lsp/commit/497ac2a322355aeced0b75a70cefbdba037fb577))
+- Ignore Cargo.lock files to make release-plz happy - ([d0ce90d](https://github.com/adclz/auto-lsp/commit/d0ce90dad6243307f82043c41860bec2dc287829))
+- Bump deps and use rust 2024 edition ([#28](https://github.com/adclz/auto-lsp/pull/28)) - ([981f658](https://github.com/adclz/auto-lsp/commit/981f6582466f1042b68f94872ae1649b8a0bdcb7))
+- Update lock files - ([1447a70](https://github.com/adclz/auto-lsp/commit/1447a70f99b96e91579fc652b1eac233c8707a8f))
+- Update nextest installation - ([7ade7cd](https://github.com/adclz/auto-lsp/commit/7ade7cd33c6025d70b6087e49b0729fb475670c5))
+
+### Bench
+
+- Add codspeed + divan crate ([#24](https://github.com/adclz/auto-lsp/pull/24)) - ([9b98812](https://github.com/adclz/auto-lsp/commit/9b988120f4e086047c039c7a6c526c8348cd6054))
+
+
 ## [0.6.2](https://github.com/adclz/auto-lsp/compare/auto-lsp-v0.6.1...auto-lsp-v0.6.2)
 
 ### Features
