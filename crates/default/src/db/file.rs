@@ -152,7 +152,7 @@ impl File {
         let (_file, buffer) = Self::read_file_content(&file_path).map_err(RuntimeError::from)?;
 
         if self.fail_fast_check(&session.db, &buffer) {
-            log::info!("File unchanged: {}", url);
+            log::info!(target: "auto_lsp::default::db", "File unchanged: {}", url);
             return Ok(());
         }
 

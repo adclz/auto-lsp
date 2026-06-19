@@ -33,7 +33,7 @@ impl<Db: salsa::Database> Session<Db> {
             .unwrap_or_else(|_| NonZeroUsize::new(1).unwrap())
             .get();
 
-        log::info!("Max threads: {max_threads}");
+        log::info!(target: "auto_lsp::server::init", "Max threads: {max_threads}");
 
         let encoding = init_options
             .capabilities
@@ -41,7 +41,7 @@ impl<Db: salsa::Database> Session<Db> {
             .clone()
             .unwrap_or(PositionEncodingKind::UTF16);
 
-        log::info!("Position encoding: {encoding:?}");
+        log::info!(target: "auto_lsp::server::init", "Position encoding: {encoding:?}");
 
         Self {
             init_options,
@@ -69,8 +69,7 @@ impl<Db: salsa::Database> Session<Db> {
         #[cfg(target_arch = "wasm32")]
         std::fs::metadata("/workspace").unwrap();
 
-        log::info!("Starting LSP server");
-        log::info!("");
+        log::info!(target: "auto_lsp::server::init", "Starting LSP server");
 
         // Create the transport. Includes the stdio (stdin and stdout) versions but this could
         // also be implemented to use sockets or HTTP.
