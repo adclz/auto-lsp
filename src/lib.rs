@@ -53,6 +53,11 @@
 //! - [Rust Analyzer](https://github.com/rust-lang/rust-analyzer)
 //! - [Ruff](https://github.com/astral-sh/ruff)
 //! - [airblast-dev](https://github.com/airblast-dev)'s [texter](https://github.com/airblast-dev/texter), which saved hours of headache
+//!
+//! # License
+//!
+//! Licensed under either of [MIT](https://opensource.org/licenses/MIT) or
+//! [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) at your option.
 
 #[cfg(feature = "default")]
 pub mod default {
