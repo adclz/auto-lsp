@@ -1,6 +1,6 @@
 [workspace.package]
 authors = ["Clauzel Adrien"]
-license = "GPL-3.0"
+license = "MIT"
 edition = "2024"
 repository = "https://github.com/adclz/auto-lsp"
 

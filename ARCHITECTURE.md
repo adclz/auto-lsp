@@ -112,4 +112,4 @@ graph TB
 
 ## License
 
-auto_lsp is licensed under the [GPL-3.0 license](https://www.gnu.org/licenses/gpl-3.0.en.html#license-text).
+auto_lsp is licensed under the MIT license
