@@ -1,21 +1,3 @@
-/*
-This file is part of auto-lsp.
-Copyright (C) 2025 CLAUZEL Adrien
-
-auto-lsp is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 //! # Auto LSP Codegen
 //!
 //! To generate an AST, simply provide a Tree-sitter [node-types.json](https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types.html#static-node-types) and [LanguageFn](https://docs.rs/tree-sitter/latest/tree_sitter/struct.Language.html) of any language to the `generate` function of the `auto_lsp_codegen` crate.
