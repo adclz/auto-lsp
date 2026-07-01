@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Install nextest
         uses: taiki-e/install-action@nextest
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: Swatinem/rust-cache@v2
       - name: test
         working-directory: ./examples/native
