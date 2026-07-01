@@ -26,7 +26,7 @@ jobs:
       - name: Install mdbook
         env:
           GH_TOKEN: ${{ github.token }}
-        run: cargo binstall mdbook@0.4.51 -y
+        run: cargo binstall mdbook@0.4.52 -y
         
       - name: Install mdbook-admonish
         run: cargo install mdbook-admonish
