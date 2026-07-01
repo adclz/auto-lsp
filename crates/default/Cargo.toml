@@ -3,7 +3,7 @@ name = "auto-lsp-default"
 description = """
 Default database and server capabilities for `auto_lsp`.
 """
-version = "0.1.2"
+version = "0.2.0"
 readme = "README.md"
 authors = { workspace = true }
 license = { workspace = true }
