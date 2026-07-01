@@ -27,7 +27,7 @@ pub fn open_text_document<Db: BaseDatabase>(
 
     match session.db.get_file(url) {
         Some(file) => {
-            log::info!("Did Open Text Document: Already exists - {url}");
+            log::info!(target: "auto_lsp::default::file_events", "Did Open Text Document: Already exists - {url}");
             file.set_version(&mut session.db)
                 .to(Some(params.text_document.version));
             Ok(())
@@ -39,7 +39,7 @@ pub fn open_text_document<Db: BaseDatabase>(
                 .parser(parser)
                 .call()?;
 
-            log::info!("Did Open Text Document: Created - {url}");
+            log::info!(target: "auto_lsp::default::file_events", "Did Open Text Document: Created - {url}");
             session.db.add_file(file).map_err(|e| e.into())
         }
     }
@@ -57,7 +57,7 @@ pub fn change_text_document<Db: BaseDatabase>(
             uri: params.text_document.uri.clone(),
         })?;
 
-    log::info!("Did Change Text Document: {}", params.text_document.uri);
+    log::info!(target: "auto_lsp::default::file_events", "Did Change Text Document: {}", params.text_document.uri);
     Ok(file.update_edit(&mut session.db, &params)?)
 }
 
@@ -86,7 +86,7 @@ pub fn changed_watched_files<Db: BaseDatabase, F: Fn(&Url) -> Option<&'static Pa
                         .parser(parser)
                         .call()?;
 
-                    log::info!("Watched Files: Created - {url}");
+                    log::info!(target: "auto_lsp::default::file_events", "Watched Files: Created - {url}");
                     session.db.add_file(file).map_err(RuntimeError::from)?;
                 }
                 Ok(())
@@ -100,7 +100,7 @@ pub fn changed_watched_files<Db: BaseDatabase, F: Fn(&Url) -> Option<&'static Pa
                 if let Some(parser) = get_parser(url) {
                     file.update_full_fs(session, parser)
                         .map_err(RuntimeError::from)?;
-                    log::info!("Watched Files: Changed - {url}");
+                    log::info!(target: "auto_lsp::default::file_events", "Watched Files: Changed - {url}");
                 }
                 Ok(())
             }
@@ -114,7 +114,7 @@ pub fn changed_watched_files<Db: BaseDatabase, F: Fn(&Url) -> Option<&'static Pa
                 let file = session.db.get_file(&url).unwrap();
                 file.reset(&mut session.db).map_err(RuntimeError::from)?;
 
-                log::info!("Watched Files: Deleted - {}", &url);
+                log::info!(target: "auto_lsp::default::file_events", "Watched Files: Deleted - {}", &url);
                 session.db.remove_file(&url).map_err(RuntimeError::from)
             }
             // Should never happen

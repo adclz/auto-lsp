@@ -94,7 +94,7 @@ impl<Db: salsa::Database + Clone + Send + RefUnwindSafe> NotificationRegistry<Db
             intent,
             std::panic::AssertUnwindSafe(move || {
                 match salsa::Cancelled::catch(|| cb(&db, params)) {
-                    Err(e) => log::warn!("Cancelled notification: {e}"),
+                    Err(e) => log::warn!(target: "auto_lsp::server::notification_registry", "Cancelled notification: {e}"),
                     Ok(result) => {
                         if let Err(e) = result {
                             if let Some(on_error) = on_error {
